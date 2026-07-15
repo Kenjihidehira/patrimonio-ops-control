@@ -82,6 +82,7 @@ let filterTimer = null;
 let importPreview = null;
 
 bindEvents();
+handleAuthResult();
 void loadDashboard();
 
 function bindEvents() {
@@ -194,16 +195,22 @@ function renderSession() {
   const initial = (session.displayName || "V").trim().charAt(0).toUpperCase();
   elements.session.innerHTML = `
     <span class="session-avatar" aria-hidden="true">${escapeHtml(initial)}</span>
-    <span>
-      <small>${session.authenticated ? "Workspace privado" : "Sessão pública"}</small>
+    <span class="session-text">
+      <small>${session.authenticated ? "Conta Microsoft" : "Demonstração pública"}</small>
       <strong title="${escapeAttribute(session.displayName)}">${escapeHtml(session.displayName)}</strong>
     </span>
+    ${session.authenticated ? `<a class="session-sign-out" href="${escapeAttribute(session.signOutUrl)}">Sair</a>` : ""}
   `;
   elements.demoNotice.hidden = session.authenticated;
   elements.signInLink.href = session.signInUrl;
-  elements.sidebarSource.textContent = session.authenticated ? "Supabase privado ativo" : "Seed público somente leitura";
-  elements.importButton.disabled = !session.authenticated;
-  elements.importButton.title = session.authenticated ? "Importar planilha XLSX" : "Entre para importar dados";
+  elements.sidebarSource.textContent = session.authenticated ? "Base empresarial Supabase" : "Demonstração somente leitura";
+  for (const button of [elements.importButton, elements.newAsset, elements.newNucleus]) {
+    button.disabled = !session.authenticated;
+  }
+  const writeTitle = session.authenticated ? "" : "Entre com sua conta Microsoft para editar";
+  elements.importButton.title = session.authenticated ? "Importar planilha XLSX" : writeTitle;
+  elements.newAsset.title = writeTitle;
+  elements.newNucleus.title = writeTitle;
 }
 
 function renderInventory() {
@@ -284,7 +291,7 @@ function renderDetail() {
         ${statusBadge(asset.status)}
       </div>
       <div class="detail-actions">
-        <button class="button button-secondary button-small" id="transfer-asset-button" type="button" ${asset.status === "retired" ? "disabled" : ""}>
+        <button class="button button-secondary button-small" id="transfer-asset-button" type="button" ${asset.status === "retired" || !dashboard.session.authenticated ? "disabled" : ""}>
           Transferir
         </button>
         <button class="button button-quiet button-small" id="copy-asset-id" type="button">Copiar ID</button>
@@ -329,12 +336,12 @@ function renderDetail() {
       <form class="status-form" id="status-form">
         <label class="field">
           <span>Atualizar status</span>
-          <select name="status" required>${statusOptions}</select>
+          <select name="status" required ${dashboard.session.authenticated ? "" : "disabled"}>${statusOptions}</select>
         </label>
-        <button class="button button-primary button-small" type="submit">Registrar</button>
+        <button class="button button-primary button-small" type="submit" ${dashboard.session.authenticated ? "" : "disabled"}>Registrar</button>
         <label class="field field-wide">
           <span>Motivo da alteração</span>
-          <input name="note" maxlength="500" required placeholder="Informe o motivo para auditoria" />
+          <input name="note" maxlength="500" required placeholder="Informe o motivo para auditoria" ${dashboard.session.authenticated ? "" : "disabled"} />
         </label>
       </form>
 
@@ -414,7 +421,7 @@ function renderImports() {
     elements.importHistory.innerHTML = `
       <div class="empty-imports">
         <strong>Nenhuma importação registrada</strong>
-        <span>${dashboard.session.authenticated ? "Importe uma planilha XLSX para iniciar a base privada." : "Entre para consultar o histórico da sua base privada."}</span>
+        <span>${dashboard.session.authenticated ? "Nenhuma carga adicional foi registrada nesta base empresarial." : "Entre com a conta Microsoft para consultar o histórico empresarial."}</span>
       </div>
     `;
     return;
@@ -792,6 +799,19 @@ function showToast(message, isError = false) {
   toast.textContent = message;
   elements.toastRegion.append(toast);
   window.setTimeout(() => toast.remove(), 4200);
+}
+
+function handleAuthResult() {
+  const url = new URL(window.location.href);
+  const error = url.searchParams.get("auth_error");
+  if (!error) return;
+
+  const message = error === "microsoft_not_configured"
+    ? "O login Microsoft aguarda a configuração do aplicativo no Entra ID."
+    : "Não foi possível concluir o login Microsoft.";
+  showToast(message, true);
+  url.searchParams.delete("auth_error");
+  window.history.replaceState({}, "", `${url.pathname}${url.search}${url.hash}`);
 }
 
 function statusBadge(status) {

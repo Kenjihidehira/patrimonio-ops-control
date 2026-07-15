@@ -1,4 +1,4 @@
-import { getChatGPTUser } from "@/app/chatgpt-auth";
+import { getMicrosoftUser } from "@/app/microsoft-auth";
 import { buildDashboard } from "@/lib/domain";
 import { createExportWorkbook } from "@/lib/workbook";
 import { loadWorkspaceContext } from "@/lib/workspace";
@@ -7,7 +7,7 @@ export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {
-    const user = await getChatGPTUser();
+    const user = await getMicrosoftUser();
     const workspace = await loadWorkspaceContext(user);
     const dashboard = buildDashboard(workspace.state, { sort: "asset_asc" });
     const workbook = await createExportWorkbook(dashboard, workspace.imports);

@@ -2,7 +2,17 @@
 
 Base local: `http://localhost:5173/api`
 
-Respostas dinâmicas usam `cache-control: no-store`. A identidade é injetada pelo OpenAI Sites e não deve ser simulada por proxies públicos.
+Respostas dinâmicas usam `cache-control: no-store`. A identidade vem de uma sessão local assinada após o servidor validar o ID token do Microsoft Entra.
+
+## Autenticação Microsoft
+
+| Método | Rota | Finalidade |
+| --- | --- | --- |
+| `GET` | `/api/auth/microsoft/login` | Iniciar Authorization Code com PKCE |
+| `GET` | `/api/auth/microsoft/callback` | Validar retorno OIDC e criar sessão `HttpOnly` |
+| `GET` | `/api/auth/microsoft/logout` | Encerrar a sessão local |
+
+`return_to` aceita apenas caminhos relativos locais e nunca pode apontar para as próprias rotas de autenticação.
 
 ## `GET /api/state`
 
@@ -18,7 +28,7 @@ Retorna revisão, resumo, inventário filtrado, núcleos, auditoria, histórico 
 | `nucleus` | Identificador de núcleo | `all` |
 | `sort` | `recent`, `asset_asc`, `nucleus`, `status` | `recent` |
 
-Usuários anônimos recebem o seed público. Usuários autenticados recebem o workspace Supabase associado à própria identidade.
+Usuários anônimos recebem o seed público. Usuários Microsoft aceitos pelo tenant e domínio configurados recebem o workspace empresarial compartilhado no Supabase.
 
 ## `POST /api/state`
 
@@ -132,7 +142,7 @@ Gera um `.xlsx` com quatro abas:
 - `Auditoria`
 - `Importações`
 
-Usuários anônimos exportam apenas o seed fictício. Usuários autenticados exportam o próprio workspace.
+Usuários anônimos exportam apenas o seed fictício. Usuários autenticados exportam o workspace empresarial.
 
 ## Códigos de resposta
 

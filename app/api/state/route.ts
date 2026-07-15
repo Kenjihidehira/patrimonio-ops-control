@@ -1,8 +1,8 @@
 import {
-  chatGPTSignInPath,
-  chatGPTSignOutPath,
-  getChatGPTUser,
-} from "@/app/chatgpt-auth";
+  getMicrosoftUser,
+  microsoftSignInPath,
+  microsoftSignOutPath,
+} from "@/app/microsoft-auth";
 import { applyAction, buildDashboard, DomainError } from "@/lib/domain";
 import { applyPersistedAction, SupabaseError } from "@/lib/supabase";
 import { loadWorkspaceContext } from "@/lib/workspace";
@@ -14,7 +14,7 @@ const responseHeaders = { "cache-control": "no-store" };
 
 export async function GET(request: Request) {
   try {
-    const user = await getChatGPTUser();
+    const user = await getMicrosoftUser();
     const url = new URL(request.url);
     const workspace = await loadWorkspaceContext(user);
     const dashboard = buildDashboard(workspace.state, {
@@ -34,8 +34,8 @@ export async function GET(request: Request) {
           displayName: user?.displayName ?? "Visitante da demonstração",
           email: user?.email ?? null,
           source: workspace.source,
-          signInUrl: chatGPTSignInPath(APP_PATH),
-          signOutUrl: chatGPTSignOutPath(APP_PATH),
+          signInUrl: microsoftSignInPath(APP_PATH),
+          signOutUrl: microsoftSignOutPath(APP_PATH),
         },
       },
       { headers: responseHeaders },
@@ -50,12 +50,12 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  const user = await getChatGPTUser();
+  const user = await getMicrosoftUser();
   if (!user) {
     return Response.json(
       {
-        error: "Entre com o ChatGPT para registrar alterações.",
-        signInUrl: chatGPTSignInPath(APP_PATH),
+        error: "Entre com sua conta Microsoft corporativa para registrar alterações.",
+        signInUrl: microsoftSignInPath(APP_PATH),
       },
       { status: 401, headers: responseHeaders },
     );

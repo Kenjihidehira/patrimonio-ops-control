@@ -7,6 +7,7 @@ const css = await readFile(new URL("../public/demo/styles.css", import.meta.url)
 const js = await readFile(new URL("../public/demo/app.js", import.meta.url), "utf8");
 const api = await readFile(new URL("../app/api/state/route.ts", import.meta.url), "utf8");
 const importApi = await readFile(new URL("../app/api/import/route.ts", import.meta.url), "utf8");
+const microsoftAuth = await readFile(new URL("../app/microsoft-auth.ts", import.meta.url), "utf8");
 
 test("interface contém os fluxos comerciais essenciais", () => {
   for (const marker of [
@@ -50,4 +51,14 @@ test("persistência não depende de localStorage e escrita exige autenticação"
   assert.match(importApi, /MAX_FILE_BYTES/);
   assert.match(importApi, /status: 401/);
   assert.match(importApi, /mode === "preview"/);
+});
+
+test("autenticação Microsoft usa OIDC, PKCE e sessão protegida no servidor", () => {
+  assert.doesNotMatch(`${api}\n${importApi}\n${microsoftAuth}`, /ChatGPT|chatgpt-auth/);
+  assert.match(api, /getMicrosoftUser/);
+  assert.match(microsoftAuth, /code_challenge_method: "S256"/);
+  assert.match(microsoftAuth, /transaction\.nonce/);
+  assert.match(microsoftAuth, /jwtVerify\(token/);
+  assert.match(microsoftAuth, /HttpOnly; SameSite=Lax/);
+  assert.match(microsoftAuth, /algorithms: \["RS256"\]/);
 });

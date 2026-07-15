@@ -1,4 +1,4 @@
-import { chatGPTSignInPath, getChatGPTUser } from "@/app/chatgpt-auth";
+import { getMicrosoftUser, microsoftSignInPath } from "@/app/microsoft-auth";
 import { parsePatrimonioRows } from "@/lib/spreadsheet-import";
 import { importAssets, SupabaseError } from "@/lib/supabase";
 import { readWorkbookRows } from "@/lib/workbook";
@@ -24,12 +24,12 @@ type SpreadsheetPreview = {
 };
 
 export async function POST(request: Request) {
-  const user = await getChatGPTUser();
+  const user = await getMicrosoftUser();
   if (!user) {
     return Response.json(
       {
-        error: "Entre com o ChatGPT para importar dados.",
-        signInUrl: chatGPTSignInPath(APP_PATH),
+        error: "Entre com sua conta Microsoft corporativa para importar dados.",
+        signInUrl: microsoftSignInPath(APP_PATH),
       },
       { status: 401, headers: responseHeaders },
     );

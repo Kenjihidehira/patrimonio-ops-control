@@ -1,9 +1,9 @@
 import seed from "@/data/seed.json";
-import type { ChatGPTUser } from "@/app/chatgpt-auth";
+import type { MicrosoftUser } from "@/app/microsoft-auth";
 import { cloneState, normalizeState } from "@/lib/domain";
-import { loadImportRuns, loadOrCreateWorkspace, ownerKeyFor } from "@/lib/supabase";
+import { companyWorkspaceKey, loadImportRuns, loadOrCreateWorkspace } from "@/lib/supabase";
 
-export async function loadWorkspaceContext(user: ChatGPTUser | null) {
+export async function loadWorkspaceContext(user: MicrosoftUser | null) {
   if (!user) {
     return {
       state: normalizeState(cloneState(seed)),
@@ -13,7 +13,7 @@ export async function loadWorkspaceContext(user: ChatGPTUser | null) {
     };
   }
 
-  const ownerKey = await ownerKeyFor(user.email);
+  const ownerKey = companyWorkspaceKey();
   const state = normalizeState(await loadOrCreateWorkspace(ownerKey));
   const imports = await loadImportRuns(ownerKey);
   return { state, imports, ownerKey, source: "supabase" as const };

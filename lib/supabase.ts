@@ -38,10 +38,17 @@ export class SupabaseError extends Error {
   }
 }
 
-export async function ownerKeyFor(email: string): Promise<string> {
-  const bytes = new TextEncoder().encode(email.trim().toLocaleLowerCase("pt-BR"));
-  const digest = await crypto.subtle.digest("SHA-256", bytes);
-  return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, "0")).join("");
+export function companyWorkspaceKey(): string {
+  const key = String(
+    env.PATRIMONIO_WORKSPACE_KEY ?? process.env.PATRIMONIO_WORKSPACE_KEY ?? "",
+  ).trim().toLowerCase();
+  if (!/^[a-f0-9]{64}$/.test(key)) {
+    throw new SupabaseError(
+      "Workspace empresarial não configurado. Defina PATRIMONIO_WORKSPACE_KEY no ambiente do servidor.",
+      "missing_configuration",
+    );
+  }
+  return key;
 }
 
 export async function loadOrCreateWorkspace(ownerKey: string): Promise<WorkspaceState> {

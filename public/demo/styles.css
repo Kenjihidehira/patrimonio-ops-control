@@ -309,6 +309,25 @@ textarea:disabled {
   font-size: 11px;
 }
 
+.session-text {
+  min-width: 0;
+}
+
+.session-sign-out {
+  margin-left: auto;
+  padding: 6px;
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.session-sign-out:hover,
+.session-sign-out:focus-visible {
+  color: var(--green-700);
+  text-decoration: underline;
+}
+
 .button {
   display: inline-flex;
   align-items: center;
