@@ -6,6 +6,7 @@ const html = await readFile(new URL("../public/demo/index.html", import.meta.url
 const css = await readFile(new URL("../public/demo/styles.css", import.meta.url), "utf8");
 const js = await readFile(new URL("../public/demo/app.js", import.meta.url), "utf8");
 const api = await readFile(new URL("../app/api/state/route.ts", import.meta.url), "utf8");
+const importApi = await readFile(new URL("../app/api/import/route.ts", import.meta.url), "utf8");
 
 test("interface contém os fluxos comerciais essenciais", () => {
   for (const marker of [
@@ -15,10 +16,15 @@ test("interface contém os fluxos comerciais essenciais", () => {
     "transfer-dialog",
     "nucleus-dialog",
     "audit-list",
+    "import-dialog",
+    "import-history",
+    "export-button",
     "status-form",
   ]) {
     assert.match(`${html}\n${js}`, new RegExp(marker));
   }
+  assert.match(html, /id="result-label"/);
+  assert.match(js, /dashboard\.resultCount === 1 \? "patrimônio encontrado"/);
 });
 
 test("campos críticos possuem semântica e validação no cliente", () => {
@@ -40,5 +46,8 @@ test("persistência não depende de localStorage e escrita exige autenticação"
   assert.doesNotMatch(js, /localStorage|sessionStorage/);
   assert.match(api, /if \(!user\)/);
   assert.match(api, /status: 401/);
-  assert.match(api, /onConflictDoUpdate/);
+  assert.match(api, /applyPersistedAction/);
+  assert.match(importApi, /MAX_FILE_BYTES/);
+  assert.match(importApi, /status: 401/);
+  assert.match(importApi, /mode === "preview"/);
 });

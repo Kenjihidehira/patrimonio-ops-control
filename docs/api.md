@@ -1,12 +1,12 @@
 # API
 
-Base local: `http://localhost:5173/api/state`
+Base local: `http://localhost:5173/api`
 
-Todas as respostas usam JSON e `cache-control: no-store`.
+Respostas dinâmicas usam `cache-control: no-store`. A identidade é injetada pelo OpenAI Sites e não deve ser simulada por proxies públicos.
 
 ## `GET /api/state`
 
-Retorna resumo, inventário filtrado, núcleos, auditoria, catálogos e contexto da sessão.
+Retorna revisão, resumo, inventário filtrado, núcleos, auditoria, histórico de importações, catálogos e contexto da sessão.
 
 ### Query params
 
@@ -18,24 +18,18 @@ Retorna resumo, inventário filtrado, núcleos, auditoria, catálogos e contexto
 | `nucleus` | Identificador de núcleo | `all` |
 | `sort` | `recent`, `asset_asc`, `nucleus`, `status` | `recent` |
 
-Exemplo:
-
-```http
-GET /api/state?search=Beatriz&type=notebook&nucleus=nuc-fin&sort=asset_asc
-Accept: application/json
-```
-
-Usuários anônimos recebem o seed público. Usuários autenticados recebem o workspace D1.
+Usuários anônimos recebem o seed público. Usuários autenticados recebem o workspace Supabase associado à própria identidade.
 
 ## `POST /api/state`
 
-Exige Sign in with ChatGPT. O ator da movimentação é obtido da sessão autenticada.
+Exige autenticação. Toda ação inclui `expectedRevision`; o ator é obtido da sessão.
 
 ### Cadastrar patrimônio
 
 ```json
 {
   "type": "create_asset",
+  "expectedRevision": 3,
   "asset": {
     "id": "654321",
     "type": "notebook",
@@ -57,6 +51,7 @@ Exige Sign in with ChatGPT. O ator da movimentação é obtido da sessão autent
 ```json
 {
   "type": "transfer_asset",
+  "expectedRevision": 4,
   "assetId": "104293",
   "nucleusId": "nuc-rh",
   "location": "Mesa RH-05",
@@ -70,6 +65,7 @@ Exige Sign in with ChatGPT. O ator da movimentação é obtido da sessão autent
 ```json
 {
   "type": "update_status",
+  "expectedRevision": 5,
   "assetId": "104281",
   "status": "maintenance",
   "note": "Falha de inicialização confirmada pelo suporte"
@@ -81,6 +77,7 @@ Exige Sign in with ChatGPT. O ator da movimentação é obtido da sessão autent
 ```json
 {
   "type": "create_nucleus",
+  "expectedRevision": 6,
   "nucleus": {
     "id": "nuc-juridico",
     "code": "JUR",
@@ -91,20 +88,61 @@ Exige Sign in with ChatGPT. O ator da movimentação é obtido da sessão autent
 }
 ```
 
+## `POST /api/import`
+
+Exige autenticação e recebe `multipart/form-data`.
+
+| Campo | Valores | Obrigatório |
+| --- | --- | --- |
+| `file` | Arquivo `.xlsx` de até 2 MB | sim |
+| `mode` | `preview` ou `commit` | sim |
+| `revision` | Revisão inteira conhecida pelo cliente | apenas em `commit` |
+
+Prévia:
+
+```bash
+curl -X POST http://localhost:5173/api/import \
+  -F "mode=preview" \
+  -F "file=@patrimonios.xlsx"
+```
+
+Resposta resumida:
+
+```json
+{
+  "totalCandidates": 331,
+  "acceptedCount": 318,
+  "rejectedCount": 13,
+  "adjustedCount": 9,
+  "nucleusCount": 10,
+  "canCommit": true,
+  "errors": [],
+  "warnings": []
+}
+```
+
+Na confirmação, o arquivo é reprocessado e a revisão é comparada dentro da transação. A resposta informa `revision`, `inserted`, `updated` e `rejected`.
+
+## `GET /api/export`
+
+Gera um `.xlsx` com quatro abas:
+
+- `Inventário`
+- `Núcleos`
+- `Auditoria`
+- `Importações`
+
+Usuários anônimos exportam apenas o seed fictício. Usuários autenticados exportam o próprio workspace.
+
 ## Códigos de resposta
 
 | Código | Situação |
 | --- | --- |
-| `200` | Leitura ou mutação concluída |
-| `400` | JSON inválido |
-| `401` | Sessão não autenticada |
-| `422` | Regra de domínio violada |
+| `200` | Leitura, prévia ou mutação concluída |
+| `400` | Payload, modo ou arquivo inválido |
+| `401` | Sessão não autenticada para escrita |
+| `409` | Revisão obsoleta; recarregamento necessário |
+| `413` | Arquivo vazio ou maior que 2 MB |
+| `415` | Formato diferente de `.xlsx` |
+| `422` | Regra de domínio violada ou importação sem linhas válidas |
 | `500` | Falha inesperada de infraestrutura |
-
-Erros de domínio retornam uma mensagem operacional, por exemplo:
-
-```json
-{
-  "error": "O identificador deve conter exatamente 6 números."
-}
-```

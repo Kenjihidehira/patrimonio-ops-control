@@ -35,6 +35,10 @@
             <span class="nav-index" aria-hidden="true">03</span>
             Auditoria
           </button>
+          <button class="nav-item" type="button" data-view="imports">
+            <span class="nav-index" aria-hidden="true">04</span>
+            Importações
+          </button>
         </nav>
 
         <div class="sidebar-status">
@@ -63,17 +67,27 @@
                 <strong>Carregando</strong>
               </span>
             </div>
-            <button class="button button-primary" id="new-asset-button" type="button">
-              <span aria-hidden="true">+</span>
-              Novo patrimônio
-            </button>
+            <div class="data-actions">
+              <button class="button button-secondary" id="import-button" type="button">
+                <span aria-hidden="true">↑</span>
+                Importar
+              </button>
+              <button class="button button-secondary" id="export-button" type="button">
+                <span aria-hidden="true">↓</span>
+                Exportar
+              </button>
+              <button class="button button-primary" id="new-asset-button" type="button">
+                <span aria-hidden="true">+</span>
+                Novo patrimônio
+              </button>
+            </div>
           </div>
         </header>
 
         <div class="demo-notice" id="demo-notice" hidden>
           <div>
             <strong>Modo demonstração</strong>
-            <span>Os dados são públicos e reiniciam. Entre para registrar alterações no D1.</span>
+            <span>Os dados são fictícios e somente leitura. Entre para usar uma base privada no Supabase.</span>
           </div>
           <a class="button button-secondary button-small" id="sign-in-link" href="#">
             Entrar para editar
@@ -108,7 +122,7 @@
             <div class="filter-heading">
               <div>
                 <h2 id="filter-title">Inventário operacional</h2>
-                <p><span id="result-count">0</span> patrimônios encontrados</p>
+                <p><span id="result-count">0</span> <span id="result-label">patrimônios encontrados</span></p>
               </div>
               <button class="button button-quiet button-small" id="clear-filters" type="button">
                 Limpar filtros
@@ -219,6 +233,17 @@
             <span class="audit-count" id="audit-count">0 registros</span>
           </div>
           <div class="audit-list" id="audit-list" aria-live="polite"></div>
+        </section>
+
+        <section class="view-section" id="imports-view" data-view-panel="imports" hidden>
+          <div class="section-toolbar">
+            <div>
+              <h2>Histórico de importações</h2>
+              <p>Arquivos processados, registros aplicados e linhas excluídas por inconsistência.</p>
+            </div>
+            <span class="audit-count" id="import-count">0 importações</span>
+          </div>
+          <div class="import-history" id="import-history" aria-live="polite"></div>
         </section>
       </main>
     </div>
@@ -361,6 +386,47 @@
         <div class="modal-footer">
           <button class="button button-secondary" type="button" data-close-dialog="nucleus-dialog">Cancelar</button>
           <button class="button button-primary" type="submit">Criar núcleo</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog class="modal" id="import-dialog" aria-labelledby="import-dialog-title">
+      <form class="modal-content import-modal" id="import-form">
+        <div class="modal-header">
+          <div>
+            <p class="eyebrow">Carga controlada</p>
+            <h2 id="import-dialog-title">Importar planilha XLSX</h2>
+          </div>
+          <button class="icon-button" type="button" data-close-dialog="import-dialog" aria-label="Fechar">×</button>
+        </div>
+        <div class="modal-body import-body">
+          <label class="file-field" for="import-file">
+            <strong>Selecione a planilha de patrimônios</strong>
+            <span>Layout original ou arquivo exportado pelo sistema, com até 2 MB.</span>
+            <input
+              id="import-file"
+              name="file"
+              type="file"
+              accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+              required
+            />
+          </label>
+
+          <section class="import-preview" id="import-preview" aria-live="polite" hidden>
+            <div class="preview-metrics">
+              <div><span>Válidos</span><strong id="preview-accepted">0</strong></div>
+              <div><span>Excluídos</span><strong id="preview-rejected">0</strong></div>
+              <div><span>Ajustados</span><strong id="preview-adjusted">0</strong></div>
+              <div><span>Núcleos</span><strong id="preview-nuclei">0</strong></div>
+            </div>
+            <div class="preview-issues" id="preview-issues"></div>
+          </section>
+        </div>
+        <div class="form-error" id="import-form-error" role="alert" hidden></div>
+        <div class="modal-footer">
+          <button class="button button-secondary" type="button" data-close-dialog="import-dialog">Cancelar</button>
+          <button class="button button-secondary" id="preview-import-button" type="submit">Pré-validar</button>
+          <button class="button button-primary" id="commit-import-button" type="button" hidden>Importar válidos</button>
         </div>
       </form>
     </dialog>

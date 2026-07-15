@@ -1,23 +1,14 @@
-import { eq } from "drizzle-orm";
-import seed from "@/data/seed.json";
 import {
   chatGPTSignInPath,
   chatGPTSignOutPath,
   getChatGPTUser,
 } from "@/app/chatgpt-auth";
-import { getDb } from "@/db";
-import { workspaces } from "@/db/schema";
-import {
-  applyAction,
-  buildDashboard,
-  cloneState,
-  DomainError,
-  normalizeState,
-} from "@/lib/domain";
+import { applyAction, buildDashboard, DomainError } from "@/lib/domain";
+import { applyPersistedAction, SupabaseError } from "@/lib/supabase";
+import { loadWorkspaceContext } from "@/lib/workspace";
 
 export const dynamic = "force-dynamic";
 
-const WORKSPACE_KEY = "company-demo";
 const APP_PATH = "/demo/index.html";
 const responseHeaders = { "cache-control": "no-store" };
 
@@ -25,8 +16,8 @@ export async function GET(request: Request) {
   try {
     const user = await getChatGPTUser();
     const url = new URL(request.url);
-    const state = user ? await loadPersistedState() : normalizeState(cloneState(seed));
-    const dashboard = buildDashboard(state, {
+    const workspace = await loadWorkspaceContext(user);
+    const dashboard = buildDashboard(workspace.state, {
       search: url.searchParams.get("search"),
       type: url.searchParams.get("type"),
       status: url.searchParams.get("status"),
@@ -37,11 +28,12 @@ export async function GET(request: Request) {
     return Response.json(
       {
         ...dashboard,
+        imports: workspace.imports,
         session: {
           authenticated: Boolean(user),
           displayName: user?.displayName ?? "Visitante da demonstração",
           email: user?.email ?? null,
-          source: user ? "d1" : "seed",
+          source: workspace.source,
           signInUrl: chatGPTSignInPath(APP_PATH),
           signOutUrl: chatGPTSignOutPath(APP_PATH),
         },
@@ -51,7 +43,7 @@ export async function GET(request: Request) {
   } catch (error) {
     console.error("Failed to load patrimonial state", error);
     return Response.json(
-      { error: "Não foi possível carregar o controle patrimonial." },
+      { error: infrastructureMessage(error, "Não foi possível carregar o controle patrimonial.") },
       { status: 500, headers: responseHeaders },
     );
   }
@@ -70,14 +62,28 @@ export async function POST(request: Request) {
   }
 
   try {
-    const action = await request.json();
-    const currentState = await loadPersistedState();
-    const nextState = applyAction(currentState, action, user.email);
-    await persistState(nextState);
+    const action: unknown = await request.json();
+    if (!action || typeof action !== "object" || Array.isArray(action)) {
+      return Response.json(
+        { error: "A ação enviada é inválida." },
+        { status: 400, headers: responseHeaders },
+      );
+    }
+    const workspace = await loadWorkspaceContext(user);
+    const expectedRevision = Number((action as Record<string, unknown>).expectedRevision);
+    if (!Number.isInteger(expectedRevision) || expectedRevision !== workspace.state.revision) {
+      return revisionConflict();
+    }
+
+    applyAction(workspace.state, action, user.email);
+    if (!workspace.ownerKey) throw new Error("Authenticated workspace has no owner key.");
+    await applyPersistedAction(workspace.ownerKey, user.email, expectedRevision, action);
+    const updated = await loadWorkspaceContext(user);
 
     return Response.json(
       {
-        ...buildDashboard(nextState),
+        ...buildDashboard(updated.state),
+        imports: updated.imports,
         message: "Alteração registrada com sucesso.",
       },
       { headers: responseHeaders },
@@ -95,41 +101,28 @@ export async function POST(request: Request) {
         { status: 422, headers: responseHeaders },
       );
     }
+    if (error instanceof SupabaseError && error.code === "40001") {
+      return revisionConflict();
+    }
 
     console.error("Failed to mutate patrimonial state", error);
     return Response.json(
-      { error: "Não foi possível registrar a alteração." },
+      { error: infrastructureMessage(error, "Não foi possível registrar a alteração.") },
       { status: 500, headers: responseHeaders },
     );
   }
 }
 
-async function loadPersistedState() {
-  const db = await getDb();
-  const row = await db
-    .select()
-    .from(workspaces)
-    .where(eq(workspaces.workspaceKey, WORKSPACE_KEY))
-    .get();
-
-  if (!row) return normalizeState(cloneState(seed));
-  return normalizeState(JSON.parse(row.stateJson));
+function revisionConflict() {
+  return Response.json(
+    { error: "Os dados foram alterados em outra sessão. Recarregue e tente novamente." },
+    { status: 409, headers: responseHeaders },
+  );
 }
 
-async function persistState(state: unknown) {
-  const db = await getDb();
-  const now = new Date().toISOString();
-  const stateJson = JSON.stringify(state);
-  await db
-    .insert(workspaces)
-    .values({
-      workspaceKey: WORKSPACE_KEY,
-      stateJson,
-      createdAt: now,
-      updatedAt: now,
-    })
-    .onConflictDoUpdate({
-      target: workspaces.workspaceKey,
-      set: { stateJson, updatedAt: now },
-    });
+function infrastructureMessage(error: unknown, fallback: string) {
+  if (error instanceof SupabaseError && error.code === "missing_configuration") {
+    return error.message;
+  }
+  return fallback;
 }

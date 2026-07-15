@@ -1,6 +1,6 @@
 # Patrimônio Ops Control
 
-Sistema web de controle patrimonial para empresas que precisam saber **qual ativo existe, onde está, a qual núcleo pertence e quem responde por ele**. O projeto cobre cadastro, alocação, transferências, manutenção, divergências, baixa lógica e trilha de auditoria.
+Sistema web de controle patrimonial para empresas que precisam saber **qual ativo existe, onde está, a qual núcleo pertence e quem responde por ele**. O projeto cobre importação de planilhas, cadastro, alocação, transferências, manutenção, divergências, baixa lógica, exportação e trilha de auditoria.
 
 [![CI](https://github.com/Kenjihidehira/patrimonio-ops-control/actions/workflows/ci.yml/badge.svg)](https://github.com/Kenjihidehira/patrimonio-ops-control/actions/workflows/ci.yml)
 [![Deploy](https://img.shields.io/badge/demo-online-126044)](https://patrimonio-ops-control.dadosepesquisa.chatgpt.site/demo/)
@@ -12,9 +12,9 @@ Sistema web de controle patrimonial para empresas que precisam saber **qual ativ
 
 ## Problema comercial resolvido
 
-Planilhas patrimoniais não registram bem responsabilidade, movimentações e exceções. O Patrimônio Ops centraliza ativos por núcleo e transforma cada alteração em um evento auditável, reduzindo retrabalho em inventários, onboarding, manutenção e desligamentos.
+Planilhas patrimoniais isoladas não registram bem responsabilidade, movimentações e exceções. O Patrimônio Ops importa o inventário existente, centraliza os ativos por núcleo e transforma cada alteração em um evento auditável, reduzindo retrabalho em inventários, onboarding, manutenção e desligamentos.
 
-### Escopo funcional
+## Escopo funcional
 
 - Identificadores únicos com exatamente 6 números.
 - Tipos controlados: CPU (Computador), Monitor 1, Monitor 2, Cadeira e Notebook.
@@ -26,15 +26,19 @@ Planilhas patrimoniais não registram bem responsabilidade, movimentações e ex
 - Status: disponível, em uso, manutenção, divergência e baixado.
 - Baixa lógica, sem exclusão destrutiva do histórico.
 - Auditoria com ator, data, origem, destino e motivo.
-- Dados públicos de demonstração e persistência D1 para sessões autenticadas.
+- Importação XLSX em duas etapas: pré-validação e confirmação transacional.
+- Exportação XLSX com inventário, núcleos, auditoria e histórico de importações.
+- Seed público sanitizado e workspace Supabase privado para cada usuário autenticado.
 
 ## Stack
 
 - **Frontend:** HTML semântico, CSS responsivo e JavaScript modular.
 - **Aplicação:** Vinext, React 19 e TypeScript.
-- **API:** Route Handler compatível com Next.js, executado em Cloudflare Worker.
-- **Banco:** Cloudflare D1 com Drizzle ORM e migration reversível.
+- **API:** Route Handlers compatíveis com Next.js em Cloudflare Worker.
+- **Banco:** Supabase Postgres 17, funções RPC transacionais e índices operacionais.
+- **Integração:** Supabase Edge Function autenticada por segredo de servidor.
 - **Autenticação:** Sign in with ChatGPT no ambiente OpenAI Sites.
+- **Planilhas:** `read-excel-file` e `write-excel-file`.
 - **Qualidade:** Node Test Runner, ESLint, TypeScript e GitHub Actions.
 
 ## Executar localmente
@@ -43,10 +47,13 @@ Pré-requisitos: Node.js 22.13+ e pnpm 10+.
 
 ```bash
 pnpm install
+cp .env.example .env.local
 pnpm dev
 ```
 
-Acesse `http://localhost:5173/demo/`. Localmente, a interface pública funciona com o seed. Escritas exigem os cabeçalhos de identidade injetados pelo ambiente OpenAI Sites e persistência D1.
+Preencha `SUPABASE_GATEWAY_URL` e `SUPABASE_GATEWAY_KEY` apenas em `.env.local`. O arquivo é ignorado pelo Git. Acesse `http://localhost:5173/demo/`.
+
+A interface anônima funciona com o seed público. Operações de escrita exigem os cabeçalhos de identidade confiáveis que o OpenAI Sites injeta após o login.
 
 ### Validação completa
 
@@ -55,32 +62,42 @@ pnpm test
 pnpm lint
 pnpm typecheck
 pnpm build
+pnpm audit --prod
 ```
 
-## Dados de demonstração
+## Planilha-base
 
-O arquivo [`data/seed.json`](data/seed.json) contém 15 ativos distribuídos em Tecnologia da Informação, Financeiro, Operações, Comercial e Recursos Humanos. Há exemplos de todos os tipos e status, além de movimentações anteriores.
+O importador aceita dois formatos:
 
-Nenhum dado pessoal real, segredo ou credencial está incluído.
+1. Matriz operacional com blocos `Colaborador(a)`, `Núcleo`, `Máquina`, `Tela 1`, `Tela 2`, `Cadeira` e `Notebook`.
+2. Arquivo plano exportado pelo próprio sistema, com uma linha por patrimônio.
+
+Antes de gravar, a API reabre o XLSX no servidor, normaliza IDs de cinco dígitos com zero à esquerda, rejeita códigos fora do padrão e exclui todas as ocorrências duplicadas. A prévia retorna apenas contagens e posições dos problemas; nomes da planilha não são enviados ao navegador nessa etapa.
+
+A planilha corporativa original não faz parte do repositório. O arquivo [`data/seed.json`](data/seed.json) contém apenas dados fictícios para demonstração.
 
 ## API
 
 | Método | Rota | Autenticação | Finalidade |
 | --- | --- | --- | --- |
-| `GET` | `/api/state` | Opcional | Dashboard, inventário filtrado, núcleos, auditoria e sessão |
+| `GET` | `/api/state` | Opcional | Dashboard, inventário, núcleos, auditoria, importações e sessão |
 | `POST` | `/api/state` | Obrigatória | Cadastro, transferência, mudança de status ou novo núcleo |
+| `POST` | `/api/import` | Obrigatória | Pré-validar ou confirmar importação XLSX |
+| `GET` | `/api/export` | Opcional | Gerar backup XLSX do workspace atual |
 
-Filtros aceitos no `GET`: `search`, `type`, `status`, `nucleus` e `sort`. Payloads e códigos de resposta estão em [`docs/api.md`](docs/api.md).
+Filtros, payloads e códigos de resposta estão em [`docs/api.md`](docs/api.md).
 
 ## Arquitetura e segurança
 
-As regras ficam em [`lib/domain.js`](lib/domain.js), independentes de HTTP e banco. Toda mutação passa por normalização, validação e geração de movimento antes do `upsert` atômico no D1. A API não confia na identidade enviada pelo navegador: o ator vem do cabeçalho autenticado injetado pela plataforma.
+As regras ficam em [`lib/domain.js`](lib/domain.js), independentes de HTTP e banco. O servidor deriva uma chave SHA-256 do e-mail autenticado e nunca usa o e-mail bruto como chave de tenant. O gateway Supabase exige um segredo disponível apenas no runtime; as tabelas têm RLS habilitado e negam acesso direto a `anon` e `authenticated`.
+
+Mutações e importações usam RPCs transacionais com revisão otimista. Uma gravação obsoleta recebe `409 Conflict`, evitando que duas sessões sobrescrevam silenciosamente o trabalho uma da outra.
 
 Documentação completa: [`docs/architecture.md`](docs/architecture.md).
 
-### Limitação consciente do deploy de portfólio
+### Limitação produtiva explícita
 
-O deploy público usa um workspace compartilhado de demonstração. Qualquer visitante autenticado pelo ChatGPT pode editar esse workspace. Para operação real, é obrigatório adicionar convite, associação usuário-empresa e RBAC antes de armazenar dados de clientes. A arquitetura separa o domínio da persistência para permitir essa evolução sem reescrever as regras patrimoniais.
+O deploy separa dados por identidade autenticada, mas ainda não modela empresas, convites ou papéis. Isso impede acesso cruzado entre usuários, porém também impede colaboração no mesmo inventário. Para uso empresarial real, é necessário adicionar `organizations`, `memberships` e RBAC antes de liberar múltiplos operadores.
 
 ## Decisões de UX
 
@@ -93,13 +110,15 @@ A interface segue o padrão `list report + object detail`, comum em sistemas cor
 
 ## Deploy
 
-O projeto está configurado para OpenAI Sites com binding D1 em [`.openai/hosting.json`](.openai/hosting.json). O procedimento reproduzível e os controles de pré-publicação estão em [`docs/deploy.md`](docs/deploy.md).
+O projeto está configurado para OpenAI Sites em [`.openai/hosting.json`](.openai/hosting.json). O procedimento reproduzível, as migrations e os controles de pré-publicação estão em [`docs/deploy.md`](docs/deploy.md).
 
 ## Diferenciais comerciais
 
 - Fluxo demonstrável com problema empresarial real, não apenas CRUD genérico.
+- Migração assistida da planilha existente, com relatório de inconsistências.
 - Histórico imutável das decisões que alteram posse e estado do ativo.
-- Regras críticas testadas separadamente da interface.
+- Persistência relacional, concorrência otimista e isolamento por usuário.
+- Backup XLSX legível por áreas administrativas sem acesso técnico.
 - Estados de carregamento, erro, vazio e sessão sem escrita implementados.
 - Responsividade para operação em desktop, tablet e celular.
 - CI e documentação suficientes para manutenção por outra equipe.
@@ -107,10 +126,9 @@ O projeto está configurado para OpenAI Sites com binding D1 em [`.openai/hostin
 ## Evoluções possíveis
 
 - RBAC por empresa, núcleo e função.
-- Importação e exportação CSV/XLSX com pré-validação.
 - Etiquetas QR Code e leitura por câmera.
 - Termo digital de responsabilidade e aceite do colaborador.
-- Anexos de nota fiscal, laudo e foto do ativo em R2.
+- Anexos de nota fiscal, laudo e foto do ativo em Supabase Storage.
 - Inventário cíclico com conferência offline e reconciliação.
 - Integrações com RH, chamados de manutenção e diretório corporativo.
 

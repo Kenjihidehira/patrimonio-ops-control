@@ -4,41 +4,56 @@
 
 ```mermaid
 flowchart LR
-    UI[Interface operacional] -->|GET e POST /api/state| API[Route Handler]
+    UI[Interface operacional] --> API[Route Handlers]
     API --> AUTH[Sign in with ChatGPT]
     API --> DOMAIN[Domínio patrimonial]
-    DOMAIN --> VALIDATION[Validação e auditoria]
-    API --> ORM[Drizzle ORM]
-    ORM --> D1[(Cloudflare D1)]
-    SEED[Seed público] --> API
+    API --> XLSX[Leitura e escrita XLSX]
+    API --> GATEWAY[Supabase Edge Function]
+    GATEWAY --> RPC[RPCs transacionais]
+    RPC --> PG[(Supabase Postgres)]
+    SEED[Seed público sanitizado] --> API
 ```
+
+O navegador nunca recebe a URL privilegiada nem o segredo do gateway. A API do Sites chama a Edge Function pelo servidor, e a função executa apenas as operações permitidas contra o Postgres.
 
 ## Responsabilidades
 
 | Camada | Arquivos | Responsabilidade |
 | --- | --- | --- |
 | Interface | `public/demo/*` | Estado visual, filtros, formulários, acessibilidade e chamadas HTTP |
-| API | `app/api/state/route.ts` | Sessão, contratos HTTP, carga e persistência |
+| API | `app/api/*` | Sessão, contratos HTTP, upload, exportação e respostas padronizadas |
 | Domínio | `lib/domain.js` | Invariantes, ações, auditoria e projeção do dashboard |
-| Dados | `db/*`, `data/seed.json` | Schema D1, migration e demonstração pública |
-| Plataforma | `worker/*`, `build/*`, `.openai/*` | Execução no Worker e configuração de hosting |
+| Planilhas | `lib/spreadsheet-import.js`, `lib/workbook.ts` | Leitura, normalização, prévia e geração XLSX |
+| Persistência | `lib/supabase.ts`, `lib/workspace.ts` | Chave do tenant, gateway e hidratação do estado |
+| Banco | `supabase/migrations/*` | Tabelas, índices, RLS, RPCs e integridade referencial |
+| Gateway | `supabase/functions/patrimonio-gateway/index.ts` | Autenticação servidor-servidor e lista fechada de operações |
+| Plataforma | `.openai/*` | Configuração de hosting e variáveis do runtime |
 
 ## Invariantes do domínio
 
-1. O identificador do patrimônio contém exatamente seis dígitos e é único.
+1. O identificador do patrimônio contém exatamente seis dígitos e é único no workspace.
 2. O tipo pertence ao catálogo fechado de cinco itens.
 3. Todo patrimônio referencia um núcleo existente.
 4. Toda mutação incrementa a revisão do workspace.
-5. Transferências e mudanças de status geram movimentação com ator e data.
+5. Transferências, mudanças de status e importações geram movimentos auditáveis.
 6. Patrimônio baixado não pode ser transferido.
 7. Baixa é lógica; o registro e seu histórico não são apagados.
 8. Valores monetários e datas são normalizados antes da persistência.
+9. Uma revisão obsoleta não pode sobrescrever uma revisão mais nova.
 
 ## Modelo de persistência
 
-O D1 mantém um documento JSON por `workspace_key`. A escolha é proporcional ao escopo do demo: o estado completo é validado antes de um único `upsert`, evitando persistências parciais entre ativo e histórico.
+O Postgres usa cinco tabelas relacionais:
 
-Para escala operacional maior, a evolução natural é normalizar em tabelas `companies`, `memberships`, `nuclei`, `assets` e `movements`, com índices em `company_id`, `asset_code`, `status`, `nucleus_id` e `occurred_at`.
+| Tabela | Finalidade |
+| --- | --- |
+| `patrimonio_workspaces` | Tenant derivado da identidade e contador de revisão |
+| `patrimonio_nuclei` | Núcleos, gestores e localizações |
+| `patrimonio_assets` | Inventário, estado operacional e dados de aquisição |
+| `patrimonio_movements` | Histórico imutável de cadastro, transferência, status e importação |
+| `patrimonio_import_runs` | Resultado e avisos de cada importação |
+
+Chaves estrangeiras preservam integridade e índices cobrem status, núcleo, tipo, responsável, atualização, movimentos e histórico de importações. As RPCs `patrimonio_apply_action` e `patrimonio_import_assets` executam validação de revisão, escrita e auditoria na mesma transação.
 
 ## Fluxos de dados
 
@@ -47,39 +62,56 @@ Para escala operacional maior, a evolução natural é normalizar em tabelas `co
 1. A API não encontra identidade autenticada.
 2. Carrega e valida `data/seed.json`.
 3. Aplica busca, filtros e ordenação no domínio.
-4. Retorna o dashboard com `session.source = seed`.
+4. Retorna `session.source = seed`; nenhuma escrita é permitida.
 
 ### Leitura autenticada
 
-1. A plataforma injeta cabeçalhos de identidade confiáveis.
-2. A API busca o workspace compartilhado `company-demo` no D1.
-3. Na ausência de registro, inicia com o seed validado.
-4. Retorna o dashboard com `session.source = d1`.
+1. O Sites injeta cabeçalhos de identidade confiáveis.
+2. A API deriva `owner_key = SHA-256(email normalizado)`.
+3. O gateway cria um workspace vazio na primeira leitura ou carrega as relações existentes.
+4. A API normaliza o estado e retorna `session.source = supabase`.
 
 ### Mutação
 
 1. A API bloqueia requisições sem identidade com `401`.
-2. O domínio valida a ação e produz um novo estado sem mutar o anterior.
-3. O ator da auditoria é o e-mail autenticado, não um campo do payload.
-4. O estado completo é salvo com `INSERT ... ON CONFLICT DO UPDATE`.
-5. A interface recarrega a projeção filtrada após a confirmação.
+2. O cliente envia `expectedRevision`.
+3. O domínio valida a ação antes da chamada externa.
+4. A RPC bloqueia a linha do workspace, compara a revisão e grava dados e auditoria atomicamente.
+5. Revisão divergente retorna `409 Conflict`; sucesso devolve a nova projeção.
+
+### Importação XLSX
+
+1. A API aceita apenas `.xlsx` de até 2 MB.
+2. A prévia reconhece a matriz original ou o formato plano exportado.
+3. IDs de cinco dígitos recebem zero à esquerda; inválidos e todas as ocorrências duplicadas são rejeitados.
+4. A confirmação reprocessa o arquivo no servidor e chama uma RPC transacional.
+5. Ativos são inseridos ou atualizados por código, movimentos são adicionados e o resultado é registrado.
+
+### Exportação XLSX
+
+1. O workspace atual é projetado pelo domínio.
+2. O servidor gera as abas `Inventário`, `Núcleos`, `Auditoria` e `Importações`.
+3. O arquivo é entregue com `no-store`, `nosniff` e nome datado.
 
 ## Segurança
 
-- Sem secrets no repositório ou no cliente.
-- Sem confiança em identidade informada no payload.
-- Redirects de autenticação restritos a caminhos relativos seguros.
-- Erros internos não são expostos ao navegador.
+- Nenhum secret é versionado ou exposto ao cliente.
+- O ator vem da sessão autenticada, nunca do payload.
+- A chave do tenant é um hash da identidade; o e-mail bruto não participa das chaves relacionais.
+- O gateway aceita somente operações enumeradas e exige `x-patrimonio-key`.
+- RLS está habilitado e políticas negam acesso direto a `anon` e `authenticated`.
+- O upload tem limite de tamanho, extensão controlada e parser estruturado.
+- A prévia não devolve nomes dos colaboradores da planilha.
+- Redirects de autenticação são restritos a caminhos relativos seguros.
+- Erros internos e detalhes do banco não são expostos ao navegador.
 - Conteúdo dinâmico é escapado antes de entrar em templates HTML.
-- Escritas exigem autenticação; leitura pública contém apenas dados fictícios.
 - Não existe exclusão física exposta pela API.
-- CI possui permissões mínimas de leitura.
 
 ## Limitações e evolução produtiva
 
-O workspace de demonstração é compartilhado entre usuários autenticados e não implementa autorização por empresa. Isso é adequado para prova pública, mas insuficiente para produção. A próxima etapa deve criar associação entre identidade, empresa e função, impedindo acesso cruzado e separando dados por tenant.
+O isolamento atual é por usuário, não por empresa. Para colaboração real, o próximo incremento deve introduzir `organizations`, `memberships` e papéis como administrador, operador e auditor. O `owner_key` passará a representar a organização, enquanto a sessão continuará identificando o ator.
 
-Também não há controle de concorrência otimista por revisão. Em uma implantação multiusuário real, o `POST` deve receber a revisão conhecida e rejeitar atualização obsoleta com `409 Conflict`, ou migrar cada ação para tabelas relacionais transacionais.
+Também faltam recuperação de desastre automatizada, política formal de retenção e armazenamento de anexos. A exportação XLSX reduz o risco operacional, mas não substitui backup gerenciado do Postgres.
 
 ## Decisões registradas
 
@@ -87,16 +119,22 @@ Também não há controle de concorrência otimista por revisão. Em uma implant
 
 **Decisão:** representar a baixa pelo status `retired`.
 
-**Motivo:** patrimônio exige rastreabilidade fiscal e operacional. Excluir o registro destruiria evidência e enfraqueceria auditorias.
+**Motivo:** patrimônio exige rastreabilidade fiscal e operacional. Excluir o registro destruiria evidência.
 
 ### ADR-002: domínio independente de framework
 
 **Decisão:** manter validação e ações em JavaScript puro.
 
-**Motivo:** testes rápidos, portabilidade e separação entre regra de negócio, HTTP e D1.
+**Motivo:** testes rápidos, portabilidade e separação entre regra de negócio, HTTP e persistência.
 
-### ADR-003: workspace compartilhado no demo
+### ADR-003: Postgres relacional e RPCs transacionais
 
-**Decisão:** usar uma chave empresarial fixa no portfólio, preservando o ator individual na auditoria.
+**Decisão:** persistir núcleos, ativos, movimentos e importações em tabelas normalizadas; mutações passam por RPC.
 
-**Motivo:** demonstra colaboração real entre usuários, mas a limitação de RBAC está explicitamente documentada.
+**Motivo:** integridade referencial, consultas indexadas e atomicidade são requisitos reais do fluxo patrimonial.
+
+### ADR-004: gateway servidor-servidor
+
+**Decisão:** manter as tabelas fechadas para chaves públicas e expor uma Edge Function mínima à API do Sites.
+
+**Motivo:** a integração de deploy não deve colocar uma chave privilegiada no navegador nem depender de identidade forjada pelo cliente.

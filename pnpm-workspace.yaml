@@ -1,8 +1,13 @@
+overrides:
+  postcss: 8.5.19
+
 allowBuilds:
   esbuild: true
   sharp: true
   unrs-resolver: true
   workerd: true
+
 minimumReleaseAgeExclude:
   - '@cloudflare/workers-types@4.20260702.1'
+
 nodeLinker: hoisted

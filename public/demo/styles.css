@@ -260,6 +260,12 @@ textarea:disabled {
   gap: 10px;
 }
 
+.data-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .session-control {
   display: flex;
   align-items: center;
@@ -1063,6 +1069,82 @@ tbody tr:last-child td {
   font-size: 10px;
 }
 
+.import-history {
+  display: grid;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+}
+
+.import-run {
+  display: grid;
+  grid-template-columns: minmax(240px, 1fr) minmax(300px, 0.7fr);
+  gap: 18px;
+  align-items: center;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--line);
+}
+
+.import-run:last-child {
+  border-bottom: 0;
+}
+
+.import-run > div strong,
+.import-run > div span {
+  display: block;
+  overflow-wrap: anywhere;
+}
+
+.import-run > div strong {
+  font-size: 12px;
+}
+
+.import-run > div span {
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: 9px;
+}
+
+.import-run dl {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0;
+}
+
+.import-run dl div {
+  padding: 8px 10px;
+  border-left: 3px solid var(--green-300);
+  background: var(--surface-soft);
+}
+
+.import-run dt {
+  color: var(--muted);
+  font-size: 8px;
+  text-transform: uppercase;
+}
+
+.import-run dd {
+  margin: 2px 0 0;
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.empty-imports {
+  display: grid;
+  min-height: 180px;
+  padding: 24px;
+  place-content: center;
+  text-align: center;
+}
+
+.empty-imports span {
+  margin-top: 5px;
+  color: var(--muted);
+  font-size: 11px;
+}
+
 .toast-region {
   position: fixed;
   z-index: 30;
@@ -1116,6 +1198,123 @@ tbody tr:last-child td {
 .modal-content-small {
   max-width: 560px;
   margin: 0 auto;
+}
+
+.import-modal {
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.import-body {
+  display: grid;
+  gap: 14px;
+}
+
+.file-field {
+  display: grid;
+  gap: 5px;
+  padding: 18px;
+  border: 1px dashed var(--line-strong);
+  border-radius: 6px;
+  background: var(--surface-soft);
+}
+
+.file-field > strong {
+  font-size: 12px;
+}
+
+.file-field > span {
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.file-field input {
+  margin-top: 8px;
+  padding: 8px;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  background: var(--surface);
+}
+
+.import-preview {
+  display: grid;
+  gap: 14px;
+}
+
+.import-preview[hidden] {
+  display: none;
+}
+
+.preview-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+}
+
+.preview-metrics div {
+  padding: 10px 12px;
+  border-right: 1px solid var(--line);
+}
+
+.preview-metrics div:last-child {
+  border-right: 0;
+}
+
+.preview-metrics span,
+.preview-metrics strong {
+  display: block;
+}
+
+.preview-metrics span {
+  color: var(--muted);
+  font-size: 8px;
+  text-transform: uppercase;
+}
+
+.preview-metrics strong {
+  margin-top: 3px;
+  font-size: 19px;
+}
+
+.preview-issues {
+  max-height: 230px;
+  padding: 12px 14px;
+  overflow-y: auto;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+}
+
+.preview-issues > strong {
+  font-size: 11px;
+}
+
+.preview-issues ul {
+  display: grid;
+  gap: 7px;
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.preview-issues li {
+  color: #38463f;
+  font-size: 10px;
+}
+
+.preview-issues li span {
+  display: block;
+  color: var(--coral);
+  font-size: 8px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.preview-issues small {
+  display: block;
+  margin-top: 10px;
+  color: var(--muted);
 }
 
 .modal-header,
@@ -1324,8 +1523,13 @@ tbody tr:last-child td {
 
   .header-actions {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr;
     width: 100%;
+  }
+
+  .data-actions {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
   .session-control {
@@ -1404,6 +1608,10 @@ tbody tr:last-child td {
     grid-column: auto;
   }
 
+  .import-run {
+    grid-template-columns: 1fr;
+  }
+
   .form-grid {
     grid-template-columns: 1fr;
   }
@@ -1415,8 +1623,19 @@ tbody tr:last-child td {
 
 @media (max-width: 430px) {
   .header-actions,
-  .filter-grid {
+  .filter-grid,
+  .data-actions,
+  .preview-metrics {
     grid-template-columns: 1fr;
+  }
+
+  .preview-metrics div {
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .preview-metrics div:last-child {
+    border-bottom: 0;
   }
 
   .button {

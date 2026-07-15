@@ -161,6 +161,13 @@ test("combina busca, filtro de tipo e ordenação sem expor itens fora do result
   assert.equal(dashboard.resultCount, 1);
 });
 
+test("aceita data de aquisição desconhecida em item importado", () => {
+  const imported = structuredClone(seed);
+  imported.assets[0].acquiredAt = null;
+  const state = normalizeState(imported);
+  assert.equal(state.assets[0].acquiredAt, null);
+});
+
 function validAsset(overrides = {}) {
   return {
     id: "654321",

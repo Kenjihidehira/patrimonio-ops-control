@@ -6,6 +6,7 @@ const elements = {
   inventoryContainer: document.querySelector("#inventory-table-container"),
   detail: document.querySelector("#asset-detail"),
   resultCount: document.querySelector("#result-count"),
+  resultLabel: document.querySelector("#result-label"),
   revision: document.querySelector("#revision-badge"),
   session: document.querySelector("#session-control"),
   demoNotice: document.querySelector("#demo-notice"),
@@ -23,15 +24,26 @@ const elements = {
   clearFilters: document.querySelector("#clear-filters"),
   newAsset: document.querySelector("#new-asset-button"),
   newNucleus: document.querySelector("#new-nucleus-button"),
+  importButton: document.querySelector("#import-button"),
+  exportButton: document.querySelector("#export-button"),
+  importHistory: document.querySelector("#import-history"),
+  importCount: document.querySelector("#import-count"),
   assetDialog: document.querySelector("#asset-dialog"),
   transferDialog: document.querySelector("#transfer-dialog"),
   nucleusDialog: document.querySelector("#nucleus-dialog"),
+  importDialog: document.querySelector("#import-dialog"),
   assetForm: document.querySelector("#asset-form"),
   transferForm: document.querySelector("#transfer-form"),
   nucleusForm: document.querySelector("#nucleus-form"),
+  importForm: document.querySelector("#import-form"),
+  importFile: document.querySelector("#import-file"),
+  importPreview: document.querySelector("#import-preview"),
+  importIssues: document.querySelector("#preview-issues"),
+  importCommit: document.querySelector("#commit-import-button"),
   assetFormError: document.querySelector("#asset-form-error"),
   transferFormError: document.querySelector("#transfer-form-error"),
   nucleusFormError: document.querySelector("#nucleus-form-error"),
+  importFormError: document.querySelector("#import-form-error"),
   assetTypeInput: document.querySelector("#asset-type-input"),
   assetStatusInput: document.querySelector("#asset-status-input"),
   assetNucleusInput: document.querySelector("#asset-nucleus-input"),
@@ -57,11 +69,17 @@ const viewCopy = {
     title: "Histórico de movimentações",
     description: "Rastreie quem alterou cada patrimônio, quando e por qual motivo.",
   },
+  imports: {
+    eyebrow: "Dados / Importações",
+    title: "Carga e qualidade da base",
+    description: "Acompanhe arquivos processados, ajustes automáticos e linhas excluídas.",
+  },
 };
 
 let dashboard = null;
 let selectedAssetId = null;
 let filterTimer = null;
+let importPreview = null;
 
 bindEvents();
 void loadDashboard();
@@ -90,6 +108,8 @@ function bindEvents() {
   });
 
   elements.newAsset.addEventListener("click", openAssetDialog);
+  elements.importButton.addEventListener("click", openImportDialog);
+  elements.exportButton.addEventListener("click", handleExport);
   elements.newNucleus.addEventListener("click", () => {
     elements.nucleusForm.reset();
     clearFormError(elements.nucleusFormError);
@@ -100,7 +120,7 @@ function bindEvents() {
     button.addEventListener("click", () => document.querySelector(`#${button.dataset.closeDialog}`).close());
   });
 
-  [elements.assetDialog, elements.transferDialog, elements.nucleusDialog].forEach((dialog) => {
+  [elements.assetDialog, elements.transferDialog, elements.nucleusDialog, elements.importDialog].forEach((dialog) => {
     dialog.addEventListener("click", (event) => {
       if (event.target === dialog) dialog.close();
     });
@@ -109,6 +129,9 @@ function bindEvents() {
   elements.assetForm.addEventListener("submit", handleAssetSubmit);
   elements.transferForm.addEventListener("submit", handleTransferSubmit);
   elements.nucleusForm.addEventListener("submit", handleNucleusSubmit);
+  elements.importForm.addEventListener("submit", handleImportPreview);
+  elements.importCommit.addEventListener("click", handleImportCommit);
+  elements.importFile.addEventListener("change", resetImportPreview);
 }
 
 async function loadDashboard({ quiet = false } = {}) {
@@ -149,6 +172,7 @@ function renderDashboard() {
   renderDetail();
   renderNuclei();
   renderAudit();
+  renderImports();
 }
 
 function renderSummary() {
@@ -160,6 +184,8 @@ function renderSummary() {
   document.querySelector("#kpi-total-context").textContent =
     `${dashboard.summary.available} disponíveis • ${dashboard.summary.retired} ${retiredLabel}`;
   elements.resultCount.textContent = dashboard.resultCount;
+  elements.resultLabel.textContent =
+    dashboard.resultCount === 1 ? "patrimônio encontrado" : "patrimônios encontrados";
   elements.revision.textContent = `Revisão ${dashboard.revision}`;
 }
 
@@ -169,13 +195,15 @@ function renderSession() {
   elements.session.innerHTML = `
     <span class="session-avatar" aria-hidden="true">${escapeHtml(initial)}</span>
     <span>
-      <small>${session.authenticated ? "Workspace D1" : "Sessão pública"}</small>
+      <small>${session.authenticated ? "Workspace privado" : "Sessão pública"}</small>
       <strong title="${escapeAttribute(session.displayName)}">${escapeHtml(session.displayName)}</strong>
     </span>
   `;
   elements.demoNotice.hidden = session.authenticated;
   elements.signInLink.href = session.signInUrl;
-  elements.sidebarSource.textContent = session.authenticated ? "Persistência D1 ativa" : "Seed público somente leitura";
+  elements.sidebarSource.textContent = session.authenticated ? "Supabase privado ativo" : "Seed público somente leitura";
+  elements.importButton.disabled = !session.authenticated;
+  elements.importButton.title = session.authenticated ? "Importar planilha XLSX" : "Entre para importar dados";
 }
 
 function renderInventory() {
@@ -379,6 +407,38 @@ function renderAudit() {
     .join("");
 }
 
+function renderImports() {
+  const imports = dashboard.imports || [];
+  elements.importCount.textContent = `${imports.length} ${imports.length === 1 ? "importação" : "importações"}`;
+  if (!imports.length) {
+    elements.importHistory.innerHTML = `
+      <div class="empty-imports">
+        <strong>Nenhuma importação registrada</strong>
+        <span>${dashboard.session.authenticated ? "Importe uma planilha XLSX para iniciar a base privada." : "Entre para consultar o histórico da sua base privada."}</span>
+      </div>
+    `;
+    return;
+  }
+
+  elements.importHistory.innerHTML = imports
+    .map(
+      (run) => `
+        <article class="import-run">
+          <div>
+            <strong>${escapeHtml(run.fileName)}</strong>
+            <span>${formatDateTime(run.createdAt)} • ${escapeHtml(run.importedBy)}</span>
+          </div>
+          <dl>
+            <div><dt>Inseridos</dt><dd>${run.inserted}</dd></div>
+            <div><dt>Atualizados</dt><dd>${run.updated}</dd></div>
+            <div><dt>Excluídos</dt><dd>${run.rejected}</dd></div>
+          </dl>
+        </article>
+      `,
+    )
+    .join("");
+}
+
 function populateOptions() {
   const current = {
     type: elements.typeFilter.value,
@@ -449,6 +509,118 @@ function openTransferDialog(asset) {
   elements.transferForm.elements.assignee.value = asset.assignee;
   clearFormError(elements.transferFormError);
   elements.transferDialog.showModal();
+}
+
+function openImportDialog() {
+  if (!dashboard?.session.authenticated) {
+    window.location.href = dashboard?.session.signInUrl || elements.signInLink.href;
+    return;
+  }
+  elements.importForm.reset();
+  resetImportPreview();
+  clearFormError(elements.importFormError);
+  elements.importDialog.showModal();
+}
+
+function resetImportPreview() {
+  importPreview = null;
+  elements.importPreview.hidden = true;
+  elements.importCommit.hidden = true;
+  elements.importIssues.innerHTML = "";
+  clearFormError(elements.importFormError);
+}
+
+async function handleImportPreview(event) {
+  event.preventDefault();
+  if (!elements.importForm.reportValidity()) return;
+  await processImport("preview");
+}
+
+async function handleImportCommit() {
+  if (!importPreview?.canCommit) return;
+  await processImport("commit");
+}
+
+async function processImport(mode) {
+  const file = elements.importFile.files[0];
+  if (!file) return showFormError(elements.importFormError, "Selecione um arquivo XLSX.");
+
+  clearFormError(elements.importFormError);
+  setFormBusy(elements.importForm, true);
+  const formData = new FormData();
+  formData.set("file", file);
+  formData.set("mode", mode);
+  formData.set("revision", String(dashboard.revision));
+
+  try {
+    const response = await fetch("/api/import", { method: "POST", body: formData });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || "Não foi possível processar a planilha.");
+
+    if (mode === "preview") {
+      importPreview = data;
+      renderImportPreview(data);
+      return;
+    }
+
+    elements.importDialog.close();
+    showToast(data.message || "Importação concluída.");
+    await loadDashboard({ quiet: true });
+    switchView("imports");
+  } catch (error) {
+    showFormError(elements.importFormError, error.message);
+  } finally {
+    setFormBusy(elements.importForm, false);
+    if (mode === "preview" && importPreview?.canCommit) elements.importCommit.hidden = false;
+  }
+}
+
+function renderImportPreview(preview) {
+  document.querySelector("#preview-accepted").textContent = preview.acceptedCount;
+  document.querySelector("#preview-rejected").textContent = preview.rejectedCount;
+  document.querySelector("#preview-adjusted").textContent = preview.adjustedCount;
+  document.querySelector("#preview-nuclei").textContent = preview.nucleusCount;
+
+  const issues = [...preview.errors, ...preview.warnings].slice(0, 12);
+  elements.importIssues.innerHTML = issues.length
+    ? `
+      <strong>Validação da planilha</strong>
+      <ul>${issues
+        .map(
+          (item) => `<li><span>Linha ${item.row}, coluna ${escapeHtml(item.column)}</span>${escapeHtml(item.message)}</li>`,
+        )
+        .join("")}</ul>
+      ${preview.errors.length + preview.warnings.length > issues.length ? `<small>Mais ${preview.errors.length + preview.warnings.length - issues.length} ocorrências serão registradas no histórico.</small>` : ""}
+    `
+    : "<strong>Planilha validada sem inconsistências.</strong>";
+  elements.importPreview.hidden = false;
+  elements.importCommit.textContent = `Importar ${preview.acceptedCount} válidos`;
+  elements.importCommit.hidden = !preview.canCommit;
+}
+
+async function handleExport() {
+  setButtonBusy(elements.exportButton, true);
+  try {
+    const response = await fetch("/api/export", { headers: { accept: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" } });
+    if (!response.ok) {
+      const data = await response.json();
+      throw new Error(data.error || "Não foi possível exportar o inventário.");
+    }
+    const blob = await response.blob();
+    const disposition = response.headers.get("content-disposition") || "";
+    const fileName = disposition.match(/filename="([^"]+)"/)?.[1] || "patrimonios.xlsx";
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = fileName;
+    link.click();
+    URL.revokeObjectURL(url);
+    showToast("Inventário exportado em XLSX.");
+  } catch (error) {
+    showToast(error.message, true);
+  } finally {
+    setButtonBusy(elements.exportButton, false);
+  }
 }
 
 async function handleAssetSubmit(event) {
@@ -552,7 +724,7 @@ async function submitForm(form, errorElement, action, dialog, nextSelectedId = n
     const response = await fetch(apiUrl, {
       method: "POST",
       headers: { "content-type": "application/json", accept: "application/json" },
-      body: JSON.stringify(action),
+      body: JSON.stringify({ ...action, expectedRevision: dashboard.revision }),
     });
     const data = await response.json();
     if (!response.ok) {
@@ -597,6 +769,11 @@ function setFormBusy(form, busy) {
   });
 }
 
+function setButtonBusy(button, busy) {
+  button.disabled = busy;
+  button.setAttribute("aria-busy", String(busy));
+}
+
 function showFormError(element, message) {
   if (!element) return;
   element.textContent = message;
@@ -637,10 +814,12 @@ function movementLabel(type) {
     registration: "Cadastro",
     transfer: "Transferência",
     status_change: "Alteração de status",
+    import: "Importação",
   }[type] || "Movimentação";
 }
 
 function formatDate(value) {
+  if (!value) return "Não informado";
   return new Intl.DateTimeFormat("pt-BR", { timeZone: "UTC" }).format(new Date(`${value}T00:00:00Z`));
 }
 
