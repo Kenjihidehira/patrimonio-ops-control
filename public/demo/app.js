@@ -196,7 +196,7 @@ function renderSession() {
   elements.session.innerHTML = `
     <span class="session-avatar" aria-hidden="true">${escapeHtml(initial)}</span>
     <span class="session-text">
-      <small>${session.authenticated ? "Conta Microsoft" : "Demonstração pública"}</small>
+      <small>${session.authenticated ? "Conta GitHub" : "Demonstração pública"}</small>
       <strong title="${escapeAttribute(session.displayName)}">${escapeHtml(session.displayName)}</strong>
     </span>
     ${session.authenticated ? `<a class="session-sign-out" href="${escapeAttribute(session.signOutUrl)}">Sair</a>` : ""}
@@ -207,7 +207,7 @@ function renderSession() {
   for (const button of [elements.importButton, elements.newAsset, elements.newNucleus]) {
     button.disabled = !session.authenticated;
   }
-  const writeTitle = session.authenticated ? "" : "Entre com sua conta Microsoft para editar";
+  const writeTitle = session.authenticated ? "" : "Entre com sua conta GitHub autorizada para editar";
   elements.importButton.title = session.authenticated ? "Importar planilha XLSX" : writeTitle;
   elements.newAsset.title = writeTitle;
   elements.newNucleus.title = writeTitle;
@@ -421,7 +421,7 @@ function renderImports() {
     elements.importHistory.innerHTML = `
       <div class="empty-imports">
         <strong>Nenhuma importação registrada</strong>
-        <span>${dashboard.session.authenticated ? "Nenhuma carga adicional foi registrada nesta base empresarial." : "Entre com a conta Microsoft para consultar o histórico empresarial."}</span>
+        <span>${dashboard.session.authenticated ? "Nenhuma carga adicional foi registrada nesta base empresarial." : "Entre com a conta GitHub autorizada para consultar o histórico empresarial."}</span>
       </div>
     `;
     return;
@@ -806,9 +806,9 @@ function handleAuthResult() {
   const error = url.searchParams.get("auth_error");
   if (!error) return;
 
-  const message = error === "microsoft_not_configured"
-    ? "O login Microsoft aguarda a configuração do aplicativo no Entra ID."
-    : "Não foi possível concluir o login Microsoft.";
+  const message = error === "github_not_configured"
+    ? "O login GitHub aguarda a configuração do aplicativo OAuth."
+    : "Não foi possível concluir o login GitHub.";
   showToast(message, true);
   url.searchParams.delete("auth_error");
   window.history.replaceState({}, "", `${url.pathname}${url.search}${url.hash}`);

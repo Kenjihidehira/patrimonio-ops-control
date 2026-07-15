@@ -1,9 +1,9 @@
 import seed from "@/data/seed.json";
-import type { MicrosoftUser } from "@/app/microsoft-auth";
+import type { GitHubUser } from "@/app/github-auth";
 import { cloneState, normalizeState } from "@/lib/domain";
 import { companyWorkspaceKey, loadImportRuns, loadOrCreateWorkspace } from "@/lib/supabase";
 
-export async function loadWorkspaceContext(user: MicrosoftUser | null) {
+export async function loadWorkspaceContext(user: GitHubUser | null) {
   if (!user) {
     return {
       state: normalizeState(cloneState(seed)),

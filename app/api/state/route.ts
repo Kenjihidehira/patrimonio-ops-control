@@ -1,8 +1,8 @@
 import {
-  getMicrosoftUser,
-  microsoftSignInPath,
-  microsoftSignOutPath,
-} from "@/app/microsoft-auth";
+  getGitHubUser,
+  githubSignInPath,
+  githubSignOutPath,
+} from "@/app/github-auth";
 import { applyAction, buildDashboard, DomainError } from "@/lib/domain";
 import { applyPersistedAction, SupabaseError } from "@/lib/supabase";
 import { loadWorkspaceContext } from "@/lib/workspace";
@@ -14,7 +14,7 @@ const responseHeaders = { "cache-control": "no-store" };
 
 export async function GET(request: Request) {
   try {
-    const user = await getMicrosoftUser();
+    const user = await getGitHubUser();
     const url = new URL(request.url);
     const workspace = await loadWorkspaceContext(user);
     const dashboard = buildDashboard(workspace.state, {
@@ -32,10 +32,10 @@ export async function GET(request: Request) {
         session: {
           authenticated: Boolean(user),
           displayName: user?.displayName ?? "Visitante da demonstração",
-          email: user?.email ?? null,
+          login: user?.login ?? null,
           source: workspace.source,
-          signInUrl: microsoftSignInPath(APP_PATH),
-          signOutUrl: microsoftSignOutPath(APP_PATH),
+          signInUrl: githubSignInPath(APP_PATH),
+          signOutUrl: githubSignOutPath(APP_PATH),
         },
       },
       { headers: responseHeaders },
@@ -50,12 +50,12 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  const user = await getMicrosoftUser();
+  const user = await getGitHubUser();
   if (!user) {
     return Response.json(
       {
-        error: "Entre com sua conta Microsoft corporativa para registrar alterações.",
-        signInUrl: microsoftSignInPath(APP_PATH),
+        error: "Entre com sua conta GitHub autorizada para registrar alterações.",
+        signInUrl: githubSignInPath(APP_PATH),
       },
       { status: 401, headers: responseHeaders },
     );
@@ -75,9 +75,9 @@ export async function POST(request: Request) {
       return revisionConflict();
     }
 
-    applyAction(workspace.state, action, user.email);
+    applyAction(workspace.state, action, user.actor);
     if (!workspace.ownerKey) throw new Error("Authenticated workspace has no owner key.");
-    await applyPersistedAction(workspace.ownerKey, user.email, expectedRevision, action);
+    await applyPersistedAction(workspace.ownerKey, user.actor, expectedRevision, action);
     const updated = await loadWorkspaceContext(user);
 
     return Response.json(

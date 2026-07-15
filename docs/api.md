@@ -2,15 +2,15 @@
 
 Base local: `http://localhost:5173/api`
 
-Respostas dinâmicas usam `cache-control: no-store`. A identidade vem de uma sessão local assinada após o servidor validar o ID token do Microsoft Entra.
+Respostas dinâmicas usam `cache-control: no-store`. A identidade vem de uma sessão local assinada após o servidor concluir o OAuth e consultar o perfil atual na API oficial do GitHub.
 
-## Autenticação Microsoft
+## Autenticação GitHub
 
 | Método | Rota | Finalidade |
 | --- | --- | --- |
-| `GET` | `/api/auth/microsoft/login` | Iniciar Authorization Code com PKCE |
-| `GET` | `/api/auth/microsoft/callback` | Validar retorno OIDC e criar sessão `HttpOnly` |
-| `GET` | `/api/auth/microsoft/logout` | Encerrar a sessão local |
+| `GET` | `/api/auth/github/login` | Iniciar Authorization Code com `state` e PKCE |
+| `GET` | `/api/auth/github/callback` | Validar retorno OAuth, perfil e allowlist; criar sessão `HttpOnly` |
+| `GET` | `/api/auth/github/logout` | Encerrar a sessão local |
 
 `return_to` aceita apenas caminhos relativos locais e nunca pode apontar para as próprias rotas de autenticação.
 
@@ -28,7 +28,7 @@ Retorna revisão, resumo, inventário filtrado, núcleos, auditoria, histórico 
 | `nucleus` | Identificador de núcleo | `all` |
 | `sort` | `recent`, `asset_asc`, `nucleus`, `status` | `recent` |
 
-Usuários anônimos recebem o seed público. Usuários Microsoft aceitos pelo tenant e domínio configurados recebem o workspace empresarial compartilhado no Supabase.
+Usuários anônimos recebem o seed público. Logins GitHub presentes na allowlist recebem o workspace empresarial compartilhado no Supabase.
 
 ## `POST /api/state`
 

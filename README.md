@@ -37,7 +37,7 @@ Planilhas patrimoniais isoladas não registram bem responsabilidade, movimentaç
 - **API:** Route Handlers compatíveis com Next.js em Cloudflare Worker.
 - **Banco:** Supabase Postgres 17, funções RPC transacionais e índices operacionais.
 - **Integração:** Supabase Edge Function autenticada por segredo de servidor.
-- **Autenticação:** Microsoft Entra ID com OpenID Connect, Authorization Code, PKCE e sessão `HttpOnly`.
+- **Autenticação:** GitHub OAuth, Authorization Code, PKCE, allowlist e sessão `HttpOnly`.
 - **Planilhas:** `read-excel-file` e `write-excel-file`.
 - **Qualidade:** Node Test Runner, ESLint, TypeScript e GitHub Actions.
 
@@ -51,9 +51,9 @@ cp .env.example .env.local
 pnpm dev
 ```
 
-Preencha as variáveis Supabase, Microsoft Entra e os segredos de sessão de `.env.example` apenas em `.env.local`. O arquivo é ignorado pelo Git. Acesse `http://localhost:5173/demo/`.
+Preencha as variáveis Supabase, GitHub OAuth e os segredos de sessão de `.env.example` apenas em `.env.local`. O arquivo é ignorado pelo Git. Acesse `http://localhost:5173/demo/`.
 
-A interface anônima funciona com o seed público. A base empresarial e as operações de escrita exigem uma conta do tenant Microsoft e de um domínio listado em `MICROSOFT_ALLOWED_DOMAINS`. O servidor valida assinatura, emissor, audiência, expiração, `nonce`, tenant e domínio antes de criar uma sessão local de oito horas.
+A interface anônima funciona com o seed público. A base empresarial e as operações de escrita exigem uma conta listada em `GITHUB_ALLOWED_LOGINS`. O servidor valida `state`, PKCE, identidade retornada pela API oficial do GitHub e allowlist antes de criar uma sessão local de oito horas.
 
 ### Validação completa
 
@@ -65,14 +65,15 @@ pnpm build
 pnpm audit --prod
 ```
 
-## Configurar o login Microsoft
+## Configurar o login GitHub
 
-1. Registre um aplicativo Web de locatário único no Microsoft Entra ID.
-2. Cadastre `https://patrimonio-ops-control.kenjihidehira999.workers.dev/api/auth/microsoft/callback` como Redirect URI do tipo Web.
-3. Crie um Client Secret e armazene-o somente em `MICROSOFT_CLIENT_SECRET` no ambiente do servidor.
-4. Configure o Tenant ID, Client ID, domínios autorizados e `AUTH_SESSION_SECRET` conforme `.env.example`.
+1. Em **GitHub > Settings > Developer settings > OAuth Apps**, registre um OAuth App.
+2. Use `https://patrimonio-ops-control.kenjihidehira999.workers.dev` como Homepage URL.
+3. Use `https://patrimonio-ops-control.kenjihidehira999.workers.dev/api/auth/github/callback` como Authorization callback URL.
+4. Armazene `GITHUB_CLIENT_ID` e `GITHUB_CLIENT_SECRET` somente no ambiente do servidor.
+5. Mantenha em `GITHUB_ALLOWED_LOGINS` apenas os operadores autorizados.
 
-O fluxo segue a documentação oficial do [Authorization Code com PKCE](https://learn.microsoft.com/en-us/entra/identity-platform/v2-oauth2-auth-code-flow), a [validação de ID tokens](https://learn.microsoft.com/en-us/entra/identity-platform/id-tokens) e as regras de [Redirect URI](https://learn.microsoft.com/en-us/entra/identity-platform/how-to-add-redirect-uri). Nenhum access token ou refresh token é persistido no navegador.
+O fluxo segue a documentação oficial do [GitHub OAuth Web Application Flow](https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/authorizing-oauth-apps). O access token é usado no servidor apenas para obter a identidade atual e não é persistido no navegador nem incluído na sessão local.
 
 ## Planilha-base
 
@@ -108,7 +109,7 @@ Documentação completa: [`docs/architecture.md`](docs/architecture.md).
 
 ### Limitação produtiva explícita
 
-Todos os usuários aceitos pelo tenant e domínio configurados acessam a mesma base e possuem as mesmas permissões de escrita. Ainda não há RBAC por função ou núcleo. Antes de ampliar o acesso para perfis somente leitura, auditores ou múltiplas empresas, adicione `organizations`, `memberships` e políticas de autorização por papel.
+Todos os logins presentes na allowlist acessam a mesma base e possuem as mesmas permissões de escrita. Ainda não há RBAC por função ou núcleo. Antes de ampliar o acesso para perfis somente leitura, auditores ou múltiplas empresas, adicione `organizations`, `memberships` e políticas de autorização por papel.
 
 ## Decisões de UX
 
@@ -122,6 +123,8 @@ A interface segue o padrão `list report + object detail`, comum em sistemas cor
 ## Deploy
 
 O projeto está configurado para Cloudflare Workers em [`wrangler.jsonc`](wrangler.jsonc). Use `pnpm deploy:cloudflare` após autenticar o Wrangler e cadastrar os secrets do runtime. O procedimento reproduzível, as migrations e os controles de pré-publicação estão em [`docs/deploy.md`](docs/deploy.md).
+
+GitHub Pages não hospeda este runtime: ele publica apenas arquivos estáticos e não executa Route Handlers, cookies `HttpOnly` ou integrações servidor-servidor. O código e a CI ficam no GitHub; o backend permanece no Worker para não expor os segredos do Supabase.
 
 ## Diferenciais comerciais
 

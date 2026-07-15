@@ -1,34 +1,32 @@
 import { env } from "cloudflare:workers";
 import { cookies } from "next/headers";
-import { createRemoteJWKSet, jwtVerify, SignJWT } from "jose";
-import { isAllowedMicrosoftEmail, safeRelativeReturnPath } from "@/lib/auth-utils";
+import { jwtVerify, SignJWT } from "jose";
+import { isAllowedGitHubLogin, safeRelativeReturnPath } from "@/lib/auth-utils";
 
-export type MicrosoftUser = {
+export type GitHubUser = {
   displayName: string;
-  email: string;
-  objectId: string;
-  tenantId: string;
+  login: string;
+  userId: string;
+  actor: string;
 };
 
-type MicrosoftConfig = {
-  tenantId: string;
+type GitHubConfig = {
   clientId: string;
   clientSecret: string;
-  allowedDomains: string[];
+  allowedLogins: string[];
   sessionSecret: Uint8Array;
 };
 
-type MicrosoftMetadata = {
-  authorization_endpoint: string;
-  token_endpoint: string;
-  jwks_uri: string;
-  issuer: string;
+type GitHubProfile = {
+  id?: unknown;
+  login?: unknown;
+  name?: unknown;
 };
 
 const APP_PATH = "/demo/index.html";
-const CALLBACK_PATH = "/api/auth/microsoft/callback";
-const LOGIN_PATH = "/api/auth/microsoft/login";
-const LOGOUT_PATH = "/api/auth/microsoft/logout";
+const CALLBACK_PATH = "/api/auth/github/callback";
+const LOGIN_PATH = "/api/auth/github/login";
+const LOGOUT_PATH = "/api/auth/github/logout";
 const SESSION_COOKIE = "patrimonio_session";
 const OAUTH_COOKIE = "patrimonio_oauth";
 const SECURE_SESSION_COOKIE = `__Host-${SESSION_COOKIE}`;
@@ -38,23 +36,21 @@ const SESSION_AUDIENCE = "patrimonio-ops-control-web";
 const OAUTH_AUDIENCE = "patrimonio-ops-control-oauth";
 const SESSION_SECONDS = 8 * 60 * 60;
 const OAUTH_SECONDS = 10 * 60;
-const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-const metadataCache = new Map<string, Promise<MicrosoftMetadata>>();
-const jwksCache = new Map<string, ReturnType<typeof createRemoteJWKSet>>();
+const GITHUB_LOGIN_PATTERN = /^[a-z\d](?:[a-z\d-]{0,37}[a-z\d])?$/i;
 
-export class MicrosoftAuthError extends Error {
+export class GitHubAuthError extends Error {
   code: "configuration" | "oauth";
 
   constructor(message: string, code: "configuration" | "oauth" = "oauth") {
     super(message);
-    this.name = "MicrosoftAuthError";
+    this.name = "GitHubAuthError";
     this.code = code;
   }
 }
 
-export async function getMicrosoftUser(): Promise<MicrosoftUser | null> {
+export async function getGitHubUser(): Promise<GitHubUser | null> {
   try {
-    const config = getMicrosoftConfig();
+    const config = getGitHubConfig();
     const cookieStore = await cookies();
     const token =
       cookieStore.get(SECURE_SESSION_COOKIE)?.value ??
@@ -68,49 +64,44 @@ export async function getMicrosoftUser(): Promise<MicrosoftUser | null> {
     });
     if (
       payload.kind !== "session" ||
-      typeof payload.email !== "string" ||
       typeof payload.name !== "string" ||
-      typeof payload.oid !== "string" ||
-      typeof payload.tid !== "string" ||
-      payload.tid.toLowerCase() !== config.tenantId.toLowerCase() ||
-      !isAllowedMicrosoftEmail(payload.email, config.allowedDomains)
+      typeof payload.login !== "string" ||
+      typeof payload.uid !== "string" ||
+      !isAllowedGitHubLogin(payload.login, config.allowedLogins)
     ) {
       return null;
     }
 
     return {
       displayName: payload.name,
-      email: payload.email,
-      objectId: payload.oid,
-      tenantId: payload.tid,
+      login: payload.login,
+      userId: payload.uid,
+      actor: `github:${payload.login}`,
     };
   } catch {
     return null;
   }
 }
 
-export function microsoftSignInPath(returnTo: string): string {
+export function githubSignInPath(returnTo: string): string {
   return `${LOGIN_PATH}?return_to=${encodeURIComponent(safeRelativeReturnPath(returnTo))}`;
 }
 
-export function microsoftSignOutPath(returnTo = APP_PATH): string {
+export function githubSignOutPath(returnTo = APP_PATH): string {
   return `${LOGOUT_PATH}?return_to=${encodeURIComponent(safeRelativeReturnPath(returnTo))}`;
 }
 
-export async function startMicrosoftLogin(request: Request): Promise<Response> {
+export async function startGitHubLogin(request: Request): Promise<Response> {
   try {
-    const config = getMicrosoftConfig();
-    const metadata = await getMicrosoftMetadata(config.tenantId);
+    const config = getGitHubConfig();
     const requestUrl = new URL(request.url);
     const returnTo = safeRelativeReturnPath(requestUrl.searchParams.get("return_to") ?? APP_PATH);
     const state = randomBase64Url(32);
-    const nonce = randomBase64Url(32);
     const verifier = randomBase64Url(64);
     const challenge = await sha256Base64Url(verifier);
     const transaction = await new SignJWT({
       kind: "oauth",
       state,
-      nonce,
       verifier,
       returnTo,
     })
@@ -121,17 +112,14 @@ export async function startMicrosoftLogin(request: Request): Promise<Response> {
       .setExpirationTime(`${OAUTH_SECONDS}s`)
       .sign(config.sessionSecret);
 
-    const authorizationUrl = new URL(metadata.authorization_endpoint);
+    const authorizationUrl = new URL("https://github.com/login/oauth/authorize");
     authorizationUrl.search = new URLSearchParams({
       client_id: config.clientId,
-      response_type: "code",
       redirect_uri: callbackUrl(request),
-      response_mode: "query",
-      scope: "openid profile email",
       state,
-      nonce,
       code_challenge: challenge,
       code_challenge_method: "S256",
+      allow_signup: "false",
       prompt: "select_account",
     }).toString();
 
@@ -142,31 +130,31 @@ export async function startMicrosoftLogin(request: Request): Promise<Response> {
     );
     return response;
   } catch (error) {
-    console.error("Microsoft login could not start", safeAuthError(error));
-    return redirectResponse(withAuthError(request, "microsoft_not_configured"));
+    console.error("GitHub login could not start", safeAuthError(error));
+    return redirectResponse(withAuthError(request, "github_not_configured"));
   }
 }
 
-export async function completeMicrosoftLogin(request: Request): Promise<Response> {
+export async function completeGitHubLogin(request: Request): Promise<Response> {
   const requestUrl = new URL(request.url);
   let returnTo = APP_PATH;
 
   try {
     if (requestUrl.searchParams.has("error")) {
-      throw new MicrosoftAuthError("Microsoft returned an OAuth error.");
+      throw new GitHubAuthError("GitHub returned an OAuth error.");
     }
 
-    const config = getMicrosoftConfig();
+    const config = getGitHubConfig();
     const code = requestUrl.searchParams.get("code");
     const state = requestUrl.searchParams.get("state");
-    if (!code || !state) throw new MicrosoftAuthError("OAuth callback is incomplete.");
+    if (!code || !state) throw new GitHubAuthError("OAuth callback is incomplete.");
 
     const cookieStore = await cookies();
     const transactionToken =
       cookieStore.get(cookieName(OAUTH_COOKIE, request))?.value ??
       cookieStore.get(SECURE_OAUTH_COOKIE)?.value ??
       cookieStore.get(OAUTH_COOKIE)?.value;
-    if (!transactionToken) throw new MicrosoftAuthError("OAuth transaction cookie is missing.");
+    if (!transactionToken) throw new GitHubAuthError("OAuth transaction cookie is missing.");
 
     const { payload: transaction } = await jwtVerify(
       transactionToken,
@@ -180,16 +168,14 @@ export async function completeMicrosoftLogin(request: Request): Promise<Response
     if (
       transaction.kind !== "oauth" ||
       transaction.state !== state ||
-      typeof transaction.nonce !== "string" ||
       typeof transaction.verifier !== "string" ||
       typeof transaction.returnTo !== "string"
     ) {
-      throw new MicrosoftAuthError("OAuth transaction validation failed.");
+      throw new GitHubAuthError("OAuth transaction validation failed.");
     }
     returnTo = safeRelativeReturnPath(transaction.returnTo);
 
-    const metadata = await getMicrosoftMetadata(config.tenantId);
-    const tokenResponse = await fetch(metadata.token_endpoint, {
+    const tokenResponse = await fetch("https://github.com/login/oauth/access_token", {
       method: "POST",
       headers: {
         accept: "application/json",
@@ -198,49 +184,44 @@ export async function completeMicrosoftLogin(request: Request): Promise<Response
       body: new URLSearchParams({
         client_id: config.clientId,
         client_secret: config.clientSecret,
-        grant_type: "authorization_code",
         code,
         redirect_uri: callbackUrl(request),
         code_verifier: transaction.verifier,
-        scope: "openid profile email",
       }),
     });
     const tokenBody = (await tokenResponse.json().catch(() => null)) as {
-      id_token?: unknown;
+      access_token?: unknown;
+      token_type?: unknown;
     } | null;
-    if (!tokenResponse.ok || typeof tokenBody?.id_token !== "string") {
-      throw new MicrosoftAuthError("Microsoft token exchange failed.");
+    if (
+      !tokenResponse.ok ||
+      typeof tokenBody?.access_token !== "string" ||
+      String(tokenBody.token_type ?? "").toLowerCase() !== "bearer"
+    ) {
+      throw new GitHubAuthError("GitHub token exchange failed.");
     }
 
-    const jwks = getMicrosoftJwks(metadata.jwks_uri);
-    const { payload } = await jwtVerify(tokenBody.id_token, jwks, {
-      algorithms: ["RS256"],
-      issuer: metadata.issuer,
-      audience: config.clientId,
-    });
-    const email = microsoftEmail(payload);
-    const displayName = typeof payload.name === "string" ? payload.name.trim() : email;
-    if (
-      payload.nonce !== transaction.nonce ||
-      typeof payload.oid !== "string" ||
-      typeof payload.tid !== "string" ||
-      payload.tid.toLowerCase() !== config.tenantId.toLowerCase() ||
-      !isAllowedMicrosoftEmail(email, config.allowedDomains)
-    ) {
-      throw new MicrosoftAuthError("Microsoft identity is not authorized for this workspace.");
+    const profile = await fetchGitHubProfile(tokenBody.access_token);
+    const login = normalizeGitHubLogin(profile.login);
+    const userId = normalizeGitHubUserId(profile.id);
+    if (!isAllowedGitHubLogin(login, config.allowedLogins)) {
+      throw new GitHubAuthError("GitHub identity is not authorized for this workspace.");
     }
+    const displayName =
+      typeof profile.name === "string" && profile.name.trim()
+        ? profile.name.trim()
+        : login;
 
     const session = await new SignJWT({
       kind: "session",
       name: displayName,
-      email,
-      oid: payload.oid,
-      tid: payload.tid,
+      login,
+      uid: userId,
     })
       .setProtectedHeader({ alg: "HS256", typ: "JWT" })
       .setIssuer(SESSION_ISSUER)
       .setAudience(SESSION_AUDIENCE)
-      .setSubject(`${payload.tid}:${payload.oid}`)
+      .setSubject(`github:${userId}`)
       .setIssuedAt()
       .setExpirationTime(`${SESSION_SECONDS}s`)
       .sign(config.sessionSecret);
@@ -253,16 +234,16 @@ export async function completeMicrosoftLogin(request: Request): Promise<Response
     appendClearedOAuthCookies(response, request);
     return response;
   } catch (error) {
-    console.error("Microsoft login callback failed", safeAuthError(error));
+    console.error("GitHub login callback failed", safeAuthError(error));
     const response = redirectResponse(
-      new URL(`${returnTo}${returnTo.includes("?") ? "&" : "?"}auth_error=microsoft_login_failed`, request.url).toString(),
+      new URL(`${returnTo}${returnTo.includes("?") ? "&" : "?"}auth_error=github_login_failed`, request.url).toString(),
     );
     appendClearedOAuthCookies(response, request);
     return response;
   }
 }
 
-export function logoutMicrosoft(request: Request): Response {
+export function logoutGitHub(request: Request): Response {
   const requestUrl = new URL(request.url);
   const returnTo = safeRelativeReturnPath(requestUrl.searchParams.get("return_to") ?? APP_PATH);
   const response = redirectResponse(new URL(returnTo, request.url).toString());
@@ -272,34 +253,32 @@ export function logoutMicrosoft(request: Request): Response {
   return response;
 }
 
-function getMicrosoftConfig(): MicrosoftConfig {
-  const tenantId = runtimeValue("MICROSOFT_TENANT_ID");
-  const clientId = runtimeValue("MICROSOFT_CLIENT_ID");
-  const clientSecret = runtimeValue("MICROSOFT_CLIENT_SECRET");
+function getGitHubConfig(): GitHubConfig {
+  const clientId = runtimeValue("GITHUB_CLIENT_ID");
+  const clientSecret = runtimeValue("GITHUB_CLIENT_SECRET");
   const sessionSecret = runtimeValue("AUTH_SESSION_SECRET");
-  const allowedDomains = runtimeValue("MICROSOFT_ALLOWED_DOMAINS")
+  const allowedLogins = runtimeValue("GITHUB_ALLOWED_LOGINS")
     .split(",")
-    .map((domain) => domain.trim().toLowerCase())
+    .map((login) => login.trim().toLowerCase())
     .filter(Boolean);
 
   if (
-    !UUID_PATTERN.test(tenantId) ||
-    !UUID_PATTERN.test(clientId) ||
+    clientId.length < 10 ||
+    clientId.length > 100 ||
     !clientSecret ||
     sessionSecret.length < 64 ||
-    allowedDomains.length === 0
+    allowedLogins.length === 0
   ) {
-    throw new MicrosoftAuthError(
-      "Microsoft Entra is not configured. Define tenant, client, secret, allowed domains and session secret.",
+    throw new GitHubAuthError(
+      "GitHub OAuth is not configured. Define client, secret, allowed logins and session secret.",
       "configuration",
     );
   }
 
   return {
-    tenantId,
     clientId,
     clientSecret,
-    allowedDomains,
+    allowedLogins,
     sessionSecret: new TextEncoder().encode(sessionSecret),
   };
 }
@@ -308,65 +287,37 @@ function runtimeValue(name: keyof Cloudflare.Env): string {
   return String(env[name] ?? process.env[name] ?? "").trim();
 }
 
-function microsoftEmail(payload: Record<string, unknown>): string {
-  for (const claim of [payload.preferred_username, payload.email, payload.upn]) {
-    if (typeof claim === "string" && claim.includes("@")) return claim.trim().toLowerCase();
-  }
-  throw new MicrosoftAuthError("Microsoft identity does not contain an email address.");
+async function fetchGitHubProfile(accessToken: string): Promise<GitHubProfile> {
+  const response = await fetch("https://api.github.com/user", {
+    headers: {
+      accept: "application/vnd.github+json",
+      authorization: `Bearer ${accessToken}`,
+      "user-agent": "patrimonio-ops-control",
+      "x-github-api-version": "2022-11-28",
+    },
+  });
+  const body = (await response.json().catch(() => null)) as GitHubProfile | null;
+  if (!response.ok || !body) throw new GitHubAuthError("GitHub profile could not be loaded.");
+  return body;
 }
 
-async function getMicrosoftMetadata(tenantId: string): Promise<MicrosoftMetadata> {
-  let pending = metadataCache.get(tenantId);
-  if (!pending) {
-    pending = fetchMicrosoftMetadata(tenantId);
-    metadataCache.set(tenantId, pending);
+function normalizeGitHubLogin(value: unknown): string {
+  const login = typeof value === "string" ? value.trim() : "";
+  if (!GITHUB_LOGIN_PATTERN.test(login)) {
+    throw new GitHubAuthError("GitHub profile does not contain a valid login.");
   }
-  try {
-    return await pending;
-  } catch (error) {
-    metadataCache.delete(tenantId);
-    throw error;
-  }
+  return login;
 }
 
-async function fetchMicrosoftMetadata(tenantId: string): Promise<MicrosoftMetadata> {
-  const response = await fetch(
-    `https://login.microsoftonline.com/${tenantId}/v2.0/.well-known/openid-configuration`,
-    { headers: { accept: "application/json" } },
-  );
-  const body = (await response.json().catch(() => null)) as Partial<MicrosoftMetadata> | null;
-  if (
-    !response.ok ||
-    !isHttpsUrl(body?.authorization_endpoint) ||
-    !isHttpsUrl(body?.token_endpoint) ||
-    !isHttpsUrl(body?.jwks_uri) ||
-    !isHttpsUrl(body?.issuer)
-  ) {
-    throw new MicrosoftAuthError("Microsoft OpenID configuration could not be loaded.");
+function normalizeGitHubUserId(value: unknown): string {
+  if (!Number.isSafeInteger(value) || Number(value) <= 0) {
+    throw new GitHubAuthError("GitHub profile does not contain a valid user ID.");
   }
-  return body as MicrosoftMetadata;
-}
-
-function getMicrosoftJwks(jwksUri: string) {
-  let jwks = jwksCache.get(jwksUri);
-  if (!jwks) {
-    jwks = createRemoteJWKSet(new URL(jwksUri));
-    jwksCache.set(jwksUri, jwks);
-  }
-  return jwks;
+  return String(value);
 }
 
 function callbackUrl(request: Request): string {
   return new URL(CALLBACK_PATH, request.url).toString();
-}
-
-function isHttpsUrl(value: unknown): value is string {
-  if (typeof value !== "string") return false;
-  try {
-    return new URL(value).protocol === "https:";
-  } catch {
-    return false;
-  }
 }
 
 function randomBase64Url(byteLength: number): string {
@@ -422,7 +373,7 @@ function withAuthError(request: Request, error: string): string {
 }
 
 function safeAuthError(error: unknown): string {
-  if (error instanceof MicrosoftAuthError) return `${error.code}: ${error.message}`;
+  if (error instanceof GitHubAuthError) return `${error.code}: ${error.message}`;
   if (error instanceof Error) return error.message;
   return "Unknown authentication error";
 }

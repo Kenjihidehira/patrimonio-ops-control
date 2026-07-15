@@ -1,4 +1,4 @@
-import { getMicrosoftUser, microsoftSignInPath } from "@/app/microsoft-auth";
+import { getGitHubUser, githubSignInPath } from "@/app/github-auth";
 import { parsePatrimonioRows } from "@/lib/spreadsheet-import";
 import { importAssets, SupabaseError } from "@/lib/supabase";
 import { readWorkbookRows } from "@/lib/workbook";
@@ -24,12 +24,12 @@ type SpreadsheetPreview = {
 };
 
 export async function POST(request: Request) {
-  const user = await getMicrosoftUser();
+  const user = await getGitHubUser();
   if (!user) {
     return Response.json(
       {
-        error: "Entre com sua conta Microsoft corporativa para importar dados.",
-        signInUrl: microsoftSignInPath(APP_PATH),
+        error: "Entre com sua conta GitHub autorizada para importar dados.",
+        signInUrl: githubSignInPath(APP_PATH),
       },
       { status: 401, headers: responseHeaders },
     );
@@ -82,7 +82,7 @@ export async function POST(request: Request) {
       return revisionConflict();
     }
     if (!workspace.ownerKey) throw new Error("Authenticated workspace has no owner key.");
-    const result = await importAssets(workspace.ownerKey, user.email, expectedRevision, {
+    const result = await importAssets(workspace.ownerKey, user.actor, expectedRevision, {
       fileName: safeFileName(file.name),
       nuclei: preview.nuclei,
       assets: preview.assets,

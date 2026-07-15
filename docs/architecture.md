@@ -5,7 +5,7 @@
 ```mermaid
 flowchart LR
     UI[Interface operacional] --> API[Route Handlers]
-    API --> AUTH[Microsoft Entra ID / OIDC]
+    API --> AUTH[GitHub OAuth]
     API --> DOMAIN[Domínio patrimonial]
     API --> XLSX[Leitura e escrita XLSX]
     API --> GATEWAY[Supabase Edge Function]
@@ -24,11 +24,11 @@ O navegador nunca recebe a URL privilegiada nem o segredo do gateway. A API do C
 | API | `app/api/*` | Sessão, contratos HTTP, upload, exportação e respostas padronizadas |
 | Domínio | `lib/domain.js` | Invariantes, ações, auditoria e projeção do dashboard |
 | Planilhas | `lib/spreadsheet-import.js`, `lib/workbook.ts` | Leitura, normalização, prévia e geração XLSX |
-| Identidade | `app/microsoft-auth.ts`, `app/api/auth/*` | OAuth, PKCE, validação OIDC e sessão local |
+| Identidade | `app/github-auth.ts`, `app/api/auth/*` | OAuth, PKCE, validação de perfil, allowlist e sessão local |
 | Persistência | `lib/supabase.ts`, `lib/workspace.ts` | Chave empresarial, gateway e hidratação do estado |
 | Banco | `supabase/migrations/*` | Tabelas, índices, RLS, RPCs e integridade referencial |
 | Gateway | `supabase/functions/patrimonio-gateway/index.ts` | Autenticação servidor-servidor e lista fechada de operações |
-| Plataforma | `.openai/*` | Configuração de hosting e variáveis do runtime |
+| Plataforma | `wrangler.jsonc`, `worker/index.ts` | Configuração do Worker, assets e variáveis do runtime |
 
 ## Invariantes do domínio
 
@@ -67,10 +67,10 @@ Chaves estrangeiras preservam integridade e índices cobrem status, núcleo, tip
 
 ### Leitura autenticada
 
-1. A API inicia Authorization Code com PKCE, `state` e `nonce`.
-2. O Microsoft Entra autentica a conta e devolve o código para a Redirect URI registrada.
-3. O servidor troca o código e valida assinatura, emissor, audiência, expiração, `nonce`, `tid`, `oid` e domínio do ID token.
-4. Uma sessão local assinada, `HttpOnly`, `Secure` e `SameSite=Lax` mantém apenas nome, e-mail, tenant e identificador do usuário por oito horas.
+1. A API inicia Authorization Code com `state` e PKCE.
+2. O GitHub autentica a conta e devolve o código para a callback registrada.
+3. O servidor troca o código, consulta `/user` com o token temporário e valida ID, login e allowlist.
+4. Uma sessão local assinada, `HttpOnly`, `Secure` e `SameSite=Lax` mantém apenas nome, login e identificador do usuário por oito horas.
 5. A API usa `PATRIMONIO_WORKSPACE_KEY` para carregar a base empresarial compartilhada e retorna `session.source = supabase`.
 
 ### Mutação
@@ -98,10 +98,10 @@ Chaves estrangeiras preservam integridade e índices cobrem status, núcleo, tip
 ## Segurança
 
 - Nenhum secret é versionado ou exposto ao cliente.
-- O ator vem da sessão Microsoft validada, nunca do payload.
+- O ator vem da sessão GitHub validada, nunca do payload.
 - A chave empresarial é aleatória, tem 256 bits e permanece somente no runtime do servidor.
-- O ID token é validado por chave pública do endpoint JWKS oficial; `state`, PKCE e `nonce` protegem o fluxo OAuth.
-- Access tokens, refresh tokens e Client Secret nunca são enviados ao JavaScript da interface.
+- `state` e PKCE protegem o fluxo OAuth; a identidade é recarregada de `https://api.github.com/user` após cada login.
+- Access token e Client Secret nunca são enviados ao JavaScript da interface nem gravados na sessão local.
 - O gateway aceita somente operações enumeradas e exige `x-patrimonio-key`.
 - RLS está habilitado e políticas negam acesso direto a `anon` e `authenticated`.
 - O upload tem limite de tamanho, extensão controlada e parser estruturado.
@@ -113,7 +113,7 @@ Chaves estrangeiras preservam integridade e índices cobrem status, núcleo, tip
 
 ## Limitações e evolução produtiva
 
-O workspace atual representa uma empresa e é compartilhado por todos os usuários aceitos pelo tenant e domínio configurados. A sessão identifica o ator da auditoria, mas todos possuem as mesmas permissões. Para múltiplas empresas ou perfis distintos, o próximo incremento deve introduzir `organizations`, `memberships` e papéis como administrador, operador e auditor.
+O workspace atual representa uma empresa e é compartilhado por todos os logins presentes na allowlist. A sessão identifica o ator da auditoria, mas todos possuem as mesmas permissões. Para múltiplas empresas ou perfis distintos, o próximo incremento deve introduzir `organizations`, `memberships` e papéis como administrador, operador e auditor.
 
 Também faltam recuperação de desastre automatizada, política formal de retenção e armazenamento de anexos. A exportação XLSX reduz o risco operacional, mas não substitui backup gerenciado do Postgres.
 
@@ -143,11 +143,11 @@ Também faltam recuperação de desastre automatizada, política formal de reten
 
 **Motivo:** a integração de deploy não deve colocar uma chave privilegiada no navegador nem depender de identidade forjada pelo cliente.
 
-### ADR-005: Microsoft Entra com sessão local mínima
+### ADR-005: GitHub OAuth com sessão local mínima
 
-**Decisão:** usar OIDC Authorization Code com PKCE e converter o ID token validado em uma sessão curta assinada pela aplicação.
+**Decisão:** usar OAuth Authorization Code com PKCE, validar o perfil atual pela API oficial e converter apenas a identidade autorizada em uma sessão curta assinada pela aplicação.
 
-**Motivo:** manter a identidade corporativa no tenant Microsoft sem persistir tokens de acesso no navegador ou acoplar o domínio patrimonial ao provedor OAuth.
+**Motivo:** reutilizar a identidade GitHub do operador sem persistir tokens de acesso no navegador e sem conceder acesso a repositórios.
 
 ### ADR-006: workspace empresarial compartilhado
 

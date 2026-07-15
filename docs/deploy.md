@@ -10,14 +10,15 @@
 
 O schema habilita RLS e nega acesso direto aos papéis `anon` e `authenticated`. Não substitua essa configuração por políticas abertas: a aplicação acessa os dados exclusivamente pelo gateway servidor-servidor.
 
-## 2. Registrar o aplicativo Microsoft Entra
+## 2. Registrar o GitHub OAuth App
 
-1. No Microsoft Entra ID, registre um aplicativo Web de locatário único.
-2. Cadastre a Redirect URI exata `https://patrimonio-ops-control.kenjihidehira999.workers.dev/api/auth/microsoft/callback`.
-3. Crie um Client Secret e copie o **valor** no momento da criação; não use o identificador do segredo.
-4. Anote o Directory (Tenant) ID e o Application (Client) ID.
+1. Abra **GitHub > Settings > Developer settings > OAuth Apps > New OAuth App**.
+2. Use `Patrimônio Ops Control` como nome.
+3. Use `https://patrimonio-ops-control.kenjihidehira999.workers.dev` como Homepage URL.
+4. Cadastre a callback exata `https://patrimonio-ops-control.kenjihidehira999.workers.dev/api/auth/github/callback`.
+5. Gere um Client Secret e copie o valor no momento da criação.
 
-O aplicativo solicita somente os escopos OIDC `openid profile email`. Não é necessário conceder acesso ao Microsoft Graph.
+O aplicativo não solicita escopos de repositório nem de e-mail. O token temporário serve somente para consultar o perfil público autenticado em `/user`; a allowlist decide quem pode abrir a base empresarial.
 
 ## 3. Configurar o Cloudflare Worker
 
@@ -30,14 +31,13 @@ pnpm exec wrangler login
 pnpm exec wrangler whoami
 ```
 
-`SUPABASE_GATEWAY_URL` e `MICROSOFT_ALLOWED_DOMAINS` ficam em `wrangler.jsonc`. Cadastre os demais valores como secrets do Worker:
+`SUPABASE_GATEWAY_URL` e `GITHUB_ALLOWED_LOGINS` ficam em `wrangler.jsonc`. Cadastre os demais valores como secrets do Worker:
 
 ```text
 SUPABASE_GATEWAY_KEY=O_MESMO_SEGREDO_DA_EDGE_FUNCTION
 PATRIMONIO_WORKSPACE_KEY=64_CARACTERES_HEXADECIMAIS_ALEATORIOS
-MICROSOFT_TENANT_ID=SEU_DIRECTORY_TENANT_ID
-MICROSOFT_CLIENT_ID=SEU_APPLICATION_CLIENT_ID
-MICROSOFT_CLIENT_SECRET=VALOR_DO_CLIENT_SECRET
+GITHUB_CLIENT_ID=CLIENT_ID_DO_OAUTH_APP
+GITHUB_CLIENT_SECRET=CLIENT_SECRET_DO_OAUTH_APP
 AUTH_SESSION_SECRET=SEGREDO_ALEATORIO_COM_PELO_MENOS_64_CARACTERES
 ```
 
@@ -62,7 +62,7 @@ O endereço de produção é `https://patrimonio-ops-control.kenjihidehira999.wo
 ```bash
 curl -I https://patrimonio-ops-control.kenjihidehira999.workers.dev/demo/
 curl https://patrimonio-ops-control.kenjihidehira999.workers.dev/api/state
-curl -I "https://patrimonio-ops-control.kenjihidehira999.workers.dev/api/auth/microsoft/login?return_to=%2Fdemo%2Findex.html"
+curl -I "https://patrimonio-ops-control.kenjihidehira999.workers.dev/api/auth/github/login?return_to=%2Fdemo%2Findex.html"
 curl -I https://patrimonio-ops-control.kenjihidehira999.workers.dev/api/export
 curl -i -X POST https://patrimonio-ops-control.kenjihidehira999.workers.dev/api/state \
   -H "content-type: application/json" \
@@ -73,7 +73,7 @@ Resultados esperados:
 
 - `/demo/`: HTTP `200` e interface operacional.
 - `GET /api/state`: HTTP `200`, sessão anônima e seed público.
-- Login Microsoft: HTTP `302` para `login.microsoftonline.com` quando as credenciais Entra estão configuradas.
+- Login GitHub: HTTP `302` para `github.com/login/oauth/authorize` quando as credenciais estão configuradas.
 - `GET /api/export`: HTTP `200` e conteúdo XLSX.
 - `POST /api/state` sem login: HTTP `401`.
 - O gateway sem `x-patrimonio-key` retorna `401`.
@@ -91,11 +91,13 @@ A Edge Function aceita a chave configurada e, durante a transição atual, o has
 
 ## Domínio personalizado
 
-Para usar um domínio próprio, adicione-o em **Workers & Pages > patrimonio-ops-control > Domains**. Cadastre a nova Redirect URI no Entra antes de remover a URL `workers.dev`. Não aceite identidade enviada pelo cliente e não exponha os secrets no frontend.
+Para usar um domínio próprio, adicione-o em **Workers & Pages > patrimonio-ops-control > Domains** e atualize a Homepage URL e a callback no GitHub OAuth App antes de remover a URL `workers.dev`. Não aceite identidade enviada pelo cliente e não exponha os secrets no frontend.
+
+GitHub Pages não substitui o Worker neste projeto. O serviço `github.io` publica arquivos estáticos, mas não executa as rotas `/api`, não emite cookies `HttpOnly` e não pode guardar os segredos do Supabase ou do OAuth App. Dividir a interface em `github.io` e a API em `workers.dev` também criaria sessão cross-site dependente de cookies de terceiros. Por isso, GitHub permanece como repositório e CI; o runtime fica no Worker.
 
 ## Checklist de produção
 
-- [x] Restrição por tenant Microsoft, domínio corporativo e workspace empresarial.
+- [x] Restrição por allowlist de logins GitHub e workspace empresarial.
 - [ ] RBAC entre administrador, operador e auditor.
 - [ ] RBAC para leitura, cadastro, transferência, baixa, importação e auditoria.
 - [x] Isolamento da base por chave empresarial secreta.
