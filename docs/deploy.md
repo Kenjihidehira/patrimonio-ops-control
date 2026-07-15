@@ -11,7 +11,7 @@ O projeto usa Vinext e possui configuração de hosting em `.openai/hosting.json
 5. Publique o conteúdo de `dist` com a configuração `.openai`.
 6. Aguarde o status de deploy `READY` antes de divulgar a URL.
 
-A tabela `workspaces` é criada defensivamente na primeira operação D1. A migration equivalente está em `db/migrations/0001_workspaces.up.sql`, com rollback em `0001_workspaces.down.sql`.
+A tabela `workspaces` é criada defensivamente na primeira operação D1. A migration equivalente está em `drizzle/0001_workspaces.up.sql`, com rollback em `0001_workspaces.down.sql`.
 
 ## Verificações pós-deploy
 
@@ -36,7 +36,7 @@ Para implantação direta no Cloudflare Workers:
 
 1. Crie uma base D1.
 2. Substitua o `database_id` placeholder da configuração local pelo ID real no ambiente de deploy.
-3. Aplique `db/migrations/0001_workspaces.up.sql`.
+3. Aplique `drizzle/0001_workspaces.up.sql`.
 4. Configure a autenticação e os cabeçalhos confiáveis equivalentes aos usados pela aplicação.
 5. Faça o build e deploy com Wrangler.
 
