@@ -1,0 +1,462 @@
+{
+  "revision": 0,
+  "nuclei": [
+    {
+      "id": "nuc-ti",
+      "name": "Tecnologia da Informação",
+      "code": "TI",
+      "location": "Matriz - 2º andar",
+      "manager": "Marina Costa"
+    },
+    {
+      "id": "nuc-fin",
+      "name": "Financeiro",
+      "code": "FIN",
+      "location": "Matriz - 1º andar",
+      "manager": "Rafael Nunes"
+    },
+    {
+      "id": "nuc-ops",
+      "name": "Operações",
+      "code": "OPS",
+      "location": "Centro de distribuição",
+      "manager": "Luciana Prado"
+    },
+    {
+      "id": "nuc-com",
+      "name": "Comercial",
+      "code": "COM",
+      "location": "Matriz - térreo",
+      "manager": "Bruno Alves"
+    },
+    {
+      "id": "nuc-rh",
+      "name": "Recursos Humanos",
+      "code": "RH",
+      "location": "Matriz - 1º andar",
+      "manager": "Camila Rocha"
+    }
+  ],
+  "assets": [
+    {
+      "id": "104281",
+      "type": "cpu",
+      "nucleusId": "nuc-ti",
+      "assignee": "João Martins",
+      "location": "Sala de infraestrutura",
+      "serial": "BR-OPT-70931",
+      "brandModel": "Dell OptiPlex 7010",
+      "acquiredAt": "2025-02-12",
+      "value": 4890,
+      "status": "allocated",
+      "notes": "Estação de administração de rede.",
+      "createdAt": "2025-02-12T13:00:00.000Z",
+      "movements": [
+        {
+          "id": "mov-104281-2",
+          "type": "transfer",
+          "actor": "marina.costa@empresa.com",
+          "from": "Tecnologia da Informação • Bancada técnica • Sem responsável",
+          "to": "Tecnologia da Informação • Sala de infraestrutura • João Martins",
+          "note": "Alocação para administração de rede.",
+          "at": "2026-07-14T16:32:00.000Z"
+        },
+        {
+          "id": "mov-104281-1",
+          "type": "registration",
+          "actor": "patrimonio@empresa.com",
+          "from": "Não cadastrado",
+          "to": "Tecnologia da Informação • Bancada técnica • Sem responsável",
+          "note": "Patrimônio cadastrado como Disponível.",
+          "at": "2025-02-12T13:00:00.000Z"
+        }
+      ]
+    },
+    {
+      "id": "104282",
+      "type": "monitor_1",
+      "nucleusId": "nuc-ti",
+      "assignee": "João Martins",
+      "location": "Sala de infraestrutura",
+      "serial": "MON-P2425-1882",
+      "brandModel": "Dell Pro 24 Plus P2425H",
+      "acquiredAt": "2025-02-12",
+      "value": 1290,
+      "status": "allocated",
+      "notes": "Monitor principal da estação 104281.",
+      "createdAt": "2025-02-12T13:08:00.000Z",
+      "movements": [
+        {
+          "id": "mov-104282-1",
+          "type": "registration",
+          "actor": "patrimonio@empresa.com",
+          "from": "Não cadastrado",
+          "to": "Tecnologia da Informação • Sala de infraestrutura • João Martins",
+          "note": "Patrimônio cadastrado como Em uso.",
+          "at": "2025-02-12T13:08:00.000Z"
+        }
+      ]
+    },
+    {
+      "id": "104283",
+      "type": "monitor_2",
+      "nucleusId": "nuc-ti",
+      "assignee": "João Martins",
+      "location": "Assistência técnica interna",
+      "serial": "MON-P2425-1887",
+      "brandModel": "Dell Pro 24 Plus P2425H",
+      "acquiredAt": "2025-02-12",
+      "value": 1290,
+      "status": "maintenance",
+      "notes": "Aguardando substituição da fonte.",
+      "createdAt": "2025-02-12T13:12:00.000Z",
+      "movements": [
+        {
+          "id": "mov-104283-2",
+          "type": "status_change",
+          "actor": "joao.martins@empresa.com",
+          "from": "Em uso",
+          "to": "Manutenção",
+          "note": "Monitor sem alimentação após oscilação elétrica.",
+          "at": "2026-07-15T10:05:00.000Z"
+        },
+        {
+          "id": "mov-104283-1",
+          "type": "registration",
+          "actor": "patrimonio@empresa.com",
+          "from": "Não cadastrado",
+          "to": "Tecnologia da Informação • Sala de infraestrutura • João Martins",
+          "note": "Patrimônio cadastrado como Em uso.",
+          "at": "2025-02-12T13:12:00.000Z"
+        }
+      ]
+    },
+    {
+      "id": "104284",
+      "type": "notebook",
+      "nucleusId": "nuc-fin",
+      "assignee": "Beatriz Lima",
+      "location": "Mesa FIN-04",
+      "serial": "LN-T14-55291",
+      "brandModel": "Lenovo ThinkPad T14 Gen 5",
+      "acquiredAt": "2025-05-20",
+      "value": 7950,
+      "status": "allocated",
+      "notes": "Equipamento com criptografia corporativa habilitada.",
+      "createdAt": "2025-05-20T14:30:00.000Z",
+      "movements": [
+        {
+          "id": "mov-104284-1",
+          "type": "registration",
+          "actor": "patrimonio@empresa.com",
+          "from": "Não cadastrado",
+          "to": "Financeiro • Mesa FIN-04 • Beatriz Lima",
+          "note": "Patrimônio cadastrado como Em uso.",
+          "at": "2025-05-20T14:30:00.000Z"
+        }
+      ]
+    },
+    {
+      "id": "104285",
+      "type": "chair",
+      "nucleusId": "nuc-fin",
+      "assignee": "",
+      "location": "Almoxarifado A",
+      "serial": "CAD-ERG-2204",
+      "brandModel": "Flexform Uni All Black",
+      "acquiredAt": "2024-11-08",
+      "value": 1180,
+      "status": "available",
+      "notes": "Cadeira reserva revisada.",
+      "createdAt": "2024-11-08T11:15:00.000Z",
+      "movements": [
+        {
+          "id": "mov-104285-1",
+          "type": "registration",
+          "actor": "patrimonio@empresa.com",
+          "from": "Não cadastrado",
+          "to": "Financeiro • Almoxarifado A • Sem responsável",
+          "note": "Patrimônio cadastrado como Disponível.",
+          "at": "2024-11-08T11:15:00.000Z"
+        }
+      ]
+    },
+    {
+      "id": "104286",
+      "type": "cpu",
+      "nucleusId": "nuc-ops",
+      "assignee": "Carlos Mendes",
+      "location": "Posto de expedição 02",
+      "serial": "HP-PD600-9072",
+      "brandModel": "HP ProDesk 600 G6",
+      "acquiredAt": "2023-08-17",
+      "value": 4250,
+      "status": "discrepancy",
+      "notes": "Número de série físico diverge do termo de responsabilidade.",
+      "createdAt": "2023-08-17T12:00:00.000Z",
+      "movements": [
+        {
+          "id": "mov-104286-2",
+          "type": "status_change",
+          "actor": "luciana.prado@empresa.com",
+          "from": "Em uso",
+          "to": "Divergência",
+          "note": "Conferência trimestral identificou divergência no número de série.",
+          "at": "2026-07-15T09:24:00.000Z"
+        },
+        {
+          "id": "mov-104286-1",
+          "type": "registration",
+          "actor": "patrimonio@empresa.com",
+          "from": "Não cadastrado",
+          "to": "Operações • Posto de expedição 02 • Carlos Mendes",
+          "note": "Patrimônio cadastrado como Em uso.",
+          "at": "2023-08-17T12:00:00.000Z"
+        }
+      ]
+    },
+    {
+      "id": "104287",
+      "type": "monitor_1",
+      "nucleusId": "nuc-ops",
+      "assignee": "Carlos Mendes",
+      "location": "Posto de expedição 02",
+      "serial": "AOC-24B1-3821",
+      "brandModel": "AOC 24B1XHM",
+      "acquiredAt": "2023-08-17",
+      "value": 890,
+      "status": "allocated",
+      "notes": "Monitor principal da expedição.",
+      "createdAt": "2023-08-17T12:08:00.000Z",
+      "movements": [
+        {
+          "id": "mov-104287-1",
+          "type": "registration",
+          "actor": "patrimonio@empresa.com",
+          "from": "Não cadastrado",
+          "to": "Operações • Posto de expedição 02 • Carlos Mendes",
+          "note": "Patrimônio cadastrado como Em uso.",
+          "at": "2023-08-17T12:08:00.000Z"
+        }
+      ]
+    },
+    {
+      "id": "104288",
+      "type": "monitor_2",
+      "nucleusId": "nuc-ops",
+      "assignee": "Carlos Mendes",
+      "location": "Posto de expedição 02",
+      "serial": "AOC-24B1-3828",
+      "brandModel": "AOC 24B1XHM",
+      "acquiredAt": "2023-08-17",
+      "value": 890,
+      "status": "allocated",
+      "notes": "Monitor secundário da expedição.",
+      "createdAt": "2023-08-17T12:11:00.000Z",
+      "movements": [
+        {
+          "id": "mov-104288-1",
+          "type": "registration",
+          "actor": "patrimonio@empresa.com",
+          "from": "Não cadastrado",
+          "to": "Operações • Posto de expedição 02 • Carlos Mendes",
+          "note": "Patrimônio cadastrado como Em uso.",
+          "at": "2023-08-17T12:11:00.000Z"
+        }
+      ]
+    },
+    {
+      "id": "104289",
+      "type": "chair",
+      "nucleusId": "nuc-com",
+      "assignee": "Fernanda Souza",
+      "location": "Mesa COM-07",
+      "serial": "CAD-BRZ-8841",
+      "brandModel": "Cavaletti Vélo 42101",
+      "acquiredAt": "2024-04-03",
+      "value": 1450,
+      "status": "allocated",
+      "notes": "Apoio lombar ajustado em junho de 2026.",
+      "createdAt": "2024-04-03T15:45:00.000Z",
+      "movements": [
+        {
+          "id": "mov-104289-1",
+          "type": "registration",
+          "actor": "patrimonio@empresa.com",
+          "from": "Não cadastrado",
+          "to": "Comercial • Mesa COM-07 • Fernanda Souza",
+          "note": "Patrimônio cadastrado como Em uso.",
+          "at": "2024-04-03T15:45:00.000Z"
+        }
+      ]
+    },
+    {
+      "id": "104290",
+      "type": "notebook",
+      "nucleusId": "nuc-com",
+      "assignee": "Pedro Azevedo",
+      "location": "Assistência externa TechFix",
+      "serial": "DL-5440-7109",
+      "brandModel": "Dell Latitude 5440",
+      "acquiredAt": "2024-01-16",
+      "value": 6880,
+      "status": "maintenance",
+      "notes": "Chamado TF-4921, previsão de retorno em 18/07.",
+      "createdAt": "2024-01-16T13:20:00.000Z",
+      "movements": [
+        {
+          "id": "mov-104290-2",
+          "type": "status_change",
+          "actor": "bruno.alves@empresa.com",
+          "from": "Em uso",
+          "to": "Manutenção",
+          "note": "Falha intermitente no conector USB-C.",
+          "at": "2026-07-13T18:10:00.000Z"
+        },
+        {
+          "id": "mov-104290-1",
+          "type": "registration",
+          "actor": "patrimonio@empresa.com",
+          "from": "Não cadastrado",
+          "to": "Comercial • Mesa COM-03 • Pedro Azevedo",
+          "note": "Patrimônio cadastrado como Em uso.",
+          "at": "2024-01-16T13:20:00.000Z"
+        }
+      ]
+    },
+    {
+      "id": "104291",
+      "type": "cpu",
+      "nucleusId": "nuc-rh",
+      "assignee": "Ana Ribeiro",
+      "location": "Sala de recrutamento",
+      "serial": "LEN-M70Q-4017",
+      "brandModel": "Lenovo ThinkCentre M70q Gen 4",
+      "acquiredAt": "2025-09-09",
+      "value": 5190,
+      "status": "allocated",
+      "notes": "Estação dedicada a entrevistas remotas.",
+      "createdAt": "2025-09-09T16:40:00.000Z",
+      "movements": [
+        {
+          "id": "mov-104291-1",
+          "type": "registration",
+          "actor": "patrimonio@empresa.com",
+          "from": "Não cadastrado",
+          "to": "Recursos Humanos • Sala de recrutamento • Ana Ribeiro",
+          "note": "Patrimônio cadastrado como Em uso.",
+          "at": "2025-09-09T16:40:00.000Z"
+        }
+      ]
+    },
+    {
+      "id": "104292",
+      "type": "chair",
+      "nucleusId": "nuc-rh",
+      "assignee": "",
+      "location": "Depósito de baixados",
+      "serial": "CAD-ERG-0902",
+      "brandModel": "Plaxmetal Brizza",
+      "acquiredAt": "2019-06-14",
+      "value": 620,
+      "status": "retired",
+      "notes": "Baixa aprovada por dano estrutural sem reparo econômico.",
+      "createdAt": "2019-06-14T14:00:00.000Z",
+      "movements": [
+        {
+          "id": "mov-104292-2",
+          "type": "status_change",
+          "actor": "camila.rocha@empresa.com",
+          "from": "Manutenção",
+          "to": "Baixado",
+          "note": "Laudo interno confirmou dano estrutural irreversível.",
+          "at": "2026-06-30T19:00:00.000Z"
+        },
+        {
+          "id": "mov-104292-1",
+          "type": "registration",
+          "actor": "patrimonio@empresa.com",
+          "from": "Não cadastrado",
+          "to": "Recursos Humanos • Mesa RH-02 • Sem responsável",
+          "note": "Patrimônio cadastrado como Disponível.",
+          "at": "2019-06-14T14:00:00.000Z"
+        }
+      ]
+    },
+    {
+      "id": "104293",
+      "type": "notebook",
+      "nucleusId": "nuc-ti",
+      "assignee": "",
+      "location": "Cofre de equipamentos",
+      "serial": "AC-TMP14-2214",
+      "brandModel": "Acer TravelMate P2",
+      "acquiredAt": "2026-06-26",
+      "value": 5480,
+      "status": "available",
+      "notes": "Reserva técnica pronta para onboarding.",
+      "createdAt": "2026-06-26T17:25:00.000Z",
+      "movements": [
+        {
+          "id": "mov-104293-1",
+          "type": "registration",
+          "actor": "patrimonio@empresa.com",
+          "from": "Não cadastrado",
+          "to": "Tecnologia da Informação • Cofre de equipamentos • Sem responsável",
+          "note": "Patrimônio cadastrado como Disponível.",
+          "at": "2026-06-26T17:25:00.000Z"
+        }
+      ]
+    },
+    {
+      "id": "104294",
+      "type": "monitor_1",
+      "nucleusId": "nuc-fin",
+      "assignee": "Beatriz Lima",
+      "location": "Mesa FIN-04",
+      "serial": "LG-24MP-7730",
+      "brandModel": "LG 24MP400-B",
+      "acquiredAt": "2025-05-20",
+      "value": 810,
+      "status": "allocated",
+      "notes": "Monitor principal do fechamento financeiro.",
+      "createdAt": "2025-05-20T14:36:00.000Z",
+      "movements": [
+        {
+          "id": "mov-104294-1",
+          "type": "registration",
+          "actor": "patrimonio@empresa.com",
+          "from": "Não cadastrado",
+          "to": "Financeiro • Mesa FIN-04 • Beatriz Lima",
+          "note": "Patrimônio cadastrado como Em uso.",
+          "at": "2025-05-20T14:36:00.000Z"
+        }
+      ]
+    },
+    {
+      "id": "104295",
+      "type": "monitor_2",
+      "nucleusId": "nuc-fin",
+      "assignee": "",
+      "location": "Almoxarifado A",
+      "serial": "LG-24MP-7737",
+      "brandModel": "LG 24MP400-B",
+      "acquiredAt": "2025-05-20",
+      "value": 810,
+      "status": "available",
+      "notes": "Equipamento reserva para conciliação mensal.",
+      "createdAt": "2025-05-20T14:40:00.000Z",
+      "movements": [
+        {
+          "id": "mov-104295-1",
+          "type": "registration",
+          "actor": "patrimonio@empresa.com",
+          "from": "Não cadastrado",
+          "to": "Financeiro • Almoxarifado A • Sem responsável",
+          "note": "Patrimônio cadastrado como Disponível.",
+          "at": "2025-05-20T14:40:00.000Z"
+        }
+      ]
+    }
+  ]
+}

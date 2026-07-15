@@ -1,0 +1,370 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Sistema empresarial de controle patrimonial por núcleo, com movimentações e auditoria."
+    />
+    <title>Patrimônio Ops | Controle patrimonial</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar" aria-label="Navegação principal">
+        <a class="brand" href="#inventario" aria-label="Patrimônio Ops - início">
+          <span class="brand-mark" aria-hidden="true">PO</span>
+          <span>
+            <strong>Patrimônio Ops</strong>
+            <small>Controle empresarial</small>
+          </span>
+        </a>
+
+        <nav class="primary-nav">
+          <button class="nav-item is-active" type="button" data-view="inventory">
+            <span class="nav-index" aria-hidden="true">01</span>
+            Inventário
+          </button>
+          <button class="nav-item" type="button" data-view="nuclei">
+            <span class="nav-index" aria-hidden="true">02</span>
+            Núcleos
+          </button>
+          <button class="nav-item" type="button" data-view="audit">
+            <span class="nav-index" aria-hidden="true">03</span>
+            Auditoria
+          </button>
+        </nav>
+
+        <div class="sidebar-status">
+          <span class="status-dot" aria-hidden="true"></span>
+          <div>
+            <strong>Base operacional</strong>
+            <span id="sidebar-source">Carregando dados</span>
+          </div>
+        </div>
+      </aside>
+
+      <main class="main-content" id="main-content">
+        <header class="topbar">
+          <div class="page-heading">
+            <p class="eyebrow" id="view-eyebrow">Operações / Inventário</p>
+            <h1 id="view-title">Controle de patrimônios</h1>
+            <p id="view-description">
+              Localize ativos, acompanhe responsáveis e trate divergências por núcleo.
+            </p>
+          </div>
+          <div class="header-actions">
+            <div class="session-control" id="session-control" aria-live="polite">
+              <span class="session-avatar" aria-hidden="true">V</span>
+              <span>
+                <small>Sessão</small>
+                <strong>Carregando</strong>
+              </span>
+            </div>
+            <button class="button button-primary" id="new-asset-button" type="button">
+              <span aria-hidden="true">+</span>
+              Novo patrimônio
+            </button>
+          </div>
+        </header>
+
+        <div class="demo-notice" id="demo-notice" hidden>
+          <div>
+            <strong>Modo demonstração</strong>
+            <span>Os dados são públicos e reiniciam. Entre para registrar alterações no D1.</span>
+          </div>
+          <a class="button button-secondary button-small" id="sign-in-link" href="#">
+            Entrar para editar
+          </a>
+        </div>
+
+        <section class="view-section" id="inventory-view" data-view-panel="inventory">
+          <div class="kpi-strip" aria-label="Resumo do inventário">
+            <article class="kpi-item kpi-total">
+              <span>Total ativo</span>
+              <strong id="kpi-total">--</strong>
+              <small id="kpi-total-context">itens sob controle</small>
+            </article>
+            <article class="kpi-item kpi-allocated">
+              <span>Em uso</span>
+              <strong id="kpi-allocated">--</strong>
+              <small>alocados a responsáveis</small>
+            </article>
+            <article class="kpi-item kpi-maintenance">
+              <span>Manutenção</span>
+              <strong id="kpi-maintenance">--</strong>
+              <small>aguardando tratamento</small>
+            </article>
+            <article class="kpi-item kpi-discrepancy">
+              <span>Divergências</span>
+              <strong id="kpi-discrepancies">--</strong>
+              <small>exigem conferência</small>
+            </article>
+          </div>
+
+          <section class="filter-band" aria-labelledby="filter-title">
+            <div class="filter-heading">
+              <div>
+                <h2 id="filter-title">Inventário operacional</h2>
+                <p><span id="result-count">0</span> patrimônios encontrados</p>
+              </div>
+              <button class="button button-quiet button-small" id="clear-filters" type="button">
+                Limpar filtros
+              </button>
+            </div>
+            <div class="filter-grid">
+              <label class="field field-search">
+                <span>Buscar patrimônio</span>
+                <input
+                  id="search-input"
+                  type="search"
+                  placeholder="ID, série, responsável ou local"
+                  autocomplete="off"
+                />
+              </label>
+              <label class="field">
+                <span>Tipo de item</span>
+                <select id="type-filter">
+                  <option value="all">Todos os itens</option>
+                </select>
+              </label>
+              <label class="field">
+                <span>Status</span>
+                <select id="status-filter">
+                  <option value="all">Todos os status</option>
+                </select>
+              </label>
+              <label class="field">
+                <span>Núcleo</span>
+                <select id="nucleus-filter">
+                  <option value="all">Todos os núcleos</option>
+                </select>
+              </label>
+              <label class="field">
+                <span>Ordenar por</span>
+                <select id="sort-filter">
+                  <option value="recent">Mais recentes</option>
+                  <option value="asset_asc">Número do patrimônio</option>
+                  <option value="nucleus">Núcleo</option>
+                  <option value="status">Status</option>
+                </select>
+              </label>
+            </div>
+          </section>
+
+          <div class="inventory-layout">
+            <section class="table-panel" aria-labelledby="inventory-table-title">
+              <div class="panel-heading">
+                <div>
+                  <h2 id="inventory-table-title">Patrimônios</h2>
+                  <p>Clique no identificador para abrir o histórico completo.</p>
+                </div>
+                <span class="revision-badge" id="revision-badge">Revisão 0</span>
+              </div>
+              <div class="table-scroll" id="inventory-table-container" aria-busy="true">
+                <table>
+                  <caption class="sr-only">Inventário de patrimônios da empresa</caption>
+                  <thead>
+                    <tr>
+                      <th scope="col">Patrimônio</th>
+                      <th scope="col">Item</th>
+                      <th scope="col">Núcleo</th>
+                      <th scope="col">Responsável</th>
+                      <th scope="col">Status</th>
+                      <th scope="col">Última movimentação</th>
+                    </tr>
+                  </thead>
+                  <tbody id="inventory-body"></tbody>
+                </table>
+                <div class="state-message" id="inventory-state">
+                  <span class="loading-line"></span>
+                  <span class="loading-line loading-line-short"></span>
+                  <span>Carregando inventário...</span>
+                </div>
+              </div>
+            </section>
+
+            <aside class="detail-panel" id="asset-detail" aria-labelledby="detail-title">
+              <div class="empty-detail">
+                <span class="empty-symbol" aria-hidden="true">#</span>
+                <h2 id="detail-title">Selecione um patrimônio</h2>
+                <p>Os dados de aquisição, alocação e movimentações aparecerão aqui.</p>
+              </div>
+            </aside>
+          </div>
+        </section>
+
+        <section class="view-section" id="nuclei-view" data-view-panel="nuclei" hidden>
+          <div class="section-toolbar">
+            <div>
+              <h2>Núcleos da empresa</h2>
+              <p>Responsabilidade operacional, localização e concentração de ativos.</p>
+            </div>
+            <button class="button button-primary" id="new-nucleus-button" type="button">
+              <span aria-hidden="true">+</span>
+              Novo núcleo
+            </button>
+          </div>
+          <div class="nuclei-grid" id="nuclei-grid" aria-live="polite"></div>
+        </section>
+
+        <section class="view-section" id="audit-view" data-view-panel="audit" hidden>
+          <div class="section-toolbar">
+            <div>
+              <h2>Trilha de auditoria</h2>
+              <p>Registro cronológico de cadastros, transferências e mudanças de status.</p>
+            </div>
+            <span class="audit-count" id="audit-count">0 registros</span>
+          </div>
+          <div class="audit-list" id="audit-list" aria-live="polite"></div>
+        </section>
+      </main>
+    </div>
+
+    <div class="toast-region" id="toast-region" aria-live="assertive"></div>
+
+    <dialog class="modal" id="asset-dialog" aria-labelledby="asset-dialog-title">
+      <form class="modal-content" id="asset-form">
+        <div class="modal-header">
+          <div>
+            <p class="eyebrow">Cadastro patrimonial</p>
+            <h2 id="asset-dialog-title">Novo patrimônio</h2>
+          </div>
+          <button class="icon-button" type="button" data-close-dialog="asset-dialog" aria-label="Fechar">
+            ×
+          </button>
+        </div>
+        <div class="modal-body form-grid">
+          <label class="field">
+            <span>Identificador de 6 números</span>
+            <input name="id" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" required placeholder="104296" />
+          </label>
+          <label class="field">
+            <span>Tipo de item</span>
+            <select name="type" id="asset-type-input" required></select>
+          </label>
+          <label class="field">
+            <span>Núcleo</span>
+            <select name="nucleusId" id="asset-nucleus-input" required></select>
+          </label>
+          <label class="field">
+            <span>Status inicial</span>
+            <select name="status" id="asset-status-input" required></select>
+          </label>
+          <label class="field field-wide">
+            <span>Marca e modelo</span>
+            <input name="brandModel" maxlength="180" required placeholder="Dell OptiPlex 7010" />
+          </label>
+          <label class="field">
+            <span>Número de série</span>
+            <input name="serial" maxlength="180" placeholder="BR-OPT-70931" />
+          </label>
+          <label class="field">
+            <span>Data de aquisição</span>
+            <input name="acquiredAt" type="date" required />
+          </label>
+          <label class="field">
+            <span>Valor de aquisição</span>
+            <input name="value" type="number" min="0" max="100000000" step="0.01" required placeholder="4890,00" />
+          </label>
+          <label class="field">
+            <span>Responsável</span>
+            <input name="assignee" maxlength="180" placeholder="Nome do colaborador" />
+          </label>
+          <label class="field field-wide">
+            <span>Localização</span>
+            <input name="location" maxlength="180" required placeholder="Sala, mesa ou unidade" />
+          </label>
+          <label class="field field-wide">
+            <span>Observações</span>
+            <textarea name="notes" maxlength="500" rows="3" placeholder="Informações úteis para conferência e manutenção"></textarea>
+          </label>
+        </div>
+        <div class="form-error" id="asset-form-error" role="alert" hidden></div>
+        <div class="modal-footer">
+          <button class="button button-secondary" type="button" data-close-dialog="asset-dialog">Cancelar</button>
+          <button class="button button-primary" type="submit">Cadastrar patrimônio</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog class="modal" id="transfer-dialog" aria-labelledby="transfer-dialog-title">
+      <form class="modal-content modal-content-small" id="transfer-form">
+        <div class="modal-header">
+          <div>
+            <p class="eyebrow">Movimentação</p>
+            <h2 id="transfer-dialog-title">Transferir patrimônio</h2>
+          </div>
+          <button class="icon-button" type="button" data-close-dialog="transfer-dialog" aria-label="Fechar">×</button>
+        </div>
+        <div class="modal-body form-grid">
+          <input name="assetId" type="hidden" />
+          <label class="field field-wide">
+            <span>Novo núcleo</span>
+            <select name="nucleusId" id="transfer-nucleus-input" required></select>
+          </label>
+          <label class="field field-wide">
+            <span>Nova localização</span>
+            <input name="location" maxlength="180" required />
+          </label>
+          <label class="field field-wide">
+            <span>Novo responsável</span>
+            <input name="assignee" maxlength="180" placeholder="Deixe vazio se ficar disponível" />
+          </label>
+          <label class="field field-wide">
+            <span>Motivo</span>
+            <textarea name="note" maxlength="500" rows="3" placeholder="Motivo ou referência da transferência"></textarea>
+          </label>
+        </div>
+        <div class="form-error" id="transfer-form-error" role="alert" hidden></div>
+        <div class="modal-footer">
+          <button class="button button-secondary" type="button" data-close-dialog="transfer-dialog">Cancelar</button>
+          <button class="button button-primary" type="submit">Confirmar transferência</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog class="modal" id="nucleus-dialog" aria-labelledby="nucleus-dialog-title">
+      <form class="modal-content modal-content-small" id="nucleus-form">
+        <div class="modal-header">
+          <div>
+            <p class="eyebrow">Estrutura organizacional</p>
+            <h2 id="nucleus-dialog-title">Novo núcleo</h2>
+          </div>
+          <button class="icon-button" type="button" data-close-dialog="nucleus-dialog" aria-label="Fechar">×</button>
+        </div>
+        <div class="modal-body form-grid">
+          <label class="field">
+            <span>Identificador interno</span>
+            <input name="id" maxlength="60" pattern="[a-z0-9-]+" required placeholder="nuc-juridico" />
+          </label>
+          <label class="field">
+            <span>Código</span>
+            <input name="code" maxlength="12" required placeholder="JUR" />
+          </label>
+          <label class="field field-wide">
+            <span>Nome do núcleo</span>
+            <input name="name" maxlength="180" required placeholder="Jurídico" />
+          </label>
+          <label class="field field-wide">
+            <span>Localização</span>
+            <input name="location" maxlength="180" required placeholder="Matriz - 2º andar" />
+          </label>
+          <label class="field field-wide">
+            <span>Gestor responsável</span>
+            <input name="manager" maxlength="180" required placeholder="Nome do gestor" />
+          </label>
+        </div>
+        <div class="form-error" id="nucleus-form-error" role="alert" hidden></div>
+        <div class="modal-footer">
+          <button class="button button-secondary" type="button" data-close-dialog="nucleus-dialog">Cancelar</button>
+          <button class="button button-primary" type="submit">Criar núcleo</button>
+        </div>
+      </form>
+    </dialog>
+
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>
