@@ -3,10 +3,10 @@
 Sistema web de controle patrimonial para empresas que precisam saber **qual ativo existe, onde está, a qual núcleo pertence e quem responde por ele**. O projeto cobre importação de planilhas, cadastro, alocação, transferências, manutenção, divergências, baixa lógica, exportação e trilha de auditoria.
 
 [![CI](https://github.com/Kenjihidehira/patrimonio-ops-control/actions/workflows/ci.yml/badge.svg)](https://github.com/Kenjihidehira/patrimonio-ops-control/actions/workflows/ci.yml)
-[![Deploy](https://img.shields.io/badge/demo-online-126044)](https://patrimonio-ops-control.dadosepesquisa.chatgpt.site/demo/)
+[![Deploy](https://img.shields.io/badge/demo-online-126044)](https://patrimonio-ops-control.kenjihidehira999.workers.dev/demo/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-3978c3.svg)](LICENSE)
 
-**Demo pública:** [patrimonio-ops-control.dadosepesquisa.chatgpt.site/demo](https://patrimonio-ops-control.dadosepesquisa.chatgpt.site/demo/)
+**Demo pública:** [patrimonio-ops-control.kenjihidehira999.workers.dev/demo](https://patrimonio-ops-control.kenjihidehira999.workers.dev/demo/)
 
 ![Dashboard do Patrimônio Ops](docs/dashboard.jpg)
 
@@ -68,7 +68,7 @@ pnpm audit --prod
 ## Configurar o login Microsoft
 
 1. Registre um aplicativo Web de locatário único no Microsoft Entra ID.
-2. Cadastre `https://patrimonio-ops-control.dadosepesquisa.chatgpt.site/api/auth/microsoft/callback` como Redirect URI do tipo Web.
+2. Cadastre `https://patrimonio-ops-control.kenjihidehira999.workers.dev/api/auth/microsoft/callback` como Redirect URI do tipo Web.
 3. Crie um Client Secret e armazene-o somente em `MICROSOFT_CLIENT_SECRET` no ambiente do servidor.
 4. Configure o Tenant ID, Client ID, domínios autorizados e `AUTH_SESSION_SECRET` conforme `.env.example`.
 
@@ -121,7 +121,7 @@ A interface segue o padrão `list report + object detail`, comum em sistemas cor
 
 ## Deploy
 
-O projeto está configurado para OpenAI Sites em [`.openai/hosting.json`](.openai/hosting.json). O procedimento reproduzível, as migrations e os controles de pré-publicação estão em [`docs/deploy.md`](docs/deploy.md).
+O projeto está configurado para Cloudflare Workers em [`wrangler.jsonc`](wrangler.jsonc). Use `pnpm deploy:cloudflare` após autenticar o Wrangler e cadastrar os secrets do runtime. O procedimento reproduzível, as migrations e os controles de pré-publicação estão em [`docs/deploy.md`](docs/deploy.md).
 
 ## Diferenciais comerciais
 

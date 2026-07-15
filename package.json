@@ -9,10 +9,12 @@
   "scripts": {
     "dev": "vinext dev",
     "build": "vinext build",
+    "deploy:cloudflare": "vinext deploy --name patrimonio-ops-control",
+    "deploy:cloudflare:dry-run": "vinext deploy --dry-run --name patrimonio-ops-control",
     "start": "vinext start",
     "test": "node --test tests/*.test.mjs",
     "typecheck": "tsc --noEmit",
-    "lint": "eslint . --ignore-pattern dist --ignore-pattern .next"
+    "lint": "eslint . --ignore-pattern dist --ignore-pattern .next --ignore-pattern .wrangler"
   },
   "dependencies": {
     "jose": "6.2.3",

@@ -14,7 +14,7 @@ flowchart LR
     SEED[Seed público sanitizado] --> API
 ```
 
-O navegador nunca recebe a URL privilegiada nem o segredo do gateway. A API do Sites chama a Edge Function pelo servidor, e a função executa apenas as operações permitidas contra o Postgres.
+O navegador nunca recebe a URL privilegiada nem o segredo do gateway. A API do Cloudflare Worker chama a Edge Function pelo servidor, e a função executa apenas as operações permitidas contra o Postgres.
 
 ## Responsabilidades
 
@@ -139,7 +139,7 @@ Também faltam recuperação de desastre automatizada, política formal de reten
 
 ### ADR-004: gateway servidor-servidor
 
-**Decisão:** manter as tabelas fechadas para chaves públicas e expor uma Edge Function mínima à API do Sites.
+**Decisão:** manter as tabelas fechadas para chaves públicas e expor uma Edge Function mínima à API do Cloudflare Worker.
 
 **Motivo:** a integração de deploy não deve colocar uma chave privilegiada no navegador nem depender de identidade forjada pelo cliente.
 

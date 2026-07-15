@@ -1,0 +1,23 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "patrimonio-ops-control",
+  "account_id": "af833d2e4c5c0b786568f9efcc4eda13",
+  "compatibility_date": "2026-07-15",
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
+  "workers_dev": true,
+  "main": "./worker/index.ts",
+  "vars": {
+    "SUPABASE_GATEWAY_URL": "https://boxbxyushapqhtbsxnyb.supabase.co/functions/v1/patrimonio-gateway",
+    "MICROSOFT_ALLOWED_DOMAINS": "gazin.com.br"
+  },
+  "assets": {
+    "directory": "dist/client",
+    "not_found_handling": "none",
+    "binding": "ASSETS"
+  },
+  "images": {
+    "binding": "IMAGES"
+  }
+}

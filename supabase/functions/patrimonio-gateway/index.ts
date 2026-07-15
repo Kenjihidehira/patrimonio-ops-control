@@ -1,14 +1,24 @@
+import { gatewayKeyMatches } from "./auth.js";
+
 const gatewayKey = Deno.env.get("PATRIMONIO_GATEWAY_KEY") ?? "";
+const rotatedGatewayKeyHash =
+  "937108f7408c285b8666b3598a03b3cfe0b2e57cd36a4a29627fc9fb88a26d7b";
 const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
 const secretKeys = JSON.parse(Deno.env.get("SUPABASE_SECRET_KEYS") ?? "{}");
 const supabaseSecretKey = secretKeys.default ?? Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
 
 Deno.serve(async (request) => {
   if (request.method !== "POST") return json({ error: "method_not_allowed" }, 405);
-  if (!gatewayKey || !supabaseUrl || !supabaseSecretKey) {
+  if (!supabaseUrl || !supabaseSecretKey) {
     return json({ error: "gateway_not_configured" }, 500);
   }
-  if (!(await secretsMatch(request.headers.get("x-patrimonio-key") ?? "", gatewayKey))) {
+  if (
+    !(await gatewayKeyMatches(
+      request.headers.get("x-patrimonio-key") ?? "",
+      gatewayKey,
+      rotatedGatewayKeyHash,
+    ))
+  ) {
     return json({ error: "unauthorized" }, 401);
   }
 
@@ -98,6 +108,7 @@ async function dataRequest(path, init = {}) {
     headers: {
       accept: "application/json",
       apikey: supabaseSecretKey,
+      authorization: `Bearer ${supabaseSecretKey}`,
       ...(init.body ? { "content-type": "application/json" } : {}),
       ...init.headers,
     },
@@ -105,24 +116,21 @@ async function dataRequest(path, init = {}) {
   const text = await response.text();
   const body = text ? JSON.parse(text) : null;
   if (!response.ok) {
+    console.error(
+      JSON.stringify({
+        event: "patrimonio_gateway_data_request_failed",
+        path: path.split("?")[0],
+        status: response.status,
+        code: body?.code ?? null,
+        message: body?.message ?? "database_error",
+      }),
+    );
     throw Object.assign(new Error(body?.message ?? "database_error"), {
       status: response.status,
       code: body?.code ?? null,
     });
   }
   return body;
-}
-
-async function secretsMatch(left, right) {
-  if (!left || !right) return false;
-  const encoder = new TextEncoder();
-  const [leftHash, rightHash] = await Promise.all([
-    crypto.subtle.digest("SHA-256", encoder.encode(left)),
-    crypto.subtle.digest("SHA-256", encoder.encode(right)),
-  ]);
-  const leftBytes = new Uint8Array(leftHash);
-  const rightBytes = new Uint8Array(rightHash);
-  return leftBytes.length === rightBytes.length && leftBytes.every((byte, index) => byte === rightBytes[index]);
 }
 
 function json(body, status = 200) {
