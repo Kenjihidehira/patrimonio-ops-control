@@ -893,11 +893,14 @@ function openCollaboratorDialog(collaboratorId) {
     `${collaborator.assetCount} ${collaborator.assetCount === 1 ? "item" : "itens"}`;
   elements.collaboratorAssetsList.innerHTML = collaborator.assets.length
     ? collaborator.assets.map((asset) => `
-        <article class="profile-asset-item">
+        <article class="profile-asset-item profile-asset-item-${escapeAttribute(asset.type)}">
           <span class="profile-asset-icon profile-asset-icon-${escapeAttribute(asset.type)}" aria-hidden="true">${assetTypeIcon(asset.type)}</span>
-          <div>
-            <strong>#${escapeHtml(asset.id)} • ${escapeHtml(dashboard.options.assetTypes[asset.type])}</strong>
-            <span>${escapeHtml(asset.brandModel)} • ${escapeHtml(asset.location)}</span>
+          <div class="profile-asset-copy">
+            <div class="profile-asset-heading">
+              <strong>#${escapeHtml(asset.id)}</strong>
+              <span>${escapeHtml(dashboard.options.assetTypes[asset.type])}</span>
+            </div>
+            <span class="profile-asset-meta">${escapeHtml(asset.brandModel)} • ${escapeHtml(asset.location)}</span>
           </div>
           ${statusBadge(asset.status)}
         </article>

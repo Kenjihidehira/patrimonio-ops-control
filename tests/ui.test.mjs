@@ -120,6 +120,10 @@ test("perfil do colaborador diferencia patrimônios com ícones por categoria", 
   assert.match(js, /profile-asset-icon-\$\{escapeAttribute\(asset\.type\)\}/);
   assert.match(css, /\.profile-asset-icon svg/);
   assert.match(css, /\.profile-asset-icon-chair/);
+  assert.match(js, /class="profile-asset-heading"/);
+  assert.match(js, /class="profile-asset-meta"/);
+  assert.match(css, /--asset-accent:/);
+  assert.match(css, /\.profile-asset-item:hover/);
 });
 
 test("tema escuro é acessível, persistido em cookie e não usa armazenamento local", () => {
