@@ -4,11 +4,10 @@ import { jwtVerify, SignJWT } from "jose";
 import {
   isAllowedGitHubLogin,
   isAllowedGoogleEmail,
-  isAllowedMicrosoftEmail,
   safeRelativeReturnPath,
 } from "@/lib/auth-utils";
 
-export type AuthProvider = "github" | "microsoft" | "google";
+export type AuthProvider = "github" | "google";
 
 export type AuthenticatedUser = {
   provider: AuthProvider;
@@ -26,9 +25,7 @@ export type OAuthTransaction = {
   returnTo: string;
 };
 
-type SessionIdentity = AuthenticatedUser & {
-  tenantId?: string;
-};
+type SessionIdentity = AuthenticatedUser;
 
 const APP_PATH = "/demo/index.html";
 const LOGIN_PATH = "/login/index.html";
@@ -72,7 +69,6 @@ export async function getAuthenticatedUser(): Promise<AuthenticatedUser | null> 
       identifier: payload.identifier,
       subject: payload.uid,
       actor: `${payload.provider}:${payload.identifier}`,
-      tenantId: typeof payload.tid === "string" ? payload.tid : undefined,
     };
     return isIdentityStillAuthorized(identity) ? identity : null;
   } catch {
@@ -166,7 +162,6 @@ export async function createSessionResponse(
     name: identity.displayName,
     identifier: identity.identifier,
     uid: identity.subject,
-    tid: identity.tenantId,
   })
     .setProtectedHeader({ alg: "HS256", typ: "JWT" })
     .setIssuer(SESSION_ISSUER)
@@ -247,13 +242,6 @@ function isIdentityStillAuthorized(identity: SessionIdentity): boolean {
   if (identity.provider === "github") {
     return isAllowedGitHubLogin(identity.identifier, splitRuntimeList("GITHUB_ALLOWED_LOGINS"));
   }
-  if (identity.provider === "microsoft") {
-    return (
-      Boolean(identity.tenantId) &&
-      identity.tenantId?.toLowerCase() === runtimeValue("MICROSOFT_TENANT_ID").toLowerCase() &&
-      isAllowedMicrosoftEmail(identity.identifier, splitRuntimeList("MICROSOFT_ALLOWED_DOMAINS"))
-    );
-  }
   return isAllowedGoogleEmail(identity.identifier, splitRuntimeList("GOOGLE_ALLOWED_EMAILS"));
 }
 
@@ -264,7 +252,7 @@ function sessionSecret(): Uint8Array {
 }
 
 function isAuthProvider(value: unknown): value is AuthProvider {
-  return value === "github" || value === "microsoft" || value === "google";
+  return value === "github" || value === "google";
 }
 
 function randomBase64Url(byteLength: number): string {

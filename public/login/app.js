@@ -38,11 +38,7 @@ function safeReturnPath(value) {
 }
 
 function authErrorMessage(code) {
-  const provider = code.startsWith("microsoft_")
-    ? "Microsoft"
-    : code.startsWith("google_")
-      ? "Google"
-      : "GitHub";
+  const provider = code.startsWith("google_") ? "Google" : "GitHub";
 
   if (code.endsWith("_not_configured")) {
     return `O acesso com ${provider} ainda não foi configurado pelo administrador.`;

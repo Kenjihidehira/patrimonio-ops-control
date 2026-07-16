@@ -20,15 +20,7 @@ O schema habilita RLS e nega acesso direto aos papéis `anon` e `authenticated`.
 
 O aplicativo não solicita escopos de repositório nem de e-mail. O token temporário serve somente para consultar o perfil público autenticado em `/user`; a allowlist decide quem pode abrir a base empresarial.
 
-## 3. Registrar Microsoft Entra e Google
-
-Crie uma aplicação web no Microsoft Entra ID usando a callback exata:
-
-```text
-https://patrimonio-ops-control.kenjihidehira999.workers.dev/api/auth/microsoft/callback
-```
-
-Use um tenant específico. A aplicação solicita somente `openid profile email`; `MICROSOFT_ALLOWED_DOMAINS` restringe o acesso depois da validação do tenant e do ID token.
+## 3. Registrar o Google OAuth
 
 No Google Cloud Console, crie um OAuth Client do tipo Web application com a callback exata:
 
@@ -49,16 +41,13 @@ pnpm exec wrangler login
 pnpm exec wrangler whoami
 ```
 
-`SUPABASE_GATEWAY_URL`, `GITHUB_ALLOWED_LOGINS` e `MICROSOFT_ALLOWED_DOMAINS` ficam em `wrangler.jsonc`. Cadastre credenciais, segredos e o allowlist Google diretamente no Worker:
+`SUPABASE_GATEWAY_URL` e `GITHUB_ALLOWED_LOGINS` ficam em `wrangler.jsonc`. Cadastre credenciais, segredos e o allowlist Google diretamente no Worker:
 
 ```text
 SUPABASE_GATEWAY_KEY=O_MESMO_SEGREDO_DA_EDGE_FUNCTION
 PATRIMONIO_WORKSPACE_KEY=64_CARACTERES_HEXADECIMAIS_ALEATORIOS
 GITHUB_CLIENT_ID=CLIENT_ID_DO_OAUTH_APP
 GITHUB_CLIENT_SECRET=CLIENT_SECRET_DO_OAUTH_APP
-MICROSOFT_TENANT_ID=TENANT_ID_DO_ENTRA
-MICROSOFT_CLIENT_ID=CLIENT_ID_DO_ENTRA
-MICROSOFT_CLIENT_SECRET=CLIENT_SECRET_DO_ENTRA
 GOOGLE_CLIENT_ID=CLIENT_ID_DO_GOOGLE
 GOOGLE_CLIENT_SECRET=CLIENT_SECRET_DO_GOOGLE
 GOOGLE_ALLOWED_EMAILS=EMAILS_AUTORIZADOS_SEPARADOS_POR_VIRGULA
@@ -88,7 +77,6 @@ curl -I https://patrimonio-ops-control.kenjihidehira999.workers.dev/demo/
 curl -I https://patrimonio-ops-control.kenjihidehira999.workers.dev/login/
 curl https://patrimonio-ops-control.kenjihidehira999.workers.dev/api/state
 curl -I "https://patrimonio-ops-control.kenjihidehira999.workers.dev/api/auth/github/login?return_to=%2Fdemo%2Findex.html"
-curl -I "https://patrimonio-ops-control.kenjihidehira999.workers.dev/api/auth/microsoft/login?return_to=%2Fdemo%2Findex.html"
 curl -I "https://patrimonio-ops-control.kenjihidehira999.workers.dev/api/auth/google/login?return_to=%2Fdemo%2Findex.html"
 curl -I https://patrimonio-ops-control.kenjihidehira999.workers.dev/api/export
 curl -i -X POST https://patrimonio-ops-control.kenjihidehira999.workers.dev/api/state \
@@ -99,7 +87,7 @@ curl -i -X POST https://patrimonio-ops-control.kenjihidehira999.workers.dev/api/
 Resultados esperados:
 
 - `/demo/`: HTTP `200` e interface operacional.
-- `/login/`: HTTP `200` e opções GitHub, Microsoft e Google.
+- `/login/`: HTTP `200` e opções GitHub e Google.
 - `GET /api/state`: HTTP `200`, sessão anônima e projeção vazia (`source = locked`).
 - Cada login retorna HTTP `302` para o provedor quando suas credenciais estão configuradas; configuração ausente retorna para `/login/` com erro controlado.
 - `GET /api/export` sem login: HTTP `401`; autenticado: HTTP `200` e conteúdo XLSX da base empresarial.
@@ -125,7 +113,7 @@ GitHub Pages não substitui o Worker neste projeto. O serviço `github.io` publi
 
 ## Checklist de produção
 
-- [x] Restrição por allowlist de login GitHub, tenant/domínio Microsoft e e-mail Google.
+- [x] Restrição por allowlist de login GitHub e e-mail Google.
 - [ ] RBAC entre administrador, operador e auditor.
 - [ ] RBAC para leitura, cadastro, transferência, baixa, importação e auditoria.
 - [x] Isolamento da base por chave empresarial secreta.

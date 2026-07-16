@@ -3,7 +3,6 @@ import test from "node:test";
 import {
   isAllowedGitHubLogin,
   isAllowedGoogleEmail,
-  isAllowedMicrosoftEmail,
   safeRelativeReturnPath,
 } from "../lib/auth-utils.js";
 
@@ -22,9 +21,7 @@ test("mantém somente retornos locais e bloqueia loops de autenticação", () =>
   assert.equal(safeRelativeReturnPath("/login/index.html"), "/demo/index.html");
 });
 
-test("restringe Microsoft por domínio e Google por e-mail exato", () => {
-  assert.equal(isAllowedMicrosoftEmail("Pessoa@Gazin.com.br", ["gazin.com.br"]), true);
-  assert.equal(isAllowedMicrosoftEmail("pessoa@gmail.com", ["gazin.com.br"]), false);
+test("restringe Google por e-mail exato", () => {
   assert.equal(isAllowedGoogleEmail("Pessoa@Gazin.com.br", ["pessoa@gazin.com.br"]), true);
   assert.equal(isAllowedGoogleEmail("outra@gazin.com.br", ["pessoa@gazin.com.br"]), false);
   assert.equal(isAllowedGoogleEmail("invalido", ["invalido"]), false);

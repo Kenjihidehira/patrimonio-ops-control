@@ -230,20 +230,6 @@ a {
   font-weight: 900;
 }
 
-.microsoft-mark {
-  display: grid;
-  width: 22px;
-  height: 22px;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 2px;
-  margin-left: 2px;
-}
-
-.microsoft-mark i:nth-child(1) { background: #f25022; }
-.microsoft-mark i:nth-child(2) { background: #7fba00; }
-.microsoft-mark i:nth-child(3) { background: #00a4ef; }
-.microsoft-mark i:nth-child(4) { background: #ffb900; }
-
 .google-mark {
   width: 27px;
   color: #4285f4;

@@ -10,7 +10,6 @@ const importApi = await readFile(new URL("../app/api/import/route.ts", import.me
 const exportApi = await readFile(new URL("../app/api/export/route.ts", import.meta.url), "utf8");
 const workspace = await readFile(new URL("../lib/workspace.ts", import.meta.url), "utf8");
 const githubAuth = await readFile(new URL("../app/github-auth.ts", import.meta.url), "utf8");
-const microsoftAuth = await readFile(new URL("../app/microsoft-auth.ts", import.meta.url), "utf8");
 const googleAuth = await readFile(new URL("../app/google-auth.ts", import.meta.url), "utf8");
 const sharedAuth = await readFile(new URL("../app/auth.ts", import.meta.url), "utf8");
 const loginHtml = await readFile(new URL("../public/login/index.html", import.meta.url), "utf8");
@@ -66,10 +65,10 @@ test("persistência não depende de localStorage e escrita exige autenticação"
   assert.match(js, /elements\.exportButton/);
 });
 
-test("tela de login oferece os três provedores com navegação acessível e responsiva", () => {
+test("tela de login oferece GitHub e Google com navegação acessível e responsiva", () => {
   assert.match(loginHtml, /Continuar com GitHub/);
-  assert.match(loginHtml, /Continuar com Microsoft/);
   assert.match(loginHtml, /Continuar com Google/);
+  assert.doesNotMatch(loginHtml, /Microsoft|microsoft/);
   assert.match(loginHtml, /role="alert"/);
   assert.match(loginCss, /@media \(max-width: 760px\)/);
   assert.match(loginCss, /prefers-reduced-motion/);
@@ -79,15 +78,12 @@ test("tela de login oferece os três provedores com navegação acessível e res
 
 test("autenticação multiprovedor usa PKCE, OIDC, allowlists e sessão protegida", () => {
   assert.match(api, /getAuthenticatedUser/);
-  for (const providerAuth of [githubAuth, microsoftAuth, googleAuth]) {
+  for (const providerAuth of [githubAuth, googleAuth]) {
     assert.match(providerAuth, /code_challenge_method: "S256"/);
     assert.match(providerAuth, /readOAuthTransaction/);
   }
   assert.match(githubAuth, /isAllowedGitHubLogin/);
   assert.match(githubAuth, /https:\/\/api\.github\.com\/user/);
-  assert.match(microsoftAuth, /isAllowedMicrosoftEmail/);
-  assert.match(microsoftAuth, /payload\.tid/);
-  assert.match(microsoftAuth, /jwtVerify/);
   assert.match(googleAuth, /isAllowedGoogleEmail/);
   assert.match(googleAuth, /payload\.email_verified !== true/);
   assert.match(googleAuth, /jwtVerify/);

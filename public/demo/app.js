@@ -831,7 +831,6 @@ function handleAuthResult() {
 function providerLabel(provider) {
   return {
     github: "Conta GitHub",
-    microsoft: "Conta Microsoft",
     google: "Conta Google",
   }[provider] || "Conta autorizada";
 }

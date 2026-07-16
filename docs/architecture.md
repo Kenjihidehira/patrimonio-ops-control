@@ -65,10 +65,10 @@ Chaves estrangeiras preservam integridade e índices cobrem status, núcleo, tip
 
 ### Leitura autenticada
 
-1. A API inicia Authorization Code com `state` e PKCE; Microsoft e Google também recebem um `nonce` OIDC.
-2. GitHub, Microsoft ou Google autenticam a conta e devolvem o código para a callback registrada.
-3. GitHub é validado pela API `/user`; Microsoft e Google têm ID tokens validados por JWKS, emissor, audiência e `nonce`.
-4. A política local restringe GitHub por login, Microsoft por tenant e domínio, e Google por e-mail exato.
+1. A API inicia Authorization Code com `state` e PKCE; Google também recebe um `nonce` OIDC.
+2. GitHub ou Google autenticam a conta e devolvem o código para a callback registrada.
+3. GitHub é validado pela API `/user`; Google tem o ID token validado por JWKS, emissor, audiência e `nonce`.
+4. A política local restringe GitHub por login e Google por e-mail exato.
 5. Uma sessão local assinada, `HttpOnly`, `Secure` e `SameSite=Lax` mantém apenas provedor, nome, identificador e subject por oito horas.
 6. A API usa `PATRIMONIO_WORKSPACE_KEY` para carregar a base empresarial compartilhada e retorna `session.source = supabase`.
 
@@ -100,7 +100,7 @@ Chaves estrangeiras preservam integridade e índices cobrem status, núcleo, tip
 - Nenhum patrimônio, núcleo, colaborador ou evento da planilha é devolvido sem autenticação.
 - O ator vem da sessão de identidade validada e inclui o provedor, nunca do payload enviado pelo cliente.
 - A chave empresarial é aleatória, tem 256 bits e permanece somente no runtime do servidor.
-- `state` e PKCE protegem os três fluxos; Microsoft e Google também validam `nonce` para impedir replay do ID token.
+- `state` e PKCE protegem os dois fluxos; Google também valida `nonce` para impedir replay do ID token.
 - Access token e Client Secret nunca são enviados ao JavaScript da interface nem gravados na sessão local.
 - O gateway aceita somente operações enumeradas e exige `x-patrimonio-key`.
 - RLS está habilitado e políticas negam acesso direto a `anon` e `authenticated`.
@@ -147,7 +147,7 @@ Também faltam recuperação de desastre automatizada, política formal de reten
 
 **Decisão:** usar OAuth/OIDC Authorization Code com PKCE, validar a identidade no provedor e converter somente contas autorizadas em uma sessão curta comum assinada pela aplicação.
 
-**Motivo:** aceitar identidades GitHub, Microsoft e Google sem criar senhas locais, sem persistir tokens dos provedores e sem duplicar a autorização nas rotas de negócio.
+**Motivo:** aceitar identidades GitHub e Google sem criar senhas locais, sem persistir tokens dos provedores e sem duplicar a autorização nas rotas de negócio.
 
 ### ADR-006: workspace empresarial compartilhado
 
