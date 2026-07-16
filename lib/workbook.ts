@@ -11,7 +11,6 @@ type ExportAsset = {
   serial: string;
   brandModel: string;
   acquiredAt: string | null;
-  value: number;
   status: string;
   notes: string;
 };
@@ -82,7 +81,6 @@ export async function createExportWorkbook(
       "Número de série",
       "Marca e modelo",
       "Aquisição",
-      "Valor",
       "Status",
       "Observações",
     ]),
@@ -95,7 +93,6 @@ export async function createExportWorkbook(
       textCell(asset.serial),
       textCell(asset.brandModel),
       dateCell(asset.acquiredAt),
-      { value: Number(asset.value), type: Number, format: '"R$" #,##0.00' },
       textCell(dashboard.options.statuses[asset.status]),
       textCell(asset.notes),
     ]),
@@ -143,7 +140,7 @@ export async function createExportWorkbook(
 
   return writeExcelFile(
     [
-      sheet("Inventário", inventory, [14, 20, 28, 28, 28, 22, 30, 14, 16, 16, 38]),
+      sheet("Inventário", inventory, [14, 20, 28, 28, 28, 22, 30, 14, 16, 38]),
       sheet("Núcleos", nuclei, [14, 30, 28, 28, 12, 12, 12]),
       sheet("Auditoria", audit, [20, 14, 20, 22, 34, 34, 28, 42]),
       sheet("Importações", importHistory, [20, 34, 16, 14, 14, 14, 28]),

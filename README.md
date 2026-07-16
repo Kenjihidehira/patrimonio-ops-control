@@ -18,6 +18,7 @@ Planilhas patrimoniais isoladas não registram bem responsabilidade, movimentaç
 - Tipos controlados: CPU (Computador), Monitor 1, Monitor 2, Cadeira e Notebook.
 - Organização por núcleo, gestor, responsável e localização física.
 - Diretório de colaboradores importados, inclusive quando não há patrimônio associado.
+- Perfil editável do colaborador com nome, núcleo e relação de patrimônios vinculados.
 - Busca por ID, série, modelo, pessoa, local ou núcleo.
 - Filtros de tipo, status e núcleo, com ordenação operacional.
 - Cadastro de patrimônio e núcleo, além de edição de sigla, nome, localização e gestor do núcleo.
@@ -27,6 +28,7 @@ Planilhas patrimoniais isoladas não registram bem responsabilidade, movimentaç
 - Auditoria com ator, data, origem, destino e motivo.
 - Importação XLSX em duas etapas: pré-validação e confirmação transacional.
 - Exportação XLSX com inventário, núcleos, auditoria e histórico de importações.
+- Operação sem exposição de preço ou valor de aquisição dos patrimônios.
 - Acesso público sem dados patrimoniais e workspace empresarial compartilhado no Supabase.
 
 ## Stack
@@ -114,7 +116,7 @@ Filtros, payloads e códigos de resposta estão em [`docs/api.md`](docs/api.md).
 
 As regras ficam em [`lib/domain.js`](lib/domain.js), independentes de HTTP e banco. O servidor usa uma chave empresarial aleatória, disponível apenas no runtime, para localizar a base compartilhada. O gateway Supabase também exige um segredo de servidor; as tabelas têm RLS habilitado e negam acesso direto a `anon` e `authenticated`.
 
-Mutações e importações usam RPCs transacionais com revisão otimista. Núcleos são reconciliados pela sigla estável e os IDs persistidos são resolvidos antes de gravar patrimônios e colaboradores. Uma gravação obsoleta recebe `409 Conflict`, evitando que duas sessões sobrescrevam silenciosamente o trabalho uma da outra.
+Mutações e importações usam RPCs transacionais com revisão otimista. Núcleos são reconciliados pela sigla estável e os IDs persistidos são resolvidos antes de gravar patrimônios e colaboradores. Ao renomear um colaborador, suas atribuições existentes são preservadas na mesma transação. Uma gravação obsoleta recebe `409 Conflict`, evitando que duas sessões sobrescrevam silenciosamente o trabalho uma da outra.
 
 Documentação completa: [`docs/architecture.md`](docs/architecture.md).
 
@@ -130,6 +132,8 @@ A interface segue o padrão `list report + object detail`, comum em sistemas cor
 - [IBM Carbon - Data Table](https://carbondesignsystem.com/components/data-table/usage/)
 - [Atlassian Design System - Dynamic Table](https://atlassian.design/components/dynamic-table)
 - [Shopify Polaris - Index Filters](https://polaris-react.shopify.com/components/selection-and-input/index-filters)
+
+A identidade visual usa azul cobalto e amarelo como referências da presença digital da Gazin, mantendo superfícies neutras e cores semânticas independentes para garantir leitura operacional e contraste.
 
 ## Deploy
 

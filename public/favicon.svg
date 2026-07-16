@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Patrimônio Ops">
-  <rect width="64" height="64" rx="10" fill="#0c3b2e"/>
-  <rect x="10" y="10" width="44" height="44" rx="7" fill="#f2c14e"/>
-  <text x="32" y="39" text-anchor="middle" fill="#092d24" font-family="Arial, sans-serif" font-size="19" font-weight="700">PO</text>
+  <rect width="64" height="64" rx="10" fill="#0055A5"/>
+  <rect x="10" y="10" width="44" height="44" rx="7" fill="#FFC400"/>
+  <text x="32" y="39" text-anchor="middle" fill="#06315F" font-family="Arial, sans-serif" font-size="19" font-weight="700">PO</text>
 </svg>

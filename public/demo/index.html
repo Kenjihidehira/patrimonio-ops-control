@@ -300,6 +300,7 @@
                     <th scope="col">Núcleo</th>
                     <th scope="col">Patrimônios</th>
                     <th scope="col">Situação</th>
+                    <th scope="col"><span class="sr-only">Ações</span></th>
                   </tr>
                 </thead>
                 <tbody id="people-body"></tbody>
@@ -355,10 +356,6 @@
           <label class="field">
             <span>Data de aquisição</span>
             <input name="acquiredAt" type="date" required />
-          </label>
-          <label class="field">
-            <span>Valor de aquisição</span>
-            <input name="value" type="number" min="0" max="100000000" step="0.01" required placeholder="4890,00" />
           </label>
           <label class="field">
             <span>Responsável</span>
@@ -488,6 +485,53 @@
         <div class="modal-footer">
           <button class="button button-secondary" type="button" data-close-dialog="edit-nucleus-dialog">Cancelar</button>
           <button class="button button-primary" type="submit">Salvar alterações</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog class="modal profile-modal" id="collaborator-dialog" aria-labelledby="collaborator-dialog-title">
+      <form class="modal-content profile-modal-content" id="collaborator-form">
+        <div class="modal-header profile-modal-header">
+          <div class="profile-identity">
+            <span class="profile-avatar" id="collaborator-avatar" aria-hidden="true">C</span>
+            <div>
+              <p class="eyebrow">Perfil do colaborador</p>
+              <h2 id="collaborator-dialog-title">Colaborador</h2>
+              <p id="collaborator-profile-summary">Informações da planilha</p>
+            </div>
+          </div>
+          <button class="icon-button" type="button" data-close-dialog="collaborator-dialog" aria-label="Fechar">×</button>
+        </div>
+        <div class="modal-body profile-modal-body">
+          <section class="profile-editor" aria-labelledby="profile-editor-title">
+            <div class="profile-section-heading">
+              <h3 id="profile-editor-title">Informações do perfil</h3>
+              <span>Dados disponíveis na base</span>
+            </div>
+            <div class="form-grid">
+              <input name="id" type="hidden" />
+              <label class="field field-wide">
+                <span>Nome do colaborador</span>
+                <input name="name" maxlength="180" required autocomplete="name" />
+              </label>
+              <label class="field field-wide">
+                <span>Núcleo</span>
+                <select name="nucleusId" id="collaborator-nucleus-input" required></select>
+              </label>
+            </div>
+          </section>
+          <section class="profile-assets" aria-labelledby="profile-assets-title">
+            <div class="profile-section-heading">
+              <h3 id="profile-assets-title">Patrimônios vinculados</h3>
+              <span id="collaborator-assets-count">0 itens</span>
+            </div>
+            <div class="profile-assets-list" id="collaborator-assets-list"></div>
+          </section>
+        </div>
+        <div class="form-error" id="collaborator-form-error" role="alert" hidden></div>
+        <div class="modal-footer">
+          <button class="button button-secondary" type="button" data-close-dialog="collaborator-dialog">Cancelar</button>
+          <button class="button button-primary" type="submit">Salvar perfil</button>
         </div>
       </form>
     </dialog>

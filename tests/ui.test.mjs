@@ -15,6 +15,7 @@ const sharedAuth = await readFile(new URL("../app/auth.ts", import.meta.url), "u
 const loginHtml = await readFile(new URL("../public/login/index.html", import.meta.url), "utf8");
 const loginCss = await readFile(new URL("../public/login/styles.css", import.meta.url), "utf8");
 const loginJs = await readFile(new URL("../public/login/app.js", import.meta.url), "utf8");
+const workbook = await readFile(new URL("../lib/workbook.ts", import.meta.url), "utf8");
 
 test("interface contém os fluxos comerciais essenciais", () => {
   for (const marker of [
@@ -29,6 +30,7 @@ test("interface contém os fluxos comerciais essenciais", () => {
     "collaborators-view",
     "people-body",
     "edit-nucleus-dialog",
+    "collaborator-dialog",
     "export-button",
     "status-form",
   ]) {
@@ -37,7 +39,14 @@ test("interface contém os fluxos comerciais essenciais", () => {
   assert.match(html, /id="result-label"/);
   assert.match(js, /dashboard\.resultCount === 1 \? "patrimônio encontrado"/);
   assert.match(js, /type: "update_nucleus"/);
+  assert.match(js, /type: "update_collaborator"/);
   assert.match(js, /collaboratorsWithoutAssets/);
+  assert.doesNotMatch(html, /Valor de aquisição/);
+  assert.doesNotMatch(js, /<dt>Valor<\/dt>/);
+  assert.doesNotMatch(workbook, /"Valor",/);
+  assert.doesNotMatch(workbook, /asset\.value/);
+  assert.match(css, /--brand-700: #0055A5/i);
+  assert.match(css, /--yellow: #FFC400/i);
 });
 
 test("campos críticos possuem semântica e validação no cliente", () => {

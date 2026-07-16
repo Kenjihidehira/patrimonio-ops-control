@@ -48,7 +48,6 @@ Exige autenticação. Toda ação inclui `expectedRevision`; o ator é obtido da
     "brandModel": "Lenovo ThinkPad E14",
     "serial": "LN-E14-9931",
     "acquiredAt": "2026-07-15",
-    "value": 5600,
     "assignee": "",
     "location": "Cofre de equipamentos",
     "notes": "Reserva técnica"
@@ -114,6 +113,22 @@ Exige autenticação. Toda ação inclui `expectedRevision`; o ator é obtido da
 }
 ```
 
+### Editar colaborador
+
+```json
+{
+  "type": "update_collaborator",
+  "expectedRevision": 8,
+  "collaborator": {
+    "id": "col-joao-martins",
+    "name": "João da Silva Martins",
+    "nucleusId": "nuc-ti"
+  }
+}
+```
+
+Uma alteração de nome atualiza as atribuições existentes na mesma transação. Alterar o núcleo do perfil não transfere patrimônios automaticamente; transferências continuam exigindo a ação auditável específica.
+
 ## `POST /api/import`
 
 Exige autenticação e recebe `multipart/form-data`.
@@ -152,7 +167,7 @@ Na confirmação, o arquivo é reprocessado e a revisão é comparada dentro da 
 
 ## `GET /api/export`
 
-Gera um `.xlsx` com quatro abas:
+Gera um `.xlsx` sem preços de aquisição e com quatro abas:
 
 - `Inventário`
 - `Núcleos`

@@ -37,11 +37,13 @@ const elements = {
   transferDialog: document.querySelector("#transfer-dialog"),
   nucleusDialog: document.querySelector("#nucleus-dialog"),
   editNucleusDialog: document.querySelector("#edit-nucleus-dialog"),
+  collaboratorDialog: document.querySelector("#collaborator-dialog"),
   importDialog: document.querySelector("#import-dialog"),
   assetForm: document.querySelector("#asset-form"),
   transferForm: document.querySelector("#transfer-form"),
   nucleusForm: document.querySelector("#nucleus-form"),
   editNucleusForm: document.querySelector("#edit-nucleus-form"),
+  collaboratorForm: document.querySelector("#collaborator-form"),
   importForm: document.querySelector("#import-form"),
   importFile: document.querySelector("#import-file"),
   importPreview: document.querySelector("#import-preview"),
@@ -51,11 +53,14 @@ const elements = {
   transferFormError: document.querySelector("#transfer-form-error"),
   nucleusFormError: document.querySelector("#nucleus-form-error"),
   editNucleusFormError: document.querySelector("#edit-nucleus-form-error"),
+  collaboratorFormError: document.querySelector("#collaborator-form-error"),
   importFormError: document.querySelector("#import-form-error"),
   assetTypeInput: document.querySelector("#asset-type-input"),
   assetStatusInput: document.querySelector("#asset-status-input"),
   assetNucleusInput: document.querySelector("#asset-nucleus-input"),
   transferNucleusInput: document.querySelector("#transfer-nucleus-input"),
+  collaboratorNucleusInput: document.querySelector("#collaborator-nucleus-input"),
+  collaboratorAssetsList: document.querySelector("#collaborator-assets-list"),
   viewEyebrow: document.querySelector("#view-eyebrow"),
   viewTitle: document.querySelector("#view-title"),
   viewDescription: document.querySelector("#view-description"),
@@ -138,7 +143,7 @@ function bindEvents() {
     button.addEventListener("click", () => document.querySelector(`#${button.dataset.closeDialog}`).close());
   });
 
-  [elements.assetDialog, elements.transferDialog, elements.nucleusDialog, elements.editNucleusDialog, elements.importDialog].forEach((dialog) => {
+  [elements.assetDialog, elements.transferDialog, elements.nucleusDialog, elements.editNucleusDialog, elements.collaboratorDialog, elements.importDialog].forEach((dialog) => {
     dialog.addEventListener("click", (event) => {
       if (event.target === dialog) dialog.close();
     });
@@ -148,6 +153,7 @@ function bindEvents() {
   elements.transferForm.addEventListener("submit", handleTransferSubmit);
   elements.nucleusForm.addEventListener("submit", handleNucleusSubmit);
   elements.editNucleusForm.addEventListener("submit", handleNucleusUpdate);
+  elements.collaboratorForm.addEventListener("submit", handleCollaboratorUpdate);
   elements.importForm.addEventListener("submit", handleImportPreview);
   elements.importCommit.addEventListener("click", handleImportCommit);
   elements.importFile.addEventListener("change", resetImportPreview);
@@ -350,10 +356,6 @@ function renderDetail() {
           <dt>Aquisição</dt>
           <dd>${formatDate(asset.acquiredAt)}</dd>
         </div>
-        <div>
-          <dt>Valor</dt>
-          <dd>${formatCurrency(asset.value)}</dd>
-        </div>
         <div class="detail-wide">
           <dt>Marca e modelo</dt>
           <dd>${escapeHtml(asset.brandModel)}</dd>
@@ -443,7 +445,11 @@ function renderCollaborators() {
     .map(
       (person) => `
         <tr>
-          <td><span class="cell-primary">${escapeHtml(person.name)}</span></td>
+          <td>
+            <button class="collaborator-name-button" type="button" data-open-collaborator="${escapeAttribute(person.id)}">
+              ${escapeHtml(person.name)}
+            </button>
+          </td>
           <td>
             <span class="cell-primary">${escapeHtml(person.nucleus.code)}</span>
             <span class="cell-secondary">${escapeHtml(person.nucleus.name)}</span>
@@ -453,11 +459,17 @@ function renderCollaborators() {
             <span class="cell-secondary">${person.assetIds.length ? person.assetIds.map((id) => `#${escapeHtml(id)}`).join(" · ") : "Nenhum identificador válido"}</span>
           </td>
           <td><span class="people-status ${person.hasAssets ? "has-assets" : "without-assets"}">${person.hasAssets ? "Com patrimônio" : "Sem patrimônio"}</span></td>
+          <td class="people-action-cell">
+            <button class="button button-secondary button-small" type="button" data-open-collaborator="${escapeAttribute(person.id)}">Ver perfil</button>
+          </td>
         </tr>
       `,
     )
     .join("");
   elements.peopleEmpty.hidden = filtered.length > 0;
+  elements.peopleBody.querySelectorAll("[data-open-collaborator]").forEach((button) => {
+    button.addEventListener("click", () => openCollaboratorDialog(button.dataset.openCollaborator));
+  });
 }
 
 function renderAudit() {
@@ -545,6 +557,7 @@ function populateOptions() {
   elements.assetNucleusInput.innerHTML = `<option value="">Selecione</option>${nucleusOptions}`;
   elements.transferNucleusInput.innerHTML = nucleusOptions;
   elements.peopleNucleusFilter.innerHTML = `<option value="all">Todos os núcleos</option>${nucleusOptions}`;
+  elements.collaboratorNucleusInput.innerHTML = nucleusOptions;
 
   if (elements.typeFilter.querySelector(`[value="${cssEscape(current.type)}"]`)) elements.typeFilter.value = current.type;
   if (elements.statusFilter.querySelector(`[value="${cssEscape(current.status)}"]`)) elements.statusFilter.value = current.status;
@@ -608,6 +621,35 @@ function openNucleusEditDialog(nucleusId) {
   elements.editNucleusForm.elements.manager.value = nucleus.manager;
   clearFormError(elements.editNucleusFormError);
   elements.editNucleusDialog.showModal();
+}
+
+function openCollaboratorDialog(collaboratorId) {
+  const collaborator = dashboard.collaborators.find((item) => item.id === collaboratorId);
+  if (!collaborator) return;
+  elements.collaboratorForm.reset();
+  elements.collaboratorForm.elements.id.value = collaborator.id;
+  elements.collaboratorForm.elements.name.value = collaborator.name;
+  elements.collaboratorForm.elements.nucleusId.value = collaborator.nucleusId;
+  document.querySelector("#collaborator-dialog-title").textContent = collaborator.name;
+  document.querySelector("#collaborator-avatar").textContent = collaborator.name.trim().charAt(0).toUpperCase();
+  document.querySelector("#collaborator-profile-summary").textContent =
+    `${collaborator.nucleus.code} • ${collaborator.nucleus.name}`;
+  document.querySelector("#collaborator-assets-count").textContent =
+    `${collaborator.assetCount} ${collaborator.assetCount === 1 ? "item" : "itens"}`;
+  elements.collaboratorAssetsList.innerHTML = collaborator.assets.length
+    ? collaborator.assets.map((asset) => `
+        <article class="profile-asset-item">
+          <span class="profile-asset-icon" aria-hidden="true">${assetTypeInitial(asset.type)}</span>
+          <div>
+            <strong>#${escapeHtml(asset.id)} • ${escapeHtml(dashboard.options.assetTypes[asset.type])}</strong>
+            <span>${escapeHtml(asset.brandModel)} • ${escapeHtml(asset.location)}</span>
+          </div>
+          ${statusBadge(asset.status)}
+        </article>
+      `).join("")
+    : `<div class="profile-assets-empty"><strong>Sem patrimônio vinculado</strong><span>O colaborador permanece cadastrado para conferência.</span></div>`;
+  clearFormError(elements.collaboratorFormError);
+  elements.collaboratorDialog.showModal();
 }
 
 function openImportDialog() {
@@ -745,7 +787,7 @@ async function handleAssetSubmit(event) {
         brandModel: formData.get("brandModel"),
         serial: formData.get("serial"),
         acquiredAt: formData.get("acquiredAt"),
-        value: Number(formData.get("value")),
+        value: 0,
         assignee: formData.get("assignee"),
         location: formData.get("location"),
         notes: formData.get("notes"),
@@ -816,6 +858,25 @@ async function handleNucleusUpdate(event) {
       },
     },
     elements.editNucleusDialog,
+  );
+}
+
+async function handleCollaboratorUpdate(event) {
+  event.preventDefault();
+  if (!elements.collaboratorForm.reportValidity()) return;
+  const formData = new FormData(elements.collaboratorForm);
+  await submitForm(
+    elements.collaboratorForm,
+    elements.collaboratorFormError,
+    {
+      type: "update_collaborator",
+      collaborator: {
+        id: formData.get("id"),
+        name: formData.get("name"),
+        nucleusId: formData.get("nucleusId"),
+      },
+    },
+    elements.collaboratorDialog,
   );
 }
 
@@ -976,8 +1037,14 @@ function formatDateTime(value) {
   }).format(new Date(value));
 }
 
-function formatCurrency(value) {
-  return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value);
+function assetTypeInitial(type) {
+  return {
+    cpu: "CP",
+    monitor_1: "M1",
+    monitor_2: "M2",
+    chair: "CD",
+    notebook: "NB",
+  }[type] || "AT";
 }
 
 function normalizedText(value) {

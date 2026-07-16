@@ -38,10 +38,11 @@ O navegador nunca recebe a URL privilegiada nem o segredo do gateway. A API do C
 5. Transferências, mudanças de status e importações geram movimentos auditáveis.
 6. Patrimônio baixado não pode ser transferido.
 7. Baixa é lógica; o registro e seu histórico não são apagados.
-8. Valores monetários e datas são normalizados antes da persistência.
+8. Datas são normalizadas antes da persistência; preços não fazem parte da experiência operacional.
 9. Uma revisão obsoleta não pode sobrescrever uma revisão mais nova.
 10. Colaboradores existem independentemente de possuírem patrimônio associado.
 11. A sigla identifica o núcleo durante a reconciliação de importações; IDs internos não são assumidos como estáveis.
+12. Renomear um colaborador preserva suas atribuições; mudar seu núcleo não transfere patrimônios sem auditoria.
 
 ## Modelo de persistência
 

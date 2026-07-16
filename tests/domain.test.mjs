@@ -221,6 +221,34 @@ test("edita informações do núcleo sem permitir sigla duplicada", () => {
   );
 });
 
+test("edita o perfil do colaborador e preserva seus patrimônios", () => {
+  const state = structuredClone(seed);
+  state.collaborators = [{ id: "col-joao", name: "João Martins", nucleusId: "nuc-ti" }];
+
+  const nextState = applyAction(
+    state,
+    {
+      type: "update_collaborator",
+      collaborator: {
+        id: "col-joao",
+        name: "João da Silva Martins",
+        nucleusId: "nuc-fin",
+      },
+    },
+    "admin@empresa.com",
+  );
+
+  assert.deepEqual(nextState.collaborators[0], {
+    id: "col-joao",
+    name: "João da Silva Martins",
+    nucleusId: "nuc-fin",
+  });
+  assert.equal(
+    nextState.assets.filter((asset) => asset.assignee === "João da Silva Martins").length,
+    state.assets.filter((asset) => asset.assignee === "João Martins").length,
+  );
+});
+
 function validAsset(overrides = {}) {
   return {
     id: "654321",

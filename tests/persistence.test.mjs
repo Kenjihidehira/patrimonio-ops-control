@@ -10,6 +10,10 @@ const collaboratorMigration = await readFile(
   new URL("../supabase/migrations/20260716144718_reconcile_import_collaborators_by_code.sql", import.meta.url),
   "utf8",
 );
+const collaboratorProfileMigration = await readFile(
+  new URL("../supabase/migrations/20260716150928_add_collaborator_profile_editing.sql", import.meta.url),
+  "utf8",
+);
 const gateway = await readFile(
   new URL("../supabase/functions/patrimonio-gateway/index.ts", import.meta.url),
   "utf8",
@@ -27,4 +31,11 @@ test("colaboradores usam o núcleo persistido e o gateway carrega a coleção", 
   assert.match(collaboratorMigration, /patrimonio_import_workspace/);
   assert.match(gateway, /patrimonio_collaborators/);
   assert.match(gateway, /rpc\/patrimonio_import_workspace/);
+});
+
+test("edição de colaborador preserva atribuições na mesma transação", () => {
+  assert.match(collaboratorProfileMigration, /update_collaborator/);
+  assert.match(collaboratorProfileMigration, /update public\.patrimonio_assets asset/);
+  assert.match(collaboratorProfileMigration, /update public\.patrimonio_collaborators/);
+  assert.match(collaboratorProfileMigration, /patrimonio_collaborators_owner_nucleus_name_uidx/);
 });
