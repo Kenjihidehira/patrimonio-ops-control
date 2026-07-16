@@ -1872,6 +1872,28 @@ tbody tr:last-child td {
   font-weight: 850;
 }
 
+.profile-asset-icon svg {
+  display: block;
+  width: 22px;
+  height: 22px;
+}
+
+.profile-asset-icon-monitor_1,
+.profile-asset-icon-monitor_2 {
+  background: var(--blue-soft);
+  color: var(--blue);
+}
+
+.profile-asset-icon-chair {
+  background: var(--yellow-soft);
+  color: var(--status-warning-text);
+}
+
+.profile-asset-icon-notebook {
+  background: var(--success-soft);
+  color: var(--success);
+}
+
 .profile-asset-item strong,
 .profile-asset-item span {
   display: block;

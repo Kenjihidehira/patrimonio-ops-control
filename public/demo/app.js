@@ -894,7 +894,7 @@ function openCollaboratorDialog(collaboratorId) {
   elements.collaboratorAssetsList.innerHTML = collaborator.assets.length
     ? collaborator.assets.map((asset) => `
         <article class="profile-asset-item">
-          <span class="profile-asset-icon" aria-hidden="true">${assetTypeInitial(asset.type)}</span>
+          <span class="profile-asset-icon profile-asset-icon-${escapeAttribute(asset.type)}" aria-hidden="true">${assetTypeIcon(asset.type)}</span>
           <div>
             <strong>#${escapeHtml(asset.id)} • ${escapeHtml(dashboard.options.assetTypes[asset.type])}</strong>
             <span>${escapeHtml(asset.brandModel)} • ${escapeHtml(asset.location)}</span>
@@ -1313,14 +1313,16 @@ function formatDateTime(value) {
   }).format(new Date(value));
 }
 
-function assetTypeInitial(type) {
-  return {
-    cpu: "CP",
-    monitor_1: "M1",
-    monitor_2: "M2",
-    chair: "CD",
-    notebook: "NB",
-  }[type] || "AT";
+function assetTypeIcon(type) {
+  const common = 'viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"';
+  const icons = {
+    cpu: `<svg ${common}><rect x="6" y="2" width="12" height="20" rx="2" /><path d="M10 6h4" /><path d="M10 10h4" /><circle cx="12" cy="17" r="1" /></svg>`,
+    monitor_1: `<svg ${common}><rect x="3" y="4" width="18" height="13" rx="2" /><path d="M8 21h8" /><path d="M12 17v4" /></svg>`,
+    monitor_2: `<svg ${common}><rect x="3" y="4" width="18" height="13" rx="2" /><path d="M8 21h8" /><path d="M12 17v4" /></svg>`,
+    chair: `<svg ${common}><path d="M5 10V6a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v4" /><path d="M3 11v5a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-5" /><path d="M5 18v2" /><path d="M19 18v2" /><path d="M5 13h14" /></svg>`,
+    notebook: `<svg ${common}><rect x="4" y="4" width="16" height="12" rx="2" /><path d="M2 20h20" /><path d="M9 20h6" /></svg>`,
+  };
+  return icons[type] || `<svg ${common}><rect x="4" y="4" width="16" height="16" rx="3" /><path d="M9 9h6v6H9z" /></svg>`;
 }
 
 function normalizedText(value) {

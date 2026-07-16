@@ -112,6 +112,16 @@ test("visão de núcleos oferece resumo, busca e hierarquia operacional", () => 
   assert.match(css, /\.button\[hidden\]\s*\{[^}]*display:\s*none/s);
 });
 
+test("perfil do colaborador diferencia patrimônios com ícones por categoria", () => {
+  assert.match(js, /function assetTypeIcon\(type\)/);
+  for (const type of ["cpu", "monitor_1", "monitor_2", "chair", "notebook"]) {
+    assert.match(js, new RegExp(`${type}:`));
+  }
+  assert.match(js, /profile-asset-icon-\$\{escapeAttribute\(asset\.type\)\}/);
+  assert.match(css, /\.profile-asset-icon svg/);
+  assert.match(css, /\.profile-asset-icon-chair/);
+});
+
 test("tema escuro é acessível, persistido em cookie e não usa armazenamento local", () => {
   assert.match(html, /id="theme-toggle"/);
   assert.match(html, /role="switch"/);
