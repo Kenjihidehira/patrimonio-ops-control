@@ -85,6 +85,15 @@ test("inventário oferece navegação escalável e experiência móvel dedicada"
   assert.match(css, /\.detail-panel\.is-open/);
 });
 
+test("tema escuro usa cores próprias para textos de destaque e ícones", () => {
+  assert.match(css, /--heading-text:\s*#FFFFFF/i);
+  assert.match(css, /--emphasis-text:\s*#B9DCFF/i);
+  assert.match(css, /--icon-accent:\s*#8EC9FF/i);
+  assert.match(css, /--icon-muted:\s*#C5D1DF/i);
+  assert.match(css, /\.button-secondary\s*>\s*span\[aria-hidden="true"\]/);
+  assert.match(css, /\.icon-button\s*\{[^}]*color:\s*var\(--icon-muted\)/s);
+});
+
 test("tema escuro é acessível, persistido em cookie e não usa armazenamento local", () => {
   assert.match(html, /id="theme-toggle"/);
   assert.match(html, /role="switch"/);

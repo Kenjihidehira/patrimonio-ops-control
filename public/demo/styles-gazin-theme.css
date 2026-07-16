@@ -9,7 +9,11 @@
   --action-hover: #06315F;
   --on-action: #ffffff;
   --ink: #172235;
+  --heading-text: #172235;
+  --emphasis-text: #064A8F;
   --muted: #5F6F82;
+  --icon-accent: #0055A5;
+  --icon-muted: #5F6F82;
   --line: #DCE4EE;
   --line-strong: #BCC9D8;
   --surface: #ffffff;
@@ -70,7 +74,11 @@
   --action-bg: #0867B8;
   --action-hover: #0A78D4;
   --ink: #F3F7FC;
+  --heading-text: #FFFFFF;
+  --emphasis-text: #B9DCFF;
   --muted: #AAB8C8;
+  --icon-accent: #8EC9FF;
+  --icon-muted: #C5D1DF;
   --line: #2A3A50;
   --line-strong: #40536C;
   --surface: #111C2D;
@@ -339,7 +347,7 @@ textarea:disabled {
 
 .page-heading h1 {
   margin: 0;
-  color: var(--ink);
+  color: var(--heading-text);
   font-size: 26px;
   line-height: 1.2;
   letter-spacing: 0;
@@ -394,7 +402,7 @@ textarea:disabled {
   width: 14px;
   height: 14px;
   border-radius: 50%;
-  background: var(--muted);
+  background: var(--icon-muted);
   transition: transform 160ms ease, background-color 160ms ease;
 }
 
@@ -435,7 +443,7 @@ textarea:disabled {
   place-items: center;
   border-radius: 50%;
   background: var(--brand-100);
-  color: var(--brand-900);
+  color: var(--emphasis-text);
   font-size: 11px;
   font-weight: 800;
 }
@@ -512,6 +520,21 @@ textarea:disabled {
 .button-secondary:hover {
   border-color: var(--brand-700);
   color: var(--brand-700);
+}
+
+.button > span[aria-hidden="true"] {
+  color: currentColor;
+  font-weight: 850;
+}
+
+.button-secondary > span[aria-hidden="true"],
+.button-quiet > span[aria-hidden="true"] {
+  color: var(--icon-accent);
+}
+
+.button svg,
+.icon-button svg {
+  stroke: currentColor;
 }
 
 .button-quiet {
@@ -1483,7 +1506,7 @@ tbody tr:last-child td {
   border: 0;
   padding: 4px 0;
   background: transparent;
-  color: var(--brand-900);
+  color: var(--emphasis-text);
   font: inherit;
   font-weight: 800;
   text-align: left;
@@ -1508,7 +1531,7 @@ tbody tr:last-child td {
   place-items: center;
   border-radius: 50%;
   background: var(--brand-100);
-  color: var(--brand-900);
+  color: var(--emphasis-text);
   font-size: 10px;
   font-weight: 850;
 }
@@ -1652,7 +1675,7 @@ tbody tr:last-child td {
   place-items: center;
   border-radius: 6px;
   background: var(--brand-100);
-  color: var(--brand-900);
+  color: var(--emphasis-text);
   font-size: 9px;
   font-weight: 850;
 }
@@ -2068,7 +2091,7 @@ tbody tr:last-child td {
   border: 1px solid var(--line);
   border-radius: 6px;
   background: var(--surface);
-  color: var(--muted);
+  color: var(--icon-muted);
   cursor: pointer;
   font-size: 22px;
   line-height: 1;
