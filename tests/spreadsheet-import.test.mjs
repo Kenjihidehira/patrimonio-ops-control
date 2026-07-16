@@ -60,3 +60,41 @@ test("rejeita arquivo sem cabeçalho reconhecido", () => {
   assert.equal(preview.canCommit, false);
   assert.match(preview.errors[0].message, /Cabeçalhos não reconhecidos/);
 });
+
+test("decodifica nomes e gera siglas curtas pelas iniciais dos núcleos", () => {
+  const names = [
+    "Atacado",
+    "Canais Especiais",
+    "Consorcio",
+    "Coordenadora Geral",
+    "Customer Experience",
+    "E-Commerce",
+    "GazinBank",
+    "Gerente do Atendimento ao Cliente",
+    "Suporte &amp; Assistência",
+    "Teleatendimento",
+  ];
+  const rows = [
+    ["Colaborador(a)", "Núcleo", "Máquina", "Tela 1", "Tela 2", "Cadeira", "Notebook"],
+    ...names.map((name, index) => [`Pessoa ${index}`, name, String(200000 + index), "x", "x", "x", "x"]),
+  ];
+
+  const preview = parsePatrimonioRows(rows);
+
+  assert.equal(preview.acceptedCount, names.length);
+  assert.deepEqual(
+    preview.nuclei.map(({ code, name }) => ({ code, name })),
+    [
+      { code: "A", name: "Atacado" },
+      { code: "CE", name: "Canais Especiais" },
+      { code: "C", name: "Consorcio" },
+      { code: "CG", name: "Coordenadora Geral" },
+      { code: "CX", name: "Customer Experience" },
+      { code: "EC", name: "E-Commerce" },
+      { code: "GB", name: "GazinBank" },
+      { code: "GAC", name: "Gerente do Atendimento ao Cliente" },
+      { code: "SA", name: "Suporte & Assistência" },
+      { code: "T", name: "Teleatendimento" },
+    ],
+  );
+});
