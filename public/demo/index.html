@@ -277,7 +277,43 @@
               Novo núcleo
             </button>
           </div>
+          <div class="nuclei-overview" aria-label="Resumo dos núcleos">
+            <div>
+              <span>Núcleos</span>
+              <strong id="nuclei-total">0</strong>
+              <small>áreas cadastradas</small>
+            </div>
+            <div>
+              <span>Ativos</span>
+              <strong id="nuclei-assets">0</strong>
+              <small>itens distribuídos</small>
+            </div>
+            <div>
+              <span>Em uso</span>
+              <strong id="nuclei-allocated">0</strong>
+              <small>alocados aos núcleos</small>
+            </div>
+            <div class="nuclei-overview-alerts">
+              <span>Com alertas</span>
+              <strong id="nuclei-alerts">0</strong>
+              <small>exigem conferência</small>
+            </div>
+          </div>
+          <div class="nuclei-list-toolbar">
+            <div>
+              <h3>Áreas cadastradas</h3>
+              <p id="nuclei-result-count">0 núcleos encontrados</p>
+            </div>
+            <label class="field nuclei-search">
+              <span>Buscar núcleo</span>
+              <input id="nuclei-search" type="search" placeholder="Nome, sigla, gestor ou local" autocomplete="off" />
+            </label>
+          </div>
           <div class="nuclei-grid" id="nuclei-grid" aria-live="polite"></div>
+          <div class="nuclei-empty" id="nuclei-empty" hidden>
+            <strong>Nenhum núcleo encontrado</strong>
+            <span>Revise o termo informado na busca.</span>
+          </div>
         </section>
 
         <section class="view-section" id="audit-view" data-view-panel="audit" hidden>

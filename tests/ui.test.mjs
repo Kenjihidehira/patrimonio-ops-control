@@ -94,6 +94,24 @@ test("tema escuro usa cores próprias para textos de destaque e ícones", () => 
   assert.match(css, /\.icon-button\s*\{[^}]*color:\s*var\(--icon-muted\)/s);
 });
 
+test("visão de núcleos oferece resumo, busca e hierarquia operacional", () => {
+  for (const marker of [
+    "nuclei-overview",
+    "nuclei-search",
+    "nuclei-result-count",
+    "nuclei-empty",
+  ]) {
+    assert.match(html, new RegExp(marker));
+  }
+  assert.match(js, /const filteredNuclei = nuclei\.filter/);
+  assert.match(js, /class="nucleus-progress"/);
+  assert.match(js, /aria-label="Editar núcleo/);
+  assert.match(css, /\.nuclei-overview/);
+  assert.match(css, /\.nucleus-health\.has-alerts/);
+  assert.match(css, /\.nucleus-meta/);
+  assert.match(css, /\.button\[hidden\]\s*\{[^}]*display:\s*none/s);
+});
+
 test("tema escuro é acessível, persistido em cookie e não usa armazenamento local", () => {
   assert.match(html, /id="theme-toggle"/);
   assert.match(html, /role="switch"/);

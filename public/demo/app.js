@@ -22,6 +22,13 @@ const elements = {
   themeToggle: document.querySelector("#theme-toggle"),
   sidebarSource: document.querySelector("#sidebar-source"),
   nucleiGrid: document.querySelector("#nuclei-grid"),
+  nucleiSearch: document.querySelector("#nuclei-search"),
+  nucleiEmpty: document.querySelector("#nuclei-empty"),
+  nucleiResultCount: document.querySelector("#nuclei-result-count"),
+  nucleiTotal: document.querySelector("#nuclei-total"),
+  nucleiAssets: document.querySelector("#nuclei-assets"),
+  nucleiAllocated: document.querySelector("#nuclei-allocated"),
+  nucleiAlerts: document.querySelector("#nuclei-alerts"),
   auditList: document.querySelector("#audit-list"),
   auditCount: document.querySelector("#audit-count"),
   toastRegion: document.querySelector("#toast-region"),
@@ -154,6 +161,7 @@ function bindEvents() {
     currentPage = 1;
     void loadDashboard({ quiet: true });
   });
+  elements.nucleiSearch.addEventListener("input", renderNuclei);
 
   elements.quickFilters.addEventListener("click", (event) => {
     const button = event.target.closest("[data-quick-filter]");
@@ -596,17 +604,49 @@ function renderDetail() {
 }
 
 function renderNuclei() {
-  elements.nucleiGrid.innerHTML = dashboard.nuclei
+  const nuclei = dashboard?.nuclei || [];
+  const query = normalizedText(elements.nucleiSearch.value);
+  const filteredNuclei = nuclei.filter((nucleus) =>
+    normalizedText(`${nucleus.code} ${nucleus.name} ${nucleus.location} ${nucleus.manager}`).includes(query),
+  );
+  const totalAssets = nuclei.reduce((total, nucleus) => total + nucleus.total, 0);
+  const allocatedAssets = nuclei.reduce((total, nucleus) => total + nucleus.allocated, 0);
+  const nucleiWithAlerts = nuclei.filter((nucleus) => nucleus.alerts > 0).length;
+
+  elements.nucleiTotal.textContent = nuclei.length;
+  elements.nucleiAssets.textContent = totalAssets;
+  elements.nucleiAllocated.textContent = allocatedAssets;
+  elements.nucleiAlerts.textContent = nucleiWithAlerts;
+  elements.nucleiResultCount.textContent = `${filteredNuclei.length} ${filteredNuclei.length === 1 ? "núcleo encontrado" : "núcleos encontrados"}`;
+  elements.nucleiEmpty.hidden = filteredNuclei.length > 0;
+
+  elements.nucleiGrid.innerHTML = filteredNuclei
     .map(
       (nucleus) => `
         <article class="nucleus-card ${nucleus.alerts ? "has-alerts" : ""}">
           <div class="nucleus-card-header">
-            <span class="nucleus-code">${escapeHtml(nucleus.code)}</span>
-            <button class="button button-quiet button-small nucleus-edit" type="button" data-edit-nucleus="${escapeAttribute(nucleus.id)}" ${dashboard.session.authenticated ? "" : "disabled"}>Editar</button>
+            <div class="nucleus-identity">
+              <span class="nucleus-code">${escapeHtml(nucleus.code)}</span>
+              <span class="nucleus-health ${nucleus.alerts ? "has-alerts" : ""}">${nucleus.alerts ? `${nucleus.alerts} ${nucleus.alerts === 1 ? "alerta" : "alertas"}` : "Sem alertas"}</span>
+            </div>
+            <button class="icon-button nucleus-edit" type="button" data-edit-nucleus="${escapeAttribute(nucleus.id)}" aria-label="Editar núcleo ${escapeAttribute(nucleus.name)}" title="Editar núcleo" ${dashboard.session.authenticated ? "" : "disabled"}>
+              <svg aria-hidden="true" viewBox="0 0 24 24" width="16" height="16" fill="none">
+                <path d="M12 20h9" stroke-width="2" stroke-linecap="round" />
+                <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L8 18l-4 1 1-4Z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+            </button>
           </div>
           <h3>${escapeHtml(nucleus.name)}</h3>
-          <p class="nucleus-location">${escapeHtml(nucleus.location)}</p>
-          <p class="nucleus-manager">Gestor: ${escapeHtml(nucleus.manager)}</p>
+          <div class="nucleus-meta">
+            <div><span>Localização</span><strong>${escapeHtml(nucleus.location)}</strong></div>
+            <div><span>Gestor responsável</span><strong>${escapeHtml(nucleus.manager)}</strong></div>
+          </div>
+          <div class="nucleus-allocation">
+            <div><span>Taxa de alocação</span><strong>${nucleus.total ? Math.min(100, Math.round((nucleus.allocated / nucleus.total) * 100)) : 0}%</strong></div>
+            <div class="nucleus-progress" role="progressbar" aria-label="Taxa de alocação de ${escapeAttribute(nucleus.name)}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${nucleus.total ? Math.min(100, Math.round((nucleus.allocated / nucleus.total) * 100)) : 0}">
+              <span style="--allocation: ${nucleus.total ? Math.min(100, Math.round((nucleus.allocated / nucleus.total) * 100)) : 0}%"></span>
+            </div>
+          </div>
           <div class="nucleus-metrics">
             <div><span>Ativos</span><strong>${nucleus.total}</strong></div>
             <div><span>Em uso</span><strong>${nucleus.allocated}</strong></div>
