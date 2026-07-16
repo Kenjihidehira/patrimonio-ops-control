@@ -135,6 +135,8 @@ A interface segue o padrão `list report + object detail`, comum em sistemas cor
 
 A identidade visual usa azul cobalto e amarelo como referências da presença digital da Gazin, mantendo superfícies neutras e cores semânticas independentes para garantir leitura operacional e contraste.
 
+O painel oferece temas claro e escuro, respeita a preferência do sistema na primeira visita e persiste a escolha explícita sem armazenar dados operacionais no navegador.
+
 ## Deploy
 
 O projeto está configurado para Cloudflare Workers em [`wrangler.jsonc`](wrangler.jsonc). Use `pnpm deploy:cloudflare` após autenticar o Wrangler e cadastrar os secrets do runtime. O procedimento reproduzível, as migrations e os controles de pré-publicação estão em [`docs/deploy.md`](docs/deploy.md).

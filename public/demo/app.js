@@ -11,6 +11,7 @@ const elements = {
   session: document.querySelector("#session-control"),
   demoNotice: document.querySelector("#demo-notice"),
   signInLink: document.querySelector("#sign-in-link"),
+  themeToggle: document.querySelector("#theme-toggle"),
   sidebarSource: document.querySelector("#sidebar-source"),
   nucleiGrid: document.querySelector("#nuclei-grid"),
   auditList: document.querySelector("#audit-list"),
@@ -98,12 +99,23 @@ let dashboard = null;
 let selectedAssetId = null;
 let filterTimer = null;
 let importPreview = null;
+let hasStoredTheme = Boolean(readThemeCookie());
 
 bindEvents();
+setTheme(document.documentElement.dataset.theme === "dark" ? "dark" : "light");
 handleAuthResult();
 void loadDashboard();
 
 function bindEvents() {
+  elements.themeToggle.addEventListener("click", () => {
+    const nextTheme = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
+    setTheme(nextTheme, { persist: true });
+  });
+
+  window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", (event) => {
+    if (!hasStoredTheme) setTheme(event.matches ? "dark" : "light");
+  });
+
   document.querySelectorAll("[data-view]").forEach((button) => {
     button.addEventListener("click", () => switchView(button.dataset.view));
   });
@@ -488,7 +500,10 @@ function renderAudit() {
             <span>${formatDateTime(record.at)}</span>
           </div>
           <div class="audit-flow">
-            ${escapeHtml(record.from)}<br />→ ${escapeHtml(record.to)}
+            <span class="audit-flow-label">De</span>
+            <strong>${escapeHtml(record.from)}</strong>
+            <span class="audit-flow-label">para</span>
+            <strong>${escapeHtml(record.to)}</strong>
           </div>
           <div class="audit-actor">
             <strong>${escapeHtml(record.actor)}</strong>
@@ -1006,11 +1021,30 @@ function renderMovement(movement) {
   return `
     <li class="movement-item">
       <strong>${escapeHtml(movementLabel(movement.type))}</strong>
-      <span>${escapeHtml(movement.from)} → ${escapeHtml(movement.to)}</span>
+      <span>De ${escapeHtml(movement.from)} para ${escapeHtml(movement.to)}</span>
       <span>${escapeHtml(movement.note || "Sem observação")}</span>
       <small>${formatDateTime(movement.at)} • ${escapeHtml(movement.actor)}</small>
     </li>
   `;
+}
+
+function readThemeCookie() {
+  return document.cookie.match(/(?:^|;\s*)patrimonio_theme=(light|dark)(?:;|$)/)?.[1] ?? null;
+}
+
+function setTheme(theme, { persist = false } = {}) {
+  const isDark = theme === "dark";
+  document.documentElement.dataset.theme = isDark ? "dark" : "light";
+  elements.themeToggle.setAttribute("aria-checked", String(isDark));
+  elements.themeToggle.setAttribute("aria-label", isDark ? "Ativar tema claro" : "Ativar tema escuro");
+  elements.themeToggle.title = isDark ? "Ativar tema claro" : "Ativar tema escuro";
+  elements.themeToggle.querySelector(".theme-toggle-label").textContent = isDark ? "Tema claro" : "Tema escuro";
+
+  if (persist) {
+    const secure = window.location.protocol === "https:" ? "; Secure" : "";
+    document.cookie = `patrimonio_theme=${isDark ? "dark" : "light"}; Path=/; Max-Age=31536000; SameSite=Lax${secure}`;
+    hasStoredTheme = true;
+  }
 }
 
 function movementLabel(type) {

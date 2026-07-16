@@ -3,8 +3,9 @@ import { readFile } from "node:fs/promises";
 import test from "node:test";
 
 const html = await readFile(new URL("../public/demo/index.html", import.meta.url), "utf8");
-const css = await readFile(new URL("../public/demo/styles.css", import.meta.url), "utf8");
+const css = await readFile(new URL("../public/demo/styles-gazin-theme.css", import.meta.url), "utf8");
 const js = await readFile(new URL("../public/demo/app.js", import.meta.url), "utf8");
+const themeInit = await readFile(new URL("../public/demo/theme-init.js", import.meta.url), "utf8");
 const api = await readFile(new URL("../app/api/state/route.ts", import.meta.url), "utf8");
 const importApi = await readFile(new URL("../app/api/import/route.ts", import.meta.url), "utf8");
 const exportApi = await readFile(new URL("../app/api/export/route.ts", import.meta.url), "utf8");
@@ -64,8 +65,21 @@ test("layout contém breakpoints de tablet, celular e redução de movimento", (
   assert.match(css, /prefers-reduced-motion/);
 });
 
+test("tema escuro é acessível, persistido em cookie e não usa armazenamento local", () => {
+  assert.match(html, /id="theme-toggle"/);
+  assert.match(html, /role="switch"/);
+  assert.match(html, /theme-init\.js/);
+  assert.match(css, /:root\[data-theme="dark"\]/);
+  assert.match(js, /patrimonio_theme=/);
+  assert.match(js, /aria-checked/);
+  assert.match(themeInit, /prefers-color-scheme: dark/);
+  assert.doesNotMatch(`${themeInit}\n${js}`, /localStorage|sessionStorage/);
+  assert.match(js, /De \$\{escapeHtml\(movement\.from\)\} para/);
+  assert.doesNotMatch(js, /<br \/>→| → /);
+});
+
 test("persistência não depende de localStorage e escrita exige autenticação", () => {
-  assert.doesNotMatch(js, /localStorage|sessionStorage/);
+  assert.doesNotMatch(`${themeInit}\n${js}`, /localStorage|sessionStorage/);
   assert.match(api, /if \(!user\)/);
   assert.match(api, /status: 401/);
   assert.match(api, /applyPersistedAction/);
