@@ -10,6 +10,12 @@ const importApi = await readFile(new URL("../app/api/import/route.ts", import.me
 const exportApi = await readFile(new URL("../app/api/export/route.ts", import.meta.url), "utf8");
 const workspace = await readFile(new URL("../lib/workspace.ts", import.meta.url), "utf8");
 const githubAuth = await readFile(new URL("../app/github-auth.ts", import.meta.url), "utf8");
+const microsoftAuth = await readFile(new URL("../app/microsoft-auth.ts", import.meta.url), "utf8");
+const googleAuth = await readFile(new URL("../app/google-auth.ts", import.meta.url), "utf8");
+const sharedAuth = await readFile(new URL("../app/auth.ts", import.meta.url), "utf8");
+const loginHtml = await readFile(new URL("../public/login/index.html", import.meta.url), "utf8");
+const loginCss = await readFile(new URL("../public/login/styles.css", import.meta.url), "utf8");
+const loginJs = await readFile(new URL("../public/login/app.js", import.meta.url), "utf8");
 
 test("interface contém os fluxos comerciais essenciais", () => {
   for (const marker of [
@@ -60,13 +66,32 @@ test("persistência não depende de localStorage e escrita exige autenticação"
   assert.match(js, /elements\.exportButton/);
 });
 
-test("autenticação GitHub usa OAuth, PKCE, allowlist e sessão protegida no servidor", () => {
-  assert.doesNotMatch(`${api}\n${importApi}\n${githubAuth}`, /ChatGPT|chatgpt-auth|Microsoft/);
-  assert.match(api, /getGitHubUser/);
-  assert.match(githubAuth, /code_challenge_method: "S256"/);
-  assert.match(githubAuth, /transaction\.state/);
+test("tela de login oferece os três provedores com navegação acessível e responsiva", () => {
+  assert.match(loginHtml, /Continuar com GitHub/);
+  assert.match(loginHtml, /Continuar com Microsoft/);
+  assert.match(loginHtml, /Continuar com Google/);
+  assert.match(loginHtml, /role="alert"/);
+  assert.match(loginCss, /@media \(max-width: 760px\)/);
+  assert.match(loginCss, /prefers-reduced-motion/);
+  assert.doesNotMatch(`${loginJs}\n${js}`, /localStorage|sessionStorage/);
+  assert.match(loginJs, /safeReturnPath/);
+});
+
+test("autenticação multiprovedor usa PKCE, OIDC, allowlists e sessão protegida", () => {
+  assert.match(api, /getAuthenticatedUser/);
+  for (const providerAuth of [githubAuth, microsoftAuth, googleAuth]) {
+    assert.match(providerAuth, /code_challenge_method: "S256"/);
+    assert.match(providerAuth, /readOAuthTransaction/);
+  }
   assert.match(githubAuth, /isAllowedGitHubLogin/);
-  assert.match(githubAuth, /jwtVerify\(token/);
-  assert.match(githubAuth, /HttpOnly; SameSite=Lax/);
   assert.match(githubAuth, /https:\/\/api\.github\.com\/user/);
+  assert.match(microsoftAuth, /isAllowedMicrosoftEmail/);
+  assert.match(microsoftAuth, /payload\.tid/);
+  assert.match(microsoftAuth, /jwtVerify/);
+  assert.match(googleAuth, /isAllowedGoogleEmail/);
+  assert.match(googleAuth, /payload\.email_verified !== true/);
+  assert.match(googleAuth, /jwtVerify/);
+  assert.match(sharedAuth, /payload\.state !== state/);
+  assert.match(sharedAuth, /HttpOnly; SameSite=Lax/);
+  assert.match(sharedAuth, /AUTH_SESSION_SECRET/);
 });

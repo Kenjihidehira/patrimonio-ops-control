@@ -1,7 +1,7 @@
-import { logoutGitHub } from "@/app/github-auth";
+import { startGoogleLogin } from "@/app/google-auth";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(request: Request) {
-  return logoutGitHub(request);
+  return startGoogleLogin(request);
 }

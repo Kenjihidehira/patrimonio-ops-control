@@ -1,4 +1,4 @@
-import { getGitHubUser, githubSignInPath } from "@/app/github-auth";
+import { getAuthenticatedUser, loginPagePath } from "@/app/auth";
 import { buildDashboard } from "@/lib/domain";
 import { createExportWorkbook } from "@/lib/workbook";
 import { loadWorkspaceContext } from "@/lib/workspace";
@@ -7,12 +7,12 @@ export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {
-    const user = await getGitHubUser();
+    const user = await getAuthenticatedUser();
     if (!user) {
       return Response.json(
         {
-          error: "Entre com sua conta GitHub autorizada para exportar os dados da planilha.",
-          signInUrl: githubSignInPath("/demo/index.html"),
+          error: "Entre com uma conta autorizada para exportar os dados da planilha.",
+          signInUrl: loginPagePath("/demo/index.html"),
         },
         { status: 401, headers: { "cache-control": "no-store" } },
       );

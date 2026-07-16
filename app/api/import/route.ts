@@ -1,4 +1,4 @@
-import { getGitHubUser, githubSignInPath } from "@/app/github-auth";
+import { getAuthenticatedUser, loginPagePath } from "@/app/auth";
 import { parsePatrimonioRows } from "@/lib/spreadsheet-import";
 import { importAssets, SupabaseError } from "@/lib/supabase";
 import { readWorkbookRows } from "@/lib/workbook";
@@ -24,12 +24,12 @@ type SpreadsheetPreview = {
 };
 
 export async function POST(request: Request) {
-  const user = await getGitHubUser();
+  const user = await getAuthenticatedUser();
   if (!user) {
     return Response.json(
       {
-        error: "Entre com sua conta GitHub autorizada para importar dados.",
-        signInUrl: githubSignInPath(APP_PATH),
+        error: "Entre com uma conta autorizada para importar dados.",
+        signInUrl: loginPagePath(APP_PATH),
       },
       { status: 401, headers: responseHeaders },
     );

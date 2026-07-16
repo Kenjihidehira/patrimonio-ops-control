@@ -1,8 +1,8 @@
-import type { GitHubUser } from "@/app/github-auth";
+import type { AuthenticatedUser } from "@/app/auth";
 import { normalizeState } from "@/lib/domain";
 import { companyWorkspaceKey, loadImportRuns, loadOrCreateWorkspace } from "@/lib/supabase";
 
-export async function loadWorkspaceContext(user: GitHubUser | null) {
+export async function loadWorkspaceContext(user: AuthenticatedUser | null) {
   if (!user) {
     return {
       state: normalizeState({ revision: 0, nuclei: [], assets: [] }),

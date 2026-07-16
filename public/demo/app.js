@@ -207,7 +207,7 @@ function renderSession() {
   elements.session.innerHTML = `
     <span class="session-avatar" aria-hidden="true">${escapeHtml(initial)}</span>
     <span class="session-text">
-      <small>${session.authenticated ? "Conta GitHub" : "Acesso restrito"}</small>
+      <small>${session.authenticated ? providerLabel(session.provider) : "Acesso restrito"}</small>
       <strong title="${escapeAttribute(session.displayName)}">${escapeHtml(session.displayName)}</strong>
     </span>
     ${session.authenticated ? `<a class="session-sign-out" href="${escapeAttribute(session.signOutUrl)}">Sair</a>` : ""}
@@ -218,7 +218,7 @@ function renderSession() {
   for (const button of [elements.importButton, elements.exportButton, elements.newAsset, elements.newNucleus]) {
     button.disabled = !session.authenticated;
   }
-  const writeTitle = session.authenticated ? "" : "Entre com sua conta GitHub autorizada para acessar a planilha";
+  const writeTitle = session.authenticated ? "" : "Entre com uma conta autorizada para acessar a planilha";
   elements.importButton.title = session.authenticated ? "Importar planilha XLSX" : writeTitle;
   elements.exportButton.title = session.authenticated ? "Exportar planilha XLSX" : writeTitle;
   elements.newAsset.title = writeTitle;
@@ -232,7 +232,7 @@ function renderInventory() {
     elements.inventoryState.hidden = false;
     elements.inventoryState.innerHTML = `
       <strong>${dashboard.session.authenticated ? "Nenhum patrimônio encontrado" : "Dados protegidos"}</strong>
-      <span>${dashboard.session.authenticated ? "Revise os filtros ou limpe a busca para ampliar os resultados." : "Entre com o GitHub autorizado para carregar exclusivamente os dados importados da planilha."}</span>
+      <span>${dashboard.session.authenticated ? "Revise os filtros ou limpe a busca para ampliar os resultados." : "Entre com uma conta autorizada para carregar exclusivamente os dados importados da planilha."}</span>
     `;
     return;
   }
@@ -433,7 +433,7 @@ function renderImports() {
     elements.importHistory.innerHTML = `
       <div class="empty-imports">
         <strong>Nenhuma importação registrada</strong>
-        <span>${dashboard.session.authenticated ? "Nenhuma carga adicional foi registrada nesta base empresarial." : "Entre com a conta GitHub autorizada para consultar o histórico empresarial."}</span>
+        <span>${dashboard.session.authenticated ? "Nenhuma carga adicional foi registrada nesta base empresarial." : "Entre com uma conta autorizada para consultar o histórico empresarial."}</span>
       </div>
     `;
     return;
@@ -818,12 +818,22 @@ function handleAuthResult() {
   const error = url.searchParams.get("auth_error");
   if (!error) return;
 
-  const message = error === "github_not_configured"
-    ? "O login GitHub aguarda a configuração do aplicativo OAuth."
-    : "Não foi possível concluir o login GitHub.";
+  const message = error.endsWith("_not_configured")
+    ? "O provedor de login ainda não foi configurado."
+    : error.endsWith("_not_authorized")
+      ? "Esta conta não está autorizada para acessar a base empresarial."
+      : "Não foi possível concluir o login.";
   showToast(message, true);
   url.searchParams.delete("auth_error");
   window.history.replaceState({}, "", `${url.pathname}${url.search}${url.hash}`);
+}
+
+function providerLabel(provider) {
+  return {
+    github: "Conta GitHub",
+    microsoft: "Conta Microsoft",
+    google: "Conta Google",
+  }[provider] || "Conta autorizada";
 }
 
 function statusBadge(status) {

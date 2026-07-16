@@ -1,8 +1,4 @@
-import {
-  getGitHubUser,
-  githubSignInPath,
-  githubSignOutPath,
-} from "@/app/github-auth";
+import { getAuthenticatedUser, loginPagePath, signOutPath } from "@/app/auth";
 import { applyAction, buildDashboard, DomainError } from "@/lib/domain";
 import { applyPersistedAction, SupabaseError } from "@/lib/supabase";
 import { loadWorkspaceContext } from "@/lib/workspace";
@@ -14,7 +10,7 @@ const responseHeaders = { "cache-control": "no-store" };
 
 export async function GET(request: Request) {
   try {
-    const user = await getGitHubUser();
+    const user = await getAuthenticatedUser();
     const url = new URL(request.url);
     const workspace = await loadWorkspaceContext(user);
     const dashboard = buildDashboard(workspace.state, {
@@ -32,10 +28,11 @@ export async function GET(request: Request) {
         session: {
           authenticated: Boolean(user),
           displayName: user?.displayName ?? "Acesso não autenticado",
-          login: user?.login ?? null,
+          identifier: user?.identifier ?? null,
+          provider: user?.provider ?? null,
           source: workspace.source,
-          signInUrl: githubSignInPath(APP_PATH),
-          signOutUrl: githubSignOutPath(APP_PATH),
+          signInUrl: loginPagePath(APP_PATH),
+          signOutUrl: signOutPath(),
         },
       },
       { headers: responseHeaders },
@@ -50,12 +47,12 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  const user = await getGitHubUser();
+  const user = await getAuthenticatedUser();
   if (!user) {
     return Response.json(
       {
-        error: "Entre com sua conta GitHub autorizada para registrar alterações.",
-        signInUrl: githubSignInPath(APP_PATH),
+        error: "Entre com uma conta autorizada para registrar alterações.",
+        signInUrl: loginPagePath(APP_PATH),
       },
       { status: 401, headers: responseHeaders },
     );

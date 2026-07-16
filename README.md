@@ -35,7 +35,7 @@ Planilhas patrimoniais isoladas não registram bem responsabilidade, movimentaç
 - **API:** Route Handlers compatíveis com Next.js em Cloudflare Worker.
 - **Banco:** Supabase Postgres 17, funções RPC transacionais e índices operacionais.
 - **Integração:** Supabase Edge Function autenticada por segredo de servidor.
-- **Autenticação:** GitHub OAuth, Authorization Code, PKCE, allowlist e sessão `HttpOnly`.
+- **Autenticação:** GitHub OAuth e OpenID Connect com Microsoft/Google, PKCE, allowlists e sessão `HttpOnly` compartilhada.
 - **Planilhas:** `read-excel-file` e `write-excel-file`.
 - **Qualidade:** Node Test Runner, ESLint, TypeScript e GitHub Actions.
 
@@ -49,9 +49,9 @@ cp .env.example .env.local
 pnpm dev
 ```
 
-Preencha as variáveis Supabase, GitHub OAuth e os segredos de sessão de `.env.example` apenas em `.env.local`. O arquivo é ignorado pelo Git. Acesse `http://localhost:5173/demo/`.
+Preencha as variáveis Supabase, dos provedores de identidade e os segredos de sessão de `.env.example` apenas em `.env.local`. O arquivo é ignorado pelo Git. Acesse `http://localhost:5173/login/`.
 
-A interface anônima não recebe dados patrimoniais. A leitura da base empresarial, importação, exportação e operações de escrita exigem uma conta listada em `GITHUB_ALLOWED_LOGINS`. O servidor valida `state`, PKCE, identidade retornada pela API oficial do GitHub e allowlist antes de criar uma sessão local de oito horas.
+A interface anônima não recebe dados patrimoniais. A leitura da base empresarial, importação, exportação e operações de escrita exigem uma conta autorizada por uma das três políticas: login em `GITHUB_ALLOWED_LOGINS`, domínio Microsoft em `MICROSOFT_ALLOWED_DOMAINS` ou e-mail exato em `GOOGLE_ALLOWED_EMAILS`. O servidor valida `state`, PKCE, assinatura da identidade e allowlist antes de criar uma sessão local de oito horas.
 
 ### Validação completa
 
@@ -72,6 +72,26 @@ pnpm audit --prod
 5. Mantenha em `GITHUB_ALLOWED_LOGINS` apenas os operadores autorizados.
 
 O fluxo segue a documentação oficial do [GitHub OAuth Web Application Flow](https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/authorizing-oauth-apps). O access token é usado no servidor apenas para obter a identidade atual e não é persistido no navegador nem incluído na sessão local.
+
+## Configurar Microsoft e Google
+
+No Microsoft Entra ID, registre uma aplicação web com a callback:
+
+```text
+https://patrimonio-ops-control.kenjihidehira999.workers.dev/api/auth/microsoft/callback
+```
+
+Cadastre `MICROSOFT_TENANT_ID`, `MICROSOFT_CLIENT_ID` e `MICROSOFT_CLIENT_SECRET` como secrets do Worker. `MICROSOFT_ALLOWED_DOMAINS` deve conter somente domínios corporativos autorizados. O fluxo usa Authorization Code com PKCE e valida assinatura, emissor, audiência, `nonce`, tenant e domínio do e-mail.
+
+No Google Cloud Console, crie um OAuth Client do tipo Web application com a callback:
+
+```text
+https://patrimonio-ops-control.kenjihidehira999.workers.dev/api/auth/google/callback
+```
+
+Cadastre `GOOGLE_CLIENT_ID` e `GOOGLE_CLIENT_SECRET` como secrets. Preencha `GOOGLE_ALLOWED_EMAILS` com uma lista explícita de e-mails separados por vírgula. O sistema não autoriza automaticamente qualquer conta Gmail ou qualquer conta de um domínio Google Workspace.
+
+Os três provedores convergem para a mesma sessão local assinada. Tokens de acesso e atualização dos provedores não são gravados no navegador nem no banco.
 
 ## Planilha-base
 

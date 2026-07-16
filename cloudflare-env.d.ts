@@ -6,6 +6,13 @@ declare namespace Cloudflare {
     GITHUB_CLIENT_ID: string;
     GITHUB_CLIENT_SECRET: string;
     GITHUB_ALLOWED_LOGINS: string;
+    MICROSOFT_TENANT_ID: string;
+    MICROSOFT_CLIENT_ID: string;
+    MICROSOFT_CLIENT_SECRET: string;
+    MICROSOFT_ALLOWED_DOMAINS: string;
+    GOOGLE_CLIENT_ID: string;
+    GOOGLE_CLIENT_SECRET: string;
+    GOOGLE_ALLOWED_EMAILS: string;
     AUTH_SESSION_SECRET: string;
   }
 }
