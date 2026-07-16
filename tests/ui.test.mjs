@@ -65,6 +65,26 @@ test("layout contém breakpoints de tablet, celular e redução de movimento", (
   assert.match(css, /prefers-reduced-motion/);
 });
 
+test("inventário oferece navegação escalável e experiência móvel dedicada", () => {
+  for (const marker of [
+    "quick-filters",
+    "data-quick-filter=\"unassigned\"",
+    "inventory-pagination",
+    "mobile-inventory-list",
+    "advanced-filters-toggle",
+    "data-page-action=\"next\"",
+    "page-size",
+  ]) {
+    assert.match(html, new RegExp(marker));
+  }
+  assert.match(js, /function getQuickFilteredInventory/);
+  assert.match(js, /function renderPagination/);
+  assert.match(js, /data-detail-tab="history"/);
+  assert.match(css, /th \{[\s\S]*position: sticky/);
+  assert.match(css, /\.mobile-asset-card/);
+  assert.match(css, /\.detail-panel\.is-open/);
+});
+
 test("tema escuro é acessível, persistido em cookie e não usa armazenamento local", () => {
   assert.match(html, /id="theme-toggle"/);
   assert.match(html, /role="switch"/);

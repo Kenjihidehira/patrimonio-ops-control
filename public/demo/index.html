@@ -144,6 +144,9 @@
               <button class="button button-quiet button-small" id="clear-filters" type="button">
                 Limpar filtros
               </button>
+              <button class="button button-secondary button-small advanced-filters-toggle" id="advanced-filters-toggle" type="button" aria-expanded="false" aria-controls="advanced-filters">
+                Filtros
+              </button>
             </div>
             <div class="filter-grid">
               <label class="field field-search">
@@ -155,33 +158,49 @@
                   autocomplete="off"
                 />
               </label>
-              <label class="field">
-                <span>Tipo de item</span>
-                <select id="type-filter">
-                  <option value="all">Todos os itens</option>
-                </select>
-              </label>
-              <label class="field">
-                <span>Status</span>
-                <select id="status-filter">
-                  <option value="all">Todos os status</option>
-                </select>
-              </label>
-              <label class="field">
-                <span>Núcleo</span>
-                <select id="nucleus-filter">
-                  <option value="all">Todos os núcleos</option>
-                </select>
-              </label>
-              <label class="field">
-                <span>Ordenar por</span>
-                <select id="sort-filter">
-                  <option value="recent">Mais recentes</option>
-                  <option value="asset_asc">Número do patrimônio</option>
-                  <option value="nucleus">Núcleo</option>
-                  <option value="status">Status</option>
-                </select>
-              </label>
+              <div class="advanced-filters" id="advanced-filters">
+                <label class="field">
+                  <span>Tipo de item</span>
+                  <select id="type-filter">
+                    <option value="all">Todos os itens</option>
+                  </select>
+                </label>
+                <label class="field">
+                  <span>Status</span>
+                  <select id="status-filter">
+                    <option value="all">Todos os status</option>
+                  </select>
+                </label>
+                <label class="field">
+                  <span>Núcleo</span>
+                  <select id="nucleus-filter">
+                    <option value="all">Todos os núcleos</option>
+                  </select>
+                </label>
+                <label class="field">
+                  <span>Ordenar por</span>
+                  <select id="sort-filter">
+                    <option value="recent">Mais recentes</option>
+                    <option value="asset_asc">Número do patrimônio</option>
+                    <option value="nucleus">Núcleo</option>
+                    <option value="status">Status</option>
+                  </select>
+                </label>
+              </div>
+            </div>
+            <div class="quick-filters" id="quick-filters" aria-label="Visualizações rápidas do inventário">
+              <button class="quick-filter is-active" type="button" data-quick-filter="all" aria-pressed="true">
+                Todos <span data-quick-count="all">0</span>
+              </button>
+              <button class="quick-filter" type="button" data-quick-filter="unassigned" aria-pressed="false">
+                Sem responsável <span data-quick-count="unassigned">0</span>
+              </button>
+              <button class="quick-filter quick-filter-warning" type="button" data-quick-filter="maintenance" aria-pressed="false">
+                Manutenção <span data-quick-count="maintenance">0</span>
+              </button>
+              <button class="quick-filter quick-filter-danger" type="button" data-quick-filter="discrepancy" aria-pressed="false">
+                Divergências <span data-quick-count="discrepancy">0</span>
+              </button>
             </div>
           </section>
 
@@ -209,12 +228,31 @@
                   </thead>
                   <tbody id="inventory-body"></tbody>
                 </table>
+                <div class="mobile-inventory-list" id="mobile-inventory-list" aria-label="Patrimônios encontrados"></div>
                 <div class="state-message" id="inventory-state">
                   <span class="loading-line"></span>
                   <span class="loading-line loading-line-short"></span>
                   <span>Carregando inventário...</span>
                 </div>
               </div>
+              <footer class="pagination" id="inventory-pagination" aria-label="Paginação do inventário">
+                <span id="pagination-summary">Mostrando 0 registros</span>
+                <div class="pagination-controls">
+                  <button class="icon-button pagination-button" type="button" data-page-action="first" aria-label="Primeira página" title="Primeira página">&lt;&lt;</button>
+                  <button class="icon-button pagination-button" type="button" data-page-action="previous" aria-label="Página anterior" title="Página anterior">&lt;</button>
+                  <span class="page-indicator"><strong id="current-page">1</strong> de <span id="total-pages">1</span></span>
+                  <button class="icon-button pagination-button" type="button" data-page-action="next" aria-label="Próxima página" title="Próxima página">&gt;</button>
+                  <button class="icon-button pagination-button" type="button" data-page-action="last" aria-label="Última página" title="Última página">&gt;&gt;</button>
+                  <label class="page-size-field">
+                    <span class="sr-only">Registros por página</span>
+                    <select id="page-size" aria-label="Registros por página">
+                      <option value="15">15 por página</option>
+                      <option value="25" selected>25 por página</option>
+                      <option value="50">50 por página</option>
+                    </select>
+                  </label>
+                </div>
+              </footer>
             </section>
 
             <aside class="detail-panel" id="asset-detail" aria-labelledby="detail-title">
@@ -224,6 +262,7 @@
                 <p>Os dados de aquisição, alocação e movimentações aparecerão aqui.</p>
               </div>
             </aside>
+            <button class="detail-scrim" id="detail-scrim" type="button" aria-label="Fechar detalhes do patrimônio" hidden></button>
           </div>
         </section>
 

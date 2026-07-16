@@ -21,6 +21,9 @@ Planilhas patrimoniais isoladas não registram bem responsabilidade, movimentaç
 - Perfil editável do colaborador com nome, núcleo e relação de patrimônios vinculados.
 - Busca por ID, série, modelo, pessoa, local ou núcleo.
 - Filtros de tipo, status e núcleo, com ordenação operacional.
+- Visualizações rápidas para itens sem responsável, em manutenção ou com divergência.
+- Paginação configurável para bases extensas, com 15, 25 ou 50 registros por página.
+- Lista móvel dedicada e painel inferior de detalhes com abas de resumo e histórico.
 - Cadastro de patrimônio e núcleo, além de edição de sigla, nome, localização e gestor do núcleo.
 - Transferência entre núcleos, locais e responsáveis.
 - Status: disponível, em uso, manutenção, divergência e baixado.
@@ -128,12 +131,18 @@ Todos os logins presentes na allowlist acessam a mesma base e possuem as mesmas 
 
 A interface segue o padrão `list report + object detail`, comum em sistemas corporativos: busca e filtros agrupados, tabela densa, seleção de linha, detalhe contextual e ações progressivas. As referências usadas foram:
 
+- [Snipe-IT - Asset Management](https://snipeitapp.com/product)
+- [InvGate - IT Asset Lifecycle Dashboard](https://invgate.com/asset-management/product-tour/it-asset-lifecycle-management-dashboard)
+- [ManageEngine AssetExplorer](https://www.manageengine.com/products/asset-explorer/)
+- [Asset Panda - Asset Management](https://www.assetpanda.com/)
 - [SAP Fiori - List Report](https://experience.sap.com/fiori-design-web/v1-46/list-report-floorplan-sap-fiori-element/)
 - [IBM Carbon - Data Table](https://carbondesignsystem.com/components/data-table/usage/)
 - [Atlassian Design System - Dynamic Table](https://atlassian.design/components/dynamic-table)
 - [Shopify Polaris - Index Filters](https://polaris-react.shopify.com/components/selection-and-input/index-filters)
 
 A identidade visual usa azul cobalto e amarelo como referências da presença digital da Gazin, mantendo superfícies neutras e cores semânticas independentes para garantir leitura operacional e contraste.
+
+Foram adotados padrões operacionais recorrentes nessas soluções: visibilidade imediata de status, busca por posse e localização, filtros rápidos de exceção, paginação para inventários extensos e acesso contextual ao histórico. Recursos financeiros, contratos, garantias, QR Code e campos customizados não foram reproduzidos porque não existem na planilha-base atual.
 
 O painel oferece temas claro e escuro, respeita a preferência do sistema na primeira visita e persiste a escolha explícita sem armazenar dados operacionais no navegador.
 

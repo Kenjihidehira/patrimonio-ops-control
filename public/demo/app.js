@@ -4,7 +4,15 @@ const elements = {
   inventoryBody: document.querySelector("#inventory-body"),
   inventoryState: document.querySelector("#inventory-state"),
   inventoryContainer: document.querySelector("#inventory-table-container"),
+  mobileInventoryList: document.querySelector("#mobile-inventory-list"),
+  quickFilters: document.querySelector("#quick-filters"),
+  pagination: document.querySelector("#inventory-pagination"),
+  paginationSummary: document.querySelector("#pagination-summary"),
+  currentPage: document.querySelector("#current-page"),
+  totalPages: document.querySelector("#total-pages"),
+  pageSize: document.querySelector("#page-size"),
   detail: document.querySelector("#asset-detail"),
+  detailScrim: document.querySelector("#detail-scrim"),
   resultCount: document.querySelector("#result-count"),
   resultLabel: document.querySelector("#result-label"),
   revision: document.querySelector("#revision-badge"),
@@ -23,6 +31,8 @@ const elements = {
   nucleusFilter: document.querySelector("#nucleus-filter"),
   sortFilter: document.querySelector("#sort-filter"),
   clearFilters: document.querySelector("#clear-filters"),
+  advancedFiltersToggle: document.querySelector("#advanced-filters-toggle"),
+  advancedFilters: document.querySelector("#advanced-filters"),
   newAsset: document.querySelector("#new-asset-button"),
   newNucleus: document.querySelector("#new-nucleus-button"),
   importButton: document.querySelector("#import-button"),
@@ -100,6 +110,11 @@ let selectedAssetId = null;
 let filterTimer = null;
 let importPreview = null;
 let hasStoredTheme = Boolean(readThemeCookie());
+let activeQuickFilter = "all";
+let currentPage = 1;
+let pageSize = 25;
+let detailTab = "summary";
+let mobileDetailOpen = false;
 
 bindEvents();
 setTheme(document.documentElement.dataset.theme === "dark" ? "dark" : "light");
@@ -122,12 +137,53 @@ function bindEvents() {
 
   elements.search.addEventListener("input", () => {
     window.clearTimeout(filterTimer);
-    filterTimer = window.setTimeout(() => void loadDashboard({ quiet: true }), 240);
+    filterTimer = window.setTimeout(() => {
+      currentPage = 1;
+      void loadDashboard({ quiet: true });
+    }, 240);
   });
 
-  [elements.typeFilter, elements.statusFilter, elements.nucleusFilter, elements.sortFilter].forEach(
-    (control) => control.addEventListener("change", () => void loadDashboard({ quiet: true })),
-  );
+  [elements.typeFilter, elements.nucleusFilter, elements.sortFilter].forEach((control) => {
+    control.addEventListener("change", () => {
+      currentPage = 1;
+      void loadDashboard({ quiet: true });
+    });
+  });
+  elements.statusFilter.addEventListener("change", () => {
+    activeQuickFilter = "all";
+    currentPage = 1;
+    void loadDashboard({ quiet: true });
+  });
+
+  elements.quickFilters.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-quick-filter]");
+    if (!button || !dashboard?.session.authenticated) return;
+    activeQuickFilter = button.dataset.quickFilter;
+    currentPage = 1;
+    renderInventory();
+    renderDetail();
+  });
+  elements.advancedFiltersToggle.addEventListener("click", () => {
+    const open = elements.advancedFilters.classList.toggle("is-open");
+    elements.advancedFiltersToggle.setAttribute("aria-expanded", String(open));
+    elements.advancedFiltersToggle.textContent = open ? "Ocultar filtros" : "Filtros";
+  });
+
+  elements.pagination.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-page-action]");
+    if (!button || button.disabled) return;
+    changePage(button.dataset.pageAction);
+  });
+  elements.pageSize.addEventListener("change", () => {
+    pageSize = Number(elements.pageSize.value);
+    currentPage = 1;
+    renderInventory();
+    renderDetail();
+  });
+  elements.detailScrim.addEventListener("click", closeMobileDetail);
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && mobileDetailOpen) closeMobileDetail();
+  });
 
   elements.clearFilters.addEventListener("click", () => {
     elements.search.value = "";
@@ -135,6 +191,8 @@ function bindEvents() {
     elements.statusFilter.value = "all";
     elements.nucleusFilter.value = "all";
     elements.sortFilter.value = "recent";
+    activeQuickFilter = "all";
+    currentPage = 1;
     void loadDashboard({ quiet: true });
   });
 
@@ -264,18 +322,38 @@ function renderSession() {
 
 function renderInventory() {
   elements.inventoryContainer.setAttribute("aria-busy", "false");
-  if (!dashboard.inventory.length) {
+  const filteredInventory = getQuickFilteredInventory();
+  renderQuickFilters();
+  updateInventoryResult(filteredInventory.length);
+
+  if (!filteredInventory.some((asset) => asset.id === selectedAssetId)) {
+    selectedAssetId = filteredInventory[0]?.id ?? null;
+    mobileDetailOpen = false;
+  }
+
+  const totalPages = Math.max(1, Math.ceil(filteredInventory.length / pageSize));
+  currentPage = Math.min(currentPage, totalPages);
+  const pageStart = (currentPage - 1) * pageSize;
+  const pageItems = filteredInventory.slice(pageStart, pageStart + pageSize);
+  if (pageItems.length && !pageItems.some((asset) => asset.id === selectedAssetId)) {
+    selectedAssetId = pageItems[0].id;
+    mobileDetailOpen = false;
+  }
+
+  if (!filteredInventory.length) {
     elements.inventoryBody.innerHTML = "";
+    elements.mobileInventoryList.innerHTML = "";
     elements.inventoryState.hidden = false;
     elements.inventoryState.innerHTML = `
       <strong>${dashboard.session.authenticated ? "Nenhum patrimônio encontrado" : "Dados protegidos"}</strong>
-      <span>${dashboard.session.authenticated ? "Revise os filtros ou limpe a busca para ampliar os resultados." : "Entre com uma conta autorizada para carregar exclusivamente os dados importados da planilha."}</span>
+      <span>${dashboard.session.authenticated ? "Revise os filtros rápidos ou limpe a busca para ampliar os resultados." : "Entre com uma conta autorizada para carregar exclusivamente os dados importados da planilha."}</span>
     `;
+    renderPagination(0, 0, 1);
     return;
   }
 
   elements.inventoryState.hidden = true;
-  elements.inventoryBody.innerHTML = dashboard.inventory
+  elements.inventoryBody.innerHTML = pageItems
     .map(
       (asset) => `
         <tr class="${asset.id === selectedAssetId ? "is-selected" : ""}" data-asset-row="${escapeAttribute(asset.id)}">
@@ -307,14 +385,104 @@ function renderInventory() {
     )
     .join("");
 
-  elements.inventoryBody.querySelectorAll("[data-asset-id]").forEach((button) => {
-    button.addEventListener("click", () => selectAsset(button.dataset.assetId));
+  elements.mobileInventoryList.innerHTML = pageItems
+    .map(
+      (asset) => `
+        <button class="mobile-asset-card ${asset.id === selectedAssetId ? "is-selected" : ""}" type="button" data-asset-id="${escapeAttribute(asset.id)}">
+          <span class="mobile-asset-heading">
+            <span>
+              <strong>#${escapeHtml(asset.id)} · ${escapeHtml(dashboard.options.assetTypes[asset.type])}</strong>
+              <small>${escapeHtml(asset.brandModel)}</small>
+            </span>
+            ${statusBadge(asset.status)}
+          </span>
+          <span class="mobile-asset-metadata">
+            <span><small>Núcleo</small><strong>${escapeHtml(asset.nucleus.code)} · ${escapeHtml(asset.nucleus.name)}</strong></span>
+            <span><small>Responsável</small><strong>${escapeHtml(asset.assignee || "Não alocado")}</strong></span>
+            <span><small>Última movimentação</small><strong>${asset.lastMovement ? formatDateTime(asset.lastMovement.at) : formatDateTime(asset.createdAt)}</strong></span>
+          </span>
+        </button>
+      `,
+    )
+    .join("");
+
+  for (const container of [elements.inventoryBody, elements.mobileInventoryList]) {
+    container.querySelectorAll("[data-asset-id]").forEach((button) => {
+      button.addEventListener("click", () => selectAsset(button.dataset.assetId));
+    });
+  }
+  renderPagination(filteredInventory.length, pageStart, totalPages);
+}
+
+function getQuickFilteredInventory() {
+  const inventory = dashboard?.inventory || [];
+  return inventory.filter((asset) => {
+    if (activeQuickFilter === "unassigned") return isUnassigned(asset.assignee);
+    if (activeQuickFilter === "maintenance") return asset.status === "maintenance";
+    if (activeQuickFilter === "discrepancy") return asset.status === "discrepancy";
+    return true;
   });
+}
+
+function renderQuickFilters() {
+  const inventory = dashboard?.inventory || [];
+  const counts = {
+    all: inventory.length,
+    unassigned: inventory.filter((asset) => isUnassigned(asset.assignee)).length,
+    maintenance: inventory.filter((asset) => asset.status === "maintenance").length,
+    discrepancy: inventory.filter((asset) => asset.status === "discrepancy").length,
+  };
+
+  elements.quickFilters.querySelectorAll("[data-quick-filter]").forEach((button) => {
+    const active = button.dataset.quickFilter === activeQuickFilter;
+    button.classList.toggle("is-active", active);
+    button.setAttribute("aria-pressed", String(active));
+    button.disabled = !dashboard.session.authenticated;
+    button.querySelector("[data-quick-count]").textContent = counts[button.dataset.quickFilter];
+  });
+}
+
+function renderPagination(total, pageStart, totalPages) {
+  const shownStart = total ? pageStart + 1 : 0;
+  const shownEnd = Math.min(pageStart + pageSize, total);
+  elements.paginationSummary.textContent = total
+    ? `Mostrando ${shownStart}–${shownEnd} de ${total} registros`
+    : "Nenhum registro para mostrar";
+  elements.currentPage.textContent = currentPage;
+  elements.totalPages.textContent = totalPages;
+  elements.pagination.querySelectorAll("[data-page-action]").forEach((button) => {
+    const backwards = ["first", "previous"].includes(button.dataset.pageAction);
+    button.disabled = total === 0 || (backwards ? currentPage === 1 : currentPage === totalPages);
+  });
+}
+
+function changePage(action) {
+  const totalPages = Math.max(1, Math.ceil(getQuickFilteredInventory().length / pageSize));
+  if (action === "first") currentPage = 1;
+  if (action === "previous") currentPage = Math.max(1, currentPage - 1);
+  if (action === "next") currentPage = Math.min(totalPages, currentPage + 1);
+  if (action === "last") currentPage = totalPages;
+  renderInventory();
+  renderDetail();
+  document.querySelector("#inventory-table-title").scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function updateInventoryResult(count) {
+  if (!dashboard.session.authenticated) return;
+  elements.resultCount.textContent = count;
+  elements.resultLabel.textContent = count === 1 ? "patrimônio encontrado" : "patrimônios encontrados";
+}
+
+function isUnassigned(assignee) {
+  const value = normalizedText(assignee);
+  return !value || value === "nao alocado" || value === "sem responsavel";
 }
 
 function renderDetail() {
   const asset = dashboard?.inventory.find((item) => item.id === selectedAssetId);
   if (!asset) {
+    mobileDetailOpen = false;
+    updateMobileDetailState();
     elements.detail.innerHTML = `
       <div class="empty-detail">
         <span class="empty-symbol" aria-hidden="true">#</span>
@@ -337,16 +505,23 @@ function renderDetail() {
           <h2 id="detail-title">#${escapeHtml(asset.id)}</h2>
           <p class="detail-type">${escapeHtml(dashboard.options.assetTypes[asset.type])}</p>
         </div>
-        ${statusBadge(asset.status)}
+        <div class="detail-header-controls">
+          ${statusBadge(asset.status)}
+          <button class="icon-button detail-close" id="close-detail-panel" type="button" aria-label="Fechar detalhes" title="Fechar detalhes">X</button>
+        </div>
       </div>
       <div class="detail-actions">
         <button class="button button-secondary button-small" id="transfer-asset-button" type="button" ${asset.status === "retired" || !dashboard.session.authenticated ? "disabled" : ""}>
           Transferir
         </button>
-        <button class="button button-quiet button-small" id="copy-asset-id" type="button">Copiar ID</button>
+        <button class="button button-secondary button-small" id="copy-asset-id" type="button">Copiar ID</button>
       </div>
     </div>
-    <div class="detail-body">
+    <div class="detail-tabs" role="tablist" aria-label="Detalhes do patrimônio">
+      <button class="detail-tab ${detailTab === "summary" ? "is-active" : ""}" type="button" role="tab" data-detail-tab="summary" aria-selected="${detailTab === "summary"}">Resumo</button>
+      <button class="detail-tab ${detailTab === "history" ? "is-active" : ""}" type="button" role="tab" data-detail-tab="history" aria-selected="${detailTab === "history"}">Histórico <span>${asset.movements.length}</span></button>
+    </div>
+    <div class="detail-body detail-tab-panel" data-detail-panel="summary" ${detailTab === "summary" ? "" : "hidden"}>
       <dl class="detail-grid">
         <div>
           <dt>Núcleo</dt>
@@ -389,9 +564,10 @@ function renderDetail() {
           <input name="note" maxlength="500" required placeholder="Informe o motivo para auditoria" ${dashboard.session.authenticated ? "" : "disabled"} />
         </label>
       </form>
-
+    </div>
+    <div class="detail-body detail-tab-panel" data-detail-panel="history" ${detailTab === "history" ? "" : "hidden"}>
       <section class="movement-section" aria-labelledby="movement-title">
-        <h3 id="movement-title">Histórico recente</h3>
+        <h3 id="movement-title">Movimentações recentes</h3>
         <ol class="movement-list">
           ${asset.movements.slice(0, 5).map(renderMovement).join("")}
         </ol>
@@ -399,7 +575,15 @@ function renderDetail() {
     </div>
   `;
 
+  updateMobileDetailState();
   elements.detail.querySelector("#transfer-asset-button").addEventListener("click", () => openTransferDialog(asset));
+  elements.detail.querySelector("#close-detail-panel").addEventListener("click", closeMobileDetail);
+  elements.detail.querySelectorAll("[data-detail-tab]").forEach((button) => {
+    button.addEventListener("click", () => {
+      detailTab = button.dataset.detailTab;
+      renderDetail();
+    });
+  });
   elements.detail.querySelector("#copy-asset-id").addEventListener("click", async () => {
     try {
       await navigator.clipboard.writeText(asset.id);
@@ -583,11 +767,27 @@ function populateOptions() {
 }
 
 function selectAsset(assetId) {
+  const changed = selectedAssetId !== assetId;
   selectedAssetId = assetId;
+  if (changed) detailTab = "summary";
+  mobileDetailOpen = true;
   elements.inventoryBody.querySelectorAll("tr").forEach((row) => {
     row.classList.toggle("is-selected", row.dataset.assetRow === assetId);
   });
+  elements.mobileInventoryList.querySelectorAll("[data-asset-id]").forEach((card) => {
+    card.classList.toggle("is-selected", card.dataset.assetId === assetId);
+  });
   renderDetail();
+}
+
+function closeMobileDetail() {
+  mobileDetailOpen = false;
+  updateMobileDetailState();
+}
+
+function updateMobileDetailState() {
+  elements.detail.classList.toggle("is-open", mobileDetailOpen);
+  elements.detailScrim.hidden = !mobileDetailOpen;
 }
 
 function switchView(view) {
@@ -944,6 +1144,7 @@ async function submitForm(form, errorElement, action, dialog, nextSelectedId = n
 function setInventoryLoading() {
   elements.inventoryContainer.setAttribute("aria-busy", "true");
   elements.inventoryBody.innerHTML = "";
+  elements.mobileInventoryList.innerHTML = "";
   elements.inventoryState.hidden = false;
   elements.inventoryState.innerHTML = `
     <span class="loading-line"></span>
@@ -955,6 +1156,7 @@ function setInventoryLoading() {
 function setInventoryError(message) {
   elements.inventoryContainer.setAttribute("aria-busy", "false");
   elements.inventoryBody.innerHTML = "";
+  elements.mobileInventoryList.innerHTML = "";
   elements.inventoryState.hidden = false;
   elements.inventoryState.innerHTML = `<strong>Falha ao carregar</strong><span>${escapeHtml(message)}</span>`;
 }

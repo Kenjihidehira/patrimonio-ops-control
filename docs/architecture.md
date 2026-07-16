@@ -115,6 +115,7 @@ Chaves estrangeiras preservam integridade e índices cobrem status, núcleo, tip
 - Erros internos e detalhes do banco não são expostos ao navegador.
 - Conteúdo dinâmico é escapado antes de entrar em templates HTML.
 - A preferência de tema usa somente o cookie não sensível `patrimonio_theme`; dados operacionais não são persistidos no navegador.
+- Filtros rápidos, paginação e abas de detalhe são estado efêmero da interface; filtros estruturais continuam sendo processados pela API.
 - Não existe exclusão física exposta pela API.
 
 ## Limitações e evolução produtiva
