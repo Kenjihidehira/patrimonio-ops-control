@@ -11,8 +11,7 @@
   "vars": {
     "SUPABASE_GATEWAY_URL": "https://boxbxyushapqhtbsxnyb.supabase.co/functions/v1/patrimonio-gateway",
     "GITHUB_ALLOWED_LOGINS": "Kenjihidehira",
-    "MICROSOFT_ALLOWED_DOMAINS": "gazin.com.br",
-    "GOOGLE_ALLOWED_EMAILS": ""
+    "MICROSOFT_ALLOWED_DOMAINS": "gazin.com.br"
   },
   "assets": {
     "directory": "dist/client",
