@@ -5,7 +5,7 @@ import { companyWorkspaceKey, loadImportRuns, loadOrCreateWorkspace } from "@/li
 export async function loadWorkspaceContext(user: AuthenticatedUser | null) {
   if (!user) {
     return {
-      state: normalizeState({ revision: 0, nuclei: [], assets: [] }),
+      state: normalizeState({ revision: 0, nuclei: [], assets: [], collaborators: [] }),
       imports: [],
       ownerKey: null,
       source: "locked" as const,

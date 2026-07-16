@@ -4,12 +4,14 @@ type WorkspaceState = {
   revision: number;
   nuclei: Array<Record<string, unknown>>;
   assets: Array<Record<string, unknown>>;
+  collaborators: Array<Record<string, unknown>>;
 };
 
 type ImportPayload = {
   fileName: string;
   nuclei: Array<Record<string, unknown>>;
   assets: Array<Record<string, unknown>>;
+  collaborators: Array<Record<string, unknown>>;
   rejectedCount: number;
   warnings: Array<Record<string, unknown>>;
 };
@@ -18,6 +20,7 @@ type GatewayWorkspace = {
   workspaces: Array<{ revision: number }>;
   nuclei: Array<Record<string, unknown>>;
   assets: Array<Record<string, unknown>>;
+  collaborators: Array<Record<string, unknown>>;
   movements: Array<Record<string, unknown>>;
 };
 
@@ -98,6 +101,11 @@ export async function loadWorkspace(ownerKey: string): Promise<WorkspaceState> {
       createdAt: row.created_at,
       movements: movementsByAsset.get(String(row.code)) ?? [],
     })),
+    collaborators: result.collaborators.map((row) => ({
+      id: row.id,
+      name: row.name,
+      nucleusId: row.nucleus_id,
+    })),
   };
 }
 
@@ -141,6 +149,7 @@ export async function importAssets(
     inserted: number;
     updated: number;
     rejected: number;
+    collaborators: number;
   }>("import_assets", { ownerKey, actor, expectedRevision, payload });
 }
 

@@ -12,6 +12,7 @@ test("interpreta a matriz original, normaliza cinco dígitos e exclui duplicidad
   assert.equal(preview.acceptedCount, 1);
   assert.equal(preview.rejectedCount, 2);
   assert.equal(preview.adjustedCount, 1);
+  assert.equal(preview.collaborators.length, 1);
   assert.equal(preview.assets[0].code, "093376");
   assert.equal(preview.assets[0].type, "monitor_1");
   assert.match(preview.errors[0].message, /aparece mais de uma vez/);
@@ -53,6 +54,7 @@ test("reimporta o formato tabular gerado pela exportação", () => {
   assert.equal(preview.rejectedCount, 0);
   assert.equal(preview.assets[0].status, "allocated");
   assert.equal(preview.assets[0].value, 5500);
+  assert.equal(preview.collaborators[0].name, "Pessoa B");
 });
 
 test("rejeita arquivo sem cabeçalho reconhecido", () => {
@@ -97,4 +99,17 @@ test("decodifica nomes e gera siglas curtas pelas iniciais dos núcleos", () => 
       { code: "T", name: "Teleatendimento" },
     ],
   );
+  assert.equal(preview.collaborators.length, names.length);
+});
+
+test("preserva colaborador que não possui patrimônio válido", () => {
+  const preview = parsePatrimonioRows([
+    ["Colaborador(a)", "Núcleo", "Máquina", "Tela 1", "Tela 2", "Cadeira", "Notebook"],
+    ["Rauan (aprendiz)", "Suporte &amp; Assistência", "x", "x", "x", "Sem patrimônio", 1160819],
+  ]);
+
+  assert.equal(preview.acceptedCount, 0);
+  assert.equal(preview.collaborators.length, 1);
+  assert.equal(preview.collaborators[0].name, "Rauan (aprendiz)");
+  assert.equal(preview.canCommit, true);
 });

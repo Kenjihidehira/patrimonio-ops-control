@@ -40,20 +40,23 @@ O navegador nunca recebe a URL privilegiada nem o segredo do gateway. A API do C
 7. Baixa é lógica; o registro e seu histórico não são apagados.
 8. Valores monetários e datas são normalizados antes da persistência.
 9. Uma revisão obsoleta não pode sobrescrever uma revisão mais nova.
+10. Colaboradores existem independentemente de possuírem patrimônio associado.
+11. A sigla identifica o núcleo durante a reconciliação de importações; IDs internos não são assumidos como estáveis.
 
 ## Modelo de persistência
 
-O Postgres usa cinco tabelas relacionais:
+O Postgres usa seis tabelas relacionais:
 
 | Tabela | Finalidade |
 | --- | --- |
 | `patrimonio_workspaces` | Base empresarial identificada por chave aleatória e contador de revisão |
 | `patrimonio_nuclei` | Núcleos, gestores e localizações |
 | `patrimonio_assets` | Inventário, estado operacional e dados de aquisição |
+| `patrimonio_collaborators` | Diretório importado e vínculo atual com o núcleo |
 | `patrimonio_movements` | Histórico imutável de cadastro, transferência, status e importação |
 | `patrimonio_import_runs` | Resultado e avisos de cada importação |
 
-Chaves estrangeiras preservam integridade e índices cobrem status, núcleo, tipo, responsável, atualização, movimentos e histórico de importações. As RPCs `patrimonio_apply_action` e `patrimonio_import_assets` executam validação de revisão, escrita e auditoria na mesma transação.
+Chaves estrangeiras preservam integridade e índices cobrem status, núcleo, tipo, responsável, atualização, movimentos e histórico de importações. As RPCs `patrimonio_apply_action` e `patrimonio_import_workspace` executam validação de revisão, escrita e auditoria na mesma transação.
 
 ## Fluxos de dados
 
@@ -86,7 +89,8 @@ Chaves estrangeiras preservam integridade e índices cobrem status, núcleo, tip
 2. A prévia reconhece a matriz original ou o formato plano exportado.
 3. IDs de cinco dígitos recebem zero à esquerda; inválidos e todas as ocorrências duplicadas são rejeitados.
 4. A confirmação reprocessa o arquivo no servidor e chama uma RPC transacional.
-5. Ativos são inseridos ou atualizados por código, movimentos são adicionados e o resultado é registrado.
+5. Núcleos são reconciliados por sigla e seus IDs persistidos são resolvidos antes dos demais vínculos.
+6. Ativos e colaboradores são sincronizados, movimentos são adicionados e o resultado é registrado.
 
 ### Exportação XLSX
 

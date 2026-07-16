@@ -19,6 +19,7 @@ type SpreadsheetPreview = {
   canCommit: boolean;
   nuclei: Array<Record<string, unknown>>;
   assets: Array<Record<string, unknown>>;
+  collaborators: Array<Record<string, unknown>>;
   errors: PreviewIssue[];
   warnings: PreviewIssue[];
 };
@@ -86,6 +87,7 @@ export async function POST(request: Request) {
       fileName: safeFileName(file.name),
       nuclei: preview.nuclei,
       assets: preview.assets,
+      collaborators: preview.collaborators,
       rejectedCount: preview.rejectedCount,
       warnings: [...preview.warnings, ...preview.errors],
     });
@@ -93,7 +95,7 @@ export async function POST(request: Request) {
     return Response.json(
       {
         ...result,
-        message: `${result.inserted} patrimônios inseridos e ${result.updated} atualizados.`,
+        message: `${result.inserted} patrimônios inseridos, ${result.updated} atualizados e ${result.collaborators} colaboradores sincronizados.`,
       },
       { headers: responseHeaders },
     );
@@ -114,6 +116,7 @@ function publicPreview(preview: SpreadsheetPreview) {
     rejectedCount: preview.rejectedCount,
     adjustedCount: preview.adjustedCount,
     nucleusCount: preview.nuclei.length,
+    collaboratorCount: preview.collaborators.length,
     canCommit: preview.canCommit,
     errors: preview.errors,
     warnings: preview.warnings,

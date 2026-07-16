@@ -23,6 +23,7 @@ test("normaliza o seed e calcula o resumo operacional", () => {
   assert.equal(dashboard.summary.discrepancies, 1);
   assert.equal(dashboard.summary.retired, 1);
   assert.equal(dashboard.nuclei.length, 5);
+  assert.equal(dashboard.collaborators.length, 0);
 });
 
 test("rejeita identificador que não contenha exatamente seis números", () => {
@@ -166,6 +167,58 @@ test("aceita data de aquisição desconhecida em item importado", () => {
   imported.assets[0].acquiredAt = null;
   const state = normalizeState(imported);
   assert.equal(state.assets[0].acquiredAt, null);
+});
+
+test("lista colaboradores com e sem patrimônio", () => {
+  const state = structuredClone(seed);
+  state.collaborators = [
+    { id: "col-joao", name: "João Martins", nucleusId: "nuc-ti" },
+    { id: "col-rauan", name: "Rauan (aprendiz)", nucleusId: "nuc-ti" },
+  ];
+
+  const dashboard = buildDashboard(state);
+
+  assert.equal(dashboard.summary.collaborators, 2);
+  assert.equal(dashboard.summary.collaboratorsWithoutAssets, 1);
+  assert.equal(dashboard.collaborators.find((item) => item.id === "col-joao").hasAssets, true);
+  assert.equal(dashboard.collaborators.find((item) => item.id === "col-rauan").hasAssets, false);
+});
+
+test("edita informações do núcleo sem permitir sigla duplicada", () => {
+  const nextState = applyAction(
+    seed,
+    {
+      type: "update_nucleus",
+      nucleus: {
+        id: "nuc-ti",
+        code: "TEC",
+        name: "Tecnologia",
+        location: "Matriz",
+        manager: "Kenji Hidehira",
+      },
+    },
+    "admin@empresa.com",
+  );
+
+  assert.deepEqual(nextState.nuclei.find((item) => item.id === "nuc-ti"), {
+    id: "nuc-ti",
+    code: "TEC",
+    name: "Tecnologia",
+    location: "Matriz",
+    manager: "Kenji Hidehira",
+  });
+  assert.throws(
+    () =>
+      applyAction(
+        seed,
+        {
+          type: "update_nucleus",
+          nucleus: { ...seed.nuclei[0], code: "FIN" },
+        },
+        "admin@empresa.com",
+      ),
+    /sigla/,
+  );
 });
 
 function validAsset(overrides = {}) {

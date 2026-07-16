@@ -16,7 +16,7 @@ Respostas dinâmicas usam `cache-control: no-store`. A identidade vem de uma ses
 
 ## `GET /api/state`
 
-Retorna revisão, resumo, inventário filtrado, núcleos, auditoria, histórico de importações, catálogos e contexto da sessão.
+Retorna revisão, resumo, inventário filtrado, colaboradores, núcleos, auditoria, histórico de importações, catálogos e contexto da sessão.
 
 ### Query params
 
@@ -98,6 +98,22 @@ Exige autenticação. Toda ação inclui `expectedRevision`; o ator é obtido da
 }
 ```
 
+### Editar núcleo
+
+```json
+{
+  "type": "update_nucleus",
+  "expectedRevision": 7,
+  "nucleus": {
+    "id": "nuc-juridico",
+    "code": "J",
+    "name": "Jurídico",
+    "location": "Matriz - 2º andar",
+    "manager": "Renata Melo"
+  }
+}
+```
+
 ## `POST /api/import`
 
 Exige autenticação e recebe `multipart/form-data`.
@@ -121,17 +137,18 @@ Resposta resumida:
 ```json
 {
   "totalCandidates": 331,
-  "acceptedCount": 318,
-  "rejectedCount": 13,
+  "acceptedCount": 319,
+  "rejectedCount": 12,
   "adjustedCount": 9,
   "nucleusCount": 10,
+  "collaboratorCount": 102,
   "canCommit": true,
   "errors": [],
   "warnings": []
 }
 ```
 
-Na confirmação, o arquivo é reprocessado e a revisão é comparada dentro da transação. A resposta informa `revision`, `inserted`, `updated` e `rejected`.
+Na confirmação, o arquivo é reprocessado e a revisão é comparada dentro da transação. A resposta informa `revision`, `inserted`, `updated`, `rejected` e `collaborators`.
 
 ## `GET /api/export`
 

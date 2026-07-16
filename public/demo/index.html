@@ -39,6 +39,10 @@
             <span class="nav-index" aria-hidden="true">04</span>
             Importações
           </button>
+          <button class="nav-item" type="button" data-view="collaborators">
+            <span class="nav-index" aria-hidden="true">05</span>
+            Colaboradores
+          </button>
         </nav>
 
         <div class="sidebar-status">
@@ -245,6 +249,68 @@
           </div>
           <div class="import-history" id="import-history" aria-live="polite"></div>
         </section>
+
+        <section class="view-section" id="collaborators-view" data-view-panel="collaborators" hidden>
+          <div class="people-summary" aria-label="Resumo de colaboradores">
+            <article>
+              <span>Colaboradores na base</span>
+              <strong id="people-total">0</strong>
+              <small>importados da planilha</small>
+            </article>
+            <article class="people-attention">
+              <span>Sem patrimônio</span>
+              <strong id="people-without-assets">0</strong>
+              <small>mantidos para conferência</small>
+            </article>
+          </div>
+
+          <section class="people-panel" aria-labelledby="people-title">
+            <div class="section-toolbar people-toolbar">
+              <div>
+                <h2 id="people-title">Colaboradores por núcleo</h2>
+                <p>Consulte a lotação e os patrimônios associados a cada pessoa da planilha.</p>
+              </div>
+              <div class="people-filters">
+                <label class="field">
+                  <span>Buscar colaborador</span>
+                  <input id="people-search" type="search" placeholder="Nome do colaborador" autocomplete="off" />
+                </label>
+                <label class="field">
+                  <span>Situação patrimonial</span>
+                  <select id="people-status-filter">
+                    <option value="all">Todos</option>
+                    <option value="with-assets">Com patrimônio</option>
+                    <option value="without-assets">Sem patrimônio</option>
+                  </select>
+                </label>
+                <label class="field">
+                  <span>Núcleo</span>
+                  <select id="people-nucleus-filter">
+                    <option value="all">Todos os núcleos</option>
+                  </select>
+                </label>
+              </div>
+            </div>
+            <div class="table-scroll people-table-wrap">
+              <table class="people-table">
+                <caption class="sr-only">Colaboradores importados da planilha e patrimônios associados</caption>
+                <thead>
+                  <tr>
+                    <th scope="col">Colaborador</th>
+                    <th scope="col">Núcleo</th>
+                    <th scope="col">Patrimônios</th>
+                    <th scope="col">Situação</th>
+                  </tr>
+                </thead>
+                <tbody id="people-body"></tbody>
+              </table>
+              <div class="state-message" id="people-empty" hidden>
+                <strong>Nenhum colaborador encontrado</strong>
+                <span>Revise a busca ou os filtros aplicados.</span>
+              </div>
+            </div>
+          </section>
+        </section>
       </main>
     </div>
 
@@ -390,6 +456,42 @@
       </form>
     </dialog>
 
+    <dialog class="modal" id="edit-nucleus-dialog" aria-labelledby="edit-nucleus-dialog-title">
+      <form class="modal-content modal-content-small" id="edit-nucleus-form">
+        <div class="modal-header">
+          <div>
+            <p class="eyebrow">Estrutura organizacional</p>
+            <h2 id="edit-nucleus-dialog-title">Editar núcleo</h2>
+          </div>
+          <button class="icon-button" type="button" data-close-dialog="edit-nucleus-dialog" aria-label="Fechar">×</button>
+        </div>
+        <div class="modal-body form-grid">
+          <input name="id" type="hidden" />
+          <label class="field">
+            <span>Sigla</span>
+            <input name="code" maxlength="12" required />
+          </label>
+          <label class="field">
+            <span>Nome do núcleo</span>
+            <input name="name" maxlength="180" required />
+          </label>
+          <label class="field field-wide">
+            <span>Localização</span>
+            <input name="location" maxlength="180" required />
+          </label>
+          <label class="field field-wide">
+            <span>Gestor responsável</span>
+            <input name="manager" maxlength="180" required />
+          </label>
+        </div>
+        <div class="form-error" id="edit-nucleus-form-error" role="alert" hidden></div>
+        <div class="modal-footer">
+          <button class="button button-secondary" type="button" data-close-dialog="edit-nucleus-dialog">Cancelar</button>
+          <button class="button button-primary" type="submit">Salvar alterações</button>
+        </div>
+      </form>
+    </dialog>
+
     <dialog class="modal" id="import-dialog" aria-labelledby="import-dialog-title">
       <form class="modal-content import-modal" id="import-form">
         <div class="modal-header">
@@ -413,11 +515,12 @@
           </label>
 
           <section class="import-preview" id="import-preview" aria-live="polite" hidden>
-            <div class="preview-metrics">
+            <div class="preview-metrics preview-metrics-five">
               <div><span>Válidos</span><strong id="preview-accepted">0</strong></div>
               <div><span>Excluídos</span><strong id="preview-rejected">0</strong></div>
               <div><span>Ajustados</span><strong id="preview-adjusted">0</strong></div>
               <div><span>Núcleos</span><strong id="preview-nuclei">0</strong></div>
+              <div><span>Colaboradores</span><strong id="preview-collaborators">0</strong></div>
             </div>
             <div class="preview-issues" id="preview-issues"></div>
           </section>

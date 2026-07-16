@@ -26,6 +26,9 @@ test("interface contém os fluxos comerciais essenciais", () => {
     "audit-list",
     "import-dialog",
     "import-history",
+    "collaborators-view",
+    "people-body",
+    "edit-nucleus-dialog",
     "export-button",
     "status-form",
   ]) {
@@ -33,6 +36,8 @@ test("interface contém os fluxos comerciais essenciais", () => {
   }
   assert.match(html, /id="result-label"/);
   assert.match(js, /dashboard\.resultCount === 1 \? "patrimônio encontrado"/);
+  assert.match(js, /type: "update_nucleus"/);
+  assert.match(js, /collaboratorsWithoutAssets/);
 });
 
 test("campos críticos possuem semântica e validação no cliente", () => {

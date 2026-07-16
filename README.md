@@ -17,9 +17,10 @@ Planilhas patrimoniais isoladas não registram bem responsabilidade, movimentaç
 - Identificadores únicos com exatamente 6 números.
 - Tipos controlados: CPU (Computador), Monitor 1, Monitor 2, Cadeira e Notebook.
 - Organização por núcleo, gestor, responsável e localização física.
+- Diretório de colaboradores importados, inclusive quando não há patrimônio associado.
 - Busca por ID, série, modelo, pessoa, local ou núcleo.
 - Filtros de tipo, status e núcleo, com ordenação operacional.
-- Cadastro de patrimônio e núcleo com validação no cliente e no domínio.
+- Cadastro de patrimônio e núcleo, além de edição de sigla, nome, localização e gestor do núcleo.
 - Transferência entre núcleos, locais e responsáveis.
 - Status: disponível, em uso, manutenção, divergência e baixado.
 - Baixa lógica, sem exclusão destrutiva do histórico.
@@ -94,7 +95,7 @@ O importador aceita dois formatos:
 
 Antes de gravar, a API reabre o XLSX no servidor, normaliza IDs de cinco dígitos com zero à esquerda, rejeita códigos fora do padrão e exclui todas as ocorrências duplicadas. A prévia retorna apenas contagens e posições dos problemas; nomes da planilha não são enviados ao navegador nessa etapa.
 
-A carga inicial da planilha corporativa registrou 318 patrimônios válidos em 10 núcleos. Treze ocorrências foram rejeitadas e preservadas no histórico da importação: uma com identificador fora do padrão e 12 ocorrências pertencentes a seis identificadores duplicados. Nove IDs de cinco dígitos receberam zero à esquerda.
+A base sincronizada contém 319 patrimônios válidos, 102 colaboradores e 10 núcleos, exclusivamente a partir da planilha corporativa. Doze ocorrências pertencentes a seis identificadores duplicados são rejeitadas e preservadas no histórico. Nove IDs de cinco dígitos recebem zero à esquerda. Campos `x` ou `Sem patrimônio` mantêm o colaborador no diretório, mas não geram ativos fictícios.
 
 A planilha corporativa original não faz parte do repositório. O arquivo [`data/seed.json`](data/seed.json) é usado somente pelos testes unitários das regras de domínio e não é importado pelo runtime nem publicado como base da interface.
 
@@ -102,8 +103,8 @@ A planilha corporativa original não faz parte do repositório. O arquivo [`data
 
 | Método | Rota | Autenticação | Finalidade |
 | --- | --- | --- | --- |
-| `GET` | `/api/state` | Opcional | Dashboard, inventário, núcleos, auditoria, importações e sessão |
-| `POST` | `/api/state` | Obrigatória | Cadastro, transferência, mudança de status ou novo núcleo |
+| `GET` | `/api/state` | Opcional | Dashboard, inventário, colaboradores, núcleos, auditoria, importações e sessão |
+| `POST` | `/api/state` | Obrigatória | Cadastro, transferência, mudança de status, criação ou edição de núcleo |
 | `POST` | `/api/import` | Obrigatória | Pré-validar ou confirmar importação XLSX |
 | `GET` | `/api/export` | Obrigatória | Gerar backup XLSX do workspace empresarial |
 
@@ -113,7 +114,7 @@ Filtros, payloads e códigos de resposta estão em [`docs/api.md`](docs/api.md).
 
 As regras ficam em [`lib/domain.js`](lib/domain.js), independentes de HTTP e banco. O servidor usa uma chave empresarial aleatória, disponível apenas no runtime, para localizar a base compartilhada. O gateway Supabase também exige um segredo de servidor; as tabelas têm RLS habilitado e negam acesso direto a `anon` e `authenticated`.
 
-Mutações e importações usam RPCs transacionais com revisão otimista. Uma gravação obsoleta recebe `409 Conflict`, evitando que duas sessões sobrescrevam silenciosamente o trabalho uma da outra.
+Mutações e importações usam RPCs transacionais com revisão otimista. Núcleos são reconciliados pela sigla estável e os IDs persistidos são resolvidos antes de gravar patrimônios e colaboradores. Uma gravação obsoleta recebe `409 Conflict`, evitando que duas sessões sobrescrevam silenciosamente o trabalho uma da outra.
 
 Documentação completa: [`docs/architecture.md`](docs/architecture.md).
 

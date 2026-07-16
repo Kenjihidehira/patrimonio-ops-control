@@ -38,13 +38,14 @@ Deno.serve(async (request) => {
 
       case "load_workspace": {
         const ownerFilter = encodeURIComponent(`eq.${ownerKey}`);
-        const [workspaces, nuclei, assets, movements] = await Promise.all([
+        const [workspaces, nuclei, assets, collaborators, movements] = await Promise.all([
           dataRequest(`patrimonio_workspaces?owner_key=${ownerFilter}&select=revision&limit=1`),
           dataRequest(`patrimonio_nuclei?owner_key=${ownerFilter}&select=id,code,name,location,manager&order=name.asc`),
           dataRequest(`patrimonio_assets?owner_key=${ownerFilter}&select=code,type,nucleus_id,assignee,location,serial,brand_model,acquired_at,acquisition_value,status,notes,created_at&order=updated_at.desc`),
+          dataRequest(`patrimonio_collaborators?owner_key=${ownerFilter}&select=id,name,nucleus_id&order=name.asc`),
           dataRequest(`patrimonio_movements?owner_key=${ownerFilter}&select=id,asset_code,type,actor,from_label,to_label,note,occurred_at&order=occurred_at.desc`),
         ]);
-        return json({ data: { workspaces, nuclei, assets, movements } });
+        return json({ data: { workspaces, nuclei, assets, collaborators, movements } });
       }
 
       case "load_imports": {
@@ -70,7 +71,7 @@ Deno.serve(async (request) => {
 
       case "import_assets": {
         const payload = body.payload ?? {};
-        const data = await dataRequest("rpc/patrimonio_import_assets", {
+        const data = await dataRequest("rpc/patrimonio_import_workspace", {
           method: "POST",
           body: JSON.stringify({
             p_owner_key: ownerKey,
@@ -81,6 +82,7 @@ Deno.serve(async (request) => {
             p_assets: payload.assets,
             p_rejected_count: payload.rejectedCount,
             p_warnings: payload.warnings,
+            p_collaborators: payload.collaborators,
           }),
         });
         return json({ data });

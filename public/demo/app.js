@@ -28,13 +28,20 @@ const elements = {
   exportButton: document.querySelector("#export-button"),
   importHistory: document.querySelector("#import-history"),
   importCount: document.querySelector("#import-count"),
+  peopleBody: document.querySelector("#people-body"),
+  peopleEmpty: document.querySelector("#people-empty"),
+  peopleSearch: document.querySelector("#people-search"),
+  peopleStatusFilter: document.querySelector("#people-status-filter"),
+  peopleNucleusFilter: document.querySelector("#people-nucleus-filter"),
   assetDialog: document.querySelector("#asset-dialog"),
   transferDialog: document.querySelector("#transfer-dialog"),
   nucleusDialog: document.querySelector("#nucleus-dialog"),
+  editNucleusDialog: document.querySelector("#edit-nucleus-dialog"),
   importDialog: document.querySelector("#import-dialog"),
   assetForm: document.querySelector("#asset-form"),
   transferForm: document.querySelector("#transfer-form"),
   nucleusForm: document.querySelector("#nucleus-form"),
+  editNucleusForm: document.querySelector("#edit-nucleus-form"),
   importForm: document.querySelector("#import-form"),
   importFile: document.querySelector("#import-file"),
   importPreview: document.querySelector("#import-preview"),
@@ -43,6 +50,7 @@ const elements = {
   assetFormError: document.querySelector("#asset-form-error"),
   transferFormError: document.querySelector("#transfer-form-error"),
   nucleusFormError: document.querySelector("#nucleus-form-error"),
+  editNucleusFormError: document.querySelector("#edit-nucleus-form-error"),
   importFormError: document.querySelector("#import-form-error"),
   assetTypeInput: document.querySelector("#asset-type-input"),
   assetStatusInput: document.querySelector("#asset-status-input"),
@@ -73,6 +81,11 @@ const viewCopy = {
     eyebrow: "Dados / Importações",
     title: "Carga e qualidade da base",
     description: "Acompanhe arquivos processados, ajustes automáticos e linhas excluídas.",
+  },
+  collaborators: {
+    eyebrow: "Pessoas / Colaboradores",
+    title: "Lotação e responsabilidade",
+    description: "Identifique colaboradores com ou sem patrimônios associados em cada núcleo.",
   },
 };
 
@@ -117,11 +130,15 @@ function bindEvents() {
     elements.nucleusDialog.showModal();
   });
 
+  elements.peopleSearch.addEventListener("input", renderCollaborators);
+  elements.peopleStatusFilter.addEventListener("change", renderCollaborators);
+  elements.peopleNucleusFilter.addEventListener("change", renderCollaborators);
+
   document.querySelectorAll("[data-close-dialog]").forEach((button) => {
     button.addEventListener("click", () => document.querySelector(`#${button.dataset.closeDialog}`).close());
   });
 
-  [elements.assetDialog, elements.transferDialog, elements.nucleusDialog, elements.importDialog].forEach((dialog) => {
+  [elements.assetDialog, elements.transferDialog, elements.nucleusDialog, elements.editNucleusDialog, elements.importDialog].forEach((dialog) => {
     dialog.addEventListener("click", (event) => {
       if (event.target === dialog) dialog.close();
     });
@@ -130,6 +147,7 @@ function bindEvents() {
   elements.assetForm.addEventListener("submit", handleAssetSubmit);
   elements.transferForm.addEventListener("submit", handleTransferSubmit);
   elements.nucleusForm.addEventListener("submit", handleNucleusSubmit);
+  elements.editNucleusForm.addEventListener("submit", handleNucleusUpdate);
   elements.importForm.addEventListener("submit", handleImportPreview);
   elements.importCommit.addEventListener("click", handleImportCommit);
   elements.importFile.addEventListener("change", resetImportPreview);
@@ -172,6 +190,7 @@ function renderDashboard() {
   renderInventory();
   renderDetail();
   renderNuclei();
+  renderCollaborators();
   renderAudit();
   renderImports();
 }
@@ -383,7 +402,10 @@ function renderNuclei() {
     .map(
       (nucleus) => `
         <article class="nucleus-card ${nucleus.alerts ? "has-alerts" : ""}">
-          <span class="nucleus-code">${escapeHtml(nucleus.code)}</span>
+          <div class="nucleus-card-header">
+            <span class="nucleus-code">${escapeHtml(nucleus.code)}</span>
+            <button class="button button-quiet button-small nucleus-edit" type="button" data-edit-nucleus="${escapeAttribute(nucleus.id)}" ${dashboard.session.authenticated ? "" : "disabled"}>Editar</button>
+          </div>
           <h3>${escapeHtml(nucleus.name)}</h3>
           <p class="nucleus-location">${escapeHtml(nucleus.location)}</p>
           <p class="nucleus-manager">Gestor: ${escapeHtml(nucleus.manager)}</p>
@@ -396,6 +418,46 @@ function renderNuclei() {
       `,
     )
     .join("");
+
+  elements.nucleiGrid.querySelectorAll("[data-edit-nucleus]").forEach((button) => {
+    button.addEventListener("click", () => openNucleusEditDialog(button.dataset.editNucleus));
+  });
+}
+
+function renderCollaborators() {
+  const collaborators = dashboard?.collaborators || [];
+  document.querySelector("#people-total").textContent = dashboard?.summary.collaborators || 0;
+  document.querySelector("#people-without-assets").textContent = dashboard?.summary.collaboratorsWithoutAssets || 0;
+
+  const query = normalizedText(elements.peopleSearch.value);
+  const status = elements.peopleStatusFilter.value;
+  const nucleusId = elements.peopleNucleusFilter.value;
+  const filtered = collaborators.filter((person) => {
+    if (query && !normalizedText(`${person.name} ${person.nucleus.name} ${person.nucleus.code}`).includes(query)) return false;
+    if (status === "with-assets" && !person.hasAssets) return false;
+    if (status === "without-assets" && person.hasAssets) return false;
+    return nucleusId === "all" || person.nucleusId === nucleusId;
+  });
+
+  elements.peopleBody.innerHTML = filtered
+    .map(
+      (person) => `
+        <tr>
+          <td><span class="cell-primary">${escapeHtml(person.name)}</span></td>
+          <td>
+            <span class="cell-primary">${escapeHtml(person.nucleus.code)}</span>
+            <span class="cell-secondary">${escapeHtml(person.nucleus.name)}</span>
+          </td>
+          <td>
+            <span class="asset-count">${person.assetCount}</span>
+            <span class="cell-secondary">${person.assetIds.length ? person.assetIds.map((id) => `#${escapeHtml(id)}`).join(" · ") : "Nenhum identificador válido"}</span>
+          </td>
+          <td><span class="people-status ${person.hasAssets ? "has-assets" : "without-assets"}">${person.hasAssets ? "Com patrimônio" : "Sem patrimônio"}</span></td>
+        </tr>
+      `,
+    )
+    .join("");
+  elements.peopleEmpty.hidden = filtered.length > 0;
 }
 
 function renderAudit() {
@@ -463,6 +525,7 @@ function populateOptions() {
     type: elements.typeFilter.value,
     status: elements.statusFilter.value,
     nucleus: elements.nucleusFilter.value,
+    peopleNucleus: elements.peopleNucleusFilter.value,
   };
   const assetTypeOptions = Object.entries(dashboard.options.assetTypes)
     .map(([value, label]) => `<option value="${value}">${escapeHtml(label)}</option>`)
@@ -481,10 +544,14 @@ function populateOptions() {
   elements.assetStatusInput.innerHTML = statusOptions;
   elements.assetNucleusInput.innerHTML = `<option value="">Selecione</option>${nucleusOptions}`;
   elements.transferNucleusInput.innerHTML = nucleusOptions;
+  elements.peopleNucleusFilter.innerHTML = `<option value="all">Todos os núcleos</option>${nucleusOptions}`;
 
   if (elements.typeFilter.querySelector(`[value="${cssEscape(current.type)}"]`)) elements.typeFilter.value = current.type;
   if (elements.statusFilter.querySelector(`[value="${cssEscape(current.status)}"]`)) elements.statusFilter.value = current.status;
   if (elements.nucleusFilter.querySelector(`[value="${cssEscape(current.nucleus)}"]`)) elements.nucleusFilter.value = current.nucleus;
+  if (elements.peopleNucleusFilter.querySelector(`[value="${cssEscape(current.peopleNucleus)}"]`)) {
+    elements.peopleNucleusFilter.value = current.peopleNucleus;
+  }
 }
 
 function selectAsset(assetId) {
@@ -528,6 +595,19 @@ function openTransferDialog(asset) {
   elements.transferForm.elements.assignee.value = asset.assignee;
   clearFormError(elements.transferFormError);
   elements.transferDialog.showModal();
+}
+
+function openNucleusEditDialog(nucleusId) {
+  const nucleus = dashboard.nuclei.find((item) => item.id === nucleusId);
+  if (!nucleus || !dashboard.session.authenticated) return;
+  elements.editNucleusForm.reset();
+  elements.editNucleusForm.elements.id.value = nucleus.id;
+  elements.editNucleusForm.elements.code.value = nucleus.code;
+  elements.editNucleusForm.elements.name.value = nucleus.name;
+  elements.editNucleusForm.elements.location.value = nucleus.location;
+  elements.editNucleusForm.elements.manager.value = nucleus.manager;
+  clearFormError(elements.editNucleusFormError);
+  elements.editNucleusDialog.showModal();
 }
 
 function openImportDialog() {
@@ -599,6 +679,7 @@ function renderImportPreview(preview) {
   document.querySelector("#preview-rejected").textContent = preview.rejectedCount;
   document.querySelector("#preview-adjusted").textContent = preview.adjustedCount;
   document.querySelector("#preview-nuclei").textContent = preview.nucleusCount;
+  document.querySelector("#preview-collaborators").textContent = preview.collaboratorCount;
 
   const issues = [...preview.errors, ...preview.warnings].slice(0, 12);
   elements.importIssues.innerHTML = issues.length
@@ -714,6 +795,27 @@ async function handleNucleusSubmit(event) {
       },
     },
     elements.nucleusDialog,
+  );
+}
+
+async function handleNucleusUpdate(event) {
+  event.preventDefault();
+  if (!elements.editNucleusForm.reportValidity()) return;
+  const formData = new FormData(elements.editNucleusForm);
+  await submitForm(
+    elements.editNucleusForm,
+    elements.editNucleusFormError,
+    {
+      type: "update_nucleus",
+      nucleus: {
+        id: formData.get("id"),
+        code: formData.get("code"),
+        name: formData.get("name"),
+        location: formData.get("location"),
+        manager: formData.get("manager"),
+      },
+    },
+    elements.editNucleusDialog,
   );
 }
 
@@ -876,6 +978,14 @@ function formatDateTime(value) {
 
 function formatCurrency(value) {
   return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value);
+}
+
+function normalizedText(value) {
+  return String(value || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim();
 }
 
 function escapeHtml(value) {

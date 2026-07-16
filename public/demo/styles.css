@@ -17,6 +17,7 @@
   --blue: #3978c3;
   --blue-soft: #e8f1fb;
   --shadow: 0 12px 28px rgba(18, 38, 29, 0.1);
+  --shadow-soft: 0 6px 18px rgba(18, 38, 29, 0.07);
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
     "Segoe UI", sans-serif;
   font-synthesis: none;
@@ -221,6 +222,7 @@ textarea:disabled {
 .main-content {
   min-width: 0;
   padding: 28px clamp(20px, 3vw, 44px) 48px;
+  background: linear-gradient(180deg, #f8faf9 0, var(--surface) 320px);
 }
 
 .topbar {
@@ -980,6 +982,14 @@ tbody tr:last-child td {
   border: 1px solid var(--line);
   border-radius: 8px;
   background: var(--surface);
+  box-shadow: var(--shadow-soft);
+  transition: border-color 150ms ease, box-shadow 150ms ease, transform 150ms ease;
+}
+
+.nucleus-card:hover {
+  border-color: var(--line-strong);
+  box-shadow: var(--shadow);
+  transform: translateY(-2px);
 }
 
 .nucleus-card::before {
@@ -1000,6 +1010,19 @@ tbody tr:last-child td {
   color: var(--green-700);
   font-size: 10px;
   font-weight: 850;
+}
+
+.nucleus-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 30px;
+}
+
+.nucleus-edit {
+  min-height: 30px;
+  padding: 4px 9px;
 }
 
 .nucleus-card h3 {
@@ -1026,6 +1049,127 @@ tbody tr:last-child td {
 .nucleus-metrics span,
 .nucleus-metrics strong {
   display: block;
+}
+
+.people-summary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.people-summary article {
+  min-height: 118px;
+  padding: 18px 20px;
+  border: 1px solid var(--line);
+  border-top: 3px solid var(--green-700);
+  border-radius: 8px;
+  background: var(--surface);
+  box-shadow: var(--shadow-soft);
+}
+
+.people-summary article.people-attention {
+  border-top-color: var(--yellow);
+}
+
+.people-summary span,
+.people-summary strong,
+.people-summary small {
+  display: block;
+}
+
+.people-summary span {
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.people-summary strong {
+  margin-top: 6px;
+  font-size: 28px;
+  line-height: 1;
+}
+
+.people-summary small {
+  margin-top: 8px;
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.people-panel {
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  box-shadow: var(--shadow-soft);
+}
+
+.people-toolbar {
+  min-height: auto;
+  margin: 0;
+  padding: 17px;
+}
+
+.people-filters {
+  display: grid;
+  grid-template-columns: minmax(220px, 1.5fr) repeat(2, minmax(160px, 1fr));
+  gap: 10px;
+  width: min(760px, 100%);
+}
+
+.people-table-wrap {
+  min-height: 260px;
+  border: 0;
+  border-radius: 0;
+}
+
+.people-table tbody tr {
+  transition: background-color 120ms ease;
+}
+
+.people-table tbody tr:hover {
+  background: #f5faf7;
+}
+
+.asset-count {
+  display: inline-grid;
+  min-width: 24px;
+  height: 24px;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--green-100);
+  color: var(--green-900);
+  font-size: 10px;
+  font-weight: 850;
+}
+
+.people-status {
+  display: inline-flex;
+  align-items: center;
+  min-height: 25px;
+  padding: 4px 8px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-size: 9px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.people-status.has-assets {
+  border-color: #acd4c0;
+  background: var(--green-100);
+  color: var(--green-900);
+}
+
+.people-status.without-assets {
+  border-color: #efd073;
+  background: var(--yellow-soft);
+  color: #70520d;
+}
+
+.preview-metrics-five {
+  grid-template-columns: repeat(5, 1fr);
 }
 
 .nucleus-metrics span {
@@ -1428,6 +1572,14 @@ tbody tr:last-child td {
   .nuclei-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+
+  .people-filters {
+    grid-template-columns: repeat(2, minmax(160px, 1fr));
+  }
+
+  .people-filters .field:first-child {
+    grid-column: 1 / -1;
+  }
 }
 
 @media (max-width: 940px) {
@@ -1497,6 +1649,10 @@ tbody tr:last-child td {
   .audit-actor {
     grid-column: 2 / -1;
   }
+
+  .primary-nav {
+    overflow-x: auto;
+  }
 }
 
 @media (max-width: 720px) {
@@ -1515,15 +1671,18 @@ tbody tr:last-child td {
   }
 
   .primary-nav {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     justify-content: stretch;
+    overflow: visible;
   }
 
   .nav-item {
-    flex: 1;
     justify-content: center;
     min-width: 0;
     padding: 7px 6px;
     text-align: center;
+    white-space: normal;
   }
 
   .main-content {
@@ -1608,6 +1767,19 @@ tbody tr:last-child td {
     grid-template-columns: 1fr;
   }
 
+  .people-summary,
+  .people-filters {
+    grid-template-columns: 1fr;
+  }
+
+  .people-filters .field:first-child {
+    grid-column: auto;
+  }
+
+  .people-toolbar {
+    gap: 16px;
+  }
+
   .audit-list {
     border: 0;
     border-radius: 0;
@@ -1645,6 +1817,10 @@ tbody tr:last-child td {
   .filter-grid,
   .data-actions,
   .preview-metrics {
+    grid-template-columns: 1fr;
+  }
+
+  .preview-metrics-five {
     grid-template-columns: 1fr;
   }
 
