@@ -72,9 +72,9 @@ curl -i -X POST https://patrimonio-ops-control.kenjihidehira999.workers.dev/api/
 Resultados esperados:
 
 - `/demo/`: HTTP `200` e interface operacional.
-- `GET /api/state`: HTTP `200`, sessão anônima e seed público.
+- `GET /api/state`: HTTP `200`, sessão anônima e projeção vazia (`source = locked`).
 - Login GitHub: HTTP `302` para `github.com/login/oauth/authorize` quando as credenciais estão configuradas.
-- `GET /api/export`: HTTP `200` e conteúdo XLSX.
+- `GET /api/export` sem login: HTTP `401`; autenticado: HTTP `200` e conteúdo XLSX da base empresarial.
 - `POST /api/state` sem login: HTTP `401`.
 - O gateway sem `x-patrimonio-key` retorna `401`.
 - O Supabase Security Advisor não aponta tabelas públicas sem RLS.

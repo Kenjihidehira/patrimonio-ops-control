@@ -11,7 +11,6 @@ flowchart LR
     API --> GATEWAY[Supabase Edge Function]
     GATEWAY --> RPC[RPCs transacionais]
     RPC --> PG[(Supabase Postgres)]
-    SEED[Seed público sanitizado] --> API
 ```
 
 O navegador nunca recebe a URL privilegiada nem o segredo do gateway. A API do Cloudflare Worker chama a Edge Function pelo servidor, e a função executa apenas as operações permitidas contra o Postgres.
@@ -61,9 +60,8 @@ Chaves estrangeiras preservam integridade e índices cobrem status, núcleo, tip
 ### Leitura anônima
 
 1. A API não encontra identidade autenticada.
-2. Carrega e valida `data/seed.json`.
-3. Aplica busca, filtros e ordenação no domínio.
-4. Retorna `session.source = seed`; nenhuma escrita é permitida.
+2. Cria uma projeção vazia, sem dados patrimoniais.
+3. Retorna `session.source = locked`; leitura empresarial, exportação e escrita permanecem bloqueadas.
 
 ### Leitura autenticada
 
@@ -98,6 +96,7 @@ Chaves estrangeiras preservam integridade e índices cobrem status, núcleo, tip
 ## Segurança
 
 - Nenhum secret é versionado ou exposto ao cliente.
+- Nenhum patrimônio, núcleo, colaborador ou evento da planilha é devolvido sem autenticação.
 - O ator vem da sessão GitHub validada, nunca do payload.
 - A chave empresarial é aleatória, tem 256 bits e permanece somente no runtime do servidor.
 - `state` e PKCE protegem o fluxo OAuth; a identidade é recarregada de `https://api.github.com/user` após cada login.

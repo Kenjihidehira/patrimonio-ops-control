@@ -1,15 +1,14 @@
-import seed from "@/data/seed.json";
 import type { GitHubUser } from "@/app/github-auth";
-import { cloneState, normalizeState } from "@/lib/domain";
+import { normalizeState } from "@/lib/domain";
 import { companyWorkspaceKey, loadImportRuns, loadOrCreateWorkspace } from "@/lib/supabase";
 
 export async function loadWorkspaceContext(user: GitHubUser | null) {
   if (!user) {
     return {
-      state: normalizeState(cloneState(seed)),
+      state: normalizeState({ revision: 0, nuclei: [], assets: [] }),
       imports: [],
       ownerKey: null,
-      source: "seed" as const,
+      source: "locked" as const,
     };
   }
 

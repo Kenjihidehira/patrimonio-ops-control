@@ -28,7 +28,7 @@ Retorna revisão, resumo, inventário filtrado, núcleos, auditoria, histórico 
 | `nucleus` | Identificador de núcleo | `all` |
 | `sort` | `recent`, `asset_asc`, `nucleus`, `status` | `recent` |
 
-Usuários anônimos recebem o seed público. Logins GitHub presentes na allowlist recebem o workspace empresarial compartilhado no Supabase.
+Usuários anônimos recebem uma projeção vazia, sem patrimônios, núcleos ou auditoria. Logins GitHub presentes na allowlist recebem exclusivamente o workspace empresarial importado da planilha e armazenado no Supabase.
 
 ## `POST /api/state`
 
@@ -142,7 +142,7 @@ Gera um `.xlsx` com quatro abas:
 - `Auditoria`
 - `Importações`
 
-Usuários anônimos exportam apenas o seed fictício. Usuários autenticados exportam o workspace empresarial.
+Exige autenticação. Usuários autenticados exportam o workspace empresarial carregado da planilha; requisições anônimas recebem `401`.
 
 ## Códigos de resposta
 

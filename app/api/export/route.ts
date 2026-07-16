@@ -1,4 +1,4 @@
-import { getGitHubUser } from "@/app/github-auth";
+import { getGitHubUser, githubSignInPath } from "@/app/github-auth";
 import { buildDashboard } from "@/lib/domain";
 import { createExportWorkbook } from "@/lib/workbook";
 import { loadWorkspaceContext } from "@/lib/workspace";
@@ -8,6 +8,15 @@ export const dynamic = "force-dynamic";
 export async function GET() {
   try {
     const user = await getGitHubUser();
+    if (!user) {
+      return Response.json(
+        {
+          error: "Entre com sua conta GitHub autorizada para exportar os dados da planilha.",
+          signInUrl: githubSignInPath("/demo/index.html"),
+        },
+        { status: 401, headers: { "cache-control": "no-store" } },
+      );
+    }
     const workspace = await loadWorkspaceContext(user);
     const dashboard = buildDashboard(workspace.state, { sort: "asset_asc" });
     const workbook = await createExportWorkbook(dashboard, workspace.imports);

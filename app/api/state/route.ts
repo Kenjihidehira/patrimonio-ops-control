@@ -31,7 +31,7 @@ export async function GET(request: Request) {
         imports: workspace.imports,
         session: {
           authenticated: Boolean(user),
-          displayName: user?.displayName ?? "Visitante da demonstração",
+          displayName: user?.displayName ?? "Acesso não autenticado",
           login: user?.login ?? null,
           source: workspace.source,
           signInUrl: githubSignInPath(APP_PATH),

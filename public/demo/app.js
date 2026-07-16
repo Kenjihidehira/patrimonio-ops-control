@@ -177,6 +177,17 @@ function renderDashboard() {
 }
 
 function renderSummary() {
+  if (!dashboard.session.authenticated) {
+    for (const selector of ["#kpi-total", "#kpi-allocated", "#kpi-maintenance", "#kpi-discrepancies"]) {
+      document.querySelector(selector).textContent = "--";
+    }
+    document.querySelector("#kpi-total-context").textContent = "dados protegidos";
+    elements.resultCount.textContent = "--";
+    elements.resultLabel.textContent = "aguardando autenticação";
+    elements.revision.textContent = "Base protegida";
+    return;
+  }
+
   document.querySelector("#kpi-total").textContent = dashboard.summary.total;
   document.querySelector("#kpi-allocated").textContent = dashboard.summary.allocated;
   document.querySelector("#kpi-maintenance").textContent = dashboard.summary.maintenance;
@@ -196,19 +207,20 @@ function renderSession() {
   elements.session.innerHTML = `
     <span class="session-avatar" aria-hidden="true">${escapeHtml(initial)}</span>
     <span class="session-text">
-      <small>${session.authenticated ? "Conta GitHub" : "Demonstração pública"}</small>
+      <small>${session.authenticated ? "Conta GitHub" : "Acesso restrito"}</small>
       <strong title="${escapeAttribute(session.displayName)}">${escapeHtml(session.displayName)}</strong>
     </span>
     ${session.authenticated ? `<a class="session-sign-out" href="${escapeAttribute(session.signOutUrl)}">Sair</a>` : ""}
   `;
   elements.demoNotice.hidden = session.authenticated;
   elements.signInLink.href = session.signInUrl;
-  elements.sidebarSource.textContent = session.authenticated ? "Base empresarial Supabase" : "Demonstração somente leitura";
-  for (const button of [elements.importButton, elements.newAsset, elements.newNucleus]) {
+  elements.sidebarSource.textContent = session.authenticated ? "Base empresarial Supabase" : "Dados protegidos";
+  for (const button of [elements.importButton, elements.exportButton, elements.newAsset, elements.newNucleus]) {
     button.disabled = !session.authenticated;
   }
-  const writeTitle = session.authenticated ? "" : "Entre com sua conta GitHub autorizada para editar";
+  const writeTitle = session.authenticated ? "" : "Entre com sua conta GitHub autorizada para acessar a planilha";
   elements.importButton.title = session.authenticated ? "Importar planilha XLSX" : writeTitle;
+  elements.exportButton.title = session.authenticated ? "Exportar planilha XLSX" : writeTitle;
   elements.newAsset.title = writeTitle;
   elements.newNucleus.title = writeTitle;
 }
@@ -219,8 +231,8 @@ function renderInventory() {
     elements.inventoryBody.innerHTML = "";
     elements.inventoryState.hidden = false;
     elements.inventoryState.innerHTML = `
-      <strong>Nenhum patrimônio encontrado</strong>
-      <span>Revise os filtros ou limpe a busca para ampliar os resultados.</span>
+      <strong>${dashboard.session.authenticated ? "Nenhum patrimônio encontrado" : "Dados protegidos"}</strong>
+      <span>${dashboard.session.authenticated ? "Revise os filtros ou limpe a busca para ampliar os resultados." : "Entre com o GitHub autorizado para carregar exclusivamente os dados importados da planilha."}</span>
     `;
     return;
   }

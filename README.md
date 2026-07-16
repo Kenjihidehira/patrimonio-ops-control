@@ -8,8 +8,6 @@ Sistema web de controle patrimonial para empresas que precisam saber **qual ativ
 
 **Demo pública:** [patrimonio-ops-control.kenjihidehira999.workers.dev/demo](https://patrimonio-ops-control.kenjihidehira999.workers.dev/demo/)
 
-![Dashboard do Patrimônio Ops](docs/dashboard.jpg)
-
 ## Problema comercial resolvido
 
 Planilhas patrimoniais isoladas não registram bem responsabilidade, movimentações e exceções. O Patrimônio Ops importa o inventário existente, centraliza os ativos por núcleo e transforma cada alteração em um evento auditável, reduzindo retrabalho em inventários, onboarding, manutenção e desligamentos.
@@ -28,7 +26,7 @@ Planilhas patrimoniais isoladas não registram bem responsabilidade, movimentaç
 - Auditoria com ator, data, origem, destino e motivo.
 - Importação XLSX em duas etapas: pré-validação e confirmação transacional.
 - Exportação XLSX com inventário, núcleos, auditoria e histórico de importações.
-- Seed público sanitizado e workspace empresarial compartilhado no Supabase.
+- Acesso público sem dados patrimoniais e workspace empresarial compartilhado no Supabase.
 
 ## Stack
 
@@ -53,7 +51,7 @@ pnpm dev
 
 Preencha as variáveis Supabase, GitHub OAuth e os segredos de sessão de `.env.example` apenas em `.env.local`. O arquivo é ignorado pelo Git. Acesse `http://localhost:5173/demo/`.
 
-A interface anônima funciona com o seed público. A base empresarial e as operações de escrita exigem uma conta listada em `GITHUB_ALLOWED_LOGINS`. O servidor valida `state`, PKCE, identidade retornada pela API oficial do GitHub e allowlist antes de criar uma sessão local de oito horas.
+A interface anônima não recebe dados patrimoniais. A leitura da base empresarial, importação, exportação e operações de escrita exigem uma conta listada em `GITHUB_ALLOWED_LOGINS`. O servidor valida `state`, PKCE, identidade retornada pela API oficial do GitHub e allowlist antes de criar uma sessão local de oito horas.
 
 ### Validação completa
 
@@ -86,7 +84,7 @@ Antes de gravar, a API reabre o XLSX no servidor, normaliza IDs de cinco dígito
 
 A carga inicial da planilha corporativa registrou 318 patrimônios válidos em 10 núcleos. Treze ocorrências foram rejeitadas e preservadas no histórico da importação: uma com identificador fora do padrão e 12 ocorrências pertencentes a seis identificadores duplicados. Nove IDs de cinco dígitos receberam zero à esquerda.
 
-A planilha corporativa original não faz parte do repositório. O arquivo [`data/seed.json`](data/seed.json) contém apenas dados fictícios para demonstração e não expõe nomes ou dados operacionais reais.
+A planilha corporativa original não faz parte do repositório. O arquivo [`data/seed.json`](data/seed.json) é usado somente pelos testes unitários das regras de domínio e não é importado pelo runtime nem publicado como base da interface.
 
 ## API
 
@@ -95,7 +93,7 @@ A planilha corporativa original não faz parte do repositório. O arquivo [`data
 | `GET` | `/api/state` | Opcional | Dashboard, inventário, núcleos, auditoria, importações e sessão |
 | `POST` | `/api/state` | Obrigatória | Cadastro, transferência, mudança de status ou novo núcleo |
 | `POST` | `/api/import` | Obrigatória | Pré-validar ou confirmar importação XLSX |
-| `GET` | `/api/export` | Opcional | Gerar backup XLSX do workspace atual |
+| `GET` | `/api/export` | Obrigatória | Gerar backup XLSX do workspace empresarial |
 
 Filtros, payloads e códigos de resposta estão em [`docs/api.md`](docs/api.md).
 

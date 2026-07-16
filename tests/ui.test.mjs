@@ -7,6 +7,8 @@ const css = await readFile(new URL("../public/demo/styles.css", import.meta.url)
 const js = await readFile(new URL("../public/demo/app.js", import.meta.url), "utf8");
 const api = await readFile(new URL("../app/api/state/route.ts", import.meta.url), "utf8");
 const importApi = await readFile(new URL("../app/api/import/route.ts", import.meta.url), "utf8");
+const exportApi = await readFile(new URL("../app/api/export/route.ts", import.meta.url), "utf8");
+const workspace = await readFile(new URL("../lib/workspace.ts", import.meta.url), "utf8");
 const githubAuth = await readFile(new URL("../app/github-auth.ts", import.meta.url), "utf8");
 
 test("interface contém os fluxos comerciais essenciais", () => {
@@ -51,6 +53,11 @@ test("persistência não depende de localStorage e escrita exige autenticação"
   assert.match(importApi, /MAX_FILE_BYTES/);
   assert.match(importApi, /status: 401/);
   assert.match(importApi, /mode === "preview"/);
+  assert.match(exportApi, /if \(!user\)/);
+  assert.match(exportApi, /status: 401/);
+  assert.match(workspace, /source: "locked"/);
+  assert.doesNotMatch(workspace, /seed\.json/);
+  assert.match(js, /elements\.exportButton/);
 });
 
 test("autenticação GitHub usa OAuth, PKCE, allowlist e sessão protegida no servidor", () => {
