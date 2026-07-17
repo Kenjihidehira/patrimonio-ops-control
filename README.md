@@ -26,6 +26,7 @@ Planilhas patrimoniais isoladas não registram bem responsabilidade, movimentaç
 - Lista móvel dedicada e painel inferior de detalhes com abas de resumo e histórico.
 - Cadastro de patrimônio e núcleo, além de edição de sigla, nome, localização e gestor do núcleo.
 - Transferência entre núcleos, locais e responsáveis.
+- Alteração auditável do número patrimonial, inclusive para converter itens `Sem patrimônio` em identificadores oficiais.
 - Status: disponível, em uso, manutenção, divergência e baixado.
 - Baixa lógica, sem exclusão destrutiva do histórico.
 - Auditoria com ator, data, origem, destino e motivo.
@@ -120,6 +121,8 @@ Filtros, payloads e códigos de resposta estão em [`docs/api.md`](docs/api.md).
 As regras ficam em [`lib/domain.js`](lib/domain.js), independentes de HTTP e banco. O servidor usa uma chave empresarial aleatória, disponível apenas no runtime, para localizar a base compartilhada. O gateway Supabase também exige um segredo de servidor; as tabelas têm RLS habilitado e negam acesso direto a `anon` e `authenticated`.
 
 Mutações e importações usam RPCs transacionais com revisão otimista. Núcleos são reconciliados pela sigla estável e os IDs persistidos são resolvidos antes de gravar patrimônios e colaboradores. Ao renomear um colaborador, suas atribuições existentes são preservadas na mesma transação. Uma gravação obsoleta recebe `409 Conflict`, evitando que duas sessões sobrescrevam silenciosamente o trabalho uma da outra.
+
+A troca do número patrimonial altera a chave do ativo com cascata referencial para os movimentos existentes, exige justificativa e cria um novo evento de auditoria. Quando uma referência interna `Sxxxxx` em divergência recebe um número oficial, o item volta automaticamente para `Em uso` se possuir responsável ou `Disponível` caso contrário.
 
 Documentação completa: [`docs/architecture.md`](docs/architecture.md).
 

@@ -26,6 +26,10 @@ const collaboratorPolicyMigration = await readFile(
   new URL("../supabase/migrations/20260717113500_explicit_collaborator_rls_policy.sql", import.meta.url),
   "utf8",
 );
+const identifierMigration = await readFile(
+  new URL("../supabase/migrations/20260717133000_allow_asset_identifier_updates.sql", import.meta.url),
+  "utf8",
+);
 
 test("importação reconcilia núcleos pela sigla persistida", () => {
   assert.match(nucleusMigration, /on conflict \(owner_key, code\) do update/);
@@ -57,4 +61,14 @@ test("colaboradores negam acesso direto por política RLS explícita", () => {
   assert.match(collaboratorPolicyMigration, /patrimonio_collaborators_no_direct_access/);
   assert.match(collaboratorPolicyMigration, /to anon, authenticated/);
   assert.match(collaboratorPolicyMigration, /using \(false\)/);
+});
+
+test("alteração do patrimônio preserva histórico e ocorre em transação auditável", () => {
+  assert.match(identifierMigration, /on update cascade/);
+  assert.match(identifierMigration, /update_asset_identifier/);
+  assert.match(identifierMigration, /identifier_change/);
+  assert.match(identifierMigration, /\^\[0-9\]\{6\}\$/);
+  assert.match(identifierMigration, /asset_code_exists/);
+  assert.match(identifierMigration, /for update/);
+  assert.match(identifierMigration, /set code = v_to_label/);
 });

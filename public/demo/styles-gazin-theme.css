@@ -814,6 +814,19 @@ textarea:disabled {
   resize: vertical;
 }
 
+.field input[readonly] {
+  background: var(--surface-soft);
+  color: var(--muted);
+  cursor: not-allowed;
+}
+
+.field-help {
+  margin: -2px 0 2px;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.45;
+}
+
 .field input:hover,
 .field select:hover,
 .field textarea:hover {
@@ -1146,9 +1159,15 @@ tbody tr:last-child td {
 
 .detail-actions {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 8px;
   margin-top: 14px;
+}
+
+.detail-actions .button {
+  min-width: 0;
+  padding-right: 8px;
+  padding-left: 8px;
 }
 
 .detail-body {

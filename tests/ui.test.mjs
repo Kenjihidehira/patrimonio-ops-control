@@ -23,6 +23,7 @@ test("interface contém os fluxos comerciais essenciais", () => {
     "Controle de patrimônios",
     "inventory-body",
     "asset-dialog",
+    "identifier-dialog",
     "transfer-dialog",
     "nucleus-dialog",
     "audit-list",
@@ -41,6 +42,10 @@ test("interface contém os fluxos comerciais essenciais", () => {
   assert.match(js, /dashboard\.resultCount === 1 \? "patrimônio encontrado"/);
   assert.match(js, /type: "update_nucleus"/);
   assert.match(js, /type: "update_collaborator"/);
+  assert.match(js, /type: "update_asset_identifier"/);
+  assert.match(js, /function openIdentifierDialog/);
+  assert.match(html, /id="identifier-form"/);
+  assert.match(html, /name="newAssetId" inputmode="numeric" pattern="\[0-9\]\{6\}"/);
   assert.match(js, /collaboratorsWithoutAssets/);
   assert.doesNotMatch(html, /Valor de aquisição/);
   assert.doesNotMatch(js, /<dt>Valor<\/dt>/);
@@ -146,6 +151,7 @@ test("persistência não depende de localStorage e escrita exige autenticação"
   assert.match(api, /if \(!user\)/);
   assert.match(api, /status: 401/);
   assert.match(api, /applyPersistedAction/);
+  assert.match(api, /error\.code === "23505"/);
   assert.match(importApi, /MAX_FILE_BYTES/);
   assert.match(importApi, /status: 401/);
   assert.match(importApi, /mode === "preview"/);

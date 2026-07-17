@@ -81,6 +81,20 @@ Exige autenticação. Toda ação inclui `expectedRevision`; o ator é obtido da
 }
 ```
 
+### Alterar número patrimonial
+
+```json
+{
+  "type": "update_asset_identifier",
+  "expectedRevision": 6,
+  "assetId": "S1A2B3",
+  "newAssetId": "654320",
+  "note": "Etiqueta aplicada após conferência física"
+}
+```
+
+`newAssetId` aceita somente seis dígitos e precisa ser único no workspace. A operação preserva núcleo, responsável, localização e movimentos anteriores, além de registrar a troca na auditoria.
+
 ### Criar núcleo
 
 ```json

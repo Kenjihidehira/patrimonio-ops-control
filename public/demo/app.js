@@ -52,12 +52,14 @@ const elements = {
   peopleStatusFilter: document.querySelector("#people-status-filter"),
   peopleNucleusFilter: document.querySelector("#people-nucleus-filter"),
   assetDialog: document.querySelector("#asset-dialog"),
+  identifierDialog: document.querySelector("#identifier-dialog"),
   transferDialog: document.querySelector("#transfer-dialog"),
   nucleusDialog: document.querySelector("#nucleus-dialog"),
   editNucleusDialog: document.querySelector("#edit-nucleus-dialog"),
   collaboratorDialog: document.querySelector("#collaborator-dialog"),
   importDialog: document.querySelector("#import-dialog"),
   assetForm: document.querySelector("#asset-form"),
+  identifierForm: document.querySelector("#identifier-form"),
   transferForm: document.querySelector("#transfer-form"),
   nucleusForm: document.querySelector("#nucleus-form"),
   editNucleusForm: document.querySelector("#edit-nucleus-form"),
@@ -68,6 +70,7 @@ const elements = {
   importIssues: document.querySelector("#preview-issues"),
   importCommit: document.querySelector("#commit-import-button"),
   assetFormError: document.querySelector("#asset-form-error"),
+  identifierFormError: document.querySelector("#identifier-form-error"),
   transferFormError: document.querySelector("#transfer-form-error"),
   nucleusFormError: document.querySelector("#nucleus-form-error"),
   editNucleusFormError: document.querySelector("#edit-nucleus-form-error"),
@@ -221,13 +224,14 @@ function bindEvents() {
     button.addEventListener("click", () => document.querySelector(`#${button.dataset.closeDialog}`).close());
   });
 
-  [elements.assetDialog, elements.transferDialog, elements.nucleusDialog, elements.editNucleusDialog, elements.collaboratorDialog, elements.importDialog].forEach((dialog) => {
+  [elements.assetDialog, elements.identifierDialog, elements.transferDialog, elements.nucleusDialog, elements.editNucleusDialog, elements.collaboratorDialog, elements.importDialog].forEach((dialog) => {
     dialog.addEventListener("click", (event) => {
       if (event.target === dialog) dialog.close();
     });
   });
 
   elements.assetForm.addEventListener("submit", handleAssetSubmit);
+  elements.identifierForm.addEventListener("submit", handleIdentifierSubmit);
   elements.transferForm.addEventListener("submit", handleTransferSubmit);
   elements.nucleusForm.addEventListener("submit", handleNucleusSubmit);
   elements.editNucleusForm.addEventListener("submit", handleNucleusUpdate);
@@ -524,6 +528,9 @@ function renderDetail() {
         <button class="button button-secondary button-small" id="transfer-asset-button" type="button" ${asset.status === "retired" || !dashboard.session.authenticated ? "disabled" : ""}>
           Transferir
         </button>
+        <button class="button button-secondary button-small" id="change-asset-id" type="button" ${dashboard.session.authenticated ? "" : "disabled"}>
+          Alterar patrimônio
+        </button>
         <button class="button button-secondary button-small" id="copy-asset-id" type="button">Copiar referência</button>
       </div>
     </div>
@@ -587,6 +594,7 @@ function renderDetail() {
 
   updateMobileDetailState();
   elements.detail.querySelector("#transfer-asset-button").addEventListener("click", () => openTransferDialog(asset));
+  elements.detail.querySelector("#change-asset-id").addEventListener("click", () => openIdentifierDialog(asset));
   elements.detail.querySelector("#close-detail-panel").addEventListener("click", closeMobileDetail);
   elements.detail.querySelectorAll("[data-detail-tab]").forEach((button) => {
     button.addEventListener("click", () => {
@@ -867,6 +875,18 @@ function openTransferDialog(asset) {
   elements.transferDialog.showModal();
 }
 
+function openIdentifierDialog(asset) {
+  if (!dashboard?.session.authenticated) return;
+  elements.identifierForm.reset();
+  elements.identifierForm.elements.assetId.value = asset.id;
+  elements.identifierForm.elements.currentAssetId.value = asset.hasPatrimony
+    ? `#${asset.id}`
+    : `Sem patrimônio · ${asset.id}`;
+  clearFormError(elements.identifierFormError);
+  elements.identifierDialog.showModal();
+  elements.identifierForm.elements.newAssetId.focus();
+}
+
 function openNucleusEditDialog(nucleusId) {
   const nucleus = dashboard.nuclei.find((item) => item.id === nucleusId);
   if (!nucleus || !dashboard.session.authenticated) return;
@@ -1077,6 +1097,29 @@ async function handleTransferSubmit(event) {
     },
     elements.transferDialog,
     assetId,
+  );
+}
+
+async function handleIdentifierSubmit(event) {
+  event.preventDefault();
+  if (!elements.identifierForm.reportValidity()) return;
+  const formData = new FormData(elements.identifierForm);
+  const newAssetId = String(formData.get("newAssetId") || "").trim();
+  if (!/^\d{6}$/.test(newAssetId)) {
+    return showFormError(elements.identifierFormError, "O novo patrimônio deve conter exatamente 6 números.");
+  }
+
+  await submitForm(
+    elements.identifierForm,
+    elements.identifierFormError,
+    {
+      type: "update_asset_identifier",
+      assetId: formData.get("assetId"),
+      newAssetId,
+      note: formData.get("note"),
+    },
+    elements.identifierDialog,
+    newAssetId,
   );
 }
 

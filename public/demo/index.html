@@ -469,6 +469,41 @@
       </form>
     </dialog>
 
+    <dialog class="modal" id="identifier-dialog" aria-labelledby="identifier-dialog-title">
+      <form class="modal-content modal-content-small" id="identifier-form">
+        <div class="modal-header">
+          <div>
+            <p class="eyebrow">Identificação patrimonial</p>
+            <h2 id="identifier-dialog-title">Alterar patrimônio</h2>
+          </div>
+          <button class="icon-button" type="button" data-close-dialog="identifier-dialog" aria-label="Fechar">×</button>
+        </div>
+        <div class="modal-body form-grid">
+          <input name="assetId" type="hidden" />
+          <label class="field field-wide">
+            <span>Identificação atual</span>
+            <input name="currentAssetId" readonly aria-describedby="identifier-help" />
+          </label>
+          <label class="field field-wide">
+            <span>Novo patrimônio de 6 números</span>
+            <input name="newAssetId" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" required placeholder="104296" />
+          </label>
+          <p class="field-help field-wide" id="identifier-help">
+            O número precisa ser único. Núcleo, responsável, localização e histórico serão preservados.
+          </p>
+          <label class="field field-wide">
+            <span>Motivo da alteração</span>
+            <textarea name="note" maxlength="500" rows="3" required placeholder="Ex.: etiqueta patrimonial aplicada após conferência"></textarea>
+          </label>
+        </div>
+        <div class="form-error" id="identifier-form-error" role="alert" hidden></div>
+        <div class="modal-footer">
+          <button class="button button-secondary" type="button" data-close-dialog="identifier-dialog">Cancelar</button>
+          <button class="button button-primary" type="submit">Salvar patrimônio</button>
+        </div>
+      </form>
+    </dialog>
+
     <dialog class="modal" id="transfer-dialog" aria-labelledby="transfer-dialog-title">
       <form class="modal-content modal-content-small" id="transfer-form">
         <div class="modal-header">

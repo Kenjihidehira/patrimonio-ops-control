@@ -35,7 +35,7 @@ O navegador nunca recebe a URL privilegiada nem o segredo do gateway. A API do C
 2. O tipo pertence ao catálogo fechado de cinco itens.
 3. Todo patrimônio referencia um núcleo existente.
 4. Toda mutação incrementa a revisão do workspace.
-5. Transferências, mudanças de status e importações geram movimentos auditáveis.
+5. Transferências, mudanças de status, alterações de patrimônio e importações geram movimentos auditáveis.
 6. Patrimônio baixado não pode ser transferido.
 7. Baixa é lógica; o registro e seu histórico não são apagados.
 8. Datas são normalizadas antes da persistência; preços não fazem parte da experiência operacional.
@@ -44,6 +44,7 @@ O navegador nunca recebe a URL privilegiada nem o segredo do gateway. A API do C
 11. A sigla identifica o núcleo durante a reconciliação de importações; IDs internos não são assumidos como estáveis.
 12. Renomear um colaborador preserva suas atribuições; mudar seu núcleo não transfere patrimônios sem auditoria.
 13. `x` representa ausência de item; `Sem patrimônio` representa um item físico existente que deve permanecer no inventário como divergência.
+14. Alterar o número patrimonial exige seis dígitos, unicidade e motivo; a identidade relacional dos movimentos existentes é preservada por cascata.
 
 ## Modelo de persistência
 
@@ -162,3 +163,9 @@ Também faltam recuperação de desastre automatizada, política formal de reten
 **Decisão:** usar uma chave aleatória secreta por empresa em vez de derivar o workspace do e-mail de cada usuário.
 
 **Motivo:** os operadores autorizados precisam colaborar sobre o mesmo inventário; a identidade individual continua registrada como ator de cada movimento.
+
+### ADR-007: número patrimonial mutável com auditoria
+
+**Decisão:** permitir a correção da chave `(owner_key, code)` somente pela RPC transacional, usando `ON UPDATE CASCADE` para preservar os movimentos e adicionando um evento `identifier_change`.
+
+**Motivo:** o número da etiqueta pode ser corrigido ou atribuído depois da importação, mas editar diretamente a chave quebraria rastreabilidade e poderia deixar referências órfãs.

@@ -101,6 +101,16 @@ export async function POST(request: Request) {
     if (error instanceof SupabaseError && error.code === "40001") {
       return revisionConflict();
     }
+    if (error instanceof SupabaseError && error.code === "23505") {
+      return Response.json(
+        {
+          error: error.message === "asset_code_exists"
+            ? "Já existe um item com esse patrimônio."
+            : "Já existe um registro com esses dados.",
+        },
+        { status: 422, headers: responseHeaders },
+      );
+    }
 
     console.error("Failed to mutate patrimonial state", error);
     return Response.json(

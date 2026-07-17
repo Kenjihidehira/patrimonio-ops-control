@@ -184,6 +184,72 @@ test("normaliza item sem patrimônio como divergência rastreável", () => {
   assert.equal(dashboard.summary.untagged, 1);
 });
 
+test("atribui patrimônio oficial a item não etiquetado sem perder vínculos", () => {
+  const state = structuredClone(seed);
+  state.assets.push({
+    ...validAsset({
+      id: "S1A2B3",
+      status: "discrepancy",
+      assignee: "João Martins",
+      nucleusId: "nuc-ti",
+      value: 0,
+    }),
+    createdAt: "2026-07-17T12:00:00.000Z",
+    movements: [],
+  });
+
+  const nextState = applyAction(
+    state,
+    {
+      type: "update_asset_identifier",
+      assetId: "S1A2B3",
+      newAssetId: "654320",
+      note: "Etiqueta aplicada após conferência física.",
+      at: "2026-07-17T15:00:00.000Z",
+      movementId: "movement-identifier",
+    },
+    "auditor@empresa.com",
+  );
+
+  const asset = nextState.assets.find((item) => item.id === "654320");
+  assert.equal(nextState.assets.some((item) => item.id === "S1A2B3"), false);
+  assert.equal(asset.assignee, "João Martins");
+  assert.equal(asset.nucleusId, "nuc-ti");
+  assert.equal(asset.status, "allocated");
+  assert.equal(asset.movements[0].type, "identifier_change");
+  assert.equal(asset.movements[0].from, "Sem patrimônio · Referência interna S1A2B3");
+  assert.match(asset.movements[0].to, /#654320 · Em uso/);
+});
+
+test("corrige patrimônio oficial e bloqueia número inválido, repetido ou sem motivo", () => {
+  const action = {
+    type: "update_asset_identifier",
+    assetId: "104281",
+    newAssetId: "654320",
+    note: "Correção confirmada no inventário.",
+  };
+  const nextState = applyAction(seed, action, "auditor@empresa.com");
+  const corrected = nextState.assets.find((item) => item.id === "654320");
+  assert.equal(corrected.status, seed.assets.find((item) => item.id === "104281").status);
+
+  assert.throws(
+    () => applyAction(seed, { ...action, newAssetId: "12345" }, "auditor@empresa.com"),
+    /6 números/,
+  );
+  assert.throws(
+    () => applyAction(seed, { ...action, newAssetId: "104282" }, "auditor@empresa.com"),
+    /já está cadastrado/,
+  );
+  assert.throws(
+    () => applyAction(seed, { ...action, newAssetId: "104281" }, "auditor@empresa.com"),
+    /diferente do atual/,
+  );
+  assert.throws(
+    () => applyAction(seed, { ...action, note: "" }, "auditor@empresa.com"),
+    /Motivo da alteração é obrigatório/,
+  );
+});
+
 test("lista colaboradores com e sem patrimônio", () => {
   const state = structuredClone(seed);
   state.collaborators = [
