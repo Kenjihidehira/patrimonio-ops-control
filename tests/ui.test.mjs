@@ -43,6 +43,7 @@ test("interface contém os fluxos comerciais essenciais", () => {
   assert.match(js, /type: "update_nucleus"/);
   assert.match(js, /type: "update_collaborator"/);
   assert.match(js, /type: "update_asset_identifier"/);
+  assert.match(js, /identifier_change: "Alteração de patrimônio"/);
   assert.match(js, /function openIdentifierDialog/);
   assert.match(html, /id="identifier-form"/);
   assert.match(html, /name="newAssetId" inputmode="numeric" pattern="\[0-9\]\{6\}"/);

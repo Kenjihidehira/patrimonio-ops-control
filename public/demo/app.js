@@ -1343,6 +1343,7 @@ function movementLabel(type) {
     registration: "Cadastro",
     transfer: "Transferência",
     status_change: "Alteração de status",
+    identifier_change: "Alteração de patrimônio",
     import: "Importação",
   }[type] || "Movimentação";
 }
