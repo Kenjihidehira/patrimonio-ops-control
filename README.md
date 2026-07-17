@@ -124,6 +124,8 @@ Mutações e importações usam RPCs transacionais com revisão otimista. Núcle
 
 A troca do número patrimonial altera a chave do ativo com cascata referencial para os movimentos existentes, exige justificativa e cria um novo evento de auditoria. Quando uma referência interna `Sxxxxx` em divergência recebe um número oficial, o item volta automaticamente para `Em uso` se possuir responsável ou `Disponível` caso contrário.
 
+A referência anterior permanece como alias interno. Assim, reimportar a planilha ainda desatualizada reconcilia a mesma peça física com o novo patrimônio, sem recriar o item `Sem patrimônio` nem reabrir sua divergência.
+
 Documentação completa: [`docs/architecture.md`](docs/architecture.md).
 
 ### Limitação produtiva explícita

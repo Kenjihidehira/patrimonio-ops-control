@@ -30,6 +30,10 @@ const identifierMigration = await readFile(
   new URL("../supabase/migrations/20260717133000_allow_asset_identifier_updates.sql", import.meta.url),
   "utf8",
 );
+const assetAliasMigration = await readFile(
+  new URL("../supabase/migrations/20260717143000_preserve_asset_aliases_on_import.sql", import.meta.url),
+  "utf8",
+);
 
 test("importação reconcilia núcleos pela sigla persistida", () => {
   assert.match(nucleusMigration, /on conflict \(owner_key, code\) do update/);
@@ -71,4 +75,14 @@ test("alteração do patrimônio preserva histórico e ocorre em transação aud
   assert.match(identifierMigration, /asset_code_exists/);
   assert.match(identifierMigration, /for update/);
   assert.match(identifierMigration, /set code = v_to_label/);
+});
+
+test("reimportação reconhece a referência anterior sem recriar item sem patrimônio", () => {
+  assert.match(assetAliasMigration, /create table public\.patrimonio_asset_aliases/);
+  assert.match(assetAliasMigration, /on update cascade/);
+  assert.match(assetAliasMigration, /insert into public\.patrimonio_asset_aliases/);
+  assert.match(assetAliasMigration, /jsonb_array_elements\(p_assets\) with ordinality/);
+  assert.match(assetAliasMigration, /jsonb_set\(source\.item, '\{code\}'/);
+  assert.match(assetAliasMigration, /to_jsonb\(asset\.status\)/);
+  assert.match(assetAliasMigration, /patrimonio_asset_aliases_no_direct_access/);
 });

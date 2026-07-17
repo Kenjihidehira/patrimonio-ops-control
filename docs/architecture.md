@@ -48,13 +48,14 @@ O navegador nunca recebe a URL privilegiada nem o segredo do gateway. A API do C
 
 ## Modelo de persistência
 
-O Postgres usa seis tabelas relacionais:
+O Postgres usa sete tabelas relacionais:
 
 | Tabela | Finalidade |
 | --- | --- |
 | `patrimonio_workspaces` | Base empresarial identificada por chave aleatória e contador de revisão |
 | `patrimonio_nuclei` | Núcleos, gestores e localizações |
 | `patrimonio_assets` | Inventário, estado operacional e dados de aquisição |
+| `patrimonio_asset_aliases` | Referências anteriores usadas para reconciliar reimportações após renumeração |
 | `patrimonio_collaborators` | Diretório importado e vínculo atual com o núcleo |
 | `patrimonio_movements` | Histórico imutável de cadastro, transferência, status e importação |
 | `patrimonio_import_runs` | Resultado e avisos de cada importação |
@@ -169,3 +170,9 @@ Também faltam recuperação de desastre automatizada, política formal de reten
 **Decisão:** permitir a correção da chave `(owner_key, code)` somente pela RPC transacional, usando `ON UPDATE CASCADE` para preservar os movimentos e adicionando um evento `identifier_change`.
 
 **Motivo:** o número da etiqueta pode ser corrigido ou atribuído depois da importação, mas editar diretamente a chave quebraria rastreabilidade e poderia deixar referências órfãs.
+
+### ADR-008: alias persistente para reconciliação de importações
+
+**Decisão:** guardar cada identificador anterior em `patrimonio_asset_aliases` e substituir a referência pelo patrimônio atual antes do upsert da planilha.
+
+**Motivo:** a planilha de origem pode continuar com `Sem patrimônio` após a etiqueta ser aplicada no sistema. Sem o alias, uma reimportação criaria um segundo registro para a mesma peça física e reabriria a divergência já resolvida.
