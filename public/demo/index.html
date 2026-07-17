@@ -195,6 +195,9 @@
               <button class="quick-filter" type="button" data-quick-filter="unassigned" aria-pressed="false">
                 Sem responsável <span data-quick-count="unassigned">0</span>
               </button>
+              <button class="quick-filter quick-filter-warning" type="button" data-quick-filter="untagged" aria-pressed="false">
+                Sem patrimônio <span data-quick-count="untagged">0</span>
+              </button>
               <button class="quick-filter quick-filter-warning" type="button" data-quick-filter="maintenance" aria-pressed="false">
                 Manutenção <span data-quick-count="maintenance">0</span>
               </button>
@@ -647,8 +650,9 @@
           </label>
 
           <section class="import-preview" id="import-preview" aria-live="polite" hidden>
-            <div class="preview-metrics preview-metrics-five">
+            <div class="preview-metrics preview-metrics-six">
               <div><span>Válidos</span><strong id="preview-accepted">0</strong></div>
+              <div><span>Sem patrimônio</span><strong id="preview-untagged">0</strong></div>
               <div><span>Excluídos</span><strong id="preview-rejected">0</strong></div>
               <div><span>Ajustados</span><strong id="preview-adjusted">0</strong></div>
               <div><span>Núcleos</span><strong id="preview-nuclei">0</strong></div>

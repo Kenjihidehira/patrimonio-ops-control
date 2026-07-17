@@ -69,6 +69,7 @@ test("inventário oferece navegação escalável e experiência móvel dedicada"
   for (const marker of [
     "quick-filters",
     "data-quick-filter=\"unassigned\"",
+    "data-quick-filter=\"untagged\"",
     "inventory-pagination",
     "mobile-inventory-list",
     "advanced-filters-toggle",
@@ -78,6 +79,7 @@ test("inventário oferece navegação escalável e experiência móvel dedicada"
     assert.match(html, new RegExp(marker));
   }
   assert.match(js, /function getQuickFilteredInventory/);
+  assert.match(js, /function assetIdentifierLabel/);
   assert.match(js, /function renderPagination/);
   assert.match(js, /data-detail-tab="history"/);
   assert.match(css, /th \{[\s\S]*position: sticky/);

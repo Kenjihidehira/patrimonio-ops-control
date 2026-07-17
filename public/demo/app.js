@@ -367,9 +367,9 @@ function renderInventory() {
         <tr class="${asset.id === selectedAssetId ? "is-selected" : ""}" data-asset-row="${escapeAttribute(asset.id)}">
           <td>
             <button class="asset-id-button" type="button" data-asset-id="${escapeAttribute(asset.id)}">
-              ${escapeHtml(asset.id)}
+              ${escapeHtml(assetIdentifierLabel(asset))}
             </button>
-            <span class="cell-secondary">${escapeHtml(asset.serial || "Sem número de série")}</span>
+            <span class="cell-secondary">${escapeHtml(asset.hasPatrimony ? asset.serial || "Sem número de série" : `Referência interna ${asset.id}`)}</span>
           </td>
           <td>
             <span class="cell-primary">${escapeHtml(dashboard.options.assetTypes[asset.type])}</span>
@@ -399,8 +399,8 @@ function renderInventory() {
         <button class="mobile-asset-card ${asset.id === selectedAssetId ? "is-selected" : ""}" type="button" data-asset-id="${escapeAttribute(asset.id)}">
           <span class="mobile-asset-heading">
             <span>
-              <strong>#${escapeHtml(asset.id)} · ${escapeHtml(dashboard.options.assetTypes[asset.type])}</strong>
-              <small>${escapeHtml(asset.brandModel)}</small>
+              <strong>${escapeHtml(assetIdentifierLabel(asset))} · ${escapeHtml(dashboard.options.assetTypes[asset.type])}</strong>
+              <small>${escapeHtml(asset.hasPatrimony ? asset.brandModel : `Referência interna ${asset.id}`)}</small>
             </span>
             ${statusBadge(asset.status)}
           </span>
@@ -426,6 +426,7 @@ function getQuickFilteredInventory() {
   const inventory = dashboard?.inventory || [];
   return inventory.filter((asset) => {
     if (activeQuickFilter === "unassigned") return isUnassigned(asset.assignee);
+    if (activeQuickFilter === "untagged") return !asset.hasPatrimony;
     if (activeQuickFilter === "maintenance") return asset.status === "maintenance";
     if (activeQuickFilter === "discrepancy") return asset.status === "discrepancy";
     return true;
@@ -437,6 +438,7 @@ function renderQuickFilters() {
   const counts = {
     all: inventory.length,
     unassigned: inventory.filter((asset) => isUnassigned(asset.assignee)).length,
+    untagged: inventory.filter((asset) => !asset.hasPatrimony).length,
     maintenance: inventory.filter((asset) => asset.status === "maintenance").length,
     discrepancy: inventory.filter((asset) => asset.status === "discrepancy").length,
   };
@@ -509,9 +511,9 @@ function renderDetail() {
     <div class="detail-header">
       <div class="detail-header-row">
         <div>
-          <p class="eyebrow">Patrimônio selecionado</p>
-          <h2 id="detail-title">#${escapeHtml(asset.id)}</h2>
-          <p class="detail-type">${escapeHtml(dashboard.options.assetTypes[asset.type])}</p>
+          <p class="eyebrow">${asset.hasPatrimony ? "Patrimônio selecionado" : "Item sem identificação patrimonial"}</p>
+          <h2 id="detail-title">${escapeHtml(assetIdentifierLabel(asset))}</h2>
+          <p class="detail-type">${escapeHtml(dashboard.options.assetTypes[asset.type])}${asset.hasPatrimony ? "" : ` · Referência interna ${escapeHtml(asset.id)}`}</p>
         </div>
         <div class="detail-header-controls">
           ${statusBadge(asset.status)}
@@ -522,7 +524,7 @@ function renderDetail() {
         <button class="button button-secondary button-small" id="transfer-asset-button" type="button" ${asset.status === "retired" || !dashboard.session.authenticated ? "disabled" : ""}>
           Transferir
         </button>
-        <button class="button button-secondary button-small" id="copy-asset-id" type="button">Copiar ID</button>
+        <button class="button button-secondary button-small" id="copy-asset-id" type="button">Copiar referência</button>
       </div>
     </div>
     <div class="detail-tabs" role="tablist" aria-label="Detalhes do patrimônio">
@@ -595,7 +597,7 @@ function renderDetail() {
   elements.detail.querySelector("#copy-asset-id").addEventListener("click", async () => {
     try {
       await navigator.clipboard.writeText(asset.id);
-      showToast(`Patrimônio ${asset.id} copiado.`);
+      showToast(`${asset.hasPatrimony ? "Patrimônio" : "Referência interna"} ${asset.id} copiado.`);
     } catch {
       showToast("Não foi possível copiar o identificador.", true);
     }
@@ -692,7 +694,7 @@ function renderCollaborators() {
           </td>
           <td>
             <span class="asset-count">${person.assetCount}</span>
-            <span class="cell-secondary">${person.assetIds.length ? person.assetIds.map((id) => `#${escapeHtml(id)}`).join(" · ") : "Nenhum identificador válido"}</span>
+            <span class="cell-secondary">${person.assets.length ? person.assets.map((asset) => escapeHtml(assetIdentifierLabel(asset))).join(" · ") : "Nenhum item vinculado"}</span>
           </td>
           <td><span class="people-status ${person.hasAssets ? "has-assets" : "without-assets"}">${person.hasAssets ? "Com patrimônio" : "Sem patrimônio"}</span></td>
           <td class="people-action-cell">
@@ -716,7 +718,7 @@ function renderAudit() {
       (record) => `
         <article class="audit-item">
           <div>
-            <span class="audit-asset">#${escapeHtml(record.assetId)}</span>
+            <span class="audit-asset">${escapeHtml(assetIdentifierLabel(record))}</span>
             <small>${escapeHtml(record.assetType)}</small>
           </div>
           <div>
@@ -897,7 +899,7 @@ function openCollaboratorDialog(collaboratorId) {
           <span class="profile-asset-icon profile-asset-icon-${escapeAttribute(asset.type)}" aria-hidden="true">${assetTypeIcon(asset.type)}</span>
           <div class="profile-asset-copy">
             <div class="profile-asset-heading">
-              <strong>#${escapeHtml(asset.id)}</strong>
+              <strong>${escapeHtml(assetIdentifierLabel(asset))}</strong>
               <span>${escapeHtml(dashboard.options.assetTypes[asset.type])}</span>
             </div>
             <span class="profile-asset-meta">${escapeHtml(asset.brandModel)} • ${escapeHtml(asset.location)}</span>
@@ -976,6 +978,7 @@ async function processImport(mode) {
 
 function renderImportPreview(preview) {
   document.querySelector("#preview-accepted").textContent = preview.acceptedCount;
+  document.querySelector("#preview-untagged").textContent = preview.untaggedCount;
   document.querySelector("#preview-rejected").textContent = preview.rejectedCount;
   document.querySelector("#preview-adjusted").textContent = preview.adjustedCount;
   document.querySelector("#preview-nuclei").textContent = preview.nucleusCount;
@@ -1299,6 +1302,10 @@ function movementLabel(type) {
     status_change: "Alteração de status",
     import: "Importação",
   }[type] || "Movimentação";
+}
+
+function assetIdentifierLabel(asset) {
+  return asset.hasPatrimony ? `#${asset.id}` : "Sem patrimônio";
 }
 
 function formatDate(value) {

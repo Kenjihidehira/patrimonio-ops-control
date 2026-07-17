@@ -102,14 +102,31 @@ test("decodifica nomes e gera siglas curtas pelas iniciais dos núcleos", () => 
   assert.equal(preview.collaborators.length, names.length);
 });
 
-test("preserva colaborador que não possui patrimônio válido", () => {
+test("importa itens sem patrimônio sem inventar identificador numérico", () => {
   const preview = parsePatrimonioRows([
     ["Colaborador(a)", "Núcleo", "Máquina", "Tela 1", "Tela 2", "Cadeira", "Notebook"],
     ["Rauan (aprendiz)", "Suporte &amp; Assistência", "x", "x", "x", "Sem patrimônio", 1160819],
+    ["Maria", "Atendimento", "x", "x", "Sem Patrimônios", "x", "x"],
   ]);
 
-  assert.equal(preview.acceptedCount, 0);
-  assert.equal(preview.collaborators.length, 1);
+  assert.equal(preview.acceptedCount, 2);
+  assert.equal(preview.untaggedCount, 2);
+  assert.equal(preview.collaborators.length, 2);
   assert.equal(preview.collaborators[0].name, "Rauan (aprendiz)");
+  assert.ok(preview.assets.every((asset) => /^S[A-Z0-9]{5}$/.test(asset.code)));
+  assert.ok(preview.assets.every((asset) => asset.status === "discrepancy"));
+  assert.ok(preview.assets.every((asset) => asset.notes.includes("sem identificação patrimonial")));
   assert.equal(preview.canCommit, true);
+});
+
+test("reimporta item sem patrimônio exportado pelo sistema", () => {
+  const preview = parsePatrimonioRows([
+    ["Patrimônio", "Tipo", "Núcleo", "Responsável", "Localização", "Status"],
+    ["Sem patrimônio", "Cadeira", "Atendimento", "Pessoa A", "Posto 01", "Divergência"],
+  ]);
+
+  assert.equal(preview.acceptedCount, 1);
+  assert.equal(preview.untaggedCount, 1);
+  assert.equal(preview.assets[0].type, "chair");
+  assert.equal(preview.assets[0].status, "discrepancy");
 });

@@ -151,8 +151,9 @@ Resposta resumida:
 
 ```json
 {
-  "totalCandidates": 331,
-  "acceptedCount": 319,
+  "totalCandidates": 373,
+  "acceptedCount": 361,
+  "untaggedCount": 42,
   "rejectedCount": 12,
   "adjustedCount": 9,
   "nucleusCount": 10,

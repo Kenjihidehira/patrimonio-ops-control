@@ -14,6 +14,7 @@ type PreviewIssue = { row: number; column: string; message: string };
 type SpreadsheetPreview = {
   totalCandidates: number;
   acceptedCount: number;
+  untaggedCount: number;
   rejectedCount: number;
   adjustedCount: number;
   canCommit: boolean;
@@ -95,7 +96,7 @@ export async function POST(request: Request) {
     return Response.json(
       {
         ...result,
-        message: `${result.inserted} patrimônios inseridos, ${result.updated} atualizados e ${result.collaborators} colaboradores sincronizados.`,
+        message: `${result.inserted} itens inseridos, ${result.updated} atualizados e ${result.collaborators} colaboradores sincronizados.`,
       },
       { headers: responseHeaders },
     );
@@ -113,6 +114,7 @@ function publicPreview(preview: SpreadsheetPreview) {
   return {
     totalCandidates: preview.totalCandidates,
     acceptedCount: preview.acceptedCount,
+    untaggedCount: preview.untaggedCount,
     rejectedCount: preview.rejectedCount,
     adjustedCount: preview.adjustedCount,
     nucleusCount: preview.nuclei.length,

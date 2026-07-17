@@ -1995,8 +1995,8 @@ tbody tr:last-child td {
   font-size: 9px;
 }
 
-.preview-metrics-five {
-  grid-template-columns: repeat(5, 1fr);
+.preview-metrics-six {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 .nucleus-metrics span {
@@ -2943,7 +2943,7 @@ tbody tr:last-child td {
     grid-template-columns: 1fr 1fr;
   }
 
-  .preview-metrics-five {
+  .preview-metrics-six {
     grid-template-columns: 1fr;
   }
 

@@ -169,6 +169,21 @@ test("aceita data de aquisição desconhecida em item importado", () => {
   assert.equal(state.assets[0].acquiredAt, null);
 });
 
+test("normaliza item sem patrimônio como divergência rastreável", () => {
+  const imported = structuredClone(seed);
+  imported.assets.push({
+    ...validAsset({ id: "S1A2B3", status: "discrepancy", value: 0 }),
+    createdAt: "2026-07-17T12:00:00.000Z",
+    movements: [],
+  });
+
+  const dashboard = buildDashboard(imported);
+  const item = dashboard.inventory.find((asset) => asset.id === "S1A2B3");
+
+  assert.equal(item.hasPatrimony, false);
+  assert.equal(dashboard.summary.untagged, 1);
+});
+
 test("lista colaboradores com e sem patrimônio", () => {
   const state = structuredClone(seed);
   state.collaborators = [

@@ -4,6 +4,7 @@ import type { Cell, Sheet, SheetData } from "write-excel-file/universal";
 
 type ExportAsset = {
   id: string;
+  hasPatrimony: boolean;
   type: string;
   nucleus: { name: string };
   assignee: string;
@@ -28,6 +29,7 @@ type ExportNucleus = {
 type ExportMovement = {
   at: string;
   assetId: string;
+  hasPatrimony: boolean;
   assetType: string;
   typeLabel: string;
   from: string;
@@ -85,7 +87,7 @@ export async function createExportWorkbook(
       "Observações",
     ]),
     ...dashboard.inventory.map((asset) => [
-      textCell(asset.id),
+      textCell(asset.hasPatrimony ? asset.id : "Sem patrimônio"),
       textCell(dashboard.options.assetTypes[asset.type]),
       textCell(asset.nucleus.name),
       textCell(asset.assignee),
@@ -115,7 +117,7 @@ export async function createExportWorkbook(
     headerRow(["Data", "Patrimônio", "Item", "Movimentação", "Origem", "Destino", "Responsável", "Observação"]),
     ...dashboard.audit.map((movement) => [
       dateTimeCell(movement.at),
-      textCell(movement.assetId),
+      textCell(movement.hasPatrimony ? movement.assetId : "Sem patrimônio"),
       textCell(movement.assetType),
       textCell(movement.typeLabel),
       textCell(movement.from),

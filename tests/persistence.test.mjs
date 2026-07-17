@@ -18,6 +18,14 @@ const gateway = await readFile(
   new URL("../supabase/functions/patrimonio-gateway/index.ts", import.meta.url),
   "utf8",
 );
+const untaggedAssetMigration = await readFile(
+  new URL("../supabase/migrations/20260717113000_support_untagged_assets.sql", import.meta.url),
+  "utf8",
+);
+const collaboratorPolicyMigration = await readFile(
+  new URL("../supabase/migrations/20260717113500_explicit_collaborator_rls_policy.sql", import.meta.url),
+  "utf8",
+);
 
 test("importação reconcilia núcleos pela sigla persistida", () => {
   assert.match(nucleusMigration, /on conflict \(owner_key, code\) do update/);
@@ -38,4 +46,15 @@ test("edição de colaborador preserva atribuições na mesma transação", () =
   assert.match(collaboratorProfileMigration, /update public\.patrimonio_assets asset/);
   assert.match(collaboratorProfileMigration, /update public\.patrimonio_collaborators/);
   assert.match(collaboratorProfileMigration, /patrimonio_collaborators_owner_nucleus_name_uidx/);
+});
+
+test("banco distingue patrimônio oficial de referência interna", () => {
+  assert.match(untaggedAssetMigration, /\[0-9\]\{6\}/);
+  assert.match(untaggedAssetMigration, /S\[A-Z0-9\]\{5\}/);
+});
+
+test("colaboradores negam acesso direto por política RLS explícita", () => {
+  assert.match(collaboratorPolicyMigration, /patrimonio_collaborators_no_direct_access/);
+  assert.match(collaboratorPolicyMigration, /to anon, authenticated/);
+  assert.match(collaboratorPolicyMigration, /using \(false\)/);
 });

@@ -14,14 +14,14 @@ Planilhas patrimoniais isoladas não registram bem responsabilidade, movimentaç
 
 ## Escopo funcional
 
-- Identificadores únicos com exatamente 6 números.
+- Patrimônios oficiais com exatamente 6 números e referências internas distintas para itens ainda não etiquetados.
 - Tipos controlados: CPU (Computador), Monitor 1, Monitor 2, Cadeira e Notebook.
 - Organização por núcleo, gestor, responsável e localização física.
 - Diretório de colaboradores importados, inclusive quando não há patrimônio associado.
 - Perfil editável do colaborador com nome, núcleo e relação de patrimônios vinculados.
 - Busca por ID, série, modelo, pessoa, local ou núcleo.
 - Filtros de tipo, status e núcleo, com ordenação operacional.
-- Visualizações rápidas para itens sem responsável, em manutenção ou com divergência.
+- Visualizações rápidas para itens sem responsável, sem patrimônio, em manutenção ou com divergência.
 - Paginação configurável para bases extensas, com 15, 25 ou 50 registros por página.
 - Lista móvel dedicada e painel inferior de detalhes com abas de resumo e histórico.
 - Cadastro de patrimônio e núcleo, além de edição de sigla, nome, localização e gestor do núcleo.
@@ -96,11 +96,11 @@ GitHub e Google convergem para a mesma sessão local assinada. Tokens de acesso 
 O importador aceita dois formatos:
 
 1. Matriz operacional com blocos `Colaborador(a)`, `Núcleo`, `Máquina`, `Tela 1`, `Tela 2`, `Cadeira` e `Notebook`.
-2. Arquivo plano exportado pelo próprio sistema, com uma linha por patrimônio.
+2. Arquivo plano exportado pelo próprio sistema, com uma linha por item.
 
 Antes de gravar, a API reabre o XLSX no servidor, normaliza IDs de cinco dígitos com zero à esquerda, rejeita códigos fora do padrão e exclui todas as ocorrências duplicadas. A prévia retorna apenas contagens e posições dos problemas; nomes da planilha não são enviados ao navegador nessa etapa.
 
-A base sincronizada contém 319 patrimônios válidos, 102 colaboradores e 10 núcleos, exclusivamente a partir da planilha corporativa. Doze ocorrências pertencentes a seis identificadores duplicados são rejeitadas e preservadas no histórico. Nove IDs de cinco dígitos recebem zero à esquerda. Campos `x` ou `Sem patrimônio` mantêm o colaborador no diretório, mas não geram ativos fictícios.
+A base sincronizada contém 361 itens, 102 colaboradores e 10 núcleos, exclusivamente a partir da planilha corporativa. Desses itens, 319 possuem patrimônio oficial e 42 estão marcados como `Sem patrimônio`; estes recebem uma referência interna iniciada por `S`, aparecem como divergência e nunca são apresentados como número patrimonial. Doze ocorrências pertencentes a seis identificadores duplicados são rejeitadas e preservadas no histórico. Nove IDs de cinco dígitos recebem zero à esquerda. O valor `x` continua representando ausência de item.
 
 A planilha corporativa original não faz parte do repositório. O arquivo [`data/seed.json`](data/seed.json) é usado somente pelos testes unitários das regras de domínio e não é importado pelo runtime nem publicado como base da interface.
 

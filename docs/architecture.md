@@ -31,7 +31,7 @@ O navegador nunca recebe a URL privilegiada nem o segredo do gateway. A API do C
 
 ## Invariantes do domínio
 
-1. O identificador do patrimônio contém exatamente seis dígitos e é único no workspace.
+1. O patrimônio oficial contém exatamente seis dígitos; itens ainda não etiquetados usam uma referência interna única iniciada por `S` e nunca são exibidos como patrimônio oficial.
 2. O tipo pertence ao catálogo fechado de cinco itens.
 3. Todo patrimônio referencia um núcleo existente.
 4. Toda mutação incrementa a revisão do workspace.
@@ -43,6 +43,7 @@ O navegador nunca recebe a URL privilegiada nem o segredo do gateway. A API do C
 10. Colaboradores existem independentemente de possuírem patrimônio associado.
 11. A sigla identifica o núcleo durante a reconciliação de importações; IDs internos não são assumidos como estáveis.
 12. Renomear um colaborador preserva suas atribuições; mudar seu núcleo não transfere patrimônios sem auditoria.
+13. `x` representa ausência de item; `Sem patrimônio` representa um item físico existente que deve permanecer no inventário como divergência.
 
 ## Modelo de persistência
 
