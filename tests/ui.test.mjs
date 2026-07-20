@@ -137,7 +137,11 @@ test("inventário do núcleo permite consultar e editar dados cadastrais", () =>
   assert.match(css, /\.nucleus-inventory-mobile-card/);
   assert.match(css, /container-type:\s*inline-size/);
   assert.match(css, /@container \(max-width: 850px\)[\s\S]*\.nucleus-inventory-table-wrap/);
+  assert.match(css, /@container \(max-width: 650px\)[\s\S]*\.nucleus-inventory-summary/);
   assert.match(css, /min-width:\s*920px/);
+  assert.match(html, /class="nucleus-inventory-code"/);
+  assert.match(html, /class="nucleus-inventory-search-control"/);
+  assert.match(js, /nucleus-inventory-item-\$\{escapeAttribute\(asset\.type\)\}/);
 });
 
 test("perfil do colaborador diferencia patrimônios com ícones por categoria", () => {

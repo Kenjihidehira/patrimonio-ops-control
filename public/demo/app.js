@@ -722,7 +722,7 @@ function renderNucleusInventory() {
   elements.nucleusInventoryBody.innerHTML = assets.map((asset) => `
     <tr>
       <td><strong>${escapeHtml(assetIdentifierLabel(asset))}</strong><span class="cell-secondary">${escapeHtml(asset.serial || "Série não informada")}</span></td>
-      <td><span class="nucleus-inventory-item"><span aria-hidden="true">${assetTypeIcon(asset.type)}</span><span><strong>${escapeHtml(dashboard.options.assetTypes[asset.type])}</strong><small>${escapeHtml(asset.brandModel)}</small></span></span></td>
+      <td><span class="nucleus-inventory-item nucleus-inventory-item-${escapeAttribute(asset.type)}"><span aria-hidden="true">${assetTypeIcon(asset.type)}</span><span><strong>${escapeHtml(dashboard.options.assetTypes[asset.type])}</strong><small>${escapeHtml(asset.brandModel)}</small></span></span></td>
       <td title="${escapeAttribute(asset.assignee || "Disponível")}">${escapeHtml(asset.assignee || "Disponível")}</td>
       <td title="${escapeAttribute(asset.location)}">${escapeHtml(asset.location)}</td>
       <td>${statusBadge(asset.status)}</td>
@@ -731,7 +731,7 @@ function renderNucleusInventory() {
   `).join("");
 
   elements.nucleusInventoryMobile.innerHTML = assets.map((asset) => `
-    <article class="nucleus-inventory-mobile-card">
+    <article class="nucleus-inventory-mobile-card nucleus-inventory-mobile-card-${escapeAttribute(asset.type)}">
       <div class="nucleus-inventory-mobile-heading">
         <span class="profile-asset-icon profile-asset-icon-${escapeAttribute(asset.type)}" aria-hidden="true">${assetTypeIcon(asset.type)}</span>
         <div><strong>${escapeHtml(assetIdentifierLabel(asset))}</strong><span>${escapeHtml(dashboard.options.assetTypes[asset.type])}</span></div>
@@ -985,7 +985,7 @@ function openNucleusInventoryDialog(nucleusId) {
   if (!nucleus) return;
   selectedNucleusId = nucleus.id;
   elements.nucleusInventorySearch.value = "";
-  document.querySelector("#nucleus-inventory-code").textContent = `${nucleus.code} • Inventário do núcleo`;
+  document.querySelector("#nucleus-inventory-code").textContent = nucleus.code;
   document.querySelector("#nucleus-inventory-title").textContent = nucleus.name;
   document.querySelector("#nucleus-inventory-meta").textContent = `${nucleus.location} • Gestor: ${nucleus.manager}`;
   showNucleusInventoryList();

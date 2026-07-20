@@ -618,20 +618,23 @@
     <dialog class="modal nucleus-inventory-dialog" id="nucleus-inventory-dialog" aria-labelledby="nucleus-inventory-title">
       <div class="modal-content nucleus-inventory-modal">
         <div class="modal-header nucleus-inventory-header">
-          <div>
-            <p class="eyebrow" id="nucleus-inventory-code">Inventário do núcleo</p>
-            <h2 id="nucleus-inventory-title">Inventário</h2>
-            <p id="nucleus-inventory-meta">Localização e gestor responsável</p>
+          <div class="nucleus-inventory-heading">
+            <span class="nucleus-inventory-code" id="nucleus-inventory-code" aria-hidden="true">N</span>
+            <div>
+              <p class="eyebrow">Inventário do núcleo</p>
+              <h2 id="nucleus-inventory-title">Inventário</h2>
+              <p id="nucleus-inventory-meta">Localização e gestor responsável</p>
+            </div>
           </div>
           <button class="icon-button" type="button" data-close-dialog="nucleus-inventory-dialog" aria-label="Fechar">×</button>
         </div>
 
         <section class="nucleus-inventory-list-view" id="nucleus-inventory-list-view">
           <div class="nucleus-inventory-summary" aria-label="Resumo do inventário do núcleo">
-            <div><span>Total</span><strong id="nucleus-inventory-total">0</strong><small>itens cadastrados</small></div>
-            <div><span>Em uso</span><strong id="nucleus-inventory-allocated">0</strong><small>com responsável</small></div>
-            <div><span>Alertas</span><strong id="nucleus-inventory-alerts">0</strong><small>exigem conferência</small></div>
-            <div><span>Sem patrimônio</span><strong id="nucleus-inventory-untagged">0</strong><small>aguardam etiqueta</small></div>
+            <div class="metric-total"><span>Total</span><strong id="nucleus-inventory-total">0</strong><small>itens cadastrados</small></div>
+            <div class="metric-allocated"><span>Em uso</span><strong id="nucleus-inventory-allocated">0</strong><small>com responsável</small></div>
+            <div class="metric-alert"><span>Alertas</span><strong id="nucleus-inventory-alerts">0</strong><small>exigem conferência</small></div>
+            <div class="metric-untagged"><span>Sem patrimônio</span><strong id="nucleus-inventory-untagged">0</strong><small>aguardam etiqueta</small></div>
           </div>
           <div class="nucleus-inventory-toolbar">
             <div>
@@ -640,7 +643,13 @@
             </div>
             <label class="field nucleus-inventory-search">
               <span>Buscar neste núcleo</span>
-              <input id="nucleus-inventory-search" type="search" placeholder="Patrimônio, item, responsável ou local" autocomplete="off" />
+              <span class="nucleus-inventory-search-control">
+                <svg aria-hidden="true" viewBox="0 0 24 24" width="18" height="18" fill="none">
+                  <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2" />
+                  <path d="m20 20-4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                </svg>
+                <input id="nucleus-inventory-search" type="search" placeholder="Patrimônio, item, responsável ou local" autocomplete="off" />
+              </span>
             </label>
           </div>
           <div class="nucleus-inventory-table-wrap">
