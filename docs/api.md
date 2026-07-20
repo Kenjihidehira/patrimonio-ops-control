@@ -2,15 +2,17 @@
 
 Base local: `http://localhost:5173/api`
 
-Respostas dinâmicas usam `cache-control: no-store`. A identidade vem de uma sessão local assinada após o servidor concluir o OAuth e consultar o perfil atual na API oficial do GitHub.
+Respostas dinâmicas usam `cache-control: no-store`. A identidade vem de uma sessão local assinada após o servidor concluir o fluxo OAuth do GitHub ou o fluxo OpenID Connect do Google e validar a conta no provedor correspondente.
 
-## Autenticação GitHub
+## Autenticação
 
 | Método | Rota | Finalidade |
 | --- | --- | --- |
-| `GET` | `/api/auth/github/login` | Iniciar Authorization Code com `state` e PKCE |
-| `GET` | `/api/auth/github/callback` | Validar retorno OAuth, perfil e allowlist; criar sessão `HttpOnly` |
-| `GET` | `/api/auth/github/logout` | Encerrar a sessão local |
+| `GET` | `/api/auth/github/login` | Iniciar o código de autorização do GitHub com `state` e PKCE |
+| `GET` | `/api/auth/github/callback` | Validar retorno OAuth, perfil e lista de autorizados; criar sessão `HttpOnly` |
+| `GET` | `/api/auth/google/login` | Iniciar o código de autorização do Google com `state`, PKCE e `nonce` |
+| `GET` | `/api/auth/google/callback` | Validar retorno OpenID Connect, identidade e lista de autorizados; criar sessão `HttpOnly` |
+| `GET` | `/api/auth/logout` | Encerrar a sessão local de qualquer provedor |
 
 `return_to` aceita apenas caminhos relativos locais e nunca pode apontar para as próprias rotas de autenticação.
 
@@ -18,7 +20,7 @@ Respostas dinâmicas usam `cache-control: no-store`. A identidade vem de uma ses
 
 Retorna revisão, resumo, inventário filtrado, colaboradores, núcleos, auditoria, histórico de importações, catálogos e contexto da sessão.
 
-### Query params
+### Parâmetros de consulta
 
 | Parâmetro | Valores | Padrão |
 | --- | --- | --- |
@@ -28,7 +30,7 @@ Retorna revisão, resumo, inventário filtrado, colaboradores, núcleos, auditor
 | `nucleus` | Identificador de núcleo | `all` |
 | `sort` | `recent`, `asset_asc`, `nucleus`, `status` | `recent` |
 
-Usuários anônimos recebem uma projeção vazia, sem patrimônios, núcleos ou auditoria. Logins GitHub presentes na allowlist recebem exclusivamente o workspace empresarial importado da planilha e armazenado no Supabase.
+Usuários anônimos recebem uma projeção vazia, sem patrimônios, núcleos ou auditoria. Logins GitHub presentes na lista de autorizados recebem exclusivamente o ambiente empresarial importado da planilha e armazenado no Supabase.
 
 ## `POST /api/state`
 
@@ -65,7 +67,7 @@ Exige autenticação. Toda ação inclui `expectedRevision`; o ator é obtido da
   "nucleusId": "nuc-rh",
   "location": "Mesa RH-05",
   "assignee": "Renata Melo",
-  "note": "Equipamento destinado ao onboarding"
+  "note": "Equipamento destinado à integração do novo colaborador"
 }
 ```
 
@@ -93,7 +95,7 @@ Exige autenticação. Toda ação inclui `expectedRevision`; o ator é obtido da
 }
 ```
 
-`newAssetId` aceita somente seis dígitos e precisa ser único no workspace. A operação preserva núcleo, responsável, localização e movimentos anteriores, além de registrar a troca na auditoria.
+`newAssetId` aceita somente seis dígitos e precisa ser único no ambiente empresarial. A operação preserva núcleo, responsável, localização e movimentos anteriores, além de registrar a troca na auditoria.
 
 ### Editar dados cadastrais do item
 
@@ -115,7 +117,7 @@ Exige autenticação. Toda ação inclui `expectedRevision`; o ator é obtido da
 }
 ```
 
-A operação exige uma alteração real e um motivo. Patrimônio, núcleo e status não fazem parte desse payload: esses dados usam os fluxos próprios de identificação, transferência e status para manter a trilha de auditoria consistente.
+A operação exige uma alteração real e um motivo. Patrimônio, núcleo e status não fazem parte desse corpo da requisição: esses dados usam os fluxos próprios de identificação, transferência e status para manter a trilha de auditoria consistente.
 
 ### Criar núcleo
 
@@ -211,14 +213,14 @@ Gera um `.xlsx` sem preços de aquisição e com quatro abas:
 - `Auditoria`
 - `Importações`
 
-Exige autenticação. Usuários autenticados exportam o workspace empresarial carregado da planilha; requisições anônimas recebem `401`.
+Exige autenticação. Usuários autenticados exportam o ambiente empresarial carregado da planilha; requisições anônimas recebem `401`.
 
 ## Códigos de resposta
 
 | Código | Situação |
 | --- | --- |
 | `200` | Leitura, prévia ou mutação concluída |
-| `400` | Payload, modo ou arquivo inválido |
+| `400` | Corpo da requisição, modo ou arquivo inválido |
 | `401` | Sessão não autenticada para escrita |
 | `409` | Revisão obsoleta; recarregamento necessário |
 | `413` | Arquivo vazio ou maior que 2 MB |

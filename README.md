@@ -3,14 +3,14 @@
 Sistema web de controle patrimonial para empresas que precisam saber **qual ativo existe, onde está, a qual núcleo pertence e quem responde por ele**. O projeto cobre importação de planilhas, cadastro, alocação, transferências, manutenção, divergências, baixa lógica, exportação e trilha de auditoria.
 
 [![CI](https://github.com/Kenjihidehira/patrimonio-ops-control/actions/workflows/ci.yml/badge.svg)](https://github.com/Kenjihidehira/patrimonio-ops-control/actions/workflows/ci.yml)
-[![Deploy](https://img.shields.io/badge/demo-online-126044)](https://patrimonio-ops-control.kenjihidehira999.workers.dev/demo/)
-[![License: MIT](https://img.shields.io/badge/license-MIT-3978c3.svg)](LICENSE)
+[![Publicação](https://img.shields.io/badge/demonstra%C3%A7%C3%A3o-online-126044)](https://patrimonio-ops-control.kenjihidehira999.workers.dev/demo/)
+[![Licença: MIT](https://img.shields.io/badge/licen%C3%A7a-MIT-3978c3.svg)](LICENSE)
 
-**Demo pública:** [patrimonio-ops-control.kenjihidehira999.workers.dev/demo](https://patrimonio-ops-control.kenjihidehira999.workers.dev/demo/)
+**Demonstração pública:** [patrimonio-ops-control.kenjihidehira999.workers.dev/demo](https://patrimonio-ops-control.kenjihidehira999.workers.dev/demo/)
 
 ## Problema comercial resolvido
 
-Planilhas patrimoniais isoladas não registram bem responsabilidade, movimentações e exceções. O Patrimônio Ops importa o inventário existente, centraliza os ativos por núcleo e transforma cada alteração em um evento auditável, reduzindo retrabalho em inventários, onboarding, manutenção e desligamentos.
+Planilhas patrimoniais isoladas não registram bem responsabilidade, movimentações e exceções. O Patrimônio Ops importa o inventário existente, centraliza os ativos por núcleo e transforma cada alteração em um evento auditável, reduzindo retrabalho em inventários, integração de novos colaboradores, manutenção e desligamentos.
 
 ## Escopo funcional
 
@@ -34,15 +34,15 @@ Planilhas patrimoniais isoladas não registram bem responsabilidade, movimentaç
 - Importação XLSX em duas etapas: pré-validação e confirmação transacional.
 - Exportação XLSX com inventário, núcleos, auditoria e histórico de importações.
 - Operação sem exposição de preço ou valor de aquisição dos patrimônios.
-- Acesso público sem dados patrimoniais e workspace empresarial compartilhado no Supabase.
+- Acesso público sem dados patrimoniais e ambiente empresarial compartilhado no Supabase.
 
-## Stack
+## Tecnologias
 
-- **Frontend:** HTML semântico, CSS responsivo e JavaScript modular.
+- **Interface:** HTML semântico, CSS responsivo e JavaScript modular.
 - **Aplicação:** Vinext, React 19 e TypeScript.
-- **API:** Route Handlers compatíveis com Next.js em Cloudflare Worker.
+- **API:** manipuladores de rota compatíveis com Next.js em Cloudflare Worker.
 - **Banco:** Supabase Postgres 17, funções RPC transacionais e índices operacionais.
-- **Integração:** Supabase Edge Function autenticada por segredo de servidor.
+- **Integração:** Função Edge do Supabase autenticada por segredo de servidor.
 - **Autenticação:** GitHub OAuth e Google OpenID Connect, PKCE, allowlists e sessão `HttpOnly` compartilhada.
 - **Planilhas:** `read-excel-file` e `write-excel-file`.
 - **Qualidade:** Node Test Runner, ESLint, TypeScript e GitHub Actions.
@@ -59,7 +59,7 @@ pnpm dev
 
 Preencha as variáveis Supabase, dos provedores de identidade e os segredos de sessão de `.env.example` apenas em `.env.local`. O arquivo é ignorado pelo Git. Acesse `http://localhost:5173/login/`.
 
-A interface anônima não recebe dados patrimoniais. A leitura da base empresarial, importação, exportação e operações de escrita exigem um login presente em `GITHUB_ALLOWED_LOGINS` ou um e-mail exato em `GOOGLE_ALLOWED_EMAILS`. O servidor valida `state`, PKCE, assinatura da identidade e allowlist antes de criar uma sessão local de oito horas.
+A interface anônima não recebe dados patrimoniais. A leitura da base empresarial, importação, exportação e operações de escrita exigem um login presente em `GITHUB_ALLOWED_LOGINS` ou um e-mail exato em `GOOGLE_ALLOWED_EMAILS`. O servidor valida `state`, PKCE, assinatura da identidade e lista de autorizados antes de criar uma sessão local de oito horas.
 
 ### Validação completa
 
@@ -73,23 +73,23 @@ pnpm audit --prod
 
 ## Configurar o login GitHub
 
-1. Em **GitHub > Settings > Developer settings > OAuth Apps**, registre um OAuth App.
-2. Use `https://patrimonio-ops-control.kenjihidehira999.workers.dev` como Homepage URL.
-3. Use `https://patrimonio-ops-control.kenjihidehira999.workers.dev/api/auth/github/callback` como Authorization callback URL.
+1. No GitHub, acesse **Configurações > Configurações do desenvolvedor > Aplicativos OAuth** e registre um aplicativo OAuth.
+2. Use `https://patrimonio-ops-control.kenjihidehira999.workers.dev` como URL da página inicial.
+3. Use `https://patrimonio-ops-control.kenjihidehira999.workers.dev/api/auth/github/callback` como URL de retorno da autorização.
 4. Armazene `GITHUB_CLIENT_ID` e `GITHUB_CLIENT_SECRET` somente no ambiente do servidor.
 5. Mantenha em `GITHUB_ALLOWED_LOGINS` apenas os operadores autorizados.
 
-O fluxo segue a documentação oficial do [GitHub OAuth Web Application Flow](https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/authorizing-oauth-apps). O access token é usado no servidor apenas para obter a identidade atual e não é persistido no navegador nem incluído na sessão local.
+O fluxo segue a documentação oficial do [fluxo OAuth para aplicações Web do GitHub](https://docs.github.com/pt/apps/oauth-apps/building-oauth-apps/authorizing-oauth-apps). O token de acesso é usado no servidor apenas para obter a identidade atual e não é persistido no navegador nem incluído na sessão local.
 
 ## Configurar o login Google
 
-No Google Cloud Console, crie um OAuth Client do tipo Web application com a callback:
+No Google Cloud Console, crie um cliente OAuth do tipo Aplicativo da Web com a URL de retorno:
 
 ```text
 https://patrimonio-ops-control.kenjihidehira999.workers.dev/api/auth/google/callback
 ```
 
-Cadastre `GOOGLE_CLIENT_ID` e `GOOGLE_CLIENT_SECRET` como secrets. Preencha `GOOGLE_ALLOWED_EMAILS` com uma lista explícita de e-mails separados por vírgula. O sistema não autoriza automaticamente qualquer conta Gmail ou qualquer conta de um domínio Google Workspace.
+Cadastre `GOOGLE_CLIENT_ID` e `GOOGLE_CLIENT_SECRET` como segredos. Preencha `GOOGLE_ALLOWED_EMAILS` com uma lista explícita de e-mails separados por vírgula. O sistema não autoriza automaticamente qualquer conta Gmail ou qualquer conta de um domínio Google Workspace.
 
 GitHub e Google convergem para a mesma sessão local assinada. Tokens de acesso e atualização dos provedores não são gravados no navegador nem no banco.
 
@@ -104,22 +104,22 @@ Antes de gravar, a API reabre o XLSX no servidor, normaliza IDs de cinco dígito
 
 A base sincronizada contém 361 itens, 102 colaboradores e 10 núcleos, exclusivamente a partir da planilha corporativa. Desses itens, 319 possuem patrimônio oficial e 42 estão marcados como `Sem patrimônio`; estes recebem uma referência interna iniciada por `S`, aparecem como divergência e nunca são apresentados como número patrimonial. Doze ocorrências pertencentes a seis identificadores duplicados são rejeitadas e preservadas no histórico. Nove IDs de cinco dígitos recebem zero à esquerda. O valor `x` continua representando ausência de item.
 
-A planilha corporativa original não faz parte do repositório. O arquivo [`data/seed.json`](data/seed.json) é usado somente pelos testes unitários das regras de domínio e não é importado pelo runtime nem publicado como base da interface.
+A planilha corporativa original não faz parte do repositório. O arquivo [`data/seed.json`](data/seed.json) é usado somente pelos testes unitários das regras de domínio e não é importado pelo ambiente de execução nem publicado como base da interface.
 
 ## API
 
 | Método | Rota | Autenticação | Finalidade |
 | --- | --- | --- | --- |
-| `GET` | `/api/state` | Opcional | Dashboard, inventário, colaboradores, núcleos, auditoria, importações e sessão |
+| `GET` | `/api/state` | Opcional | Painel, inventário, colaboradores, núcleos, auditoria, importações e sessão |
 | `POST` | `/api/state` | Obrigatória | Cadastro, transferência, status, edição cadastral e gestão de núcleos |
 | `POST` | `/api/import` | Obrigatória | Pré-validar ou confirmar importação XLSX |
-| `GET` | `/api/export` | Obrigatória | Gerar backup XLSX do workspace empresarial |
+| `GET` | `/api/export` | Obrigatória | Gerar cópia de segurança XLSX do ambiente empresarial |
 
 Filtros, payloads e códigos de resposta estão em [`docs/api.md`](docs/api.md).
 
 ## Arquitetura e segurança
 
-As regras ficam em [`lib/domain.js`](lib/domain.js), independentes de HTTP e banco. O servidor usa uma chave empresarial aleatória, disponível apenas no runtime, para localizar a base compartilhada. O gateway Supabase também exige um segredo de servidor; as tabelas têm RLS habilitado e negam acesso direto a `anon` e `authenticated`.
+As regras ficam em [`lib/domain.js`](lib/domain.js), independentes de HTTP e banco. O servidor usa uma chave empresarial aleatória, disponível apenas no ambiente de execução, para localizar a base compartilhada. O serviço intermediário do Supabase também exige um segredo de servidor; as tabelas têm RLS habilitado e negam acesso direto a `anon` e `authenticated`.
 
 Mutações e importações usam RPCs transacionais com revisão otimista. Núcleos são reconciliados pela sigla estável e os IDs persistidos são resolvidos antes de gravar patrimônios e colaboradores. Ao renomear um colaborador, suas atribuições existentes são preservadas na mesma transação. Uma gravação obsoleta recebe `409 Conflict`, evitando que duas sessões sobrescrevam silenciosamente o trabalho uma da outra.
 
@@ -127,24 +127,24 @@ A troca do número patrimonial altera a chave do ativo com cascata referencial p
 
 A referência anterior permanece como alias interno. Assim, reimportar a planilha ainda desatualizada reconcilia a mesma peça física com o novo patrimônio, sem recriar o item `Sem patrimônio` nem reabrir sua divergência.
 
-Documentação completa: [`docs/architecture.md`](docs/architecture.md).
+Documentação completa: [`docs/arquitetura.md`](docs/arquitetura.md).
 
 ### Limitação produtiva explícita
 
-Todos os logins presentes na allowlist acessam a mesma base e possuem as mesmas permissões de escrita. Ainda não há RBAC por função ou núcleo. Antes de ampliar o acesso para perfis somente leitura, auditores ou múltiplas empresas, adicione `organizations`, `memberships` e políticas de autorização por papel.
+Todos os logins presentes na lista de autorizados acessam a mesma base e possuem as mesmas permissões de escrita. Ainda não há controle de acesso por papéis (RBAC) para função ou núcleo. Antes de ampliar o acesso para perfis somente leitura, auditores ou múltiplas empresas, adicione `organizations`, `memberships` e políticas de autorização por papel.
 
 ## Decisões de UX
 
-A interface segue o padrão `list report + object detail`, comum em sistemas corporativos: busca e filtros agrupados, tabela densa, seleção de linha, detalhe contextual e ações progressivas. As referências usadas foram:
+A interface segue o padrão de relatório em lista com detalhe do objeto, comum em sistemas corporativos: busca e filtros agrupados, tabela densa, seleção de linha, detalhe contextual e ações progressivas. As referências usadas foram:
 
-- [Snipe-IT - Asset Management](https://snipeitapp.com/product)
-- [InvGate - IT Asset Lifecycle Dashboard](https://invgate.com/asset-management/product-tour/it-asset-lifecycle-management-dashboard)
+- [Snipe-IT - Gestão de ativos](https://snipeitapp.com/product)
+- [InvGate - Painel do ciclo de vida de ativos de TI](https://invgate.com/asset-management/product-tour/it-asset-lifecycle-management-dashboard)
 - [ManageEngine AssetExplorer](https://www.manageengine.com/products/asset-explorer/)
-- [Asset Panda - Asset Management](https://www.assetpanda.com/)
-- [SAP Fiori - List Report](https://experience.sap.com/fiori-design-web/v1-46/list-report-floorplan-sap-fiori-element/)
-- [IBM Carbon - Data Table](https://carbondesignsystem.com/components/data-table/usage/)
-- [Atlassian Design System - Dynamic Table](https://atlassian.design/components/dynamic-table)
-- [Shopify Polaris - Index Filters](https://polaris-react.shopify.com/components/selection-and-input/index-filters)
+- [Asset Panda - Gestão de ativos](https://www.assetpanda.com/)
+- [SAP Fiori - Relatório em lista](https://experience.sap.com/fiori-design-web/v1-46/list-report-floorplan-sap-fiori-element/)
+- [IBM Carbon - Tabela de dados](https://carbondesignsystem.com/components/data-table/usage/)
+- [Sistema de design Atlassian - Tabela dinâmica](https://atlassian.design/components/dynamic-table)
+- [Shopify Polaris - Filtros de índice](https://polaris-react.shopify.com/components/selection-and-input/index-filters)
 
 A identidade visual usa azul cobalto e amarelo como referências da presença digital da Gazin, mantendo superfícies neutras e cores semânticas independentes para garantir leitura operacional e contraste.
 
@@ -152,11 +152,11 @@ Foram adotados padrões operacionais recorrentes nessas soluções: visibilidade
 
 O painel oferece temas claro e escuro, respeita a preferência do sistema na primeira visita e persiste a escolha explícita sem armazenar dados operacionais no navegador.
 
-## Deploy
+## Publicação
 
-O projeto está configurado para Cloudflare Workers em [`wrangler.jsonc`](wrangler.jsonc). Use `pnpm deploy:cloudflare` após autenticar o Wrangler e cadastrar os secrets do runtime. O procedimento reproduzível, as migrations e os controles de pré-publicação estão em [`docs/deploy.md`](docs/deploy.md).
+O projeto está configurado para Cloudflare Workers em [`wrangler.jsonc`](wrangler.jsonc). Use `pnpm deploy:cloudflare` após autenticar o Wrangler e cadastrar os segredos do ambiente de execução. O procedimento reproduzível, as migrações e os controles de pré-publicação estão em [`docs/publicacao.md`](docs/publicacao.md).
 
-GitHub Pages não hospeda este runtime: ele publica apenas arquivos estáticos e não executa Route Handlers, cookies `HttpOnly` ou integrações servidor-servidor. O código e a CI ficam no GitHub; o backend permanece no Worker para não expor os segredos do Supabase.
+GitHub Pages não hospeda este ambiente de execução: ele publica apenas arquivos estáticos e não executa manipuladores de rota, cookies `HttpOnly` ou integrações servidor-servidor. O código e a integração contínua (CI) ficam no GitHub; a API permanece no Worker para não expor os segredos do Supabase.
 
 ## Diferenciais comerciais
 
@@ -164,7 +164,7 @@ GitHub Pages não hospeda este runtime: ele publica apenas arquivos estáticos e
 - Migração assistida da planilha existente, com relatório de inconsistências.
 - Histórico imutável das decisões que alteram posse e estado do ativo.
 - Persistência relacional, concorrência otimista e base empresarial colaborativa.
-- Backup XLSX legível por áreas administrativas sem acesso técnico.
+- Cópia de segurança XLSX legível por áreas administrativas sem acesso técnico.
 - Estados de carregamento, erro, vazio e sessão sem escrita implementados.
 - Responsividade para operação em desktop, tablet e celular.
 - CI e documentação suficientes para manutenção por outra equipe.
