@@ -154,7 +154,7 @@ test("perfil do colaborador diferencia patrimônios com ícones por categoria", 
   assert.match(css, /\.profile-asset-icon svg/);
   assert.match(css, /\.profile-asset-icon-chair/);
   assert.match(css, /--profile-icon-accent:\s*var\(--status-warning-text\)/);
-  assert.match(css, /\.nucleus-inventory-mobile-heading \.profile-asset-icon\s*\{[^}]*width:\s*42px;[^}]*height:\s*42px;/s);
+  assert.match(css, /\.nucleus-inventory-mobile-heading \.profile-asset-icon\s*\{[^}]*display:\s*grid;[^}]*width:\s*42px;[^}]*height:\s*42px;[^}]*place-items:\s*center;/s);
   assert.match(js, /class="profile-asset-heading"/);
   assert.match(js, /class="profile-asset-meta"/);
   assert.match(css, /--asset-accent:/);

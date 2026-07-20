@@ -1979,8 +1979,10 @@ tbody tr:last-child td {
 }
 
 .nucleus-inventory-mobile-heading .profile-asset-icon {
+  display: grid;
   width: 42px;
   height: 42px;
+  place-items: center;
 }
 
 .nucleus-inventory-mobile-heading strong,
