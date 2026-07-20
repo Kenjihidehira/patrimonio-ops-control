@@ -34,6 +34,10 @@ const assetAliasMigration = await readFile(
   new URL("../supabase/migrations/20260717143000_preserve_asset_aliases_on_import.sql", import.meta.url),
   "utf8",
 );
+const nucleusInventoryEditMigration = await readFile(
+  new URL("../supabase/migrations/20260720143000_edit_nucleus_inventory_items.sql", import.meta.url),
+  "utf8",
+);
 
 test("importação reconcilia núcleos pela sigla persistida", () => {
   assert.match(nucleusMigration, /on conflict \(owner_key, code\) do update/);
@@ -85,4 +89,13 @@ test("reimportação reconhece a referência anterior sem recriar item sem patri
   assert.match(assetAliasMigration, /jsonb_set\(source\.item, '\{code\}'/);
   assert.match(assetAliasMigration, /to_jsonb\(asset\.status\)/);
   assert.match(assetAliasMigration, /patrimonio_asset_aliases_no_direct_access/);
+});
+
+test("edição do inventário do núcleo é transacional, validada e auditável", () => {
+  assert.match(nucleusInventoryEditMigration, /update_asset_details/);
+  assert.match(nucleusInventoryEditMigration, /for update/);
+  assert.match(nucleusInventoryEditMigration, /unchanged_asset_details/);
+  assert.match(nucleusInventoryEditMigration, /details_update/);
+  assert.match(nucleusInventoryEditMigration, /Campos atualizados:/);
+  assert.match(nucleusInventoryEditMigration, /grant execute[\s\S]*service_role/);
 });

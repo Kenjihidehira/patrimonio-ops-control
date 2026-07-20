@@ -25,6 +25,7 @@ Planilhas patrimoniais isoladas não registram bem responsabilidade, movimentaç
 - Paginação configurável para bases extensas, com 15, 25 ou 50 registros por página.
 - Lista móvel dedicada e painel inferior de detalhes com abas de resumo e histórico.
 - Cadastro de patrimônio e núcleo, além de edição de sigla, nome, localização e gestor do núcleo.
+- Inventário dedicado por núcleo, com resumo, busca local e edição cadastral auditável de cada item.
 - Transferência entre núcleos, locais e responsáveis.
 - Alteração auditável do número patrimonial, inclusive para converter itens `Sem patrimônio` em identificadores oficiais.
 - Status: disponível, em uso, manutenção, divergência e baixado.
@@ -110,7 +111,7 @@ A planilha corporativa original não faz parte do repositório. O arquivo [`data
 | Método | Rota | Autenticação | Finalidade |
 | --- | --- | --- | --- |
 | `GET` | `/api/state` | Opcional | Dashboard, inventário, colaboradores, núcleos, auditoria, importações e sessão |
-| `POST` | `/api/state` | Obrigatória | Cadastro, transferência, mudança de status, criação ou edição de núcleo |
+| `POST` | `/api/state` | Obrigatória | Cadastro, transferência, status, edição cadastral e gestão de núcleos |
 | `POST` | `/api/import` | Obrigatória | Pré-validar ou confirmar importação XLSX |
 | `GET` | `/api/export` | Obrigatória | Gerar backup XLSX do workspace empresarial |
 

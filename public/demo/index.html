@@ -615,6 +615,117 @@
       </form>
     </dialog>
 
+    <dialog class="modal nucleus-inventory-dialog" id="nucleus-inventory-dialog" aria-labelledby="nucleus-inventory-title">
+      <div class="modal-content nucleus-inventory-modal">
+        <div class="modal-header nucleus-inventory-header">
+          <div>
+            <p class="eyebrow" id="nucleus-inventory-code">Inventário do núcleo</p>
+            <h2 id="nucleus-inventory-title">Inventário</h2>
+            <p id="nucleus-inventory-meta">Localização e gestor responsável</p>
+          </div>
+          <button class="icon-button" type="button" data-close-dialog="nucleus-inventory-dialog" aria-label="Fechar">×</button>
+        </div>
+
+        <section class="nucleus-inventory-list-view" id="nucleus-inventory-list-view">
+          <div class="nucleus-inventory-summary" aria-label="Resumo do inventário do núcleo">
+            <div><span>Total</span><strong id="nucleus-inventory-total">0</strong><small>itens cadastrados</small></div>
+            <div><span>Em uso</span><strong id="nucleus-inventory-allocated">0</strong><small>com responsável</small></div>
+            <div><span>Alertas</span><strong id="nucleus-inventory-alerts">0</strong><small>exigem conferência</small></div>
+            <div><span>Sem patrimônio</span><strong id="nucleus-inventory-untagged">0</strong><small>aguardam etiqueta</small></div>
+          </div>
+          <div class="nucleus-inventory-toolbar">
+            <div>
+              <h3>Itens do núcleo</h3>
+              <p id="nucleus-inventory-result-count">0 itens encontrados</p>
+            </div>
+            <label class="field nucleus-inventory-search">
+              <span>Buscar neste núcleo</span>
+              <input id="nucleus-inventory-search" type="search" placeholder="Patrimônio, item, responsável ou local" autocomplete="off" />
+            </label>
+          </div>
+          <div class="nucleus-inventory-table-wrap">
+            <table class="nucleus-inventory-table">
+              <thead>
+                <tr>
+                  <th scope="col">Patrimônio</th>
+                  <th scope="col">Item</th>
+                  <th scope="col">Responsável</th>
+                  <th scope="col">Localização</th>
+                  <th scope="col">Status</th>
+                  <th scope="col"><span class="sr-only">Ações</span></th>
+                </tr>
+              </thead>
+              <tbody id="nucleus-inventory-body"></tbody>
+            </table>
+          </div>
+          <div class="nucleus-inventory-mobile" id="nucleus-inventory-mobile"></div>
+          <div class="state-message nucleus-inventory-empty" id="nucleus-inventory-empty" hidden>
+            <strong>Nenhum item encontrado</strong>
+            <span>Revise a busca aplicada neste núcleo.</span>
+          </div>
+        </section>
+
+        <form class="nucleus-asset-editor" id="nucleus-asset-form" hidden>
+          <div class="nucleus-asset-editor-heading">
+            <button class="button button-secondary button-small" id="back-to-nucleus-inventory" type="button">← Voltar ao inventário</button>
+            <div>
+              <p class="eyebrow">Edição cadastral auditável</p>
+              <h3 id="nucleus-asset-editor-title">Editar item</h3>
+              <p>Núcleo, status e patrimônio possuem fluxos próprios para preservar a auditoria.</p>
+            </div>
+          </div>
+          <div class="nucleus-asset-editor-body form-grid">
+            <input name="assetId" type="hidden" />
+            <label class="field">
+              <span>Patrimônio</span>
+              <input name="identifier" readonly />
+            </label>
+            <label class="field">
+              <span>Núcleo</span>
+              <input name="nucleus" readonly />
+            </label>
+            <label class="field">
+              <span>Tipo de item</span>
+              <select name="type" id="nucleus-asset-type" required></select>
+            </label>
+            <label class="field">
+              <span>Número de série</span>
+              <input name="serial" maxlength="180" />
+            </label>
+            <label class="field field-wide">
+              <span>Marca e modelo</span>
+              <input name="brandModel" maxlength="180" required />
+            </label>
+            <label class="field">
+              <span>Responsável</span>
+              <input name="assignee" maxlength="180" placeholder="Deixe vazio se estiver disponível" />
+            </label>
+            <label class="field">
+              <span>Data de aquisição</span>
+              <input name="acquiredAt" type="date" />
+            </label>
+            <label class="field field-wide">
+              <span>Localização</span>
+              <input name="location" maxlength="180" required />
+            </label>
+            <label class="field field-wide">
+              <span>Observações</span>
+              <textarea name="notes" maxlength="500" rows="3"></textarea>
+            </label>
+            <label class="field field-wide">
+              <span>Motivo da alteração</span>
+              <textarea name="note" maxlength="500" rows="3" required placeholder="Descreva a conferência ou correção realizada"></textarea>
+            </label>
+          </div>
+          <div class="form-error" id="nucleus-asset-form-error" role="alert" hidden></div>
+          <div class="modal-footer">
+            <button class="button button-secondary" id="cancel-nucleus-asset-edit" type="button">Cancelar</button>
+            <button class="button button-primary" type="submit">Salvar informações</button>
+          </div>
+        </form>
+      </div>
+    </dialog>
+
     <dialog class="modal profile-modal" id="collaborator-dialog" aria-labelledby="collaborator-dialog-title">
       <form class="modal-content profile-modal-content" id="collaborator-form">
         <div class="modal-header profile-modal-header">

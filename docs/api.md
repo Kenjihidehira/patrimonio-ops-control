@@ -95,6 +95,28 @@ Exige autenticação. Toda ação inclui `expectedRevision`; o ator é obtido da
 
 `newAssetId` aceita somente seis dígitos e precisa ser único no workspace. A operação preserva núcleo, responsável, localização e movimentos anteriores, além de registrar a troca na auditoria.
 
+### Editar dados cadastrais do item
+
+```json
+{
+  "type": "update_asset_details",
+  "expectedRevision": 7,
+  "assetId": "104281",
+  "asset": {
+    "type": "notebook",
+    "brandModel": "Dell Latitude 5550",
+    "serial": "BR-LAT-0042",
+    "assignee": "João Martins",
+    "location": "Matriz - estação 42",
+    "acquiredAt": "2026-07-20",
+    "notes": "Conferido fisicamente"
+  },
+  "note": "Cadastro corrigido durante inventário do núcleo"
+}
+```
+
+A operação exige uma alteração real e um motivo. Patrimônio, núcleo e status não fazem parte desse payload: esses dados usam os fluxos próprios de identificação, transferência e status para manter a trilha de auditoria consistente.
+
 ### Criar núcleo
 
 ```json

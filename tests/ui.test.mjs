@@ -120,6 +120,24 @@ test("visão de núcleos oferece resumo, busca e hierarquia operacional", () => 
   assert.match(css, /\.button\[hidden\]\s*\{[^}]*display:\s*none/s);
 });
 
+test("inventário do núcleo permite consultar e editar dados cadastrais", () => {
+  for (const marker of [
+    "nucleus-inventory-dialog",
+    "nucleus-inventory-summary",
+    "nucleus-inventory-search",
+    "nucleus-inventory-body",
+    "nucleus-asset-form",
+  ]) {
+    assert.match(html, new RegExp(marker));
+  }
+  assert.match(js, /dashboard\.nucleusInventory/);
+  assert.match(js, /data-view-nucleus-inventory/);
+  assert.match(js, /type: "update_asset_details"/);
+  assert.match(js, /function renderNucleusInventory\(\)/);
+  assert.match(css, /\.nucleus-inventory-mobile-card/);
+  assert.match(css, /@media \(max-width: 720px\)[\s\S]*\.nucleus-inventory-table-wrap/);
+});
+
 test("perfil do colaborador diferencia patrimônios com ícones por categoria", () => {
   assert.match(js, /function assetTypeIcon\(type\)/);
   for (const type of ["cpu", "monitor_1", "monitor_2", "chair", "notebook"]) {

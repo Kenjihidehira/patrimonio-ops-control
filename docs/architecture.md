@@ -37,6 +37,7 @@ O navegador nunca recebe a URL privilegiada nem o segredo do gateway. A API do C
 4. Toda mutação incrementa a revisão do workspace.
 5. Transferências, mudanças de status, alterações de patrimônio e importações geram movimentos auditáveis.
 6. Patrimônio baixado não pode ser transferido.
+7. A edição cadastral altera apenas tipo, modelo, série, responsável, localização, aquisição e observações; número patrimonial, núcleo e status usam comandos específicos.
 7. Baixa é lógica; o registro e seu histórico não são apagados.
 8. Datas são normalizadas antes da persistência; preços não fazem parte da experiência operacional.
 9. Uma revisão obsoleta não pode sobrescrever uma revisão mais nova.

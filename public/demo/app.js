@@ -56,6 +56,7 @@ const elements = {
   transferDialog: document.querySelector("#transfer-dialog"),
   nucleusDialog: document.querySelector("#nucleus-dialog"),
   editNucleusDialog: document.querySelector("#edit-nucleus-dialog"),
+  nucleusInventoryDialog: document.querySelector("#nucleus-inventory-dialog"),
   collaboratorDialog: document.querySelector("#collaborator-dialog"),
   importDialog: document.querySelector("#import-dialog"),
   assetForm: document.querySelector("#asset-form"),
@@ -63,6 +64,7 @@ const elements = {
   transferForm: document.querySelector("#transfer-form"),
   nucleusForm: document.querySelector("#nucleus-form"),
   editNucleusForm: document.querySelector("#edit-nucleus-form"),
+  nucleusAssetForm: document.querySelector("#nucleus-asset-form"),
   collaboratorForm: document.querySelector("#collaborator-form"),
   importForm: document.querySelector("#import-form"),
   importFile: document.querySelector("#import-file"),
@@ -74,6 +76,7 @@ const elements = {
   transferFormError: document.querySelector("#transfer-form-error"),
   nucleusFormError: document.querySelector("#nucleus-form-error"),
   editNucleusFormError: document.querySelector("#edit-nucleus-form-error"),
+  nucleusAssetFormError: document.querySelector("#nucleus-asset-form-error"),
   collaboratorFormError: document.querySelector("#collaborator-form-error"),
   importFormError: document.querySelector("#import-form-error"),
   assetTypeInput: document.querySelector("#asset-type-input"),
@@ -82,6 +85,12 @@ const elements = {
   transferNucleusInput: document.querySelector("#transfer-nucleus-input"),
   collaboratorNucleusInput: document.querySelector("#collaborator-nucleus-input"),
   collaboratorAssetsList: document.querySelector("#collaborator-assets-list"),
+  nucleusInventoryListView: document.querySelector("#nucleus-inventory-list-view"),
+  nucleusInventorySearch: document.querySelector("#nucleus-inventory-search"),
+  nucleusInventoryBody: document.querySelector("#nucleus-inventory-body"),
+  nucleusInventoryMobile: document.querySelector("#nucleus-inventory-mobile"),
+  nucleusInventoryEmpty: document.querySelector("#nucleus-inventory-empty"),
+  nucleusAssetTypeInput: document.querySelector("#nucleus-asset-type"),
   viewEyebrow: document.querySelector("#view-eyebrow"),
   viewTitle: document.querySelector("#view-title"),
   viewDescription: document.querySelector("#view-description"),
@@ -125,6 +134,7 @@ let currentPage = 1;
 let pageSize = 25;
 let detailTab = "summary";
 let mobileDetailOpen = false;
+let selectedNucleusId = null;
 
 bindEvents();
 setTheme(document.documentElement.dataset.theme === "dark" ? "dark" : "light");
@@ -165,6 +175,7 @@ function bindEvents() {
     void loadDashboard({ quiet: true });
   });
   elements.nucleiSearch.addEventListener("input", renderNuclei);
+  elements.nucleusInventorySearch.addEventListener("input", renderNucleusInventory);
 
   elements.quickFilters.addEventListener("click", (event) => {
     const button = event.target.closest("[data-quick-filter]");
@@ -224,7 +235,7 @@ function bindEvents() {
     button.addEventListener("click", () => document.querySelector(`#${button.dataset.closeDialog}`).close());
   });
 
-  [elements.assetDialog, elements.identifierDialog, elements.transferDialog, elements.nucleusDialog, elements.editNucleusDialog, elements.collaboratorDialog, elements.importDialog].forEach((dialog) => {
+  [elements.assetDialog, elements.identifierDialog, elements.transferDialog, elements.nucleusDialog, elements.editNucleusDialog, elements.nucleusInventoryDialog, elements.collaboratorDialog, elements.importDialog].forEach((dialog) => {
     dialog.addEventListener("click", (event) => {
       if (event.target === dialog) dialog.close();
     });
@@ -235,6 +246,9 @@ function bindEvents() {
   elements.transferForm.addEventListener("submit", handleTransferSubmit);
   elements.nucleusForm.addEventListener("submit", handleNucleusSubmit);
   elements.editNucleusForm.addEventListener("submit", handleNucleusUpdate);
+  elements.nucleusAssetForm.addEventListener("submit", handleNucleusAssetUpdate);
+  document.querySelector("#back-to-nucleus-inventory").addEventListener("click", showNucleusInventoryList);
+  document.querySelector("#cancel-nucleus-asset-edit").addEventListener("click", showNucleusInventoryList);
   elements.collaboratorForm.addEventListener("submit", handleCollaboratorUpdate);
   elements.importForm.addEventListener("submit", handleImportPreview);
   elements.importCommit.addEventListener("click", handleImportCommit);
@@ -662,6 +676,11 @@ function renderNuclei() {
             <div><span>Em uso</span><strong>${nucleus.allocated}</strong></div>
             <div><span>Alertas</span><strong>${nucleus.alerts}</strong></div>
           </div>
+          <button class="button button-secondary nucleus-inventory-button" type="button" data-view-nucleus-inventory="${escapeAttribute(nucleus.id)}">
+            <span class="nucleus-inventory-button-icon" aria-hidden="true">${assetTypeIcon("cpu")}</span>
+            Ver inventário
+            <span aria-hidden="true">→</span>
+          </button>
         </article>
       `,
     )
@@ -669,6 +688,66 @@ function renderNuclei() {
 
   elements.nucleiGrid.querySelectorAll("[data-edit-nucleus]").forEach((button) => {
     button.addEventListener("click", () => openNucleusEditDialog(button.dataset.editNucleus));
+  });
+  elements.nucleiGrid.querySelectorAll("[data-view-nucleus-inventory]").forEach((button) => {
+    button.addEventListener("click", () => openNucleusInventoryDialog(button.dataset.viewNucleusInventory));
+  });
+}
+
+function renderNucleusInventory() {
+  const nucleus = dashboard?.nuclei.find((item) => item.id === selectedNucleusId);
+  if (!nucleus) return;
+  const query = normalizedText(elements.nucleusInventorySearch.value);
+  const assets = (dashboard.nucleusInventory || [])
+    .filter((asset) => asset.nucleusId === nucleus.id)
+    .filter((asset) => !query || normalizedText([
+      asset.id,
+      dashboard.options.assetTypes[asset.type],
+      asset.brandModel,
+      asset.serial,
+      asset.assignee,
+      asset.location,
+      dashboard.options.statuses[asset.status],
+    ].join(" ")).includes(query))
+    .sort((left, right) => left.id.localeCompare(right.id));
+
+  document.querySelector("#nucleus-inventory-total").textContent = nucleus.total;
+  document.querySelector("#nucleus-inventory-allocated").textContent = nucleus.allocated;
+  document.querySelector("#nucleus-inventory-alerts").textContent = nucleus.alerts;
+  document.querySelector("#nucleus-inventory-untagged").textContent = nucleus.untagged;
+  document.querySelector("#nucleus-inventory-result-count").textContent =
+    `${assets.length} ${assets.length === 1 ? "item encontrado" : "itens encontrados"}`;
+  elements.nucleusInventoryEmpty.hidden = assets.length > 0;
+
+  elements.nucleusInventoryBody.innerHTML = assets.map((asset) => `
+    <tr>
+      <td><strong>${escapeHtml(assetIdentifierLabel(asset))}</strong><span class="cell-secondary">${escapeHtml(asset.serial || "Série não informada")}</span></td>
+      <td><span class="nucleus-inventory-item"><span aria-hidden="true">${assetTypeIcon(asset.type)}</span><span><strong>${escapeHtml(dashboard.options.assetTypes[asset.type])}</strong><small>${escapeHtml(asset.brandModel)}</small></span></span></td>
+      <td>${escapeHtml(asset.assignee || "Disponível")}</td>
+      <td>${escapeHtml(asset.location)}</td>
+      <td>${statusBadge(asset.status)}</td>
+      <td><button class="icon-button nucleus-asset-edit-button" type="button" data-edit-nucleus-asset="${escapeAttribute(asset.id)}" aria-label="Editar ${escapeAttribute(assetIdentifierLabel(asset))}" title="Editar informações" ${dashboard.session.authenticated ? "" : "disabled"}>${editIcon()}</button></td>
+    </tr>
+  `).join("");
+
+  elements.nucleusInventoryMobile.innerHTML = assets.map((asset) => `
+    <article class="nucleus-inventory-mobile-card">
+      <div class="nucleus-inventory-mobile-heading">
+        <span class="profile-asset-icon profile-asset-icon-${escapeAttribute(asset.type)}" aria-hidden="true">${assetTypeIcon(asset.type)}</span>
+        <div><strong>${escapeHtml(assetIdentifierLabel(asset))}</strong><span>${escapeHtml(dashboard.options.assetTypes[asset.type])}</span></div>
+        ${statusBadge(asset.status)}
+      </div>
+      <dl>
+        <div><dt>Responsável</dt><dd>${escapeHtml(asset.assignee || "Disponível")}</dd></div>
+        <div><dt>Localização</dt><dd>${escapeHtml(asset.location)}</dd></div>
+        <div><dt>Modelo</dt><dd>${escapeHtml(asset.brandModel)}</dd></div>
+      </dl>
+      <button class="button button-secondary button-small" type="button" data-edit-nucleus-asset="${escapeAttribute(asset.id)}" ${dashboard.session.authenticated ? "" : "disabled"}>Editar informações</button>
+    </article>
+  `).join("");
+
+  elements.nucleusInventoryDialog.querySelectorAll("[data-edit-nucleus-asset]").forEach((button) => {
+    button.addEventListener("click", () => openNucleusAssetEditor(button.dataset.editNucleusAsset));
   });
 }
 
@@ -802,6 +881,7 @@ function populateOptions() {
   elements.statusFilter.innerHTML = `<option value="all">Todos os status</option>${statusOptions}`;
   elements.nucleusFilter.innerHTML = `<option value="all">Todos os núcleos</option>${nucleusOptions}`;
   elements.assetTypeInput.innerHTML = `<option value="">Selecione</option>${assetTypeOptions}`;
+  elements.nucleusAssetTypeInput.innerHTML = assetTypeOptions;
   elements.assetStatusInput.innerHTML = statusOptions;
   elements.assetNucleusInput.innerHTML = `<option value="">Selecione</option>${nucleusOptions}`;
   elements.transferNucleusInput.innerHTML = nucleusOptions;
@@ -898,6 +978,48 @@ function openNucleusEditDialog(nucleusId) {
   elements.editNucleusForm.elements.manager.value = nucleus.manager;
   clearFormError(elements.editNucleusFormError);
   elements.editNucleusDialog.showModal();
+}
+
+function openNucleusInventoryDialog(nucleusId) {
+  const nucleus = dashboard?.nuclei.find((item) => item.id === nucleusId);
+  if (!nucleus) return;
+  selectedNucleusId = nucleus.id;
+  elements.nucleusInventorySearch.value = "";
+  document.querySelector("#nucleus-inventory-code").textContent = `${nucleus.code} • Inventário do núcleo`;
+  document.querySelector("#nucleus-inventory-title").textContent = nucleus.name;
+  document.querySelector("#nucleus-inventory-meta").textContent = `${nucleus.location} • Gestor: ${nucleus.manager}`;
+  showNucleusInventoryList();
+  renderNucleusInventory();
+  elements.nucleusInventoryDialog.showModal();
+}
+
+function showNucleusInventoryList() {
+  elements.nucleusAssetForm.hidden = true;
+  elements.nucleusInventoryListView.hidden = false;
+  clearFormError(elements.nucleusAssetFormError);
+  renderNucleusInventory();
+  window.setTimeout(() => elements.nucleusInventorySearch.focus(), 0);
+}
+
+function openNucleusAssetEditor(assetId) {
+  const asset = (dashboard?.nucleusInventory || []).find((item) => item.id === assetId);
+  if (!asset || !dashboard.session.authenticated) return;
+  elements.nucleusAssetForm.reset();
+  elements.nucleusAssetForm.elements.assetId.value = asset.id;
+  elements.nucleusAssetForm.elements.identifier.value = assetIdentifierLabel(asset);
+  elements.nucleusAssetForm.elements.nucleus.value = `${asset.nucleus.code} — ${asset.nucleus.name}`;
+  elements.nucleusAssetForm.elements.type.value = asset.type;
+  elements.nucleusAssetForm.elements.serial.value = asset.serial;
+  elements.nucleusAssetForm.elements.brandModel.value = asset.brandModel;
+  elements.nucleusAssetForm.elements.assignee.value = asset.assignee;
+  elements.nucleusAssetForm.elements.acquiredAt.value = asset.acquiredAt || "";
+  elements.nucleusAssetForm.elements.location.value = asset.location;
+  elements.nucleusAssetForm.elements.notes.value = asset.notes;
+  document.querySelector("#nucleus-asset-editor-title").textContent = `Editar ${assetIdentifierLabel(asset)}`;
+  clearFormError(elements.nucleusAssetFormError);
+  elements.nucleusInventoryListView.hidden = true;
+  elements.nucleusAssetForm.hidden = false;
+  window.setTimeout(() => elements.nucleusAssetForm.elements.type.focus(), 0);
 }
 
 function openCollaboratorDialog(collaboratorId) {
@@ -1165,6 +1287,32 @@ async function handleNucleusUpdate(event) {
   );
 }
 
+async function handleNucleusAssetUpdate(event) {
+  event.preventDefault();
+  if (!elements.nucleusAssetForm.reportValidity()) return;
+  const formData = new FormData(elements.nucleusAssetForm);
+  const saved = await submitForm(
+    elements.nucleusAssetForm,
+    elements.nucleusAssetFormError,
+    {
+      type: "update_asset_details",
+      assetId: formData.get("assetId"),
+      asset: {
+        type: formData.get("type"),
+        brandModel: formData.get("brandModel"),
+        serial: formData.get("serial"),
+        assignee: formData.get("assignee"),
+        location: formData.get("location"),
+        acquiredAt: formData.get("acquiredAt"),
+        notes: formData.get("notes"),
+      },
+      note: formData.get("note"),
+    },
+    null,
+  );
+  if (saved) showNucleusInventoryList();
+}
+
 async function handleCollaboratorUpdate(event) {
   event.preventDefault();
   if (!elements.collaboratorForm.reportValidity()) return;
@@ -1222,9 +1370,11 @@ async function submitForm(form, errorElement, action, dialog, nextSelectedId = n
     dialog?.close();
     showToast(data.message || "Alteração registrada com sucesso.");
     await loadDashboard({ quiet: true });
+    return true;
   } catch (error) {
     if (errorElement) showFormError(errorElement, error.message);
     else showToast(error.message, true);
+    return false;
   } finally {
     setFormBusy(form, false);
   }
@@ -1344,8 +1494,13 @@ function movementLabel(type) {
     transfer: "Transferência",
     status_change: "Alteração de status",
     identifier_change: "Alteração de patrimônio",
+    details_update: "Atualização cadastral",
     import: "Importação",
   }[type] || "Movimentação";
+}
+
+function editIcon() {
+  return `<svg aria-hidden="true" viewBox="0 0 24 24" width="16" height="16" fill="none"><path d="M12 20h9" stroke-width="2" stroke-linecap="round"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L8 18l-4 1 1-4Z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 }
 
 function assetIdentifierLabel(asset) {

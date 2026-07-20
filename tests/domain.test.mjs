@@ -250,6 +250,76 @@ test("corrige patrimônio oficial e bloqueia número inválido, repetido ou sem 
   );
 });
 
+test("lista o inventário completo por núcleo sem herdar filtros globais", () => {
+  const dashboard = buildDashboard(seed, { search: "termo inexistente", nucleus: "nuc-fin" });
+
+  assert.equal(dashboard.inventory.length, 0);
+  assert.equal(dashboard.nucleusInventory.length, seed.assets.filter((asset) => asset.status !== "retired").length);
+  assert.equal(
+    dashboard.nucleusInventory.filter((asset) => asset.nucleusId === "nuc-ti").length,
+    seed.assets.filter((asset) => asset.nucleusId === "nuc-ti" && asset.status !== "retired").length,
+  );
+});
+
+test("edita dados cadastrais do item sem alterar patrimônio, núcleo ou status", () => {
+  const original = seed.assets.find((asset) => asset.id === "104281");
+  const nextState = applyAction(
+    seed,
+    {
+      type: "update_asset_details",
+      assetId: original.id,
+      asset: {
+        type: "notebook",
+        brandModel: "Dell Latitude 5550",
+        serial: "SERIE-ATUALIZADA",
+        assignee: "João Martins",
+        location: "Matriz - estação 42",
+        acquiredAt: "2026-07-20",
+        notes: "Conferido fisicamente.",
+      },
+      note: "Cadastro corrigido durante inventário do núcleo.",
+      at: "2026-07-20T14:30:00.000Z",
+      movementId: "movement-details",
+    },
+    "auditor@empresa.com",
+  );
+
+  const asset = nextState.assets.find((item) => item.id === original.id);
+  assert.equal(asset.id, original.id);
+  assert.equal(asset.nucleusId, original.nucleusId);
+  assert.equal(asset.status, original.status);
+  assert.equal(asset.brandModel, "Dell Latitude 5550");
+  assert.equal(asset.movements[0].type, "details_update");
+  assert.match(asset.movements[0].to, /marca e modelo/);
+  assert.equal(asset.movements[0].note, "Cadastro corrigido durante inventário do núcleo.");
+});
+
+test("bloqueia edição cadastral sem mudança, motivo ou campos válidos", () => {
+  const original = seed.assets.find((asset) => asset.id === "104281");
+  const asset = {
+    type: original.type,
+    brandModel: original.brandModel,
+    serial: original.serial,
+    assignee: original.assignee,
+    location: original.location,
+    acquiredAt: original.acquiredAt,
+    notes: original.notes,
+  };
+
+  assert.throws(
+    () => applyAction(seed, { type: "update_asset_details", assetId: original.id, asset, note: "Conferência." }, "auditor"),
+    /pelo menos uma informação/,
+  );
+  assert.throws(
+    () => applyAction(seed, { type: "update_asset_details", assetId: original.id, asset: { ...asset, serial: "NOVO" }, note: "" }, "auditor"),
+    /Motivo da alteração é obrigatório/,
+  );
+  assert.throws(
+    () => applyAction(seed, { type: "update_asset_details", assetId: original.id, asset: { ...asset, type: "tablet" }, note: "Correção." }, "auditor"),
+    /Tipo do item é inválido/,
+  );
+});
+
 test("lista colaboradores com e sem patrimônio", () => {
   const state = structuredClone(seed);
   state.collaborators = [
