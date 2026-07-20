@@ -53,11 +53,11 @@ Pré-requisitos: Node.js 22.13+ e pnpm 10+.
 
 ```bash
 pnpm install
-cp .env.example .env.local
+cp configuracao.exemplo .env.local
 pnpm dev
 ```
 
-Preencha as variáveis Supabase, dos provedores de identidade e os segredos de sessão de `.env.example` apenas em `.env.local`. O arquivo é ignorado pelo Git. Acesse `http://localhost:5173/login/`.
+Use [`configuracao.exemplo`](configuracao.exemplo) somente como modelo para criar `.env.local`. Preencha as variáveis Supabase, dos provedores de identidade e os segredos de sessão apenas no arquivo local, que é ignorado pelo Git. Acesse `http://localhost:5173/login/`.
 
 A interface anônima não recebe dados patrimoniais. A leitura da base empresarial, importação, exportação e operações de escrita exigem um login presente em `GITHUB_ALLOWED_LOGINS` ou um e-mail exato em `GOOGLE_ALLOWED_EMAILS`. O servidor valida `state`, PKCE, assinatura da identidade e lista de autorizados antes de criar uma sessão local de oito horas.
 
