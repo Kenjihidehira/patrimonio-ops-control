@@ -1525,11 +1525,11 @@ function formatDateTime(value) {
 function assetTypeIcon(type) {
   const common = 'viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"';
   const icons = {
-    cpu: `<svg ${common}><rect x="6" y="2" width="12" height="20" rx="2" /><path d="M10 6h4" /><path d="M10 10h4" /><circle cx="12" cy="17" r="1" /></svg>`,
-    monitor_1: `<svg ${common}><rect x="3" y="4" width="18" height="13" rx="2" /><path d="M8 21h8" /><path d="M12 17v4" /></svg>`,
-    monitor_2: `<svg ${common}><rect x="3" y="4" width="18" height="13" rx="2" /><path d="M8 21h8" /><path d="M12 17v4" /></svg>`,
-    chair: `<svg ${common}><path d="M5 10V6a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v4" /><path d="M3 11v5a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-5" /><path d="M5 18v2" /><path d="M19 18v2" /><path d="M5 13h14" /></svg>`,
-    notebook: `<svg ${common}><rect x="4" y="4" width="16" height="12" rx="2" /><path d="M2 20h20" /><path d="M9 20h6" /></svg>`,
+    cpu: `<svg ${common} data-asset-icon="cpu"><rect x="6" y="2" width="12" height="20" rx="2" /><path d="M10 6h4" /><path d="M10 10h4" /><circle cx="12" cy="17" r="1" /></svg>`,
+    monitor_1: `<svg ${common} data-asset-icon="monitor"><rect x="3" y="4" width="18" height="13" rx="2" /><path d="M8 21h8" /><path d="M12 17v4" /></svg>`,
+    monitor_2: `<svg ${common} data-asset-icon="monitor"><rect x="3" y="4" width="18" height="13" rx="2" /><path d="M8 21h8" /><path d="M12 17v4" /></svg>`,
+    chair: `<svg ${common} data-asset-icon="office-chair"><path d="M7 3h3a2 2 0 0 1 2 2v8H8a3 3 0 0 1-3-3V5a2 2 0 0 1 2-2Z" /><path d="M11 13h7a2 2 0 0 1 2 2v1H10" /><path d="M14 10h4v3" /><path d="M15 16v4" /><path d="M10 21h10" /><path d="M10 21l-1 1" /><path d="M20 21l1 1" /></svg>`,
+    notebook: `<svg ${common} data-asset-icon="notebook"><rect x="4" y="4" width="16" height="12" rx="2" /><path d="M2 20h20" /><path d="M9 20h6" /></svg>`,
   };
   return icons[type] || `<svg ${common}><rect x="4" y="4" width="16" height="16" rx="3" /><path d="M9 9h6v6H9z" /></svg>`;
 }

@@ -149,9 +149,12 @@ test("perfil do colaborador diferencia patrimônios com ícones por categoria", 
   for (const type of ["cpu", "monitor_1", "monitor_2", "chair", "notebook"]) {
     assert.match(js, new RegExp(`${type}:`));
   }
+  assert.match(js, /data-asset-icon="office-chair"/);
   assert.match(js, /profile-asset-icon-\$\{escapeAttribute\(asset\.type\)\}/);
   assert.match(css, /\.profile-asset-icon svg/);
   assert.match(css, /\.profile-asset-icon-chair/);
+  assert.match(css, /--profile-icon-accent:\s*var\(--status-warning-text\)/);
+  assert.match(css, /\.nucleus-inventory-mobile-heading \.profile-asset-icon\s*\{[^}]*width:\s*42px;[^}]*height:\s*42px;/s);
   assert.match(js, /class="profile-asset-heading"/);
   assert.match(js, /class="profile-asset-meta"/);
   assert.match(css, /--asset-accent:/);

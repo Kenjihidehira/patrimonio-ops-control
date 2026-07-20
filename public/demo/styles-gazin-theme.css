@@ -1973,9 +1973,14 @@ tbody tr:last-child td {
 
 .nucleus-inventory-mobile-heading {
   display: grid;
-  grid-template-columns: 40px minmax(0, 1fr) auto;
+  grid-template-columns: 42px minmax(0, 1fr) auto;
   align-items: center;
   gap: 9px;
+}
+
+.nucleus-inventory-mobile-heading .profile-asset-icon {
+  width: 42px;
+  height: 42px;
 }
 
 .nucleus-inventory-mobile-heading strong,
@@ -2373,14 +2378,15 @@ tbody tr:last-child td {
 }
 
 .profile-asset-icon {
+  --profile-icon-accent: var(--asset-accent, var(--brand-700));
   display: grid;
   width: 44px;
   height: 44px;
   place-items: center;
-  border: 1px solid color-mix(in srgb, var(--asset-accent) 38%, transparent);
+  border: 1px solid color-mix(in srgb, var(--profile-icon-accent) 34%, var(--line));
   border-radius: 6px;
-  background: var(--brand-100);
-  color: var(--emphasis-text);
+  background: color-mix(in srgb, var(--profile-icon-accent) 11%, var(--surface));
+  color: var(--profile-icon-accent);
   font-size: 9px;
   font-weight: 850;
 }
@@ -2393,18 +2399,15 @@ tbody tr:last-child td {
 
 .profile-asset-icon-monitor_1,
 .profile-asset-icon-monitor_2 {
-  background: var(--blue-soft);
-  color: var(--blue);
+  --profile-icon-accent: var(--blue);
 }
 
 .profile-asset-icon-chair {
-  background: var(--yellow-soft);
-  color: var(--status-warning-text);
+  --profile-icon-accent: var(--status-warning-text);
 }
 
 .profile-asset-icon-notebook {
-  background: var(--success-soft);
-  color: var(--success);
+  --profile-icon-accent: var(--success);
 }
 
 .profile-asset-copy {
