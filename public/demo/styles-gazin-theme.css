@@ -1679,6 +1679,7 @@ tbody tr:last-child td {
   min-height: 0;
   padding: 18px;
   overflow-y: auto;
+  container-type: inline-size;
 }
 
 .nucleus-inventory-summary {
@@ -1771,6 +1772,7 @@ tbody tr:last-child td {
 
 .nucleus-inventory-table {
   width: 100%;
+  min-width: 920px;
   border-collapse: collapse;
   table-layout: fixed;
 }
@@ -1796,8 +1798,17 @@ tbody tr:last-child td {
 .nucleus-inventory-table tr:last-child td { border-bottom: 0; }
 .nucleus-inventory-table th:first-child { width: 130px; }
 .nucleus-inventory-table th:nth-child(2) { width: 230px; }
+.nucleus-inventory-table th:nth-child(3) { width: 180px; }
+.nucleus-inventory-table th:nth-child(4) { width: 190px; }
 .nucleus-inventory-table th:nth-child(5) { width: 110px; }
 .nucleus-inventory-table th:last-child { width: 54px; }
+
+.nucleus-inventory-table td:nth-child(3),
+.nucleus-inventory-table td:nth-child(4) {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 
 .nucleus-inventory-item {
   display: flex;
@@ -1823,6 +1834,74 @@ tbody tr:last-child td {
 .nucleus-inventory-item small { margin-top: 2px; color: var(--muted); }
 .nucleus-asset-edit-button { width: 32px; height: 32px; min-height: 32px; }
 .nucleus-inventory-mobile { display: none; }
+
+.nucleus-inventory-mobile-card {
+  padding: 13px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+}
+
+.nucleus-inventory-mobile-heading {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 9px;
+}
+
+.nucleus-inventory-mobile-heading strong,
+.nucleus-inventory-mobile-heading span {
+  display: block;
+}
+
+.nucleus-inventory-mobile-heading > div > span {
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 9px;
+}
+
+.nucleus-inventory-mobile-card dl {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 9px;
+  margin: 12px 0;
+  padding: 11px 0;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+
+.nucleus-inventory-mobile-card dt {
+  color: var(--muted);
+  font-size: 8px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.nucleus-inventory-mobile-card dd {
+  margin: 3px 0 0;
+  overflow-wrap: anywhere;
+  color: var(--ink);
+  font-size: 10px;
+}
+
+.nucleus-inventory-mobile-card dl > div:last-child {
+  grid-column: 1 / -1;
+}
+
+.nucleus-inventory-mobile-card .button {
+  width: 100%;
+}
+
+@container (max-width: 850px) {
+  .nucleus-inventory-table-wrap {
+    display: none;
+  }
+
+  .nucleus-inventory-mobile {
+    display: grid;
+    gap: 10px;
+  }
+}
 
 .nucleus-asset-editor {
   min-height: 0;
@@ -3157,72 +3236,6 @@ tbody tr:last-child td {
   }
 
   .nucleus-inventory-search {
-    width: 100%;
-  }
-
-  .nucleus-inventory-table-wrap {
-    display: none;
-  }
-
-  .nucleus-inventory-mobile {
-    display: grid;
-    gap: 10px;
-  }
-
-  .nucleus-inventory-mobile-card {
-    padding: 13px;
-    border: 1px solid var(--line);
-    border-radius: 8px;
-    background: var(--surface);
-  }
-
-  .nucleus-inventory-mobile-heading {
-    display: grid;
-    grid-template-columns: 40px minmax(0, 1fr) auto;
-    align-items: center;
-    gap: 9px;
-  }
-
-  .nucleus-inventory-mobile-heading strong,
-  .nucleus-inventory-mobile-heading span {
-    display: block;
-  }
-
-  .nucleus-inventory-mobile-heading > div > span {
-    margin-top: 2px;
-    color: var(--muted);
-    font-size: 9px;
-  }
-
-  .nucleus-inventory-mobile-card dl {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 9px;
-    margin: 12px 0;
-    padding: 11px 0;
-    border-top: 1px solid var(--line);
-    border-bottom: 1px solid var(--line);
-  }
-
-  .nucleus-inventory-mobile-card dt {
-    color: var(--muted);
-    font-size: 8px;
-    font-weight: 800;
-    text-transform: uppercase;
-  }
-
-  .nucleus-inventory-mobile-card dd {
-    margin: 3px 0 0;
-    overflow-wrap: anywhere;
-    color: var(--ink);
-    font-size: 10px;
-  }
-
-  .nucleus-inventory-mobile-card dl > div:last-child {
-    grid-column: 1 / -1;
-  }
-
-  .nucleus-inventory-mobile-card .button {
     width: 100%;
   }
 

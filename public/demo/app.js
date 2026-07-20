@@ -723,8 +723,8 @@ function renderNucleusInventory() {
     <tr>
       <td><strong>${escapeHtml(assetIdentifierLabel(asset))}</strong><span class="cell-secondary">${escapeHtml(asset.serial || "Série não informada")}</span></td>
       <td><span class="nucleus-inventory-item"><span aria-hidden="true">${assetTypeIcon(asset.type)}</span><span><strong>${escapeHtml(dashboard.options.assetTypes[asset.type])}</strong><small>${escapeHtml(asset.brandModel)}</small></span></span></td>
-      <td>${escapeHtml(asset.assignee || "Disponível")}</td>
-      <td>${escapeHtml(asset.location)}</td>
+      <td title="${escapeAttribute(asset.assignee || "Disponível")}">${escapeHtml(asset.assignee || "Disponível")}</td>
+      <td title="${escapeAttribute(asset.location)}">${escapeHtml(asset.location)}</td>
       <td>${statusBadge(asset.status)}</td>
       <td><button class="icon-button nucleus-asset-edit-button" type="button" data-edit-nucleus-asset="${escapeAttribute(asset.id)}" aria-label="Editar ${escapeAttribute(assetIdentifierLabel(asset))}" title="Editar informações" ${dashboard.session.authenticated ? "" : "disabled"}>${editIcon()}</button></td>
     </tr>
