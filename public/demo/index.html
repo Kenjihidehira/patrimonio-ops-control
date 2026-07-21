@@ -14,46 +14,48 @@
   </head>
   <body>
     <div class="app-shell">
-      <aside class="sidebar" aria-label="Navegação principal">
-        <a class="brand" href="#inventario" aria-label="Patrimônio Ops - início">
-          <span class="brand-mark" aria-hidden="true">PO</span>
-          <span>
-            <strong>Patrimônio Ops</strong>
-            <small>Controle empresarial</small>
-          </span>
-        </a>
+      <header class="app-header">
+        <div class="app-header-inner">
+          <a class="brand" href="#inventario" aria-label="Dados CX - Patrimônio Ops, início">
+            <img class="brand-logo" src="../brand/cx-mark.png" alt="" width="300" height="155" />
+            <span class="brand-copy">
+              <strong>Patrimônio Ops</strong>
+              <small>Dados CX</small>
+            </span>
+          </a>
 
-        <nav class="primary-nav">
-          <button class="nav-item is-active" type="button" data-view="inventory">
-            <span class="nav-index" aria-hidden="true">01</span>
-            Inventário
-          </button>
-          <button class="nav-item" type="button" data-view="nuclei">
-            <span class="nav-index" aria-hidden="true">02</span>
-            Núcleos
-          </button>
-          <button class="nav-item" type="button" data-view="audit">
-            <span class="nav-index" aria-hidden="true">03</span>
-            Auditoria
-          </button>
-          <button class="nav-item" type="button" data-view="imports">
-            <span class="nav-index" aria-hidden="true">04</span>
-            Importações
-          </button>
-          <button class="nav-item" type="button" data-view="collaborators">
-            <span class="nav-index" aria-hidden="true">05</span>
-            Colaboradores
-          </button>
-        </nav>
+          <nav class="primary-nav" aria-label="Navegação principal">
+            <button class="nav-item is-active" type="button" data-view="inventory">
+              <span class="nav-index" aria-hidden="true">01</span>
+              Inventário
+            </button>
+            <button class="nav-item" type="button" data-view="nuclei">
+              <span class="nav-index" aria-hidden="true">02</span>
+              Núcleos
+            </button>
+            <button class="nav-item" type="button" data-view="audit">
+              <span class="nav-index" aria-hidden="true">03</span>
+              Auditoria
+            </button>
+            <button class="nav-item" type="button" data-view="imports">
+              <span class="nav-index" aria-hidden="true">04</span>
+              Importações
+            </button>
+            <button class="nav-item" type="button" data-view="collaborators">
+              <span class="nav-index" aria-hidden="true">05</span>
+              Colaboradores
+            </button>
+          </nav>
 
-        <div class="sidebar-status">
-          <span class="status-dot" aria-hidden="true"></span>
-          <div>
-            <strong>Base operacional</strong>
-            <span id="sidebar-source">Carregando dados</span>
+          <div class="header-status" aria-label="Status da base de dados">
+            <span class="status-dot" aria-hidden="true"></span>
+            <div>
+              <strong>Base operacional</strong>
+              <span id="header-source">Carregando dados</span>
+            </div>
           </div>
         </div>
-      </aside>
+      </header>
 
       <main class="main-content" id="main-content">
         <header class="topbar">

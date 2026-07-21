@@ -65,6 +65,12 @@ test("campos críticos possuem semântica e validação no cliente", () => {
 });
 
 test("layout contém breakpoints de tablet, celular e redução de movimento", () => {
+  assert.match(html, /<header class="app-header">/);
+  assert.match(html, /src="\.\.\/brand\/cx-mark\.png"/);
+  assert.match(html, /<nav class="primary-nav" aria-label="Navegação principal">/);
+  assert.doesNotMatch(html, /class="sidebar"/);
+  assert.match(css, /\.app-header \{[\s\S]*position: sticky/);
+  assert.match(css, /\.primary-nav \{[\s\S]*display: flex/);
   assert.match(css, /@media \(max-width: 940px\)/);
   assert.match(css, /@media \(max-width: 720px\)/);
   assert.match(css, /@media \(max-width: 430px\)/);

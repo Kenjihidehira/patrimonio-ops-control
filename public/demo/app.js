@@ -20,7 +20,7 @@ const elements = {
   demoNotice: document.querySelector("#demo-notice"),
   signInLink: document.querySelector("#sign-in-link"),
   themeToggle: document.querySelector("#theme-toggle"),
-  sidebarSource: document.querySelector("#sidebar-source"),
+  headerSource: document.querySelector("#header-source"),
   nucleiGrid: document.querySelector("#nuclei-grid"),
   nucleiSearch: document.querySelector("#nuclei-search"),
   nucleiEmpty: document.querySelector("#nuclei-empty"),
@@ -335,7 +335,7 @@ function renderSession() {
   `;
   elements.demoNotice.hidden = session.authenticated;
   elements.signInLink.href = session.signInUrl;
-  elements.sidebarSource.textContent = session.authenticated ? "Base empresarial Supabase" : "Dados protegidos";
+  elements.headerSource.textContent = session.authenticated ? "Base empresarial Supabase" : "Dados protegidos";
   for (const button of [elements.importButton, elements.exportButton, elements.newAsset, elements.newNucleus]) {
     button.disabled = !session.authenticated;
   }
