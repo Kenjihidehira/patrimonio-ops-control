@@ -238,18 +238,14 @@ textarea:disabled {
   flex: 0 0 104px;
   width: 104px;
   height: 56px;
-  padding: 4px 7px;
-  border: 1px solid rgba(255, 255, 255, 0.75);
-  border-radius: 6px;
-  background: #ffffff;
   object-fit: contain;
-  box-shadow: 0 6px 18px rgba(1, 24, 50, 0.24);
-  transition: transform 160ms ease, box-shadow 160ms ease;
+  filter: drop-shadow(0 0 1px rgba(255, 255, 255, 0.75)) drop-shadow(0 6px 10px rgba(1, 24, 50, 0.28));
+  transition: transform 160ms ease, filter 160ms ease;
 }
 
 .brand:hover .brand-logo {
   transform: translateY(-1px);
-  box-shadow: 0 8px 22px rgba(1, 24, 50, 0.3);
+  filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.8)) drop-shadow(0 8px 12px rgba(1, 24, 50, 0.34));
 }
 
 .brand-copy {
