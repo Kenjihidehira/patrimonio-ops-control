@@ -66,8 +66,11 @@ test("campos críticos possuem semântica e validação no cliente", () => {
 
 test("layout contém breakpoints de tablet, celular e redução de movimento", () => {
   assert.match(html, /<header class="app-header">/);
-  assert.match(html, /src="\.\.\/brand\/cx-mark\.png"/);
+  assert.match(html, /src="\.\.\/brand\/cx-mark-header\.png"/);
   assert.match(html, /<nav class="primary-nav" aria-label="Navegação principal">/);
+  assert.match(html, /data-view="inventory" aria-current="page"/);
+  assert.doesNotMatch(html, /class="nav-index"/);
+  assert.match(js, /button\.removeAttribute\("aria-current"\)/);
   assert.doesNotMatch(html, /class="sidebar"/);
   assert.match(css, /\.app-header \{[\s\S]*position: sticky/);
   assert.match(css, /\.primary-nav \{[\s\S]*display: flex/);
