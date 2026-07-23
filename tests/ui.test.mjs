@@ -152,8 +152,13 @@ test("inventário oferece filtros, paginação e experiência móvel dedicada", 
 test("leitor LS2208 em modo HID localiza patrimônio sem API de hardware", () => {
   assert.match(hooks, /SCANNER_CHARACTER_TIMEOUT_MS = 100/);
   assert.match(hooks, /SCANNABLE_IDENTIFIER_PATTERN = \/\^\(\?:\\d\{6\}\|S\[A-Z0-9\]\{5\}\)\$\//);
+  assert.match(hooks, /export function normalizeScannedIdentifier/);
   assert.match(hooks, /document\.addEventListener\("keydown", handleKeydown, true\)/);
   assert.match(hooks, /event\.key === "Enter" \|\| event\.key === "Tab"/);
+  assert.match(app, /normalizeScannedIdentifier\(debouncedSearch\)/);
+  assert.match(app, /lastProcessedScanRef\.current === identifier/);
+  assert.match(app, /dashboard\.inventory\.find\(\(item\) => item\.id === identifier\)/);
+  assert.match(app, /openScannedAsset\(asset, identifier\)/);
   assert.match(app, /setModal\(\{ kind: "scanner", assetId: asset\.id \}\)/);
   assert.match(dialogs, /className="scanner-asset-modal"/);
   assert.match(dialogs, /type: "update_status"/);

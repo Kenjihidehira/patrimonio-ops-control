@@ -72,6 +72,8 @@ O sistema aceita leitores USB ou Bluetooth no modo **HID Keyboard**, também cha
 4. Teste no Bloco de Notas: ao bipar, o leitor deve escrever os seis números da etiqueta e avançar o cursor.
 5. Entre no sistema e bipe a etiqueta em qualquer tela. O inventário será aberto, os filtros serão limpos e uma janela exibirá o patrimônio, responsável, núcleo, localização, modelo, série, histórico e status.
 
+O sufixo `Enter` ou `Tab` continua recomendado para confirmar a leitura imediatamente. Como contingência, quando o leitor apenas preenche os seis números no campo de busca, o sistema abre a mesma janela assim que a API confirma uma correspondência patrimonial exata.
+
 Na janela de conferência, um operador autenticado pode selecionar outro status e informar o motivo obrigatório. A alteração usa a mesma API transacional do painel, incrementa a revisão da base e registra o usuário na auditoria.
 
 Somente identificadores oficiais com seis dígitos e referências internas no formato `Sxxxxx` são aceitos. A busca exige autenticação e não grava nem altera o patrimônio. Leitores configurados exclusivamente como porta `COM` ou serial não funcionam neste fluxo; nesses casos, é necessário identificar o fabricante e o modelo para integrar o protocolo específico.

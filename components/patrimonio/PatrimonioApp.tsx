@@ -12,7 +12,13 @@ import Image from "next/image";
 import { downloadExport, mutateDashboard } from "./api";
 import { CollaboratorsView } from "./CollaboratorsView";
 import { Dialogs } from "./Dialogs";
-import { useBarcodeScanner, useDashboard, useDebouncedValue, useTheme } from "./hooks";
+import {
+  normalizeScannedIdentifier,
+  useBarcodeScanner,
+  useDashboard,
+  useDebouncedValue,
+  useTheme,
+} from "./hooks";
 import { InventoryView } from "./InventoryView";
 import { NucleiView } from "./NucleiView";
 import { AuditView, ImportsView } from "./OperationalViews";
@@ -68,6 +74,7 @@ export default function PatrimonioApp() {
   const [mutationBusy, setMutationBusy] = useState(false);
   const [mutationError, setMutationError] = useState<string | null>(null);
   const scannerUpdateRef = useRef<(state: "ready" | "reading" | "success" | "error", label: string) => void>(() => undefined);
+  const lastProcessedScanRef = useRef<string | null>(null);
   const debouncedSearch = useDebouncedValue(filterDraft.search, 280);
   const apiFilters = useMemo(
     () => ({ ...filterDraft, search: debouncedSearch }),
@@ -80,6 +87,14 @@ export default function PatrimonioApp() {
     setToast({ message, error: isError });
   }, []);
 
+  const openScannedAsset = useCallback((asset: Asset, identifier: string) => {
+    lastProcessedScanRef.current = identifier;
+    setSelectedAssetId(asset.id);
+    setModal({ kind: "scanner", assetId: asset.id });
+    scannerUpdateRef.current("success", "Item localizado");
+    showToast(`${asset.hasPatrimony ? "Patrimônio" : "Referência interna"} ${identifier} localizado.`);
+  }, [showToast]);
+
   const handleScan = useCallback(async (identifier: string) => {
     if (!dashboard?.session.authenticated) {
       scannerUpdateRef.current("error", "Entre para consultar");
@@ -87,26 +102,51 @@ export default function PatrimonioApp() {
       return;
     }
 
+    lastProcessedScanRef.current = identifier;
     const scanFilters: InventoryFilters = { ...defaultFilters, search: identifier };
     setView("inventory");
     setFilterDraft(scanFilters);
     scannerUpdateRef.current("reading", "Consultando código");
     const next = await refresh({ quiet: true, filters: scanFilters });
-    const asset = next?.inventory.find((item) => item.id === identifier);
+    if (!next) {
+      lastProcessedScanRef.current = null;
+      return;
+    }
+    const asset = next.inventory.find((item) => item.id === identifier);
     if (!asset) {
       scannerUpdateRef.current("error", "Código não encontrado");
       showToast(`O código ${identifier} não está cadastrado.`, true);
       return;
     }
-    setSelectedAssetId(asset.id);
-    setModal({ kind: "scanner", assetId: asset.id });
-    scannerUpdateRef.current("success", "Item localizado");
-    showToast(`${asset.hasPatrimony ? "Patrimônio" : "Referência interna"} ${identifier} localizado.`);
-  }, [dashboard?.session.authenticated, refresh, showToast]);
+    openScannedAsset(asset, identifier);
+  }, [dashboard?.session.authenticated, openScannedAsset, refresh, showToast]);
   const scanner = useBarcodeScanner(handleScan);
   useEffect(() => {
     scannerUpdateRef.current = scanner.updateState;
   }, [scanner.updateState]);
+
+  useEffect(() => {
+    const identifier = normalizeScannedIdentifier(debouncedSearch);
+    if (!identifier) {
+      lastProcessedScanRef.current = null;
+      return;
+    }
+    if (
+      !dashboard?.session.authenticated
+      || modal.kind !== "closed"
+      || lastProcessedScanRef.current === identifier
+    ) return;
+
+    const asset = dashboard.inventory.find((item) => item.id === identifier);
+    if (!asset) return;
+    const timer = window.setTimeout(() => openScannedAsset(asset, identifier), 0);
+    return () => window.clearTimeout(timer);
+  }, [
+    dashboard,
+    debouncedSearch,
+    modal.kind,
+    openScannedAsset,
+  ]);
 
   const handleMutation = useCallback(async (
     action: MutationAction,

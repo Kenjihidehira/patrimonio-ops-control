@@ -132,7 +132,7 @@ Chaves estrangeiras preservam integridade e índices cobrem status, núcleo, tip
 - Conteúdo dinâmico é escapado antes de entrar em templates HTML.
 - A preferência de tema usa somente o cookie não sensível `patrimonio_theme`; dados operacionais não são persistidos no navegador.
 - Filtros rápidos, paginação e abas de detalhe são estado efêmero da interface; filtros estruturais continuam sendo processados pela API.
-- A captura do bipador ignora campos editáveis, exige um terminador `Enter` ou `Tab` e não usa WebUSB, Web Serial nem permissões privilegiadas do navegador.
+- A captura do bipador ignora campos editáveis comuns, usa `Enter` ou `Tab` quando disponível e reconcilia a busca patrimonial exata como contingência para leitores sem terminador; não usa WebUSB, Web Serial nem permissões privilegiadas do navegador.
 - Não existe exclusão física exposta pela API.
 
 ## Limitações e evolução produtiva

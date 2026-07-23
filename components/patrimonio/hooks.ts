@@ -210,7 +210,7 @@ export function useBarcodeScanner(
   return { state, label, updateState };
 }
 
-function normalizeScannedIdentifier(value: string): string | null {
+export function normalizeScannedIdentifier(value: string): string | null {
   const normalized = value.trim().replace(/^#/, "").toUpperCase();
   return SCANNABLE_IDENTIFIER_PATTERN.test(normalized) ? normalized : null;
 }
