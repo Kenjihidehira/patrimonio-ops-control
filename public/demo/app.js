@@ -1,4 +1,6 @@
 const apiUrl = "/api/state";
+const dashboardRefreshIntervalMs = 10_000;
+const activityRefreshCooldownMs = 1_500;
 
 const elements = {
   inventoryBody: document.querySelector("#inventory-body"),
@@ -51,6 +53,9 @@ const elements = {
   peopleSearch: document.querySelector("#people-search"),
   peopleStatusFilter: document.querySelector("#people-status-filter"),
   peopleNucleusFilter: document.querySelector("#people-nucleus-filter"),
+  peopleTotal: document.querySelector("#people-total"),
+  peopleWithoutAssets: document.querySelector("#people-without-assets"),
+  peopleSyncStatus: document.querySelector("#people-sync-status"),
   assetDialog: document.querySelector("#asset-dialog"),
   identifierDialog: document.querySelector("#identifier-dialog"),
   transferDialog: document.querySelector("#transfer-dialog"),
@@ -135,11 +140,14 @@ let pageSize = 25;
 let detailTab = "summary";
 let mobileDetailOpen = false;
 let selectedNucleusId = null;
+let dashboardRequestSequence = 0;
+let dashboardRefreshTimer = null;
+let lastDashboardSyncAt = 0;
 
 bindEvents();
 setTheme(document.documentElement.dataset.theme === "dark" ? "dark" : "light");
 handleAuthResult();
-void loadDashboard();
+void loadDashboard().finally(startDashboardSynchronization);
 
 function bindEvents() {
   elements.themeToggle.addEventListener("click", () => {
@@ -253,10 +261,17 @@ function bindEvents() {
   elements.importForm.addEventListener("submit", handleImportPreview);
   elements.importCommit.addEventListener("click", handleImportCommit);
   elements.importFile.addEventListener("change", resetImportPreview);
+
+  window.addEventListener("focus", handleDashboardActivity);
+  window.addEventListener("online", handleDashboardActivity);
+  document.addEventListener("visibilitychange", () => {
+    if (!document.hidden) handleDashboardActivity();
+  });
 }
 
-async function loadDashboard({ quiet = false } = {}) {
+async function loadDashboard({ quiet = false, background = false } = {}) {
   if (!quiet) setInventoryLoading();
+  const requestSequence = ++dashboardRequestSequence;
 
   const params = new URLSearchParams({
     search: elements.search.value.trim(),
@@ -272,6 +287,12 @@ async function loadDashboard({ quiet = false } = {}) {
     });
     const data = await response.json();
     if (!response.ok) throw new Error(data.error || "Falha ao carregar dados.");
+    if (requestSequence !== dashboardRequestSequence) return false;
+
+    lastDashboardSyncAt = Date.now();
+    updateCollaboratorSyncStatus();
+    if (background && dashboard?.revision === data.revision) return true;
+
     dashboard = data;
 
     if (!dashboard.inventory.some((asset) => asset.id === selectedAssetId)) {
@@ -280,10 +301,58 @@ async function loadDashboard({ quiet = false } = {}) {
 
     populateOptions();
     renderDashboard();
+    return true;
   } catch (error) {
+    if (requestSequence !== dashboardRequestSequence) return false;
+    if (background) {
+      updateCollaboratorSyncStatus({ failed: true });
+      return false;
+    }
     setInventoryError(error.message);
     showToast(error.message, true);
+    return false;
   }
+}
+
+function startDashboardSynchronization() {
+  if (dashboardRefreshTimer !== null) return;
+  dashboardRefreshTimer = window.setInterval(() => {
+    void synchronizeDashboard();
+  }, dashboardRefreshIntervalMs);
+}
+
+function handleDashboardActivity() {
+  if (Date.now() - lastDashboardSyncAt < activityRefreshCooldownMs) return;
+  void synchronizeDashboard();
+}
+
+async function synchronizeDashboard() {
+  if (
+    !dashboard?.session.authenticated
+    || document.hidden
+    || navigator.onLine === false
+    || document.querySelector("dialog[open]")
+  ) {
+    return false;
+  }
+
+  return loadDashboard({ quiet: true, background: true });
+}
+
+function updateCollaboratorSyncStatus({ failed = false } = {}) {
+  if (!elements.peopleSyncStatus) return;
+  if (failed) {
+    elements.peopleSyncStatus.textContent = "sincronização temporariamente indisponível";
+    return;
+  }
+
+  elements.peopleSyncStatus.textContent = lastDashboardSyncAt
+    ? `atualizado às ${new Intl.DateTimeFormat("pt-BR", {
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+    }).format(lastDashboardSyncAt)}`
+    : "sincronização automática ativa";
 }
 
 function renderDashboard() {
@@ -753,8 +822,11 @@ function renderNucleusInventory() {
 
 function renderCollaborators() {
   const collaborators = dashboard?.collaborators || [];
-  document.querySelector("#people-total").textContent = dashboard?.summary.collaborators || 0;
-  document.querySelector("#people-without-assets").textContent = dashboard?.summary.collaboratorsWithoutAssets || 0;
+  updateCounter(elements.peopleTotal, collaborators.length);
+  updateCounter(
+    elements.peopleWithoutAssets,
+    collaborators.filter((person) => !person.hasAssets).length,
+  );
 
   const query = normalizedText(elements.peopleSearch.value);
   const status = elements.peopleStatusFilter.value;
@@ -795,6 +867,11 @@ function renderCollaborators() {
   elements.peopleBody.querySelectorAll("[data-open-collaborator]").forEach((button) => {
     button.addEventListener("click", () => openCollaboratorDialog(button.dataset.openCollaborator));
   });
+}
+
+function updateCounter(element, value) {
+  const nextValue = String(value);
+  if (element.textContent !== nextValue) element.textContent = nextValue;
 }
 
 function renderAudit() {

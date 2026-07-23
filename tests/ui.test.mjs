@@ -47,13 +47,25 @@ test("interface contém os fluxos comerciais essenciais", () => {
   assert.match(js, /function openIdentifierDialog/);
   assert.match(html, /id="identifier-form"/);
   assert.match(html, /name="newAssetId" inputmode="numeric" pattern="\[0-9\]\{6\}"/);
-  assert.match(js, /collaboratorsWithoutAssets/);
   assert.doesNotMatch(html, /Valor de aquisição/);
   assert.doesNotMatch(js, /<dt>Valor<\/dt>/);
   assert.doesNotMatch(workbook, /"Valor",/);
   assert.doesNotMatch(workbook, /asset\.value/);
   assert.match(css, /--brand-700: #0055A5/i);
   assert.match(css, /--yellow: #FFC400/i);
+});
+
+test("contador de colaboradores sincroniza a base entre sessões", () => {
+  assert.match(html, /id="people-total" aria-live="polite"/);
+  assert.match(html, /id="people-sync-status"/);
+  assert.match(js, /dashboardRefreshIntervalMs = 10_000/);
+  assert.match(js, /window\.addEventListener\("focus", handleDashboardActivity\)/);
+  assert.match(js, /document\.addEventListener\("visibilitychange"/);
+  assert.match(js, /loadDashboard\(\{ quiet: true, background: true \}\)/);
+  assert.match(js, /background && dashboard\?\.revision === data\.revision/);
+  assert.match(js, /updateCounter\(elements\.peopleTotal, collaborators\.length\)/);
+  assert.match(js, /collaborators\.filter\(\(person\) => !person\.hasAssets\)\.length/);
+  assert.doesNotMatch(js, /#people-total"\)\.textContent = dashboard\?\.summary/);
 });
 
 test("campos críticos possuem semântica e validação no cliente", () => {
