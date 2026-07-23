@@ -24,7 +24,7 @@ type GoogleMetadata = {
   issuer: string;
 };
 
-const APP_PATH = "/demo/index.html";
+const APP_PATH = "/demo";
 const CALLBACK_PATH = "/api/auth/google/callback";
 const DISCOVERY_URL = "https://accounts.google.com/.well-known/openid-configuration";
 let metadataPromise: Promise<GoogleMetadata> | null = null;

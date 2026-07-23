@@ -5,7 +5,7 @@ import { loadWorkspaceContext } from "@/lib/workspace";
 
 export const dynamic = "force-dynamic";
 
-const APP_PATH = "/demo/index.html";
+const APP_PATH = "/demo";
 const responseHeaders = { "cache-control": "no-store" };
 
 export async function GET(request: Request) {

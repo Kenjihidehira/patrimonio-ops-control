@@ -12,7 +12,7 @@ export async function GET() {
       return Response.json(
         {
           error: "Entre com uma conta autorizada para exportar os dados da planilha.",
-          signInUrl: loginPagePath("/demo/index.html"),
+          signInUrl: loginPagePath("/demo"),
         },
         { status: 401, headers: { "cache-control": "no-store" } },
       );

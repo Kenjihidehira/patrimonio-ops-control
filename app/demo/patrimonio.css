@@ -3744,3 +3744,75 @@ tbody tr:last-child td {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* React migration bridge: stateful controls keep the established visual system. */
+.brand[type="button"] {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+}
+
+.toast {
+  position: fixed;
+  z-index: 90;
+  right: 18px;
+  bottom: 18px;
+  display: flex;
+  width: min(360px, calc(100vw - 36px));
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.toast > button {
+  display: grid;
+  flex: 0 0 26px;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  place-items: center;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+.search-control,
+.nucleus-inventory-search-control {
+  position: relative;
+  display: block;
+}
+
+.search-control > svg,
+.nucleus-inventory-search-control > svg {
+  position: absolute;
+  z-index: 1;
+  top: 50%;
+  left: 10px;
+  color: var(--icon-muted);
+  pointer-events: none;
+  transform: translateY(-50%);
+}
+
+.search-control > input,
+.nucleus-inventory-search-control > input {
+  padding-left: 36px;
+}
+
+.modal > .form-error,
+.modal-content > .form-error {
+  margin: 0 18px 14px;
+}
+
+.mobile-detail-close {
+  display: none;
+  margin: 0 16px 16px;
+}
+
+@media (max-width: 940px) {
+  .mobile-detail-close {
+    display: inline-flex;
+  }
+}

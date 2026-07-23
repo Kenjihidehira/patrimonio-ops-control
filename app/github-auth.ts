@@ -22,7 +22,7 @@ type GitHubProfile = {
   name?: unknown;
 };
 
-const APP_PATH = "/demo/index.html";
+const APP_PATH = "/demo";
 const CALLBACK_PATH = "/api/auth/github/callback";
 const GITHUB_LOGIN_PATTERN = /^[a-z\d](?:[a-z\d-]{0,37}[a-z\d])?$/i;
 

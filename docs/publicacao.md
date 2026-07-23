@@ -73,11 +73,11 @@ O endereço de produção é `https://patrimonio-ops-control.kenjihidehira999.wo
 ## Verificações após a publicação
 
 ```bash
-curl -I https://patrimonio-ops-control.kenjihidehira999.workers.dev/demo/
-curl -I https://patrimonio-ops-control.kenjihidehira999.workers.dev/login/
+curl -I https://patrimonio-ops-control.kenjihidehira999.workers.dev/demo
+curl -I https://patrimonio-ops-control.kenjihidehira999.workers.dev/login
 curl https://patrimonio-ops-control.kenjihidehira999.workers.dev/api/state
-curl -I "https://patrimonio-ops-control.kenjihidehira999.workers.dev/api/auth/github/login?return_to=%2Fdemo%2Findex.html"
-curl -I "https://patrimonio-ops-control.kenjihidehira999.workers.dev/api/auth/google/login?return_to=%2Fdemo%2Findex.html"
+curl -I "https://patrimonio-ops-control.kenjihidehira999.workers.dev/api/auth/github/login?return_to=%2Fdemo"
+curl -I "https://patrimonio-ops-control.kenjihidehira999.workers.dev/api/auth/google/login?return_to=%2Fdemo"
 curl -I https://patrimonio-ops-control.kenjihidehira999.workers.dev/api/export
 curl -i -X POST https://patrimonio-ops-control.kenjihidehira999.workers.dev/api/state \
   -H "content-type: application/json" \
@@ -86,10 +86,10 @@ curl -i -X POST https://patrimonio-ops-control.kenjihidehira999.workers.dev/api/
 
 Resultados esperados:
 
-- `/demo/`: HTTP `200` e interface operacional.
-- `/login/`: HTTP `200` e opções GitHub e Google.
+- `/demo`: HTTP `200` e interface React operacional.
+- `/login`: HTTP `200` e opções GitHub e Google.
 - `GET /api/state`: HTTP `200`, sessão anônima e projeção vazia (`source = locked`).
-- Cada login retorna HTTP `302` para o provedor quando suas credenciais estão configuradas; uma configuração ausente retorna para `/login/` com erro controlado.
+- Cada login retorna HTTP `302` para o provedor quando suas credenciais estão configuradas; uma configuração ausente retorna para `/login` com erro controlado.
 - `GET /api/export` sem login: HTTP `401`; autenticado: HTTP `200` e conteúdo XLSX da base empresarial.
 - `POST /api/state` sem login: HTTP `401`.
 - O serviço intermediário sem `x-patrimonio-key` retorna `401`.

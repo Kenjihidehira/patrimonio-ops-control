@@ -27,8 +27,8 @@ export type OAuthTransaction = {
 
 type SessionIdentity = AuthenticatedUser;
 
-const APP_PATH = "/demo/index.html";
-const LOGIN_PATH = "/login/index.html";
+const APP_PATH = "/demo";
+const LOGIN_PATH = "/login";
 const LOGOUT_PATH = "/api/auth/logout";
 const SESSION_COOKIE = "patrimonio_session";
 const OAUTH_COOKIE = "patrimonio_oauth";

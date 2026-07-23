@@ -4,7 +4,7 @@
 
 ```mermaid
 flowchart LR
-    UI[Interface operacional] --> API[Manipuladores de rota]
+    UI[React e TypeScript] --> API[Node e manipuladores de rota]
     API --> AUTH[OAuth e OpenID Connect]
     API --> DOMAIN[Domínio patrimonial]
     API --> XLSX[Leitura e escrita XLSX]
@@ -19,7 +19,7 @@ O navegador nunca recebe a URL privilegiada nem o segredo do serviço intermedi�
 
 | Camada | Arquivos | Responsabilidade |
 | --- | --- | --- |
-| Interface | `public/demo/*` | Estado visual, filtros, formulários, acessibilidade e chamadas HTTP |
+| Interface | `app/demo/*`, `app/login/*`, `components/patrimonio/*` | Rotas React, estado visual, filtros, formulários, acessibilidade e cliente HTTP tipado |
 | API | `app/api/*` | Sessão, contratos HTTP, recebimento de arquivos, exportação e respostas padronizadas |
 | Domínio | `lib/domain.js` | Invariantes, ações, auditoria e projeção do painel |
 | Planilhas | `lib/spreadsheet-import.js`, `lib/workbook.ts` | Leitura, normalização, prévia e geração XLSX |
@@ -28,6 +28,17 @@ O navegador nunca recebe a URL privilegiada nem o segredo do serviço intermedi�
 | Banco | `supabase/migrations/*` | Tabelas, índices, RLS, RPCs e integridade referencial |
 | Serviço intermediário | `supabase/functions/patrimonio-gateway/index.ts` | Autenticação servidor-servidor e lista fechada de operações |
 | Plataforma | `wrangler.jsonc`, `worker/index.ts` | Configuração do Worker, arquivos estáticos e variáveis do ambiente de execução |
+
+## Arquitetura React
+
+- `PatrimonioApp.tsx` compõe navegação, sincronização, comandos e janelas operacionais.
+- `InventoryView.tsx`, `NucleiView.tsx`, `CollaboratorsView.tsx` e `OperationalViews.tsx` isolam cada fluxo de negócio.
+- `Dialogs.tsx` concentra formulários e janelas modais reutilizando validações e contratos de comando.
+- `hooks.ts` controla leitura abortável, sincronização periódica, tema e captura do leitor HID.
+- `api.ts` é a única fronteira HTTP do navegador; componentes não conhecem credenciais nem detalhes do Supabase.
+- `types.ts` formaliza a projeção devolvida pela API e reduz divergências entre filtros, formulários e respostas.
+
+O estado operacional permanece no servidor. O navegador mantém apenas estado efêmero de tela e o cookie não sensível de tema; não há persistência em `localStorage` ou `sessionStorage`.
 
 ## Invariantes do domínio
 

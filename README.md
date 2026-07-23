@@ -39,9 +39,9 @@ Planilhas patrimoniais isoladas não registram bem responsabilidade, movimentaç
 
 ## Tecnologias
 
-- **Interface:** HTML semântico, CSS responsivo e JavaScript modular.
-- **Aplicação:** Vinext, React 19 e TypeScript.
-- **API:** manipuladores de rota compatíveis com Next.js em Cloudflare Worker.
+- **Interface:** React 19, TypeScript e CSS responsivo organizado por domínio.
+- **Aplicação:** Vinext/Vite com App Router e componentes funcionais.
+- **API:** Node.js com manipuladores de rota TypeScript executados no Cloudflare Worker.
 - **Banco:** Supabase Postgres 17, funções RPC transacionais e índices operacionais.
 - **Integração:** Função Edge do Supabase autenticada por segredo de servidor.
 - **Autenticação:** GitHub OAuth e Google OpenID Connect, PKCE, allowlists e sessão `HttpOnly` compartilhada.
@@ -58,7 +58,7 @@ cp configuracao.exemplo .env.local
 pnpm dev
 ```
 
-Use [`configuracao.exemplo`](configuracao.exemplo) somente como modelo para criar `.env.local`. Preencha as variáveis Supabase, dos provedores de identidade e os segredos de sessão apenas no arquivo local, que é ignorado pelo Git. Acesse `http://localhost:5173/login/`.
+Use [`configuracao.exemplo`](configuracao.exemplo) somente como modelo para criar `.env.local`. Preencha as variáveis Supabase, dos provedores de identidade e os segredos de sessão apenas no arquivo local, que é ignorado pelo Git. Acesse `http://localhost:5173/login`.
 
 A interface anônima não recebe dados patrimoniais. A leitura da base empresarial, importação, exportação e operações de escrita exigem um login presente em `GITHUB_ALLOWED_LOGINS` ou um e-mail exato em `GOOGLE_ALLOWED_EMAILS`. O servidor valida `state`, PKCE, assinatura da identidade e lista de autorizados antes de criar uma sessão local de oito horas.
 
@@ -134,7 +134,9 @@ Filtros, payloads e códigos de resposta estão em [`docs/api.md`](docs/api.md).
 
 ## Arquitetura e segurança
 
-As regras ficam em [`lib/domain.js`](lib/domain.js), independentes de HTTP e banco. O servidor usa uma chave empresarial aleatória, disponível apenas no ambiente de execução, para localizar a base compartilhada. O serviço intermediário do Supabase também exige um segredo de servidor; as tabelas têm RLS habilitado e negam acesso direto a `anon` e `authenticated`.
+As telas ficam em [`app/demo`](app/demo) e os componentes funcionais em [`components/patrimonio`](components/patrimonio). O cliente React usa uma camada HTTP tipada e nunca acessa o Supabase diretamente. Leituras obsoletas são canceladas com `AbortController`; o painel sincroniza em segundo plano e também ao recuperar foco, conexão ou visibilidade.
+
+As regras ficam em [`lib/domain.js`](lib/domain.js), independentes de HTTP e banco. O servidor Node usa uma chave empresarial aleatória, disponível apenas no ambiente de execução, para localizar a base compartilhada. O serviço intermediário do Supabase também exige um segredo de servidor; as tabelas têm RLS habilitado e negam acesso direto a `anon` e `authenticated`.
 
 Mutações e importações usam RPCs transacionais com revisão otimista. Núcleos são reconciliados pela sigla estável e os IDs persistidos são resolvidos antes de gravar patrimônios e perfis. Um responsável encontrado no inventário continua visível mesmo sem perfil auxiliar; o próprio pop-up permite cadastrar esse perfil sem perder as atribuições existentes. Uma gravação obsoleta recebe `409 Conflict`, evitando que duas sessões sobrescrevam silenciosamente o trabalho uma da outra.
 

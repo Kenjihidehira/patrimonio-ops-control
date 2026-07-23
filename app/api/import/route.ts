@@ -6,7 +6,7 @@ import { loadWorkspaceContext } from "@/lib/workspace";
 
 export const dynamic = "force-dynamic";
 
-const APP_PATH = "/demo/index.html";
+const APP_PATH = "/demo";
 const MAX_FILE_BYTES = 2 * 1024 * 1024;
 const responseHeaders = { "cache-control": "no-store" };
 
