@@ -3003,15 +3003,11 @@ tbody tr:last-child td {
 }
 
 .scanner-asset-detail .status-form {
-  grid-template-columns:
-    minmax(150px, 0.7fr)
-    minmax(145px, 0.72fr)
-    minmax(220px, 1.35fr)
-    minmax(132px, auto);
+  grid-template-columns: minmax(150px, 0.72fr) minmax(270px, 1.5fr) minmax(150px, auto);
   align-items: end;
-  gap: 11px;
+  gap: 13px;
   margin-top: 16px;
-  padding: 15px;
+  padding: 16px;
   border: 1px solid var(--line);
   border-left: 3px solid var(--scanner-status-accent);
   border-radius: 7px;
@@ -3020,25 +3016,48 @@ tbody tr:last-child td {
 
 .scanner-asset-detail .status-editor-heading {
   display: flex;
+  grid-column: 1 / -1;
   align-items: center;
-  gap: 9px;
+  justify-content: space-between;
+  min-height: 38px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--line);
 }
 
-.scanner-asset-detail .status-editor-heading strong,
-.scanner-asset-detail .status-editor-heading small {
-  display: block;
+.scanner-asset-detail .status-editor-title,
+.scanner-asset-detail .status-current-state {
+  display: flex;
+  align-items: center;
 }
 
-.scanner-asset-detail .status-editor-heading strong {
+.scanner-asset-detail .status-editor-title {
+  gap: 10px;
+}
+
+.scanner-asset-detail .status-editor-title strong {
   color: var(--heading-text);
-  font-size: 11px;
+  font-size: 12px;
 }
 
-.scanner-asset-detail .status-editor-heading small {
-  margin-top: 1px;
+.scanner-asset-detail .status-current-state {
+  gap: 8px;
+}
+
+.scanner-asset-detail .status-current-state span {
   color: var(--muted);
   font-size: 9px;
-  font-weight: 650;
+  font-weight: 750;
+  text-transform: uppercase;
+}
+
+.scanner-asset-detail .status-current-state strong {
+  padding: 5px 9px;
+  border: 1px solid color-mix(in srgb, var(--scanner-status-accent) 38%, var(--line));
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--scanner-status-accent) 10%, var(--surface));
+  color: var(--scanner-status-accent);
+  font-size: 10px;
+  line-height: 1;
 }
 
 .scanner-asset-detail .status-editor-icon {
@@ -3058,13 +3077,13 @@ tbody tr:last-child td {
 }
 
 .scanner-asset-detail .status-form textarea {
-  min-height: 42px;
-  max-height: 92px;
+  min-height: 44px;
+  max-height: 96px;
 }
 
 .scanner-asset-detail .status-form .button {
-  min-width: 132px;
-  min-height: 40px;
+  min-width: 150px;
+  min-height: 44px;
 }
 
 .scanner-asset-detail .status-form .form-error {
@@ -3842,12 +3861,6 @@ tbody tr:last-child td {
     grid-template-columns: minmax(150px, 0.8fr) minmax(0, 1.2fr);
   }
 
-  .scanner-asset-detail .status-editor-heading {
-    grid-column: 1 / -1;
-    padding-bottom: 11px;
-    border-bottom: 1px solid var(--line);
-  }
-
   .scanner-asset-detail .status-form .button,
   .scanner-asset-detail .status-form .form-error {
     grid-column: 1 / -1;
@@ -3906,6 +3919,17 @@ tbody tr:last-child td {
 
   .scanner-asset-detail .detail-wide {
     grid-column: auto;
+  }
+
+  .scanner-asset-detail .status-editor-heading {
+    align-items: flex-start;
+    gap: 10px;
+    flex-direction: column;
+  }
+
+  .scanner-asset-detail .status-current-state {
+    justify-content: space-between;
+    width: 100%;
   }
 
   .status-form > .field:not(.field-wide) {

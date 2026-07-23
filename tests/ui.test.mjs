@@ -167,8 +167,10 @@ test("leitor LS2208 em modo HID localiza patrimônio sem API de hardware", () =>
   assert.match(ui, /className=\{`detail-tab/);
   assert.match(ui, /data-status=\{scannerContext \? asset\.status/);
   assert.match(ui, /className="status-editor-heading"/);
+  assert.match(ui, /className="status-current-state"/);
+  assert.match(ui, /<span>Novo status<\/span>/);
   assert.match(ui, /<TransferIcon \/> Transferir/);
-  assert.match(ui, /<CheckIcon \/> Salvar status/);
+  assert.match(ui, /<CheckIcon \/> Salvar alteração/);
   assert.doesNotMatch(reactUi, /navigator\.(usb|serial)/);
   assert.match(css, /\.scanner-status\[data-state="success"\]/);
   assert.match(css, /\.scanner-status\[data-state="error"\]/);

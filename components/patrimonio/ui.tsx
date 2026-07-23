@@ -308,22 +308,25 @@ export function AssetDetails({
           <form className="status-form" key={asset.status} onSubmit={onStatusSubmit}>
             {scannerContext ? (
               <div className="status-editor-heading">
-                <span className="status-editor-icon"><StatusChangeIcon /></span>
-                <div>
-                  <strong>Atualização operacional</strong>
-                  <small>Status atual: {dashboard.options.statuses[asset.status]}</small>
+                <div className="status-editor-title">
+                  <span className="status-editor-icon"><StatusChangeIcon /></span>
+                  <strong>Alteração de status</strong>
+                </div>
+                <div className="status-current-state">
+                  <span>Status atual</span>
+                  <strong>{dashboard.options.statuses[asset.status]}</strong>
                 </div>
               </div>
             ) : null}
-            <label className="field field-wide">
-              <span>Atualizar status</span>
+            <label className="field field-wide status-target-field">
+              <span>Novo status</span>
               <select name="status" defaultValue={asset.status} disabled={!authenticated || busy}>
                 {statusOptions.map(([value, label]) => (
                   <option key={value} value={value}>{label}</option>
                 ))}
               </select>
             </label>
-            <label className="field field-wide">
+            <label className="field field-wide status-reason-field">
               <span>Motivo da alteração</span>
               <textarea
                 name="note"
@@ -331,12 +334,12 @@ export function AssetDetails({
                 maxLength={500}
                 required
                 disabled={!authenticated || busy}
-                placeholder="Informe o motivo para auditoria"
+                placeholder="Descreva o motivo da mudança"
               />
             </label>
             {error ? <FormError message={error} /> : null}
             <button className="button button-primary" type="submit" disabled={!authenticated || busy}>
-              {busy ? "Salvando..." : <><CheckIcon /> Salvar status</>}
+              {busy ? "Salvando..." : <><CheckIcon /> Salvar alteração</>}
             </button>
           </form>
           </>
