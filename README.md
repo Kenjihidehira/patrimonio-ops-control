@@ -20,7 +20,7 @@ Planilhas patrimoniais isoladas não registram bem responsabilidade, movimentaç
 - Diretório de colaboradores importados, inclusive quando não há patrimônio associado.
 - Perfil editável do colaborador com nome, núcleo e relação de patrimônios vinculados.
 - Busca por ID, série, modelo, pessoa, local ou núcleo.
-- Leitura direta de etiquetas por bipador USB ou Bluetooth configurado como teclado HID.
+- Leitura direta de etiquetas por bipador USB ou Bluetooth configurado como teclado HID, com abertura automática do patrimônio em janela de conferência.
 - Filtros de tipo, status e núcleo, com ordenação operacional.
 - Visualizações rápidas para itens sem responsável, sem patrimônio, em manutenção ou com divergência.
 - Paginação configurável para bases extensas, com 15, 25 ou 50 registros por página.
@@ -70,7 +70,9 @@ O sistema aceita leitores USB ou Bluetooth no modo **HID Keyboard**, também cha
 2. No manual do equipamento, selecione o modo `HID Keyboard`.
 3. Configure o sufixo de leitura como `Enter` ou `Tab`.
 4. Teste no Bloco de Notas: ao bipar, o leitor deve escrever os seis números da etiqueta e avançar o cursor.
-5. Entre no sistema e bipe a etiqueta em qualquer tela. O inventário será aberto, os filtros serão limpos e o patrimônio correspondente será selecionado.
+5. Entre no sistema e bipe a etiqueta em qualquer tela. O inventário será aberto, os filtros serão limpos e uma janela exibirá o patrimônio, responsável, núcleo, localização, modelo, série, histórico e status.
+
+Na janela de conferência, um operador autenticado pode selecionar outro status e informar o motivo obrigatório. A alteração usa a mesma API transacional do painel, incrementa a revisão da base e registra o usuário na auditoria.
 
 Somente identificadores oficiais com seis dígitos e referências internas no formato `Sxxxxx` são aceitos. A busca exige autenticação e não grava nem altera o patrimônio. Leitores configurados exclusivamente como porta `COM` ou serial não funcionam neste fluxo; nesses casos, é necessário identificar o fabricante e o modelo para integrar o protocolo específico.
 

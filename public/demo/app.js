@@ -60,6 +60,8 @@ const elements = {
   peopleTotal: document.querySelector("#people-total"),
   peopleWithoutAssets: document.querySelector("#people-without-assets"),
   peopleSyncStatus: document.querySelector("#people-sync-status"),
+  scannerAssetDialog: document.querySelector("#scanner-asset-dialog"),
+  scannerAssetDetail: document.querySelector("#scanner-asset-detail"),
   assetDialog: document.querySelector("#asset-dialog"),
   identifierDialog: document.querySelector("#identifier-dialog"),
   transferDialog: document.querySelector("#transfer-dialog"),
@@ -248,7 +250,7 @@ function bindEvents() {
     button.addEventListener("click", () => document.querySelector(`#${button.dataset.closeDialog}`).close());
   });
 
-  [elements.assetDialog, elements.identifierDialog, elements.transferDialog, elements.nucleusDialog, elements.editNucleusDialog, elements.nucleusInventoryDialog, elements.collaboratorDialog, elements.importDialog].forEach((dialog) => {
+  [elements.scannerAssetDialog, elements.assetDialog, elements.identifierDialog, elements.transferDialog, elements.nucleusDialog, elements.editNucleusDialog, elements.nucleusInventoryDialog, elements.collaboratorDialog, elements.importDialog].forEach((dialog) => {
     dialog.addEventListener("click", (event) => {
       if (event.target === dialog) dialog.close();
     });
@@ -431,6 +433,7 @@ async function locateScannedAsset(identifier) {
   }
 
   selectAsset(asset.id);
+  openScannerAssetDialog(asset.id);
   updateScannerStatus("success", "Item localizado");
   showToast(`${asset.hasPatrimony ? "Patrimônio" : "Referência interna"} ${identifier} localizado.`);
 }
@@ -690,31 +693,72 @@ function renderDetail() {
     return;
   }
 
+  renderAssetDetails(elements.detail, asset, {
+    titleId: "detail-title",
+    movementTitleId: "movement-title",
+    onClose: closeMobileDetail,
+  });
+  updateMobileDetailState();
+}
+
+function openScannerAssetDialog(assetId, { resetTab = true } = {}) {
+  const asset = dashboard?.inventory.find((item) => item.id === assetId);
+  if (!asset) {
+    elements.scannerAssetDialog.close();
+    return;
+  }
+
+  if (resetTab) detailTab = "summary";
+  renderAssetDetails(elements.scannerAssetDetail, asset, {
+    titleId: "scanner-asset-title",
+    movementTitleId: "scanner-movement-title",
+    scannerContext: true,
+    onClose: () => elements.scannerAssetDialog.close(),
+  });
+  if (!elements.scannerAssetDialog.open) elements.scannerAssetDialog.showModal();
+}
+
+function renderAssetDetails(container, asset, {
+  titleId,
+  movementTitleId,
+  scannerContext = false,
+  onClose,
+}) {
   const statusOptions = Object.entries(dashboard.options.statuses)
     .map(([value, label]) => `<option value="${value}" ${value === asset.status ? "selected" : ""}>${escapeHtml(label)}</option>`)
     .join("");
 
-  elements.detail.innerHTML = `
+  container.innerHTML = `
+    ${scannerContext ? `
+      <div class="scanner-read-confirmation">
+        <span class="scanner-read-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none">
+            <path d="M4 5v14M7 5v14M11 5v14M14 5v14M16.5 5v14M20 5v14" stroke="currentColor" stroke-width="1.5" />
+          </svg>
+        </span>
+        <span><strong>Código lido</strong><small>${escapeHtml(asset.id)}</small></span>
+      </div>
+    ` : ""}
     <div class="detail-header">
       <div class="detail-header-row">
         <div>
-          <p class="eyebrow">${asset.hasPatrimony ? "Patrimônio selecionado" : "Item sem identificação patrimonial"}</p>
-          <h2 id="detail-title">${escapeHtml(assetIdentifierLabel(asset))}</h2>
+          <p class="eyebrow">${scannerContext ? "Conferência patrimonial" : asset.hasPatrimony ? "Patrimônio selecionado" : "Item sem identificação patrimonial"}</p>
+          <h2 id="${titleId}">${escapeHtml(assetIdentifierLabel(asset))}</h2>
           <p class="detail-type">${escapeHtml(dashboard.options.assetTypes[asset.type])}${asset.hasPatrimony ? "" : ` · Referência interna ${escapeHtml(asset.id)}`}</p>
         </div>
         <div class="detail-header-controls">
           ${statusBadge(asset.status)}
-          <button class="icon-button detail-close" id="close-detail-panel" type="button" aria-label="Fechar detalhes" title="Fechar detalhes">X</button>
+          <button class="icon-button detail-close" data-detail-action="close" type="button" aria-label="Fechar detalhes" title="Fechar detalhes">×</button>
         </div>
       </div>
       <div class="detail-actions">
-        <button class="button button-secondary button-small" id="transfer-asset-button" type="button" ${asset.status === "retired" || !dashboard.session.authenticated ? "disabled" : ""}>
+        <button class="button button-secondary button-small" data-detail-action="transfer" type="button" ${asset.status === "retired" || !dashboard.session.authenticated ? "disabled" : ""}>
           Transferir
         </button>
-        <button class="button button-secondary button-small" id="change-asset-id" type="button" ${dashboard.session.authenticated ? "" : "disabled"}>
+        <button class="button button-secondary button-small" data-detail-action="identifier" type="button" ${dashboard.session.authenticated ? "" : "disabled"}>
           Alterar patrimônio
         </button>
-        <button class="button button-secondary button-small" id="copy-asset-id" type="button">Copiar referência</button>
+        <button class="button button-secondary button-small" data-detail-action="copy" type="button">Copiar referência</button>
       </div>
     </div>
     <div class="detail-tabs" role="tablist" aria-label="Detalhes do patrimônio">
@@ -753,9 +797,9 @@ function renderDetail() {
         </div>
       </dl>
 
-      <form class="status-form" id="status-form">
+      <form class="status-form" data-status-form>
         <label class="field">
-          <span>Atualizar status</span>
+          <span>Status atual e atualização</span>
           <select name="status" required ${dashboard.session.authenticated ? "" : "disabled"}>${statusOptions}</select>
         </label>
         <button class="button button-primary button-small" type="submit" ${dashboard.session.authenticated ? "" : "disabled"}>Registrar</button>
@@ -763,11 +807,12 @@ function renderDetail() {
           <span>Motivo da alteração</span>
           <input name="note" maxlength="500" required placeholder="Informe o motivo para auditoria" ${dashboard.session.authenticated ? "" : "disabled"} />
         </label>
+        <div class="form-error detail-status-error field-wide" data-status-error role="alert" hidden></div>
       </form>
     </div>
     <div class="detail-body detail-tab-panel" data-detail-panel="history" ${detailTab === "history" ? "" : "hidden"}>
-      <section class="movement-section" aria-labelledby="movement-title">
-        <h3 id="movement-title">Movimentações recentes</h3>
+      <section class="movement-section" aria-labelledby="${movementTitleId}">
+        <h3 id="${movementTitleId}">Movimentações recentes</h3>
         <ol class="movement-list">
           ${asset.movements.slice(0, 5).map(renderMovement).join("")}
         </ol>
@@ -775,17 +820,29 @@ function renderDetail() {
     </div>
   `;
 
-  updateMobileDetailState();
-  elements.detail.querySelector("#transfer-asset-button").addEventListener("click", () => openTransferDialog(asset));
-  elements.detail.querySelector("#change-asset-id").addEventListener("click", () => openIdentifierDialog(asset));
-  elements.detail.querySelector("#close-detail-panel").addEventListener("click", closeMobileDetail);
-  elements.detail.querySelectorAll("[data-detail-tab]").forEach((button) => {
+  const runModalAction = (action) => {
+    if (scannerContext) elements.scannerAssetDialog.close();
+    action();
+  };
+  container.querySelector('[data-detail-action="transfer"]').addEventListener("click", () => {
+    runModalAction(() => openTransferDialog(asset));
+  });
+  container.querySelector('[data-detail-action="identifier"]').addEventListener("click", () => {
+    runModalAction(() => openIdentifierDialog(asset));
+  });
+  container.querySelector('[data-detail-action="close"]').addEventListener("click", onClose);
+  container.querySelectorAll("[data-detail-tab]").forEach((button) => {
     button.addEventListener("click", () => {
       detailTab = button.dataset.detailTab;
-      renderDetail();
+      renderAssetDetails(container, asset, {
+        titleId,
+        movementTitleId,
+        scannerContext,
+        onClose,
+      });
     });
   });
-  elements.detail.querySelector("#copy-asset-id").addEventListener("click", async () => {
+  container.querySelector('[data-detail-action="copy"]').addEventListener("click", async () => {
     try {
       await navigator.clipboard.writeText(asset.id);
       showToast(`${asset.hasPatrimony ? "Patrimônio" : "Referência interna"} ${asset.id} copiado.`);
@@ -793,7 +850,14 @@ function renderDetail() {
       showToast("Não foi possível copiar o identificador.", true);
     }
   });
-  elements.detail.querySelector("#status-form").addEventListener("submit", (event) => handleStatusSubmit(event, asset));
+  container.querySelector("[data-status-form]").addEventListener("submit", (event) => {
+    void handleStatusSubmit(event, asset, {
+      errorElement: container.querySelector("[data-status-error]"),
+      onSaved: scannerContext
+        ? () => openScannerAssetDialog(asset.id, { resetTab: false })
+        : null,
+    });
+  });
 }
 
 function renderNuclei() {
@@ -1521,14 +1585,14 @@ async function handleCollaboratorUpdate(event) {
   );
 }
 
-async function handleStatusSubmit(event, asset) {
+async function handleStatusSubmit(event, asset, { errorElement = null, onSaved = null } = {}) {
   event.preventDefault();
   const form = event.currentTarget;
   if (!form.reportValidity()) return;
   const formData = new FormData(form);
-  await submitForm(
+  const saved = await submitForm(
     form,
-    null,
+    errorElement,
     {
       type: "update_status",
       assetId: asset.id,
@@ -1538,6 +1602,7 @@ async function handleStatusSubmit(event, asset) {
     null,
     asset.id,
   );
+  if (saved) onSaved?.();
 }
 
 async function submitForm(form, errorElement, action, dialog, nextSelectedId = null) {

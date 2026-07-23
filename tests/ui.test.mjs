@@ -117,6 +117,8 @@ test("inventário oferece navegação escalável e experiência móvel dedicada"
 
 test("leitor de código de barras HID localiza patrimônio sem API de hardware", () => {
   assert.match(html, /id="scanner-status"[^>]*aria-live="polite"/);
+  assert.match(html, /id="scanner-asset-dialog"[^>]*aria-labelledby="scanner-asset-title"/);
+  assert.match(html, /id="scanner-asset-detail"/);
   assert.match(html, /Leitor USB ou Bluetooth em modo teclado/);
   assert.match(js, /scannerCharacterTimeoutMs = 100/);
   assert.match(js, /scannableIdentifierPattern = \/\^\(\?:\\d\{6\}\|S\[A-Z0-9\]\{5\}\)\$\//);
@@ -126,8 +128,16 @@ test("leitor de código de barras HID localiza patrimônio sem API de hardware",
   assert.match(js, /async function locateScannedAsset/);
   assert.match(js, /resetInventoryFilters\(\{ search: identifier \}\)/);
   assert.match(js, /dashboard\.inventory\.find\(\(item\) => item\.id === identifier\)/);
+  assert.match(js, /selectAsset\(asset\.id\);\s*openScannerAssetDialog\(asset\.id\)/);
+  assert.match(js, /function openScannerAssetDialog/);
+  assert.match(js, /elements\.scannerAssetDialog\.showModal\(\)/);
+  assert.match(js, /data-status-form/);
+  assert.match(js, /type: "update_status"/);
   assert.match(js, /if \(isEditableControl\(target\) && !isSearchInput\)/);
   assert.doesNotMatch(js, /navigator\.(usb|serial)|localStorage|sessionStorage/);
+  assert.match(css, /\.scanner-asset-modal/);
+  assert.match(css, /\.scanner-asset-detail \.detail-grid/);
+  assert.match(css, /@media \(max-width: 430px\)[\s\S]*\.status-form > \.field-wide\s*\{[^}]*order:\s*2[\s\S]*\.status-form > \.button\s*\{[^}]*order:\s*3/s);
   assert.match(css, /\.scanner-status\[data-state="success"\]\s*\{[^}]*color:\s*var\(--success\)/s);
   assert.match(css, /\.scanner-status\[data-state="error"\]/);
 });

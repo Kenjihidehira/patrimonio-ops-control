@@ -46,7 +46,7 @@ O navegador nunca recebe a URL privilegiada nem o segredo do serviço intermedi�
 13. Renomear um colaborador preserva suas atribuições; um responsável ainda sem perfil pode ser cadastrado a partir do inventário, e mudar seu núcleo não transfere patrimônios sem auditoria.
 14. `x` representa ausência de item; `Sem patrimônio` representa um item físico existente que deve permanecer no inventário como divergência.
 15. Alterar o número patrimonial exige seis dígitos, unicidade e motivo; a identidade relacional dos movimentos existentes é preservada por cascata.
-16. A leitura por bipador aceita apenas identificadores válidos recebidos como teclado HID; ela consulta a API autenticada e não altera dados.
+16. A leitura por bipador aceita apenas identificadores válidos recebidos como teclado HID; ela consulta a API autenticada e abre uma janela de conferência. Mudanças de status continuam exigindo motivo e passam pelo comando auditável `update_status`.
 
 ## Modelo de persistência
 
