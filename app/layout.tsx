@@ -5,6 +5,9 @@ export const metadata: Metadata = {
   title: "Patrimonio Ops | Controle patrimonial",
   description:
     "Controle empresarial de ativos por núcleo, com transferências e auditoria.",
+  icons: {
+    icon: "/brand/cx-mark-header.png",
+  },
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
