@@ -2776,6 +2776,34 @@ tbody tr:last-child td {
   border: 1px solid var(--line);
 }
 
+.scanner-asset-modal[open] {
+  animation: scanner-modal-enter 170ms ease-out;
+}
+
+.scanner-asset-modal[open]::backdrop {
+  animation: scanner-backdrop-enter 170ms ease-out;
+}
+
+@keyframes scanner-modal-enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes scanner-backdrop-enter {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
 .scanner-asset-modal-content {
   max-height: calc(100dvh - 28px);
   min-height: 0;
@@ -2797,15 +2825,30 @@ tbody tr:last-child td {
 }
 
 .scanner-asset-detail {
+  --scanner-status-accent: var(--brand-700);
   display: flex;
   min-height: 0;
   flex: 1;
   flex-direction: column;
 }
 
+.scanner-asset-detail[data-status="available"] {
+  --scanner-status-accent: var(--success);
+}
+
+.scanner-asset-detail[data-status="maintenance"] {
+  --scanner-status-accent: var(--status-warning-text);
+}
+
+.scanner-asset-detail[data-status="discrepancy"],
+.scanner-asset-detail[data-status="retired"] {
+  --scanner-status-accent: var(--coral);
+}
+
 .scanner-asset-detail .detail-header {
   padding: 18px 20px 16px;
   border-bottom: 1px solid var(--line);
+  box-shadow: inset 3px 0 0 var(--scanner-status-accent);
   background: var(--surface-soft);
 }
 
@@ -2897,6 +2940,11 @@ tbody tr:last-child td {
   min-height: 38px;
 }
 
+.scanner-asset-detail .detail-actions .button svg {
+  width: 16px;
+  height: 16px;
+}
+
 .scanner-asset-detail .detail-tabs {
   min-height: 46px;
   padding: 0 20px;
@@ -2907,6 +2955,14 @@ tbody tr:last-child td {
   min-width: 96px;
   justify-content: center;
   font-size: 10px;
+}
+
+.scanner-asset-detail .detail-tab.is-active {
+  color: var(--scanner-status-accent);
+}
+
+.scanner-asset-detail .detail-tab.is-active::after {
+  background: var(--scanner-status-accent);
 }
 
 .scanner-asset-detail .detail-body {
@@ -2947,15 +3003,54 @@ tbody tr:last-child td {
 }
 
 .scanner-asset-detail .status-form {
-  grid-template-columns: minmax(170px, 0.75fr) minmax(250px, 1.35fr) minmax(132px, auto);
+  grid-template-columns:
+    minmax(150px, 0.7fr)
+    minmax(145px, 0.72fr)
+    minmax(220px, 1.35fr)
+    minmax(132px, auto);
   align-items: end;
   gap: 11px;
   margin-top: 16px;
   padding: 15px;
   border: 1px solid var(--line);
-  border-left: 3px solid var(--brand-700);
+  border-left: 3px solid var(--scanner-status-accent);
   border-radius: 7px;
   background: var(--surface-soft);
+}
+
+.scanner-asset-detail .status-editor-heading {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.scanner-asset-detail .status-editor-heading strong,
+.scanner-asset-detail .status-editor-heading small {
+  display: block;
+}
+
+.scanner-asset-detail .status-editor-heading strong {
+  color: var(--heading-text);
+  font-size: 11px;
+}
+
+.scanner-asset-detail .status-editor-heading small {
+  margin-top: 1px;
+  color: var(--muted);
+  font-size: 9px;
+  font-weight: 650;
+}
+
+.scanner-asset-detail .status-editor-icon {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  flex: 0 0 32px;
+  place-items: center;
+  border: 1px solid color-mix(in srgb, var(--scanner-status-accent) 36%, var(--line));
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--scanner-status-accent) 10%, var(--surface));
+  color: var(--scanner-status-accent);
 }
 
 .scanner-asset-detail .status-form .field-wide {
@@ -3745,6 +3840,12 @@ tbody tr:last-child td {
 
   .scanner-asset-detail .status-form {
     grid-template-columns: minmax(150px, 0.8fr) minmax(0, 1.2fr);
+  }
+
+  .scanner-asset-detail .status-editor-heading {
+    grid-column: 1 / -1;
+    padding-bottom: 11px;
+    border-bottom: 1px solid var(--line);
   }
 
   .scanner-asset-detail .status-form .button,

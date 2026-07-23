@@ -222,7 +222,10 @@ export function AssetDetails({
   >;
 
   return (
-    <div className={scannerContext ? "scanner-asset-detail" : ""}>
+    <div
+      className={scannerContext ? "scanner-asset-detail" : ""}
+      data-status={scannerContext ? asset.status : undefined}
+    >
       <div className="detail-header">
         <div className="detail-header-row">
           <div className="detail-identity">
@@ -249,7 +252,7 @@ export function AssetDetails({
             onClick={onTransfer}
             disabled={!authenticated || asset.status === "retired"}
           >
-            Transferir
+            <TransferIcon /> Transferir
           </button>
           <button
             className="button button-secondary"
@@ -257,7 +260,7 @@ export function AssetDetails({
             onClick={onIdentifier}
             disabled={!authenticated}
           >
-            Alterar patrimônio
+            <EditIcon /> Alterar patrimônio
           </button>
           <button
             className="button button-quiet"
@@ -303,6 +306,15 @@ export function AssetDetails({
             <div className="detail-wide"><dt>Observações</dt><dd>{asset.notes || "Sem observações"}</dd></div>
           </dl>
           <form className="status-form" key={asset.status} onSubmit={onStatusSubmit}>
+            {scannerContext ? (
+              <div className="status-editor-heading">
+                <span className="status-editor-icon"><StatusChangeIcon /></span>
+                <div>
+                  <strong>Atualização operacional</strong>
+                  <small>Status atual: {dashboard.options.statuses[asset.status]}</small>
+                </div>
+              </div>
+            ) : null}
             <label className="field field-wide">
               <span>Atualizar status</span>
               <select name="status" defaultValue={asset.status} disabled={!authenticated || busy}>
@@ -324,7 +336,7 @@ export function AssetDetails({
             </label>
             {error ? <FormError message={error} /> : null}
             <button className="button button-primary" type="submit" disabled={!authenticated || busy}>
-              {busy ? "Salvando..." : "Salvar status"}
+              {busy ? "Salvando..." : <><CheckIcon /> Salvar status</>}
             </button>
           </form>
           </>
@@ -435,6 +447,31 @@ export function CopyIcon() {
     <svg aria-hidden="true" viewBox="0 0 24 24" width="16" height="16" fill="none">
       <rect x="8" y="8" width="11" height="11" rx="2" stroke="currentColor" strokeWidth="1.8" />
       <path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" stroke="currentColor" strokeWidth="1.8" />
+    </svg>
+  );
+}
+
+export function TransferIcon() {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 24 24" width="17" height="17" fill="none">
+      <path d="M5 8h12m0 0-3-3m3 3-3 3M19 16H7m0 0 3 3m-3-3 3-3" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+export function StatusChangeIcon() {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 24 24" width="18" height="18" fill="none">
+      <path d="M20 7v5h-5M4 17v-5h5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M6.1 9A7 7 0 0 1 18 6.5L20 12M4 12l2 5.5A7 7 0 0 0 17.9 15" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+export function CheckIcon() {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 24 24" width="17" height="17" fill="none">
+      <path d="m5 12 4.2 4.2L19 6.8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }
