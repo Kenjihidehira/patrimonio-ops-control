@@ -206,7 +206,9 @@ test("perfil do colaborador diferencia patrimônios por categoria", () => {
 test("tema escuro é acessível, usa cookie e não armazena dados localmente", () => {
   assert.match(app, /role="switch"/);
   assert.match(app, /aria-checked=\{theme === "dark"\}/);
+  assert.match(app, /className="theme-toggle-label" suppressHydrationWarning/);
   assert.match(hooks, /patrimonio_theme=/);
+  assert.match(hooks, /document\.documentElement\.dataset\.theme = theme/);
   assert.match(layout, /prefers-color-scheme: dark/);
   assert.match(css, /:root\[data-theme="dark"\]/);
   assert.match(css, /--heading-text:\s*#FFFFFF/i);

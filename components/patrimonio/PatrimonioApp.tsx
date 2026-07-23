@@ -247,7 +247,9 @@ export default function PatrimonioApp() {
               onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
             >
               <span className="theme-toggle-track" aria-hidden="true"><span /></span>
-              <span className="theme-toggle-label">{theme === "dark" ? "Tema claro" : "Tema escuro"}</span>
+              <span className="theme-toggle-label" suppressHydrationWarning>
+                {theme === "dark" ? "Tema claro" : "Tema escuro"}
+              </span>
             </button>
             <div className="session-control" aria-live="polite">
               <span className="session-avatar" aria-hidden="true">

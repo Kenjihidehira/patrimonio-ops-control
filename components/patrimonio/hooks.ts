@@ -109,6 +109,11 @@ export function useTheme() {
     return document.documentElement.dataset.theme === "dark" ? "dark" : "light";
   });
 
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme;
+    document.documentElement.style.colorScheme = theme;
+  }, [theme]);
+
   const setTheme = useCallback((next: "light" | "dark") => {
     document.documentElement.dataset.theme = next;
     document.documentElement.style.colorScheme = next;
