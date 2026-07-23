@@ -41,9 +41,9 @@ O navegador nunca recebe a URL privilegiada nem o segredo do serviço intermedi�
 8. Baixa é lógica; o registro e seu histórico não são apagados.
 9. Datas são normalizadas antes da persistência; preços não fazem parte da experiência operacional.
 10. Uma revisão obsoleta não pode sobrescrever uma revisão mais nova.
-11. Colaboradores existem independentemente de possuírem patrimônio associado.
+11. A contagem de colaboradores deriva dos nomes distintos e não vazios no campo `Responsável` dos itens ativos; perfis sem atribuição atual não aumentam o total.
 12. A sigla identifica o núcleo durante a reconciliação de importações; IDs internos não são assumidos como estáveis.
-13. Renomear um colaborador preserva suas atribuições; mudar seu núcleo não transfere patrimônios sem auditoria.
+13. Renomear um colaborador preserva suas atribuições; um responsável ainda sem perfil pode ser cadastrado a partir do inventário, e mudar seu núcleo não transfere patrimônios sem auditoria.
 14. `x` representa ausência de item; `Sem patrimônio` representa um item físico existente que deve permanecer no inventário como divergência.
 15. Alterar o número patrimonial exige seis dígitos, unicidade e motivo; a identidade relacional dos movimentos existentes é preservada por cascata.
 
@@ -57,7 +57,7 @@ O Postgres usa sete tabelas relacionais:
 | `patrimonio_nuclei` | Núcleos, gestores e localizações |
 | `patrimonio_assets` | Inventário, estado operacional e dados de aquisição |
 | `patrimonio_asset_aliases` | Referências anteriores usadas para reconciliar reimportações após renumeração |
-| `patrimonio_collaborators` | Diretório importado e vínculo atual com o núcleo |
+| `patrimonio_collaborators` | Perfis complementares dos responsáveis e vínculo atual com o núcleo |
 | `patrimonio_movements` | Histórico imutável de cadastro, transferência, status e importação |
 | `patrimonio_import_runs` | Resultado e avisos de cada importação |
 

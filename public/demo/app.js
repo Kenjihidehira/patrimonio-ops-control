@@ -90,6 +90,8 @@ const elements = {
   transferNucleusInput: document.querySelector("#transfer-nucleus-input"),
   collaboratorNucleusInput: document.querySelector("#collaborator-nucleus-input"),
   collaboratorAssetsList: document.querySelector("#collaborator-assets-list"),
+  collaboratorProfileSource: document.querySelector("#collaborator-profile-source"),
+  collaboratorSave: document.querySelector("#collaborator-save-button"),
   nucleusInventoryListView: document.querySelector("#nucleus-inventory-list-view"),
   nucleusInventorySearch: document.querySelector("#nucleus-inventory-search"),
   nucleusInventoryBody: document.querySelector("#nucleus-inventory-body"),
@@ -342,17 +344,18 @@ async function synchronizeDashboard() {
 function updateCollaboratorSyncStatus({ failed = false } = {}) {
   if (!elements.peopleSyncStatus) return;
   if (failed) {
-    elements.peopleSyncStatus.textContent = "sincronização temporariamente indisponível";
+    elements.peopleSyncStatus.textContent =
+      "responsáveis distintos • sincronização temporariamente indisponível";
     return;
   }
 
   elements.peopleSyncStatus.textContent = lastDashboardSyncAt
-    ? `atualizado às ${new Intl.DateTimeFormat("pt-BR", {
+    ? `responsáveis distintos • atualizado às ${new Intl.DateTimeFormat("pt-BR", {
       hour: "2-digit",
       minute: "2-digit",
       second: "2-digit",
     }).format(lastDashboardSyncAt)}`
-    : "sincronização automática ativa";
+    : "responsáveis distintos nos itens";
 }
 
 function renderDashboard() {
@@ -825,7 +828,7 @@ function renderCollaborators() {
   updateCounter(elements.peopleTotal, collaborators.length);
   updateCounter(
     elements.peopleWithoutAssets,
-    collaborators.filter((person) => !person.hasAssets).length,
+    collaborators.filter((person) => !person.hasPatrimony).length,
   );
 
   const query = normalizedText(elements.peopleSearch.value);
@@ -833,8 +836,8 @@ function renderCollaborators() {
   const nucleusId = elements.peopleNucleusFilter.value;
   const filtered = collaborators.filter((person) => {
     if (query && !normalizedText(`${person.name} ${person.nucleus.name} ${person.nucleus.code}`).includes(query)) return false;
-    if (status === "with-assets" && !person.hasAssets) return false;
-    if (status === "without-assets" && person.hasAssets) return false;
+    if (status === "with-assets" && !person.hasPatrimony) return false;
+    if (status === "without-assets" && person.hasPatrimony) return false;
     return nucleusId === "all" || person.nucleusId === nucleusId;
   });
 
@@ -855,7 +858,7 @@ function renderCollaborators() {
             <span class="asset-count">${person.assetCount}</span>
             <span class="cell-secondary">${person.assets.length ? person.assets.map((asset) => escapeHtml(assetIdentifierLabel(asset))).join(" · ") : "Nenhum item vinculado"}</span>
           </td>
-          <td><span class="people-status ${person.hasAssets ? "has-assets" : "without-assets"}">${person.hasAssets ? "Com patrimônio" : "Sem patrimônio"}</span></td>
+          <td><span class="people-status ${person.hasPatrimony ? "has-assets" : "without-assets"}">${person.hasPatrimony ? "Com patrimônio oficial" : "Sem patrimônio oficial"}</span></td>
           <td class="people-action-cell">
             <button class="button button-secondary button-small" type="button" data-open-collaborator="${escapeAttribute(person.id)}">Ver perfil</button>
           </td>
@@ -1111,6 +1114,12 @@ function openCollaboratorDialog(collaboratorId) {
   document.querySelector("#collaborator-avatar").textContent = collaborator.name.trim().charAt(0).toUpperCase();
   document.querySelector("#collaborator-profile-summary").textContent =
     `${collaborator.nucleus.code} • ${collaborator.nucleus.name}`;
+  elements.collaboratorProfileSource.textContent = collaborator.profileRegistered
+    ? "Perfil cadastrado na base"
+    : "Perfil identificado pelo campo Responsável";
+  elements.collaboratorSave.textContent = collaborator.profileRegistered
+    ? "Salvar perfil"
+    : "Cadastrar perfil";
   document.querySelector("#collaborator-assets-count").textContent =
     `${collaborator.assetCount} ${collaborator.assetCount === 1 ? "item" : "itens"}`;
   elements.collaboratorAssetsList.innerHTML = collaborator.assets.length
@@ -1395,13 +1404,18 @@ async function handleCollaboratorUpdate(event) {
   event.preventDefault();
   if (!elements.collaboratorForm.reportValidity()) return;
   const formData = new FormData(elements.collaboratorForm);
+  const collaborator = dashboard.collaborators.find((item) => item.id === formData.get("id"));
+  if (!collaborator) {
+    return showFormError(elements.collaboratorFormError, "O responsável não está mais disponível.");
+  }
   await submitForm(
     elements.collaboratorForm,
     elements.collaboratorFormError,
     {
-      type: "update_collaborator",
-      collaborator: {
+      type: collaborator.profileRegistered ? "update_collaborator" : "register_responsible",
+      [collaborator.profileRegistered ? "collaborator" : "responsible"]: {
         id: formData.get("id"),
+        previousName: collaborator.name,
         name: formData.get("name"),
         nucleusId: formData.get("nucleusId"),
       },

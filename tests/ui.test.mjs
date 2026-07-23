@@ -41,7 +41,8 @@ test("interface contém os fluxos comerciais essenciais", () => {
   assert.match(html, /id="result-label"/);
   assert.match(js, /dashboard\.resultCount === 1 \? "patrimônio encontrado"/);
   assert.match(js, /type: "update_nucleus"/);
-  assert.match(js, /type: "update_collaborator"/);
+  assert.match(js, /"update_collaborator"/);
+  assert.match(js, /"register_responsible"/);
   assert.match(js, /type: "update_asset_identifier"/);
   assert.match(js, /identifier_change: "Alteração de patrimônio"/);
   assert.match(js, /function openIdentifierDialog/);
@@ -64,7 +65,7 @@ test("contador de colaboradores sincroniza a base entre sessões", () => {
   assert.match(js, /loadDashboard\(\{ quiet: true, background: true \}\)/);
   assert.match(js, /background && dashboard\?\.revision === data\.revision/);
   assert.match(js, /updateCounter\(elements\.peopleTotal, collaborators\.length\)/);
-  assert.match(js, /collaborators\.filter\(\(person\) => !person\.hasAssets\)\.length/);
+  assert.match(js, /collaborators\.filter\(\(person\) => !person\.hasPatrimony\)\.length/);
   assert.doesNotMatch(js, /#people-total"\)\.textContent = dashboard\?\.summary/);
 });
 

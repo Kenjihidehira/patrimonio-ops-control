@@ -38,6 +38,10 @@ const nucleusInventoryEditMigration = await readFile(
   new URL("../supabase/migrations/20260720143000_edit_nucleus_inventory_items.sql", import.meta.url),
   "utf8",
 );
+const responsibleRegistrationMigration = await readFile(
+  new URL("../supabase/migrations/20260723103000_register_responsibles_from_inventory.sql", import.meta.url),
+  "utf8",
+);
 
 test("importação reconcilia núcleos pela sigla persistida", () => {
   assert.match(nucleusMigration, /on conflict \(owner_key, code\) do update/);
@@ -58,6 +62,14 @@ test("edição de colaborador preserva atribuições na mesma transação", () =
   assert.match(collaboratorProfileMigration, /update public\.patrimonio_assets asset/);
   assert.match(collaboratorProfileMigration, /update public\.patrimonio_collaborators/);
   assert.match(collaboratorProfileMigration, /patrimonio_collaborators_owner_nucleus_name_uidx/);
+});
+
+test("responsável sem perfil pode ser cadastrado sem perder seus itens", () => {
+  assert.match(responsibleRegistrationMigration, /register_responsible/);
+  assert.match(responsibleRegistrationMigration, /previousName/);
+  assert.match(responsibleRegistrationMigration, /update public\.patrimonio_assets/);
+  assert.match(responsibleRegistrationMigration, /insert into public\.patrimonio_collaborators/);
+  assert.match(responsibleRegistrationMigration, /grant execute[\s\S]*service_role/);
 });
 
 test("banco distingue patrimônio oficial de referência interna", () => {

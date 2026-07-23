@@ -23,7 +23,8 @@ test("normaliza o seed e calcula o resumo operacional", () => {
   assert.equal(dashboard.summary.discrepancies, 1);
   assert.equal(dashboard.summary.retired, 1);
   assert.equal(dashboard.nuclei.length, 5);
-  assert.equal(dashboard.collaborators.length, 0);
+  assert.equal(dashboard.collaborators.length, 6);
+  assert.equal(dashboard.summary.collaborators, 6);
 });
 
 test("rejeita identificador que não contenha exatamente seis números", () => {
@@ -320,19 +321,98 @@ test("bloqueia edição cadastral sem mudança, motivo ou campos válidos", () =
   );
 });
 
-test("lista colaboradores com e sem patrimônio", () => {
+test("contabiliza colaboradores pelos responsáveis distintos dos itens ativos", () => {
   const state = structuredClone(seed);
   state.collaborators = [
     { id: "col-joao", name: "João Martins", nucleusId: "nuc-ti" },
-    { id: "col-rauan", name: "Rauan (aprendiz)", nucleusId: "nuc-ti" },
+    { id: "col-sem-item", name: "Pessoa sem item", nucleusId: "nuc-ti" },
   ];
+  state.assets.push(validAsset({
+    id: "SRAU01",
+    assignee: "Rauan (aprendiz)",
+    status: "discrepancy",
+  }));
+  state.assets.push(validAsset({
+    id: "SRAU02",
+    assignee: "  RAUAN (APRENDIZ)  ",
+    nucleusId: "nuc-fin",
+    status: "discrepancy",
+  }));
 
   const dashboard = buildDashboard(state);
 
-  assert.equal(dashboard.summary.collaborators, 2);
-  assert.equal(dashboard.summary.collaboratorsWithoutAssets, 1);
+  assert.equal(dashboard.summary.collaborators, 7);
+  assert.equal(dashboard.summary.collaboratorsWithoutPatrimony, 1);
   assert.equal(dashboard.collaborators.find((item) => item.id === "col-joao").hasAssets, true);
-  assert.equal(dashboard.collaborators.find((item) => item.id === "col-rauan").hasAssets, false);
+  assert.equal(dashboard.collaborators.some((item) => item.id === "col-sem-item"), false);
+  assert.equal(dashboard.collaborators.find((item) => item.name === "Rauan (aprendiz)").hasPatrimony, false);
+  assert.equal(dashboard.collaborators.find((item) => item.name === "Rauan (aprendiz)").profileRegistered, false);
+  assert.equal(dashboard.collaborators.find((item) => item.name === "Rauan (aprendiz)").assetCount, 2);
+});
+
+test("cadastra perfil para responsável projetado e preserva seus vínculos", () => {
+  const state = structuredClone(seed);
+  const dashboard = buildDashboard(state);
+  const responsible = dashboard.collaborators.find((item) => item.name === "João Martins");
+
+  const nextState = applyAction(
+    state,
+    {
+      type: "register_responsible",
+      responsible: {
+        id: responsible.id,
+        previousName: responsible.name,
+        name: "João da Silva Martins",
+        nucleusId: responsible.nucleusId,
+      },
+    },
+    "admin@empresa.com",
+  );
+
+  assert.deepEqual(nextState.collaborators, [{
+    id: responsible.id,
+    name: "João da Silva Martins",
+    nucleusId: "nuc-ti",
+  }]);
+  assert.equal(
+    nextState.assets.filter((asset) => asset.assignee === "João da Silva Martins").length,
+    state.assets.filter((asset) => asset.assignee === "João Martins").length,
+  );
+});
+
+test("bloqueia cadastro de perfil sem responsabilidade ativa ou com identificador inválido", () => {
+  assert.throws(
+    () => applyAction(
+      seed,
+      {
+        type: "register_responsible",
+        responsible: {
+          id: "responsible-inexistente",
+          previousName: "Pessoa inexistente",
+          name: "Pessoa inexistente",
+          nucleusId: "nuc-ti",
+        },
+      },
+      "admin@empresa.com",
+    ),
+    /não possui itens ativos/,
+  );
+  assert.throws(
+    () => applyAction(
+      seed,
+      {
+        type: "register_responsible",
+        responsible: {
+          id: "ID INVÁLIDO",
+          previousName: "João Martins",
+          name: "João Martins",
+          nucleusId: "nuc-ti",
+        },
+      },
+      "admin@empresa.com",
+    ),
+    /identificador do colaborador é inválido/,
+  );
 });
 
 test("edita informações do núcleo sem permitir sigla duplicada", () => {

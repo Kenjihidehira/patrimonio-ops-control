@@ -341,12 +341,12 @@
             <article>
               <span>Colaboradores na base</span>
               <strong id="people-total" aria-live="polite" aria-atomic="true">0</strong>
-              <small id="people-sync-status">sincronização automática ativa</small>
+              <small id="people-sync-status">responsáveis distintos nos itens</small>
             </article>
             <article class="people-attention">
               <span>Sem patrimônio</span>
               <strong id="people-without-assets" aria-live="polite" aria-atomic="true">0</strong>
-              <small>mantidos para conferência</small>
+              <small>sem identificação patrimonial oficial</small>
             </article>
           </div>
 
@@ -365,8 +365,8 @@
                   <span>Situação patrimonial</span>
                   <select id="people-status-filter">
                     <option value="all">Todos</option>
-                    <option value="with-assets">Com patrimônio</option>
-                    <option value="without-assets">Sem patrimônio</option>
+                    <option value="with-assets">Com patrimônio oficial</option>
+                    <option value="without-assets">Sem patrimônio oficial</option>
                   </select>
                 </label>
                 <label class="field">
@@ -747,7 +747,7 @@
           <section class="profile-editor" aria-labelledby="profile-editor-title">
             <div class="profile-section-heading">
               <h3 id="profile-editor-title">Informações do perfil</h3>
-              <span>Dados disponíveis na base</span>
+              <span id="collaborator-profile-source">Dados disponíveis na base</span>
             </div>
             <div class="form-grid">
               <input name="id" type="hidden" />
@@ -772,7 +772,7 @@
         <div class="form-error" id="collaborator-form-error" role="alert" hidden></div>
         <div class="modal-footer">
           <button class="button button-secondary" type="button" data-close-dialog="collaborator-dialog">Cancelar</button>
-          <button class="button button-primary" type="submit">Salvar perfil</button>
+          <button class="button button-primary" id="collaborator-save-button" type="submit">Salvar perfil</button>
         </div>
       </form>
     </dialog>
