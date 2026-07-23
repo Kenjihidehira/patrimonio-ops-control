@@ -894,7 +894,7 @@ function ScannerAssetDialog({
   return (
     <Modal open={open} labelledBy="scanner-asset-title" className="scanner-asset-modal" onClose={onClose}>
       <div className="modal-content scanner-asset-modal-content">
-        <ModalHeader eyebrow="Conferência por leitura" title="Patrimônio localizado" titleId="scanner-asset-title" onClose={onClose} />
+        <ModalHeader eyebrow="Leitura confirmada" title="Conferência do patrimônio" titleId="scanner-asset-title" onClose={onClose} />
         {asset ? (
           <AssetDetails
             asset={asset}

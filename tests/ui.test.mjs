@@ -162,9 +162,14 @@ test("leitor LS2208 em modo HID localiza patrimônio sem API de hardware", () =>
   assert.match(app, /setModal\(\{ kind: "scanner", assetId: asset\.id \}\)/);
   assert.match(dialogs, /className="scanner-asset-modal"/);
   assert.match(dialogs, /type: "update_status"/);
+  assert.match(ui, /className="detail-header-row"/);
+  assert.match(ui, /scanner-asset-type-icon-\$\{asset\.type\}/);
+  assert.match(ui, /className=\{`detail-tab/);
   assert.doesNotMatch(reactUi, /navigator\.(usb|serial)/);
   assert.match(css, /\.scanner-status\[data-state="success"\]/);
   assert.match(css, /\.scanner-status\[data-state="error"\]/);
+  assert.match(css, /\.scanner-asset-detail \.detail-grid/);
+  assert.match(css, /\.scanner-asset-detail \.status-form/);
 });
 
 test("visão de núcleos oferece resumo, busca e edição auditável", () => {

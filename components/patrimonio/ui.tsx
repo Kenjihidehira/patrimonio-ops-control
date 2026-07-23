@@ -224,38 +224,49 @@ export function AssetDetails({
   return (
     <div className={scannerContext ? "scanner-asset-detail" : ""}>
       <div className="detail-header">
-        <div>
-          <span className="detail-label">Patrimônio selecionado</span>
-          <h2><AssetIdentifier asset={asset} /></h2>
-          <p>{dashboard.options.assetTypes[asset.type]}</p>
+        <div className="detail-header-row">
+          <div className="detail-identity">
+            {scannerContext ? (
+              <span className={`scanner-asset-type-icon scanner-asset-type-icon-${asset.type}`}>
+                <AssetTypeIcon type={asset.type} />
+              </span>
+            ) : null}
+            <div>
+              <span className="detail-label">Identificador patrimonial</span>
+              <h2><AssetIdentifier asset={asset} /></h2>
+              <p className="detail-type">{dashboard.options.assetTypes[asset.type]}</p>
+            </div>
+          </div>
+          <div className="detail-header-controls">
+            <StatusBadge status={asset.status} labels={dashboard.options.statuses} />
+          </div>
         </div>
-        <StatusBadge status={asset.status} labels={dashboard.options.statuses} />
-      </div>
 
-      <div className="detail-actions">
-        <button
-          className="button button-secondary"
-          type="button"
-          onClick={onTransfer}
-          disabled={!authenticated || asset.status === "retired"}
-        >
-          Transferir
-        </button>
-        <button
-          className="button button-secondary"
-          type="button"
-          onClick={onIdentifier}
-          disabled={!authenticated}
-        >
-          Alterar patrimônio
-        </button>
-        <button
-          className="button button-quiet"
-          type="button"
-          onClick={() => void navigator.clipboard.writeText(asset.id)}
-        >
-          <CopyIcon /> Copiar ID
-        </button>
+        <div className="detail-actions">
+          <button
+            className="button button-secondary"
+            type="button"
+            onClick={onTransfer}
+            disabled={!authenticated || asset.status === "retired"}
+          >
+            Transferir
+          </button>
+          <button
+            className="button button-secondary"
+            type="button"
+            onClick={onIdentifier}
+            disabled={!authenticated}
+          >
+            Alterar patrimônio
+          </button>
+          <button
+            className="button button-quiet"
+            type="button"
+            onClick={() => void navigator.clipboard.writeText(asset.id)}
+          >
+            <CopyIcon /> Copiar ID
+          </button>
+        </div>
       </div>
 
       <div className="detail-tabs" role="tablist" aria-label="Detalhes do patrimônio">
@@ -263,7 +274,7 @@ export function AssetDetails({
           type="button"
           role="tab"
           aria-selected={activeTab === "summary"}
-          className={activeTab === "summary" ? "is-active" : ""}
+          className={`detail-tab ${activeTab === "summary" ? "is-active" : ""}`}
           onClick={() => onTabChange("summary")}
         >
           Resumo
@@ -272,15 +283,16 @@ export function AssetDetails({
           type="button"
           role="tab"
           aria-selected={activeTab === "history"}
-          className={activeTab === "history" ? "is-active" : ""}
+          className={`detail-tab ${activeTab === "history" ? "is-active" : ""}`}
           onClick={() => onTabChange("history")}
         >
           Histórico <span>{asset.movements.length}</span>
         </button>
       </div>
 
-      {activeTab === "summary" ? (
-        <>
+      <div className="detail-body">
+        {activeTab === "summary" ? (
+          <>
           <dl className="detail-grid">
             <div><dt>Núcleo</dt><dd>{asset.nucleus.name}</dd></div>
             <div><dt>Responsável</dt><dd>{asset.assignee || "Não alocado"}</dd></div>
@@ -288,7 +300,7 @@ export function AssetDetails({
             <div><dt>Número de série</dt><dd>{asset.serial || "Não informado"}</dd></div>
             <div><dt>Aquisição</dt><dd>{formatDate(asset.acquiredAt)}</dd></div>
             <div><dt>Marca e modelo</dt><dd>{asset.brandModel}</dd></div>
-            <div className="detail-grid-wide"><dt>Observações</dt><dd>{asset.notes || "Sem observações"}</dd></div>
+            <div className="detail-wide"><dt>Observações</dt><dd>{asset.notes || "Sem observações"}</dd></div>
           </dl>
           <form className="status-form" key={asset.status} onSubmit={onStatusSubmit}>
             <label className="field field-wide">
@@ -315,14 +327,15 @@ export function AssetDetails({
               {busy ? "Salvando..." : "Salvar status"}
             </button>
           </form>
-        </>
-      ) : (
-        <div className="movement-list">
-          {asset.movements.length ? asset.movements.map((movement) => (
-            <MovementItem key={movement.id} movement={movement} />
-          )) : <EmptyState title="Sem histórico" description="Nenhuma movimentação registrada." />}
-        </div>
-      )}
+          </>
+        ) : (
+          <div className="movement-list">
+            {asset.movements.length ? asset.movements.map((movement) => (
+              <MovementItem key={movement.id} movement={movement} />
+            )) : <EmptyState title="Sem histórico" description="Nenhuma movimentação registrada." />}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
