@@ -176,7 +176,7 @@ export type ModalState =
   | { kind: "nucleus-inventory"; nucleusId: string; assetId?: string }
   | { kind: "collaborator"; collaboratorId: string }
   | { kind: "import" }
-  | { kind: "scanner"; assetId: string };
+  | { kind: "scanner"; assetId: string; scanToken: number };
 
 export const defaultFilters: InventoryFilters = {
   search: "",

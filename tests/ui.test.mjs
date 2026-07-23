@@ -158,9 +158,13 @@ test("leitor LS2208 em modo HID localiza patrimônio sem API de hardware", () =>
   assert.match(app, /normalizeScannedIdentifier\(debouncedSearch\)/);
   assert.match(app, /lastProcessedScanRef\.current === identifier/);
   assert.match(app, /dashboard\.inventory\.find\(\(item\) => item\.id === identifier\)/);
+  assert.match(app, /const next = await refresh\([\s\S]*setFilterDraft\(scanFilters\);[\s\S]*openScannedAsset\(asset, identifier\)/);
   assert.match(app, /openScannedAsset\(asset, identifier\)/);
-  assert.match(app, /setModal\(\{ kind: "scanner", assetId: asset\.id \}\)/);
+  assert.match(app, /setModal\(\{ kind: "scanner", assetId: asset\.id, scanToken: scanSequenceRef\.current \}\)/);
   assert.match(dialogs, /className="scanner-asset-modal"/);
+  assert.match(dialogs, /key=\{scanToken\}/);
+  assert.match(dialogs, /tabState\.scanToken === scanToken \? tabState\.tab : "summary"/);
+  assert.match(dialogs, /aria-live="polite"/);
   assert.match(dialogs, /type: "update_status"/);
   assert.match(ui, /className="detail-header-row"/);
   assert.match(ui, /scanner-asset-type-icon-\$\{asset\.type\}/);
@@ -178,6 +182,7 @@ test("leitor LS2208 em modo HID localiza patrimônio sem API de hardware", () =>
   assert.match(css, /\.scanner-asset-detail \.status-form/);
   assert.match(css, /--scanner-status-accent/);
   assert.match(css, /@keyframes scanner-modal-enter/);
+  assert.match(css, /@keyframes scanner-content-swap/);
 });
 
 test("visão de núcleos oferece resumo, busca e edição auditável", () => {

@@ -75,6 +75,7 @@ export default function PatrimonioApp() {
   const [mutationError, setMutationError] = useState<string | null>(null);
   const scannerUpdateRef = useRef<(state: "ready" | "reading" | "success" | "error", label: string) => void>(() => undefined);
   const lastProcessedScanRef = useRef<string | null>(null);
+  const scanSequenceRef = useRef(0);
   const debouncedSearch = useDebouncedValue(filterDraft.search, 280);
   const apiFilters = useMemo(
     () => ({ ...filterDraft, search: debouncedSearch }),
@@ -90,7 +91,8 @@ export default function PatrimonioApp() {
   const openScannedAsset = useCallback((asset: Asset, identifier: string) => {
     lastProcessedScanRef.current = identifier;
     setSelectedAssetId(asset.id);
-    setModal({ kind: "scanner", assetId: asset.id });
+    scanSequenceRef.current += 1;
+    setModal({ kind: "scanner", assetId: asset.id, scanToken: scanSequenceRef.current });
     scannerUpdateRef.current("success", "Item localizado");
     showToast(`${asset.hasPatrimony ? "Patrimônio" : "Referência interna"} ${identifier} localizado.`);
   }, [showToast]);
@@ -105,11 +107,12 @@ export default function PatrimonioApp() {
     lastProcessedScanRef.current = identifier;
     const scanFilters: InventoryFilters = { ...defaultFilters, search: identifier };
     setView("inventory");
-    setFilterDraft(scanFilters);
     scannerUpdateRef.current("reading", "Consultando código");
     const next = await refresh({ quiet: true, filters: scanFilters });
     if (!next) {
-      lastProcessedScanRef.current = null;
+      if (lastProcessedScanRef.current === identifier) {
+        lastProcessedScanRef.current = null;
+      }
       return;
     }
     const asset = next.inventory.find((item) => item.id === identifier);
@@ -118,6 +121,7 @@ export default function PatrimonioApp() {
       showToast(`O código ${identifier} não está cadastrado.`, true);
       return;
     }
+    setFilterDraft(scanFilters);
     openScannedAsset(asset, identifier);
   }, [dashboard?.session.authenticated, openScannedAsset, refresh, showToast]);
   const scanner = useBarcodeScanner(handleScan);

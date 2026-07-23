@@ -2830,6 +2830,7 @@ tbody tr:last-child td {
   min-height: 0;
   flex: 1;
   flex-direction: column;
+  animation: scanner-content-swap 140ms ease-out;
 }
 
 .scanner-asset-detail[data-status="available"] {
@@ -2843,6 +2844,17 @@ tbody tr:last-child td {
 .scanner-asset-detail[data-status="discrepancy"],
 .scanner-asset-detail[data-status="retired"] {
   --scanner-status-accent: var(--coral);
+}
+
+@keyframes scanner-content-swap {
+  from {
+    opacity: 0.72;
+    transform: translateY(3px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .scanner-asset-detail .detail-header {

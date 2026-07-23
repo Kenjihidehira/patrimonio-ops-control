@@ -48,22 +48,29 @@ export function Dialogs({
   onToast: (message: string, error?: boolean) => void;
 }) {
   const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [detailTab, setDetailTab] = useState<"summary" | "history">("summary");
+  const [failure, setFailure] = useState<{ scope: string; message: string } | null>(null);
+  const currentModalScope = JSON.stringify(modal);
+  const error = failure?.scope === currentModalScope ? failure.message : null;
 
-  const close = () => setModal({ kind: "closed" });
+  const close = () => {
+    setFailure(null);
+    setModal({ kind: "closed" });
+  };
   const execute = async (
     action: MutationAction,
     nextSelectedId?: string,
     afterSave: (() => void) | null = close,
   ) => {
-    setError(null);
+    setFailure(null);
     setBusy(true);
     try {
       await onMutate(action, nextSelectedId);
       afterSave?.();
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "Não foi possível salvar a alteração.");
+      setFailure({
+        scope: currentModalScope,
+        message: cause instanceof Error ? cause.message : "Não foi possível salvar a alteração.",
+      });
     } finally {
       setBusy(false);
     }
@@ -156,8 +163,7 @@ export function Dialogs({
         dashboard={dashboard}
         busy={busy}
         error={error}
-        detailTab={detailTab}
-        onDetailTabChange={setDetailTab}
+        scanToken={modal.kind === "scanner" ? modal.scanToken : 0}
         onClose={close}
         onTransfer={(assetId) => setModal({ kind: "transfer", assetId })}
         onIdentifier={(assetId) => setModal({ kind: "identifier", assetId })}
@@ -872,8 +878,7 @@ function ScannerAssetDialog({
   dashboard,
   busy,
   error,
-  detailTab,
-  onDetailTabChange,
+  scanToken,
   onClose,
   onTransfer,
   onIdentifier,
@@ -884,24 +889,33 @@ function ScannerAssetDialog({
   dashboard: Dashboard;
   busy: boolean;
   error: string | null;
-  detailTab: "summary" | "history";
-  onDetailTabChange: (tab: "summary" | "history") => void;
+  scanToken: number;
   onClose: () => void;
   onTransfer: (assetId: string) => void;
   onIdentifier: (assetId: string) => void;
   onStatusSubmit: (event: FormEvent<HTMLFormElement>, asset: Asset) => void;
 }) {
+  const [tabState, setTabState] = useState<{
+    scanToken: number;
+    tab: "summary" | "history";
+  }>({ scanToken, tab: "summary" });
+  const detailTab = tabState.scanToken === scanToken ? tabState.tab : "summary";
+
   return (
     <Modal open={open} labelledBy="scanner-asset-title" className="scanner-asset-modal" onClose={onClose}>
       <div className="modal-content scanner-asset-modal-content">
         <ModalHeader eyebrow="Leitura confirmada" title="Conferência do patrimônio" titleId="scanner-asset-title" onClose={onClose} />
+        <p className="sr-only" aria-live="polite">
+          {asset ? `Patrimônio ${asset.id} carregado.` : "Patrimônio não encontrado."}
+        </p>
         {asset ? (
           <AssetDetails
+            key={scanToken}
             asset={asset}
             dashboard={dashboard}
             authenticated={dashboard.session.authenticated}
             activeTab={detailTab}
-            onTabChange={onDetailTabChange}
+            onTabChange={(tab) => setTabState({ scanToken, tab })}
             onTransfer={() => onTransfer(asset.id)}
             onIdentifier={() => onIdentifier(asset.id)}
             onStatusSubmit={(event) => onStatusSubmit(event, asset)}
