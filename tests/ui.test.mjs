@@ -161,6 +161,7 @@ test("leitor LS2208 em modo HID localiza patrimônio sem API de hardware", () =>
   assert.match(app, /const next = await refresh\([\s\S]*setFilterDraft\(scanFilters\);[\s\S]*openScannedAsset\(asset, identifier\)/);
   assert.match(app, /openScannedAsset\(asset, identifier\)/);
   assert.match(app, /setModal\(\{ kind: "scanner", assetId: asset\.id, scanToken: scanSequenceRef\.current \}\)/);
+  assert.match(app, /key=\{modal\.kind === "scanner" \? "scanner" : JSON\.stringify\(modal\)\}/);
   assert.match(dialogs, /className="scanner-asset-modal"/);
   assert.match(dialogs, /key=\{scanToken\}/);
   assert.match(dialogs, /tabState\.scanToken === scanToken \? tabState\.tab : "summary"/);

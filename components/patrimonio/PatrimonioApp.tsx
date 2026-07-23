@@ -335,7 +335,7 @@ export default function PatrimonioApp() {
 
       {dashboard ? (
         <Dialogs
-          key={JSON.stringify(modal)}
+          key={modal.kind === "scanner" ? "scanner" : JSON.stringify(modal)}
           dashboard={dashboard}
           modal={modal}
           setModal={setModal}
