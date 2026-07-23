@@ -20,6 +20,7 @@ Planilhas patrimoniais isoladas não registram bem responsabilidade, movimentaç
 - Diretório de colaboradores importados, inclusive quando não há patrimônio associado.
 - Perfil editável do colaborador com nome, núcleo e relação de patrimônios vinculados.
 - Busca por ID, série, modelo, pessoa, local ou núcleo.
+- Leitura direta de etiquetas por bipador USB ou Bluetooth configurado como teclado HID.
 - Filtros de tipo, status e núcleo, com ordenação operacional.
 - Visualizações rápidas para itens sem responsável, sem patrimônio, em manutenção ou com divergência.
 - Paginação configurável para bases extensas, com 15, 25 ou 50 registros por página.
@@ -60,6 +61,18 @@ pnpm dev
 Use [`configuracao.exemplo`](configuracao.exemplo) somente como modelo para criar `.env.local`. Preencha as variáveis Supabase, dos provedores de identidade e os segredos de sessão apenas no arquivo local, que é ignorado pelo Git. Acesse `http://localhost:5173/login/`.
 
 A interface anônima não recebe dados patrimoniais. A leitura da base empresarial, importação, exportação e operações de escrita exigem um login presente em `GITHUB_ALLOWED_LOGINS` ou um e-mail exato em `GOOGLE_ALLOWED_EMAILS`. O servidor valida `state`, PKCE, assinatura da identidade e lista de autorizados antes de criar uma sessão local de oito horas.
+
+## Conectar um leitor de código de barras
+
+O sistema aceita leitores USB ou Bluetooth no modo **HID Keyboard**, também chamado de **teclado**, **keyboard wedge** ou **USB HID**. Não é necessário instalar driver, extensão ou biblioteca no navegador.
+
+1. Conecte o leitor ao computador por USB ou faça o pareamento Bluetooth.
+2. No manual do equipamento, selecione o modo `HID Keyboard`.
+3. Configure o sufixo de leitura como `Enter` ou `Tab`.
+4. Teste no Bloco de Notas: ao bipar, o leitor deve escrever os seis números da etiqueta e avançar o cursor.
+5. Entre no sistema e bipe a etiqueta em qualquer tela. O inventário será aberto, os filtros serão limpos e o patrimônio correspondente será selecionado.
+
+Somente identificadores oficiais com seis dígitos e referências internas no formato `Sxxxxx` são aceitos. A busca exige autenticação e não grava nem altera o patrimônio. Leitores configurados exclusivamente como porta `COM` ou serial não funcionam neste fluxo; nesses casos, é necessário identificar o fabricante e o modelo para integrar o protocolo específico.
 
 ### Validação completa
 
@@ -148,7 +161,7 @@ A interface segue o padrão de relatório em lista com detalhe do objeto, comum 
 
 A identidade visual usa azul cobalto e amarelo como referências da presença digital da Gazin, mantendo superfícies neutras e cores semânticas independentes para garantir leitura operacional e contraste.
 
-Foram adotados padrões operacionais recorrentes nessas soluções: visibilidade imediata de status, busca por posse e localização, filtros rápidos de exceção, paginação para inventários extensos e acesso contextual ao histórico. Recursos financeiros, contratos, garantias, QR Code e campos customizados não foram reproduzidos porque não existem na planilha-base atual.
+Foram adotados padrões operacionais recorrentes nessas soluções: visibilidade imediata de status, busca por posse e localização, filtros rápidos de exceção, paginação para inventários extensos e acesso contextual ao histórico. O leitor HID de código de barras é suportado sem acesso privilegiado ao hardware. Recursos financeiros, contratos, garantias, leitura de QR Code por câmera e campos customizados não foram reproduzidos porque não existem na planilha-base atual.
 
 O painel oferece temas claro e escuro, respeita a preferência do sistema na primeira visita e persiste a escolha explícita sem armazenar dados operacionais no navegador.
 

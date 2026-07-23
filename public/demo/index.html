@@ -145,7 +145,15 @@
             </div>
             <div class="filter-grid">
               <label class="field field-search">
-                <span>Buscar patrimônio</span>
+                <span class="field-label-row">
+                  <span>Buscar patrimônio</span>
+                  <span class="scanner-status" id="scanner-status" data-state="ready" aria-live="polite" title="Leitor USB ou Bluetooth em modo teclado">
+                    <svg aria-hidden="true" viewBox="0 0 24 24" width="14" height="14" fill="none">
+                      <path d="M4 5v14M7 5v14M11 5v14M14 5v14M16.5 5v14M20 5v14" stroke="currentColor" stroke-width="1.5" />
+                    </svg>
+                    <span>Leitor pronto</span>
+                  </span>
+                </span>
                 <input
                   id="search-input"
                   type="search"

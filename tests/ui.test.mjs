@@ -115,6 +115,23 @@ test("inventário oferece navegação escalável e experiência móvel dedicada"
   assert.match(css, /\.detail-panel\.is-open/);
 });
 
+test("leitor de código de barras HID localiza patrimônio sem API de hardware", () => {
+  assert.match(html, /id="scanner-status"[^>]*aria-live="polite"/);
+  assert.match(html, /Leitor USB ou Bluetooth em modo teclado/);
+  assert.match(js, /scannerCharacterTimeoutMs = 100/);
+  assert.match(js, /scannableIdentifierPattern = \/\^\(\?:\\d\{6\}\|S\[A-Z0-9\]\{5\}\)\$\//);
+  assert.match(js, /document\.addEventListener\("keydown", handleScannerKeydown, true\)/);
+  assert.match(js, /event\.key === "Enter" \|\| event\.key === "Tab"/);
+  assert.match(js, /function normalizeScannedIdentifier/);
+  assert.match(js, /async function locateScannedAsset/);
+  assert.match(js, /resetInventoryFilters\(\{ search: identifier \}\)/);
+  assert.match(js, /dashboard\.inventory\.find\(\(item\) => item\.id === identifier\)/);
+  assert.match(js, /if \(isEditableControl\(target\) && !isSearchInput\)/);
+  assert.doesNotMatch(js, /navigator\.(usb|serial)|localStorage|sessionStorage/);
+  assert.match(css, /\.scanner-status\[data-state="success"\]\s*\{[^}]*color:\s*var\(--success\)/s);
+  assert.match(css, /\.scanner-status\[data-state="error"\]/);
+});
+
 test("tema escuro usa cores próprias para textos de destaque e ícones", () => {
   assert.match(css, /--heading-text:\s*#FFFFFF/i);
   assert.match(css, /--emphasis-text:\s*#B9DCFF/i);

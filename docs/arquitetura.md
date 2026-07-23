@@ -46,6 +46,7 @@ O navegador nunca recebe a URL privilegiada nem o segredo do serviço intermedi�
 13. Renomear um colaborador preserva suas atribuições; um responsável ainda sem perfil pode ser cadastrado a partir do inventário, e mudar seu núcleo não transfere patrimônios sem auditoria.
 14. `x` representa ausência de item; `Sem patrimônio` representa um item físico existente que deve permanecer no inventário como divergência.
 15. Alterar o número patrimonial exige seis dígitos, unicidade e motivo; a identidade relacional dos movimentos existentes é preservada por cascata.
+16. A leitura por bipador aceita apenas identificadores válidos recebidos como teclado HID; ela consulta a API autenticada e não altera dados.
 
 ## Modelo de persistência
 
@@ -120,6 +121,7 @@ Chaves estrangeiras preservam integridade e índices cobrem status, núcleo, tip
 - Conteúdo dinâmico é escapado antes de entrar em templates HTML.
 - A preferência de tema usa somente o cookie não sensível `patrimonio_theme`; dados operacionais não são persistidos no navegador.
 - Filtros rápidos, paginação e abas de detalhe são estado efêmero da interface; filtros estruturais continuam sendo processados pela API.
+- A captura do bipador ignora campos editáveis, exige um terminador `Enter` ou `Tab` e não usa WebUSB, Web Serial nem permissões privilegiadas do navegador.
 - Não existe exclusão física exposta pela API.
 
 ## Limitações e evolução produtiva

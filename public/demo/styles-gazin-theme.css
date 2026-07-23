@@ -750,6 +750,41 @@ textarea:disabled {
   gap: 10px;
 }
 
+.field-label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.scanner-status {
+  display: inline-flex;
+  min-width: 92px;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  color: var(--muted);
+  font-size: 9px;
+  font-weight: 750;
+  white-space: nowrap;
+}
+
+.scanner-status svg {
+  flex: 0 0 auto;
+}
+
+.scanner-status[data-state="reading"] {
+  color: var(--brand-700);
+}
+
+.scanner-status[data-state="success"] {
+  color: var(--success);
+}
+
+.scanner-status[data-state="error"] {
+  color: var(--status-danger-text);
+}
+
 .advanced-filters {
   display: contents;
 }

@@ -1,6 +1,9 @@
 const apiUrl = "/api/state";
 const dashboardRefreshIntervalMs = 10_000;
 const activityRefreshCooldownMs = 1_500;
+const scannerCharacterTimeoutMs = 100;
+const scannerBufferTimeoutMs = 250;
+const scannableIdentifierPattern = /^(?:\d{6}|S[A-Z0-9]{5})$/;
 
 const elements = {
   inventoryBody: document.querySelector("#inventory-body"),
@@ -40,6 +43,7 @@ const elements = {
   nucleusFilter: document.querySelector("#nucleus-filter"),
   sortFilter: document.querySelector("#sort-filter"),
   clearFilters: document.querySelector("#clear-filters"),
+  scannerStatus: document.querySelector("#scanner-status"),
   advancedFiltersToggle: document.querySelector("#advanced-filters-toggle"),
   advancedFilters: document.querySelector("#advanced-filters"),
   newAsset: document.querySelector("#new-asset-button"),
@@ -145,6 +149,10 @@ let selectedNucleusId = null;
 let dashboardRequestSequence = 0;
 let dashboardRefreshTimer = null;
 let lastDashboardSyncAt = 0;
+let scannerBuffer = "";
+let lastScannerCharacterAt = 0;
+let scannerResetTimer = null;
+let scannerStatusTimer = null;
 
 bindEvents();
 setTheme(document.documentElement.dataset.theme === "dark" ? "dark" : "light");
@@ -216,15 +224,10 @@ function bindEvents() {
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape" && mobileDetailOpen) closeMobileDetail();
   });
+  document.addEventListener("keydown", handleScannerKeydown, true);
 
   elements.clearFilters.addEventListener("click", () => {
-    elements.search.value = "";
-    elements.typeFilter.value = "all";
-    elements.statusFilter.value = "all";
-    elements.nucleusFilter.value = "all";
-    elements.sortFilter.value = "recent";
-    activeQuickFilter = "all";
-    currentPage = 1;
+    resetInventoryFilters();
     void loadDashboard({ quiet: true });
   });
 
@@ -356,6 +359,100 @@ function updateCollaboratorSyncStatus({ failed = false } = {}) {
       second: "2-digit",
     }).format(lastDashboardSyncAt)}`
     : "responsáveis distintos nos itens";
+}
+
+function handleScannerKeydown(event) {
+  if (event.defaultPrevented || event.repeat || event.ctrlKey || event.altKey || event.metaKey) return;
+  const target = event.target;
+  const isSearchInput = target === elements.search;
+  if (isEditableControl(target) && !isSearchInput) {
+    resetScannerBuffer();
+    return;
+  }
+
+  if (event.key === "Enter" || event.key === "Tab") {
+    const identifier = normalizeScannedIdentifier(scannerBuffer);
+    resetScannerBuffer();
+    if (!identifier) return;
+    event.preventDefault();
+    void locateScannedAsset(identifier);
+    return;
+  }
+
+  if (event.key.length !== 1) return;
+  const now = performance.now();
+  if (now - lastScannerCharacterAt > scannerCharacterTimeoutMs) scannerBuffer = "";
+  scannerBuffer += event.key;
+  lastScannerCharacterAt = now;
+  window.clearTimeout(scannerResetTimer);
+  scannerResetTimer = window.setTimeout(resetScannerBuffer, scannerBufferTimeoutMs);
+  if (!isSearchInput) event.preventDefault();
+}
+
+function isEditableControl(target) {
+  return target instanceof HTMLElement
+    && Boolean(target.closest("input, textarea, select, [contenteditable='true']"));
+}
+
+function normalizeScannedIdentifier(value) {
+  const normalized = String(value ?? "").trim().replace(/^#/, "").toUpperCase();
+  return scannableIdentifierPattern.test(normalized) ? normalized : null;
+}
+
+function resetScannerBuffer() {
+  scannerBuffer = "";
+  lastScannerCharacterAt = 0;
+  window.clearTimeout(scannerResetTimer);
+  scannerResetTimer = null;
+}
+
+async function locateScannedAsset(identifier) {
+  if (!dashboard?.session.authenticated) {
+    updateScannerStatus("error", "Entre para consultar");
+    showToast("Entre com uma conta autorizada antes de usar o leitor.", true);
+    return;
+  }
+
+  window.clearTimeout(filterTimer);
+  switchView("inventory");
+  resetInventoryFilters({ search: identifier });
+  updateScannerStatus("reading", "Consultando código");
+  const loaded = await loadDashboard({ quiet: true });
+  if (!loaded) {
+    updateScannerStatus("error", "Falha na consulta");
+    return;
+  }
+
+  const asset = dashboard.inventory.find((item) => item.id === identifier);
+  if (!asset) {
+    updateScannerStatus("error", "Código não encontrado");
+    showToast(`O código ${identifier} não está cadastrado.`, true);
+    return;
+  }
+
+  selectAsset(asset.id);
+  updateScannerStatus("success", "Item localizado");
+  showToast(`${asset.hasPatrimony ? "Patrimônio" : "Referência interna"} ${identifier} localizado.`);
+}
+
+function resetInventoryFilters({ search = "" } = {}) {
+  elements.search.value = search;
+  elements.typeFilter.value = "all";
+  elements.statusFilter.value = "all";
+  elements.nucleusFilter.value = "all";
+  elements.sortFilter.value = "recent";
+  activeQuickFilter = "all";
+  currentPage = 1;
+}
+
+function updateScannerStatus(state, label) {
+  window.clearTimeout(scannerStatusTimer);
+  elements.scannerStatus.dataset.state = state;
+  elements.scannerStatus.querySelector("span").textContent = label;
+  if (state === "ready") return;
+  scannerStatusTimer = window.setTimeout(() => {
+    updateScannerStatus("ready", "Leitor pronto");
+  }, 3_000);
 }
 
 function renderDashboard() {
