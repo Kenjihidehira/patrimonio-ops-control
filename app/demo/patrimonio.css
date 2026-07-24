@@ -4644,6 +4644,7 @@ tbody tr:last-child td {
 }
 
 .operational-metric-icon svg {
+  display: block;
   width: 23px;
   height: 23px;
 }
@@ -4839,6 +4840,7 @@ tbody tr:last-child td {
 }
 
 .audit-item-icon svg {
+  display: block;
   width: 21px;
   height: 21px;
 }
@@ -5003,6 +5005,7 @@ tbody tr:last-child td {
 }
 
 .import-file-icon svg {
+  display: block;
   width: 21px;
   height: 21px;
 }

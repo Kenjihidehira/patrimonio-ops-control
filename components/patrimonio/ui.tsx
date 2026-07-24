@@ -640,7 +640,7 @@ export function OperationalMetric({
 }) {
   return (
     <article className={`operational-metric operational-metric-${tone} ${compactValue ? "operational-metric-compact" : ""}`.trim()}>
-      <span className="operational-metric-icon"><OperationalIcon name={icon} /></span>
+      <div className="operational-metric-icon"><OperationalIcon name={icon} /></div>
       <div className="operational-metric-content">
         <span>{label}</span>
         <strong>{value}</strong>

@@ -95,9 +95,9 @@ export function AuditView({ dashboard }: { dashboard: Dashboard }) {
           <div className="audit-list">
             {filtered.map((record) => (
               <article className="audit-item" key={record.id}>
-                <span className="audit-item-icon">
+                <div className="audit-item-icon">
                   <OperationalIcon name={auditEventIcon(record.type)} />
-                </span>
+                </div>
                 <div className="audit-item-asset">
                   <span className="audit-event-label">{record.typeLabel}</span>
                   <strong className="audit-asset"><AssetIdentifier asset={record} /></strong>
@@ -204,7 +204,7 @@ export function ImportsView({
               return (
                 <article className="import-run" key={run.id}>
                   <div className="import-run-main">
-                    <span className="import-file-icon"><OperationalIcon name="file" /></span>
+                    <div className="import-file-icon"><OperationalIcon name="file" /></div>
                     <div>
                       <strong>{run.fileName}</strong>
                       <span>{formatDateTime(run.createdAt)}</span>

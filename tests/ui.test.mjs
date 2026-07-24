@@ -228,9 +228,12 @@ test("perfil do colaborador diferencia patrimônios por categoria", () => {
 
 test("áreas operacionais compartilham métricas, filtros e cartões responsivos", () => {
   assert.match(ui, /export function OperationalMetric/);
+  assert.match(ui, /<div className="operational-metric-icon">/);
   assert.match(operational, /Buscar no histórico/);
   assert.match(operational, /Tipo de evento/);
   assert.match(operational, /Rejeitados/);
+  assert.match(operational, /<div className="audit-item-icon">/);
+  assert.match(operational, /<div className="import-file-icon">/);
   assert.match(collaborators, /className="operational-summary operational-summary-three"/);
   assert.match(css, /\.operational-metric/);
   assert.match(css, /\.audit-flow-point/);
