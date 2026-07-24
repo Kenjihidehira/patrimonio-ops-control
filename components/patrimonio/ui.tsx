@@ -223,17 +223,15 @@ export function AssetDetails({
 
   return (
     <div
-      className={scannerContext ? "scanner-asset-detail" : ""}
-      data-status={scannerContext ? asset.status : undefined}
+      className={scannerContext ? "asset-detail scanner-asset-detail" : "asset-detail inventory-asset-detail"}
+      data-status={asset.status}
     >
       <div className="detail-header">
         <div className="detail-header-row">
           <div className="detail-identity">
-            {scannerContext ? (
-              <span className={`scanner-asset-type-icon scanner-asset-type-icon-${asset.type}`}>
-                <AssetTypeIcon type={asset.type} />
-              </span>
-            ) : null}
+            <span className={`scanner-asset-type-icon scanner-asset-type-icon-${asset.type}`}>
+              <AssetTypeIcon type={asset.type} />
+            </span>
             <div>
               <span className="detail-label">Identificador patrimonial</span>
               <h2><AssetIdentifier asset={asset} /></h2>
@@ -265,9 +263,11 @@ export function AssetDetails({
           <button
             className="button button-quiet"
             type="button"
+            aria-label="Copiar ID"
+            title="Copiar ID"
             onClick={() => void navigator.clipboard.writeText(asset.id)}
           >
-            <CopyIcon /> Copiar ID
+            <CopyIcon /> <span className={scannerContext ? "" : "sr-only"}>Copiar ID</span>
           </button>
         </div>
       </div>
@@ -305,19 +305,17 @@ export function AssetDetails({
             <div><dt>Marca e modelo</dt><dd>{asset.brandModel}</dd></div>
             <div className="detail-wide"><dt>Observações</dt><dd>{asset.notes || "Sem observações"}</dd></div>
           </dl>
-          <form className="status-form" key={asset.status} onSubmit={onStatusSubmit}>
-            {scannerContext ? (
-              <div className="status-editor-heading">
-                <div className="status-editor-title">
-                  <span className="status-editor-icon"><StatusChangeIcon /></span>
-                  <strong>Alteração de status</strong>
-                </div>
-                <div className="status-current-state">
-                  <span>Status atual</span>
-                  <strong>{dashboard.options.statuses[asset.status]}</strong>
-                </div>
+          <form className="status-form" key={`${asset.id}:${asset.status}`} onSubmit={onStatusSubmit}>
+            <div className="status-editor-heading">
+              <div className="status-editor-title">
+                <span className="status-editor-icon"><StatusChangeIcon /></span>
+                <strong>Alteração de status</strong>
               </div>
-            ) : null}
+              <div className="status-current-state">
+                <span>Status atual</span>
+                <strong>{dashboard.options.statuses[asset.status]}</strong>
+              </div>
+            </div>
             <label className="field field-wide status-target-field">
               <span>Novo status</span>
               <select name="status" defaultValue={asset.status} disabled={!authenticated || busy}>

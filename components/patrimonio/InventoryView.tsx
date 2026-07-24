@@ -213,30 +213,30 @@ export function InventoryView({
             </label>
           </div>
         </div>
-      </section>
 
-      <div className="quick-filters" role="group" aria-label="Filtros rápidos">
-        {(Object.keys(quickFilterLabels) as QuickFilter[]).map((value) => (
-          <button
-            key={value}
-            className={[
-              "quick-filter",
-              value === "maintenance" ? "quick-filter-warning" : "",
-              value === "discrepancy" ? "quick-filter-danger" : "",
-              quickFilter === value ? "is-active" : "",
-            ].filter(Boolean).join(" ")}
-            type="button"
-            aria-pressed={quickFilter === value}
-            disabled={!dashboard?.session.authenticated}
-            onClick={() => {
-              setPage(1);
-              setQuickFilter(value);
-            }}
-          >
-            {quickFilterLabels[value]} <span>{quickCounts[value]}</span>
-          </button>
-        ))}
-      </div>
+        <div className="quick-filters" role="group" aria-label="Filtros rápidos">
+          {(Object.keys(quickFilterLabels) as QuickFilter[]).map((value) => (
+            <button
+              key={value}
+              className={[
+                "quick-filter",
+                value === "maintenance" ? "quick-filter-warning" : "",
+                value === "discrepancy" ? "quick-filter-danger" : "",
+                quickFilter === value ? "is-active" : "",
+              ].filter(Boolean).join(" ")}
+              type="button"
+              aria-pressed={quickFilter === value}
+              disabled={!dashboard?.session.authenticated}
+              onClick={() => {
+                setPage(1);
+                setQuickFilter(value);
+              }}
+            >
+              {quickFilterLabels[value]} <span>{quickCounts[value]}</span>
+            </button>
+          ))}
+        </div>
+      </section>
 
       <div className="inventory-layout">
         <section

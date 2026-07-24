@@ -145,6 +145,9 @@ test("inventário oferece filtros, paginação e experiência móvel dedicada", 
   assert.match(inventory, /15 por página/);
   assert.match(inventory, /50 por página/);
   assert.match(css, /th\s*\{[\s\S]*position:\s*sticky/);
+  assert.match(css, /\.inventory-layout\s*\{[\s\S]*minmax\(390px, 420px\)/);
+  assert.match(css, /\.table-scroll\s*\{[\s\S]*min-height:\s*0/);
+  assert.match(css, /\.inventory-asset-detail \.status-editor-heading/);
   assert.match(css, /\.mobile-asset-card/);
   assert.match(css, /\.detail-panel\.is-open/);
 });
@@ -170,9 +173,10 @@ test("leitor LS2208 em modo HID localiza patrimônio sem API de hardware", () =>
   assert.match(ui, /className="detail-header-row"/);
   assert.match(ui, /scanner-asset-type-icon-\$\{asset\.type\}/);
   assert.match(ui, /className=\{`detail-tab/);
-  assert.match(ui, /data-status=\{scannerContext \? asset\.status/);
+  assert.match(ui, /data-status=\{asset\.status\}/);
   assert.match(ui, /className="status-editor-heading"/);
   assert.match(ui, /className="status-current-state"/);
+  assert.match(ui, /key=\{`\$\{asset\.id\}:\$\{asset\.status\}`\}/);
   assert.match(ui, /<span>Novo status<\/span>/);
   assert.match(ui, /<TransferIcon \/> Transferir/);
   assert.match(ui, /<CheckIcon \/> Salvar alteração/);
