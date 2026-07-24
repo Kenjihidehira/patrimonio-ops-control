@@ -215,19 +215,24 @@ export default function PatrimonioApp() {
                 aria-current={view === item ? "page" : undefined}
                 onClick={() => setView(item)}
               >
-                {{
+                <span className="nav-item-icon"><NavigationIcon view={item} /></span>
+                <span>{{
                   inventory: "Inventário",
                   nuclei: "Núcleos",
                   audit: "Auditoria",
                   imports: "Importações",
                   collaborators: "Colaboradores",
-                }[item]}
+                }[item]}</span>
               </button>
             ))}
           </nav>
           <div className="header-status" aria-label="Status da base de dados">
+            <span className="header-status-icon" aria-hidden="true"><DatabaseStatusIcon /></span>
+            <div className="header-status-copy">
+              <strong>Base operacional</strong>
+              <span>{authenticated ? "Base empresarial Supabase" : "Dados protegidos"}</span>
+            </div>
             <span className="status-dot" aria-hidden="true" />
-            <div><strong>Base operacional</strong><span>{authenticated ? "Base empresarial Supabase" : "Dados protegidos"}</span></div>
           </div>
         </div>
       </header>
@@ -352,6 +357,71 @@ export default function PatrimonioApp() {
         />
       ) : null}
     </div>
+  );
+}
+
+function NavigationIcon({ view }: { view: ViewId }) {
+  const common = {
+    "aria-hidden": true,
+    viewBox: "0 0 24 24",
+    fill: "none",
+  } as const;
+
+  if (view === "nuclei") {
+    return (
+      <svg {...common}>
+        <rect x="4" y="4" width="6" height="6" rx="1.3" stroke="currentColor" strokeWidth="1.7" />
+        <rect x="14" y="4" width="6" height="6" rx="1.3" stroke="currentColor" strokeWidth="1.7" />
+        <rect x="9" y="14" width="6" height="6" rx="1.3" stroke="currentColor" strokeWidth="1.7" />
+        <path d="M7 10v2h10v-2M12 12v2" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+      </svg>
+    );
+  }
+
+  if (view === "audit") {
+    return (
+      <svg {...common}>
+        <path d="M6 4h12v16H6z" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" />
+        <path d="M9 8h6M9 12h6M9 16h4" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+      </svg>
+    );
+  }
+
+  if (view === "imports") {
+    return (
+      <svg {...common}>
+        <path d="M12 3v12m0 0-4-4m4 4 4-4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M5 18v2h14v-2" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    );
+  }
+
+  if (view === "collaborators") {
+    return (
+      <svg {...common}>
+        <circle cx="9" cy="8" r="3" stroke="currentColor" strokeWidth="1.7" />
+        <path d="M3.5 19c.7-3.3 2.5-5 5.5-5s4.8 1.7 5.5 5" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+        <path d="M15 7.5a2.5 2.5 0 0 1 0 5M16.5 15c2.2.5 3.5 1.8 4 4" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+      </svg>
+    );
+  }
+
+  return (
+    <svg {...common}>
+      <rect x="4" y="4" width="6" height="6" rx="1.2" stroke="currentColor" strokeWidth="1.7" />
+      <rect x="14" y="4" width="6" height="6" rx="1.2" stroke="currentColor" strokeWidth="1.7" />
+      <rect x="4" y="14" width="6" height="6" rx="1.2" stroke="currentColor" strokeWidth="1.7" />
+      <rect x="14" y="14" width="6" height="6" rx="1.2" stroke="currentColor" strokeWidth="1.7" />
+    </svg>
+  );
+}
+
+function DatabaseStatusIcon() {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 24 24" fill="none">
+      <ellipse cx="12" cy="6" rx="7" ry="3" stroke="currentColor" strokeWidth="1.7" />
+      <path d="M5 6v6c0 1.7 3.1 3 7 3s7-1.3 7-3V6M5 12v6c0 1.7 3.1 3 7 3s7-1.3 7-3v-6" stroke="currentColor" strokeWidth="1.7" />
+    </svg>
   );
 }
 
