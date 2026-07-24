@@ -3157,7 +3157,8 @@ tbody tr:last-child td {
 
 .scanner-asset-modal {
   width: min(860px, calc(100vw - 28px));
-  border: 1px solid var(--line);
+  border: 1px solid color-mix(in srgb, var(--brand-700) 28%, var(--line));
+  box-shadow: 0 30px 80px color-mix(in srgb, var(--brand-950) 30%, transparent);
 }
 
 .scanner-asset-modal[open] {
@@ -3189,23 +3190,66 @@ tbody tr:last-child td {
 }
 
 .scanner-asset-modal-content {
+  position: relative;
   max-height: calc(100dvh - 28px);
   min-height: 0;
 }
 
+.scanner-asset-modal-content::before {
+  position: absolute;
+  z-index: 2;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: 3px;
+  content: "";
+  background: var(--brand-700);
+}
+
 .scanner-asset-modal .modal-header {
-  min-height: 68px;
-  padding: 13px 20px;
-  background: var(--surface);
+  min-height: 74px;
+  padding: 15px 20px 14px;
+  border-bottom-color: color-mix(in srgb, var(--brand-700) 18%, var(--line));
+  background: var(--surface-raised);
 }
 
 .scanner-asset-modal .modal-header .eyebrow {
-  margin-bottom: 2px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 4px;
   color: var(--brand-700);
+  font-size: 8.5px;
+}
+
+.scanner-asset-modal .modal-header .eyebrow::before {
+  width: 7px;
+  height: 7px;
+  border: 2px solid color-mix(in srgb, var(--brand-700) 25%, var(--surface-raised));
+  border-radius: 50%;
+  content: "";
+  background: var(--brand-700);
 }
 
 .scanner-asset-modal .modal-header h2 {
-  font-size: 17px;
+  color: var(--heading-text);
+  font-size: 18px;
+  line-height: 1.2;
+}
+
+.scanner-asset-modal .modal-header .icon-button {
+  width: 40px;
+  height: 40px;
+  border-color: color-mix(in srgb, var(--brand-700) 34%, var(--line));
+  background: var(--surface);
+  color: var(--icon-accent);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--brand-700) 8%, transparent);
+}
+
+.scanner-asset-modal .modal-header .icon-button:hover {
+  border-color: var(--brand-700);
+  background: var(--surface-hover);
+  color: var(--heading-text);
 }
 
 .scanner-asset-detail {
@@ -3242,10 +3286,10 @@ tbody tr:last-child td {
 }
 
 .scanner-asset-detail .detail-header {
-  padding: 18px 20px 16px;
-  border-bottom: 1px solid var(--line);
-  box-shadow: inset 3px 0 0 var(--scanner-status-accent);
-  background: var(--surface-soft);
+  padding: 20px;
+  border-bottom: 1px solid color-mix(in srgb, var(--scanner-status-accent) 22%, var(--line));
+  box-shadow: inset 4px 0 0 var(--scanner-status-accent);
+  background: color-mix(in srgb, var(--scanner-status-accent) 4%, var(--surface-soft));
 }
 
 .scanner-asset-detail .detail-header-row,
@@ -3257,28 +3301,30 @@ tbody tr:last-child td {
 
 .scanner-asset-detail .detail-header-row {
   justify-content: space-between;
-  gap: 18px;
+  gap: 24px;
 }
 
 .scanner-asset-detail .detail-identity {
-  gap: 13px;
+  gap: 15px;
 }
 
 .scanner-asset-type-icon {
   display: grid;
-  width: 48px;
-  height: 48px;
-  flex: 0 0 48px;
+  width: 56px;
+  height: 56px;
+  flex: 0 0 56px;
   place-items: center;
   border: 1px solid color-mix(in srgb, var(--brand-700) 34%, var(--line));
-  border-radius: 7px;
+  border-radius: 8px;
   background: color-mix(in srgb, var(--brand-700) 10%, var(--surface));
   color: var(--brand-700);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--surface) 55%, transparent),
+    0 7px 18px color-mix(in srgb, var(--brand-950) 10%, transparent);
 }
 
 .scanner-asset-type-icon svg {
-  width: 25px;
-  height: 25px;
+  width: 28px;
+  height: 28px;
 }
 
 .scanner-asset-type-icon-monitor_1,
@@ -3303,37 +3349,51 @@ tbody tr:last-child td {
 .scanner-asset-detail .detail-label {
   display: block;
   color: var(--muted);
-  font-size: 8px;
+  font-size: 8.5px;
   font-weight: 800;
   text-transform: uppercase;
 }
 
 .scanner-asset-detail .detail-header h2 {
-  margin: 1px 0 0;
+  margin: 2px 0 0;
   color: var(--heading-text);
-  font-size: 25px;
-  line-height: 1.1;
+  font-size: 30px;
+  line-height: 1.05;
 }
 
 .scanner-asset-detail .detail-type {
-  margin-top: 4px;
-  font-size: 11px;
+  margin-top: 5px;
+  color: var(--table-text);
+  font-size: 12px;
+  font-weight: 650;
 }
 
 .scanner-asset-detail .status-badge {
-  min-height: 27px;
-  padding: 4px 10px;
-  font-size: 9px;
+  min-height: 30px;
+  padding: 5px 11px;
+  font-size: 9.5px;
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--scanner-status-accent) 12%, transparent);
 }
 
 .scanner-asset-detail .detail-actions {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 9px;
-  margin-top: 16px;
+  grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.15fr) minmax(130px, 0.72fr);
+  gap: 10px;
+  margin-top: 18px;
 }
 
 .scanner-asset-detail .detail-actions .button {
-  min-height: 38px;
+  min-height: 42px;
+  background: color-mix(in srgb, var(--surface-raised) 92%, transparent);
+  font-size: 11.5px;
+}
+
+.scanner-asset-detail .detail-actions .button:hover {
+  background: var(--surface-hover);
+}
+
+.scanner-asset-detail .detail-actions .button-quiet {
+  border-color: color-mix(in srgb, var(--brand-700) 18%, var(--line));
+  color: var(--brand-700);
 }
 
 .scanner-asset-detail .detail-actions .button svg {
@@ -3342,18 +3402,27 @@ tbody tr:last-child td {
 }
 
 .scanner-asset-detail .detail-tabs {
-  min-height: 46px;
+  min-height: 50px;
   padding: 0 20px;
-  background: var(--surface);
+  gap: 4px;
+  background: var(--surface-raised);
 }
 
 .scanner-asset-detail .detail-tab {
   min-width: 96px;
   justify-content: center;
-  font-size: 10px;
+  margin-top: 7px;
+  padding-top: 1px;
+  border-radius: 6px 6px 0 0;
+  font-size: 10.5px;
+}
+
+.scanner-asset-detail .detail-tab:hover {
+  background: var(--surface-hover);
 }
 
 .scanner-asset-detail .detail-tab.is-active {
+  background: color-mix(in srgb, var(--scanner-status-accent) 7%, var(--surface-raised));
   color: var(--scanner-status-accent);
 }
 
@@ -3363,51 +3432,57 @@ tbody tr:last-child td {
 
 .scanner-asset-detail .detail-body {
   min-height: 0;
-  padding: 18px 20px 20px;
+  padding: 20px;
   flex: 1;
   overflow-y: auto;
-  background: var(--surface);
+  background: var(--surface-soft);
 }
 
 .scanner-asset-detail .detail-grid {
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 1px;
   overflow: hidden;
-  border: 1px solid var(--line);
-  border-radius: 7px;
+  border: 1px solid color-mix(in srgb, var(--brand-700) 16%, var(--line));
+  border-radius: 8px;
   background: var(--line);
+  box-shadow: var(--shadow-soft);
 }
 
 .scanner-asset-detail .detail-grid > div {
-  min-height: 62px;
-  padding: 11px 12px;
-  background: var(--surface-inset);
+  min-height: 66px;
+  padding: 12px 13px;
+  background: var(--surface-raised);
 }
 
 .scanner-asset-detail .detail-grid .detail-wide {
-  min-height: 56px;
+  min-height: 60px;
   grid-column: 1 / -1;
 }
 
 .scanner-asset-detail .detail-grid dt {
-  font-size: 8px;
+  color: var(--muted);
+  font-size: 8.5px;
+  letter-spacing: 0;
 }
 
 .scanner-asset-detail .detail-grid dd {
-  margin-top: 4px;
-  font-size: 11px;
+  margin-top: 5px;
+  color: var(--table-text);
+  font-size: 12px;
+  line-height: 1.35;
 }
 
 .scanner-asset-detail .status-form {
   grid-template-columns: minmax(150px, 0.72fr) minmax(270px, 1.5fr) minmax(150px, auto);
   align-items: end;
-  gap: 13px;
-  margin-top: 16px;
-  padding: 16px;
-  border: 1px solid var(--line);
-  border-left: 3px solid var(--scanner-status-accent);
-  border-radius: 7px;
-  background: var(--surface-soft);
+  gap: 14px;
+  margin-top: 18px;
+  padding: 18px;
+  border: 1px solid color-mix(in srgb, var(--scanner-status-accent) 26%, var(--line));
+  border-left: 4px solid var(--scanner-status-accent);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--scanner-status-accent) 4%, var(--surface-raised));
+  box-shadow: var(--shadow-soft);
 }
 
 .scanner-asset-detail .status-editor-heading {
@@ -3415,9 +3490,9 @@ tbody tr:last-child td {
   grid-column: 1 / -1;
   align-items: center;
   justify-content: space-between;
-  min-height: 38px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid var(--line);
+  min-height: 40px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid color-mix(in srgb, var(--scanner-status-accent) 18%, var(--line));
 }
 
 .scanner-asset-detail .status-editor-title,
@@ -3432,7 +3507,7 @@ tbody tr:last-child td {
 
 .scanner-asset-detail .status-editor-title strong {
   color: var(--heading-text);
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .scanner-asset-detail .status-current-state {
@@ -3447,7 +3522,7 @@ tbody tr:last-child td {
 }
 
 .scanner-asset-detail .status-current-state strong {
-  padding: 5px 9px;
+  padding: 6px 10px;
   border: 1px solid color-mix(in srgb, var(--scanner-status-accent) 38%, var(--line));
   border-radius: 999px;
   background: color-mix(in srgb, var(--scanner-status-accent) 10%, var(--surface));
@@ -3458,9 +3533,9 @@ tbody tr:last-child td {
 
 .scanner-asset-detail .status-editor-icon {
   display: grid;
-  width: 32px;
-  height: 32px;
-  flex: 0 0 32px;
+  width: 36px;
+  height: 36px;
+  flex: 0 0 36px;
   place-items: center;
   border: 1px solid color-mix(in srgb, var(--scanner-status-accent) 36%, var(--line));
   border-radius: 6px;
@@ -3473,13 +3548,14 @@ tbody tr:last-child td {
 }
 
 .scanner-asset-detail .status-form textarea {
-  min-height: 44px;
+  min-height: 46px;
   max-height: 96px;
 }
 
 .scanner-asset-detail .status-form .button {
   min-width: 150px;
-  min-height: 44px;
+  min-height: 46px;
+  box-shadow: 0 8px 18px color-mix(in srgb, var(--action-bg) 24%, transparent);
 }
 
 .scanner-asset-detail .status-form .form-error {
