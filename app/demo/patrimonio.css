@@ -3958,6 +3958,12 @@ tbody tr:last-child td {
 
   .detail-header .detail-close {
     display: inline-grid;
+    width: 34px;
+    height: 34px;
+    min-height: 34px;
+    place-items: center;
+    border-color: var(--line-strong);
+    background: var(--surface-soft);
   }
 
   .detail-scrim {

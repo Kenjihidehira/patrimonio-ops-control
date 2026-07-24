@@ -377,6 +377,7 @@ export function InventoryView({
               onTabChange={setDetailTab}
               onTransfer={() => onTransfer(selectedAsset.id)}
               onIdentifier={() => onIdentifier(selectedAsset.id)}
+              onClose={() => setMobileDetailOpen(false)}
               onStatusSubmit={(event) => onStatusSubmit(event, selectedAsset)}
               busy={statusBusy}
               error={statusError}

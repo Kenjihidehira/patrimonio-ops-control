@@ -176,6 +176,7 @@ test("leitor LS2208 em modo HID localiza patrimônio sem API de hardware", () =>
   assert.match(ui, /data-status=\{asset\.status\}/);
   assert.match(ui, /className="status-editor-heading"/);
   assert.match(ui, /className="status-current-state"/);
+  assert.match(ui, /aria-label="Fechar detalhes"/);
   assert.match(ui, /key=\{`\$\{asset\.id\}:\$\{asset\.status\}`\}/);
   assert.match(ui, /<span>Novo status<\/span>/);
   assert.match(ui, /<TransferIcon \/> Transferir/);

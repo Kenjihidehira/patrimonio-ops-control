@@ -200,6 +200,7 @@ export function AssetDetails({
   onTabChange,
   onTransfer,
   onIdentifier,
+  onClose,
   onStatusSubmit,
   busy,
   error,
@@ -212,6 +213,7 @@ export function AssetDetails({
   onTabChange: (tab: "summary" | "history") => void;
   onTransfer: () => void;
   onIdentifier: () => void;
+  onClose?: () => void;
   onStatusSubmit: (event: FormEvent<HTMLFormElement>) => void;
   busy: boolean;
   error: string | null;
@@ -240,6 +242,17 @@ export function AssetDetails({
           </div>
           <div className="detail-header-controls">
             <StatusBadge status={asset.status} labels={dashboard.options.statuses} />
+            {onClose ? (
+              <button
+                className="icon-button detail-close"
+                type="button"
+                aria-label="Fechar detalhes"
+                title="Fechar detalhes"
+                onClick={onClose}
+              >
+                <CloseIcon />
+              </button>
+            ) : null}
           </div>
         </div>
 
