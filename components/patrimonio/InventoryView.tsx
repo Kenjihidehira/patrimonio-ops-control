@@ -15,9 +15,11 @@ import type { ScannerState } from "./hooks";
 import {
   AssetDetails,
   AssetIdentifier,
+  AssetTypeIcon,
   BarcodeIcon,
   EmptyState,
   LoadingState,
+  SearchIcon,
   StatusBadge,
   formatDateTime,
 } from "./ui";
@@ -143,9 +145,9 @@ export function InventoryView({
           <label className="field field-search">
             <span className="field-label-row">
               <span>Buscar patrimônio</span>
-              <span
-                className="scanner-status"
-                data-state={scannerState}
+            <span
+              className="scanner-status"
+              data-state={scannerState}
                 aria-live="polite"
                 title="Leitor USB em modo teclado HID"
               >
@@ -153,14 +155,17 @@ export function InventoryView({
                 <span>{scannerLabel}</span>
               </span>
             </span>
-            <input
-              data-inventory-search
-              type="search"
-              value={filters.search}
-              onChange={(event) => updateFilter("search", event.target.value)}
-              placeholder="ID, série, responsável ou local"
-              autoComplete="off"
-            />
+            <span className="inventory-search-control">
+              <SearchIcon />
+              <input
+                data-inventory-search
+                type="search"
+                value={filters.search}
+                onChange={(event) => updateFilter("search", event.target.value)}
+                placeholder="ID, série, responsável ou local"
+                autoComplete="off"
+              />
+            </span>
           </label>
 
           <div className={`advanced-filters ${advancedOpen ? "is-open" : ""}`} id="advanced-filters" hidden={!advancedOpen}>
@@ -300,8 +305,15 @@ export function InventoryView({
                           </span>
                         </td>
                         <td>
-                          <span className="cell-primary">{dashboard.options.assetTypes[asset.type]}</span>
-                          <span className="cell-secondary">{asset.brandModel}</span>
+                          <span className="table-item-identity">
+                            <span className={`table-item-icon table-item-icon-${asset.type}`}>
+                              <AssetTypeIcon type={asset.type} />
+                            </span>
+                            <span>
+                              <span className="cell-primary">{dashboard.options.assetTypes[asset.type]}</span>
+                              <span className="cell-secondary">{asset.brandModel}</span>
+                            </span>
+                          </span>
                         </td>
                         <td>
                           <span className="cell-primary">{asset.nucleus.code}</span>
@@ -411,28 +423,82 @@ function Summary({ dashboard }: { dashboard: Dashboard | null }) {
   return (
     <div className="kpi-strip" aria-label="Resumo do inventário">
       <article className="kpi-item kpi-total">
-        <span>Total ativo</span>
-        <strong>{authenticated ? dashboard.summary.total : "--"}</strong>
-        <small>{authenticated
-          ? `${dashboard.summary.available} disponíveis · ${dashboard.summary.retired} baixados`
-          : "dados protegidos"}</small>
+        <span className="kpi-icon"><SummaryIcon type="total" /></span>
+        <div className="kpi-content">
+          <span>Total ativo</span>
+          <strong>{authenticated ? dashboard.summary.total : "--"}</strong>
+          <small>{authenticated
+            ? `${dashboard.summary.available} disponíveis · ${dashboard.summary.retired} baixados`
+            : "dados protegidos"}</small>
+        </div>
       </article>
       <article className="kpi-item kpi-allocated">
-        <span>Em uso</span>
-        <strong>{authenticated ? dashboard.summary.allocated : "--"}</strong>
-        <small>alocados a responsáveis</small>
+        <span className="kpi-icon"><SummaryIcon type="allocated" /></span>
+        <div className="kpi-content">
+          <span>Em uso</span>
+          <strong>{authenticated ? dashboard.summary.allocated : "--"}</strong>
+          <small>alocados a responsáveis</small>
+        </div>
       </article>
       <article className="kpi-item kpi-maintenance">
-        <span>Manutenção</span>
-        <strong>{authenticated ? dashboard.summary.maintenance : "--"}</strong>
-        <small>aguardando tratamento</small>
+        <span className="kpi-icon"><SummaryIcon type="maintenance" /></span>
+        <div className="kpi-content">
+          <span>Manutenção</span>
+          <strong>{authenticated ? dashboard.summary.maintenance : "--"}</strong>
+          <small>aguardando tratamento</small>
+        </div>
       </article>
       <article className="kpi-item kpi-discrepancy">
-        <span>Divergências</span>
-        <strong>{authenticated ? dashboard.summary.discrepancies : "--"}</strong>
-        <small>exigem conferência</small>
+        <span className="kpi-icon"><SummaryIcon type="discrepancy" /></span>
+        <div className="kpi-content">
+          <span>Divergências</span>
+          <strong>{authenticated ? dashboard.summary.discrepancies : "--"}</strong>
+          <small>exigem conferência</small>
+        </div>
       </article>
     </div>
+  );
+}
+
+function SummaryIcon({
+  type,
+}: {
+  type: "total" | "allocated" | "maintenance" | "discrepancy";
+}) {
+  if (type === "allocated") {
+    return (
+      <svg aria-hidden="true" viewBox="0 0 24 24" fill="none">
+        <circle cx="9" cy="8" r="3" stroke="currentColor" strokeWidth="1.8" />
+        <path d="M3.5 18.5c.7-3 2.5-4.5 5.5-4.5s4.8 1.5 5.5 4.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+        <path d="m15 12 2 2 4-4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    );
+  }
+
+  if (type === "maintenance") {
+    return (
+      <svg aria-hidden="true" viewBox="0 0 24 24" fill="none">
+        <path d="M14.5 6.2a4.2 4.2 0 0 0-5.3 5.3L4 16.7A1.6 1.6 0 1 0 6.3 19l5.2-5.2a4.2 4.2 0 0 0 5.3-5.3l-2.5 2.4-1.9-.5-.5-1.9Z" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    );
+  }
+
+  if (type === "discrepancy") {
+    return (
+      <svg aria-hidden="true" viewBox="0 0 24 24" fill="none">
+        <path d="M12 4 21 20H3Z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
+        <path d="M12 9v5m0 3h.01" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+      </svg>
+    );
+  }
+
+  return (
+    <svg aria-hidden="true" viewBox="0 0 24 24" fill="none">
+      <rect x="4" y="4" width="6" height="6" rx="1.2" stroke="currentColor" strokeWidth="1.8" />
+      <rect x="14" y="4" width="6" height="6" rx="1.2" stroke="currentColor" strokeWidth="1.8" />
+      <rect x="4" y="14" width="6" height="6" rx="1.2" stroke="currentColor" strokeWidth="1.8" />
+      <rect x="14" y="14" width="6" height="6" rx="1.2" stroke="currentColor" strokeWidth="1.8" />
+    </svg>
   );
 }
 

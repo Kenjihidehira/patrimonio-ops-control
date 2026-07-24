@@ -145,9 +145,12 @@ test("inventário oferece filtros, paginação e experiência móvel dedicada", 
   assert.match(inventory, /15 por página/);
   assert.match(inventory, /50 por página/);
   assert.match(css, /th\s*\{[\s\S]*position:\s*sticky/);
-  assert.match(css, /\.inventory-layout\s*\{[\s\S]*minmax\(390px, 420px\)/);
+  assert.match(css, /\.inventory-layout\s*\{[\s\S]*minmax\(410px, 440px\)/);
   assert.match(css, /\.table-scroll\s*\{[\s\S]*min-height:\s*0/);
   assert.match(css, /\.inventory-asset-detail \.status-editor-heading/);
+  assert.match(inventory, /className="inventory-search-control"/);
+  assert.match(inventory, /className=\{`table-item-icon table-item-icon-\$\{asset\.type\}`\}/);
+  assert.match(inventory, /<SummaryIcon type="discrepancy" \/>/);
   assert.match(css, /\.mobile-asset-card/);
   assert.match(css, /\.detail-panel\.is-open/);
 });
