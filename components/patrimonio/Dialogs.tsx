@@ -20,6 +20,7 @@ import {
   AssetDetails,
   AssetIdentifier,
   AssetTypeIcon,
+  BarcodeIcon,
   EditIcon,
   EmptyState,
   FormError,
@@ -80,16 +81,24 @@ export function Dialogs({
     ? dashboard.nucleusInventory.find((asset) => asset.id === modal.assetId)
       ?? dashboard.inventory.find((asset) => asset.id === modal.assetId)
     : undefined;
+  const createAssetScanToken = modal.kind === "create-asset" ? modal.scanToken : undefined;
 
   return (
     <>
       <CreateAssetDialog
         open={modal.kind === "create-asset"}
+        initialId={modal.kind === "create-asset" ? modal.initialId : undefined}
         dashboard={dashboard}
         busy={busy}
         error={error}
         onClose={close}
-        onSubmit={(action, id) => execute(action, id)}
+        onSubmit={(action, id) => execute(
+          action,
+          id,
+          createAssetScanToken !== undefined
+            ? () => setModal({ kind: "scanner", assetId: id, scanToken: createAssetScanToken })
+            : close,
+        )}
       />
       <TransferDialog
         open={modal.kind === "transfer"}
@@ -157,6 +166,19 @@ export function Dialogs({
         onImported={onImported}
         onToast={onToast}
       />
+      <ScannerMissingDialog
+        open={modal.kind === "scanner-missing"}
+        identifier={modal.kind === "scanner-missing" ? modal.identifier : ""}
+        onClose={close}
+        onAdd={() => {
+          if (modal.kind !== "scanner-missing") return;
+          setModal({
+            kind: "create-asset",
+            initialId: modal.identifier,
+            scanToken: modal.scanToken,
+          });
+        }}
+      />
       <ScannerAssetDialog
         open={modal.kind === "scanner"}
         asset={modal.kind === "scanner" ? selectedAsset : undefined}
@@ -184,6 +206,7 @@ export function Dialogs({
 
 function CreateAssetDialog({
   open,
+  initialId,
   dashboard,
   busy,
   error,
@@ -191,6 +214,7 @@ function CreateAssetDialog({
   onSubmit,
 }: {
   open: boolean;
+  initialId?: string;
   dashboard: Dashboard;
   busy: boolean;
   error: string | null;
@@ -222,13 +246,34 @@ function CreateAssetDialog({
   };
 
   return (
-    <Modal open={open} labelledBy="asset-dialog-title" onClose={onClose}>
-      <form className="modal-content" onSubmit={submit}>
-        <ModalHeader eyebrow="Cadastro patrimonial" title="Novo patrimônio" titleId="asset-dialog-title" onClose={onClose} />
+    <Modal
+      open={open}
+      labelledBy="asset-dialog-title"
+      className={initialId ? "scanner-create-modal" : ""}
+      onClose={onClose}
+    >
+      <form className={`modal-content ${initialId ? "scanner-create-content" : ""}`.trim()} onSubmit={submit}>
+        <ModalHeader
+          eyebrow={initialId ? "Cadastro após leitura" : "Cadastro patrimonial"}
+          title={initialId ? "Adicionar patrimônio ao inventário" : "Novo patrimônio"}
+          titleId="asset-dialog-title"
+          description={initialId ? `O identificador #${initialId} foi preenchido pelo leitor.` : undefined}
+          onClose={onClose}
+        />
         <div className="modal-body form-grid">
           <label className="field">
-            <span>Identificador de 6 números</span>
-            <input name="id" inputMode="numeric" pattern="[0-9]{6}" maxLength={6} required placeholder="104296" />
+            <span>{initialId ? "Identificador lido" : "Identificador de 6 números"}</span>
+            <input
+              name="id"
+              inputMode="numeric"
+              pattern="[0-9]{6}"
+              maxLength={6}
+              required
+              readOnly={Boolean(initialId)}
+              defaultValue={initialId}
+              placeholder="104296"
+            />
+            {initialId ? <small className="field-help">Para cadastrar outro número, feche e realize uma nova leitura.</small> : null}
           </label>
           <label className="field">
             <span>Tipo de item</span>
@@ -282,6 +327,57 @@ function CreateAssetDialog({
         {error ? <FormError message={error} /> : null}
         <ModalFooter onCancel={onClose} submitLabel="Cadastrar patrimônio" busy={busy} />
       </form>
+    </Modal>
+  );
+}
+
+function ScannerMissingDialog({
+  open,
+  identifier,
+  onClose,
+  onAdd,
+}: {
+  open: boolean;
+  identifier: string;
+  onClose: () => void;
+  onAdd: () => void;
+}) {
+  return (
+    <Modal
+      open={open}
+      labelledBy="scanner-missing-title"
+      className="scanner-missing-modal"
+      onClose={onClose}
+    >
+      <div className="modal-content scanner-missing-content">
+        <ModalHeader
+          eyebrow="Leitura concluída"
+          title="Patrimônio não cadastrado"
+          titleId="scanner-missing-title"
+          onClose={onClose}
+        />
+        <div className="scanner-missing-body">
+          <div className="scanner-missing-identifier" aria-live="polite">
+            <span className="scanner-missing-icon"><BarcodeIcon /></span>
+            <div>
+              <span>Identificador lido</span>
+              <strong>#{identifier}</strong>
+            </div>
+          </div>
+          <div className="scanner-missing-copy">
+            <h3>Deseja adicionar este item ao inventário?</h3>
+            <p>O código não existe na base atual. O cadastro solicitará os dados necessários e registrará a inclusão na auditoria.</p>
+          </div>
+        </div>
+        <div className="modal-footer scanner-missing-actions">
+          <button className="button button-secondary" type="button" onClick={onClose}>
+            Agora não
+          </button>
+          <button className="button button-primary" type="button" onClick={onAdd}>
+            <span aria-hidden="true">+</span> Adicionar ao inventário
+          </button>
+        </div>
+      </div>
     </Modal>
   );
 }

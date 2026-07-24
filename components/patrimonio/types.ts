@@ -168,7 +168,7 @@ export type MutationAction = Record<string, unknown> & { type: string };
 
 export type ModalState =
   | { kind: "closed" }
-  | { kind: "create-asset" }
+  | { kind: "create-asset"; initialId?: string; scanToken?: number }
   | { kind: "create-nucleus" }
   | { kind: "transfer"; assetId: string }
   | { kind: "identifier"; assetId: string }
@@ -176,6 +176,7 @@ export type ModalState =
   | { kind: "nucleus-inventory"; nucleusId: string; assetId?: string }
   | { kind: "collaborator"; collaboratorId: string }
   | { kind: "import" }
+  | { kind: "scanner-missing"; identifier: string; scanToken: number }
   | { kind: "scanner"; assetId: string; scanToken: number };
 
 export const defaultFilters: InventoryFilters = {

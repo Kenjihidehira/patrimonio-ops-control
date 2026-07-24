@@ -37,6 +37,8 @@ import {
   formValue,
 } from "./ui";
 
+const OFFICIAL_PATRIMONY_PATTERN = /^\d{6}$/;
+
 const viewCopy: Record<ViewId, { eyebrow: string; title: string; description: string }> = {
   inventory: {
     eyebrow: "Operações / Inventário",
@@ -97,6 +99,17 @@ export default function PatrimonioApp() {
     showToast(`${asset.hasPatrimony ? "Patrimônio" : "Referência interna"} ${identifier} localizado.`);
   }, [showToast]);
 
+  const openMissingScannedAsset = useCallback((identifier: string) => {
+    lastProcessedScanRef.current = identifier;
+    scanSequenceRef.current += 1;
+    setModal({
+      kind: "scanner-missing",
+      identifier,
+      scanToken: scanSequenceRef.current,
+    });
+    scannerUpdateRef.current("error", "Item não cadastrado");
+  }, []);
+
   const handleScan = useCallback(async (identifier: string) => {
     if (!dashboard?.session.authenticated) {
       scannerUpdateRef.current("error", "Entre para consultar");
@@ -117,13 +130,24 @@ export default function PatrimonioApp() {
     }
     const asset = next.inventory.find((item) => item.id === identifier);
     if (!asset) {
-      scannerUpdateRef.current("error", "Código não encontrado");
-      showToast(`O código ${identifier} não está cadastrado.`, true);
+      if (!OFFICIAL_PATRIMONY_PATTERN.test(identifier)) {
+        scannerUpdateRef.current("error", "Referência não encontrada");
+        showToast(`A referência interna ${identifier} não está cadastrada.`, true);
+        return;
+      }
+      setFilterDraft(scanFilters);
+      openMissingScannedAsset(identifier);
       return;
     }
     setFilterDraft(scanFilters);
     openScannedAsset(asset, identifier);
-  }, [dashboard?.session.authenticated, openScannedAsset, refresh, showToast]);
+  }, [
+    dashboard?.session.authenticated,
+    openMissingScannedAsset,
+    openScannedAsset,
+    refresh,
+    showToast,
+  ]);
   const scanner = useBarcodeScanner(handleScan);
   useEffect(() => {
     scannerUpdateRef.current = scanner.updateState;

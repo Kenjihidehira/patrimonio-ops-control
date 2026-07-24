@@ -199,6 +199,22 @@ test("leitor LS2208 em modo HID localiza patrimônio sem API de hardware", () =>
   assert.match(css, /@keyframes scanner-content-swap/);
 });
 
+test("leitura sem correspondência oferece cadastro auditável com o identificador lido", () => {
+  assert.match(app, /kind: "scanner-missing"/);
+  assert.match(app, /openMissingScannedAsset\(identifier\)/);
+  assert.match(app, /OFFICIAL_PATRIMONY_PATTERN\.test\(identifier\)/);
+  assert.match(dialogs, /function ScannerMissingDialog/);
+  assert.match(dialogs, /Deseja adicionar este item ao inventário\?/);
+  assert.match(dialogs, /Adicionar ao inventário/);
+  assert.match(dialogs, /kind: "create-asset",[\s\S]*initialId: modal\.identifier/);
+  assert.match(dialogs, /readOnly=\{Boolean\(initialId\)\}/);
+  assert.match(dialogs, /defaultValue=\{initialId\}/);
+  assert.match(dialogs, /kind: "scanner", assetId: id, scanToken: createAssetScanToken/);
+  assert.match(dialogs, /type: "create_asset"/);
+  assert.match(css, /\.scanner-missing-modal/);
+  assert.match(css, /\.scanner-create-modal/);
+});
+
 test("visão de núcleos oferece resumo, busca e edição auditável", () => {
   assert.match(nuclei, /className="nuclei-overview"/);
   assert.match(nuclei, /<OperationalMetric/);

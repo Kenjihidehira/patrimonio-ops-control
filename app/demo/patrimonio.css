@@ -3155,6 +3155,149 @@ tbody tr:last-child td {
   flex-direction: column;
 }
 
+.scanner-missing-modal {
+  width: min(580px, calc(100vw - 28px));
+  border: 1px solid color-mix(in srgb, var(--coral) 34%, var(--line));
+  box-shadow: 0 30px 80px color-mix(in srgb, var(--brand-950) 30%, transparent);
+}
+
+.scanner-missing-modal[open],
+.scanner-create-modal[open] {
+  animation: scanner-modal-enter 170ms ease-out;
+}
+
+.scanner-missing-modal[open]::backdrop,
+.scanner-create-modal[open]::backdrop {
+  animation: scanner-backdrop-enter 170ms ease-out;
+}
+
+.scanner-missing-content,
+.scanner-create-content {
+  position: relative;
+}
+
+.scanner-missing-content::before,
+.scanner-create-content::before {
+  position: absolute;
+  z-index: 2;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: 3px;
+  content: "";
+  background: var(--brand-700);
+}
+
+.scanner-missing-content::before {
+  background: var(--coral);
+}
+
+.scanner-missing-content .modal-header,
+.scanner-create-content .modal-header {
+  background: var(--surface-raised);
+}
+
+.scanner-missing-content .modal-header .eyebrow {
+  color: var(--coral);
+}
+
+.scanner-missing-body {
+  display: grid;
+  gap: 22px;
+  padding: 26px;
+  background: var(--surface);
+}
+
+.scanner-missing-identifier {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 17px 0;
+  border-top: 1px solid color-mix(in srgb, var(--coral) 24%, var(--line));
+  border-bottom: 1px solid color-mix(in srgb, var(--coral) 24%, var(--line));
+}
+
+.scanner-missing-icon {
+  display: grid;
+  width: 52px;
+  height: 52px;
+  flex: 0 0 52px;
+  place-items: center;
+  border: 1px solid color-mix(in srgb, var(--coral) 40%, var(--line));
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--coral) 10%, var(--surface));
+  color: var(--coral);
+}
+
+.scanner-missing-icon svg {
+  width: 27px;
+  height: 27px;
+}
+
+.scanner-missing-identifier div {
+  display: grid;
+  gap: 2px;
+}
+
+.scanner-missing-identifier div > span {
+  color: var(--muted);
+  font-size: 9px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.scanner-missing-identifier strong {
+  color: var(--heading-text);
+  font-size: 29px;
+  line-height: 1.05;
+}
+
+.scanner-missing-copy h3 {
+  margin: 0;
+  color: var(--heading-text);
+  font-size: 16px;
+}
+
+.scanner-missing-copy p {
+  max-width: 58ch;
+  margin: 7px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.scanner-missing-actions {
+  justify-content: space-between;
+}
+
+.scanner-missing-actions .button-primary {
+  min-width: 220px;
+}
+
+.scanner-create-modal {
+  width: min(820px, calc(100vw - 28px));
+  border: 1px solid color-mix(in srgb, var(--brand-700) 28%, var(--line));
+}
+
+.scanner-create-content .modal-header > div > p:not(.eyebrow) {
+  margin: 5px 0 0;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.scanner-create-content .modal-body {
+  background: var(--surface-soft);
+}
+
+.scanner-create-content .field input[readonly] {
+  border-color: color-mix(in srgb, var(--brand-700) 45%, var(--line-strong));
+  background: color-mix(in srgb, var(--brand-700) 8%, var(--surface));
+  color: var(--heading-text);
+  cursor: default;
+  font-size: 14px;
+  font-weight: 800;
+}
+
 .scanner-asset-modal {
   width: min(980px, calc(100vw - 28px));
   border: 1px solid color-mix(in srgb, var(--brand-700) 28%, var(--line));
@@ -4455,6 +4598,28 @@ tbody tr:last-child td {
 }
 
 @media (max-width: 430px) {
+  .scanner-missing-modal,
+  .scanner-create-modal {
+    width: calc(100vw - 20px);
+    max-height: calc(100dvh - 20px);
+  }
+
+  .scanner-missing-body {
+    gap: 18px;
+    padding: 22px 16px;
+  }
+
+  .scanner-missing-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .scanner-missing-actions .button,
+  .scanner-missing-actions .button-primary {
+    width: 100%;
+    min-width: 0;
+  }
+
   .scanner-asset-modal .modal-header,
   .scanner-asset-detail .detail-header,
   .scanner-asset-detail .detail-body {
