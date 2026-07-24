@@ -6,6 +6,8 @@ import {
   AssetTypeIcon,
   EditIcon,
   EmptyState,
+  OperationalMetric,
+  SearchIcon,
   allocationStyle,
   normalizedText,
 } from "./ui";
@@ -48,10 +50,33 @@ export function NucleiView({
       </div>
 
       <div className="nuclei-overview" aria-label="Resumo dos núcleos">
-        <div><span>Núcleos</span><strong>{dashboard.nuclei.length}</strong><small>áreas cadastradas</small></div>
-        <div><span>Ativos</span><strong>{totalAssets}</strong><small>itens distribuídos</small></div>
-        <div><span>Em uso</span><strong>{allocated}</strong><small>alocados aos núcleos</small></div>
-        <div className="nuclei-overview-alerts"><span>Com alertas</span><strong>{withAlerts}</strong><small>exigem conferência</small></div>
+        <OperationalMetric
+          icon="building"
+          label="Núcleos"
+          value={dashboard.nuclei.length}
+          description="áreas cadastradas"
+        />
+        <OperationalMetric
+          icon="asset"
+          label="Ativos"
+          value={totalAssets}
+          description="itens distribuídos"
+          tone="blue"
+        />
+        <OperationalMetric
+          icon="user"
+          label="Em uso"
+          value={allocated}
+          description="alocados aos núcleos"
+          tone="success"
+        />
+        <OperationalMetric
+          icon="alert"
+          label="Com alertas"
+          value={withAlerts}
+          description="exigem conferência"
+          tone="danger"
+        />
       </div>
 
       <div className="nuclei-list-toolbar">
@@ -61,13 +86,16 @@ export function NucleiView({
         </div>
         <label className="field nuclei-search">
           <span>Buscar núcleo</span>
-          <input
-            type="search"
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder="Nome, sigla, gestor ou local"
-            autoComplete="off"
-          />
+          <span className="search-control">
+            <SearchIcon />
+            <input
+              type="search"
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder="Nome, sigla, gestor ou local"
+              autoComplete="off"
+            />
+          </span>
         </label>
       </div>
 

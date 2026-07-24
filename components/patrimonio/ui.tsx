@@ -498,6 +498,158 @@ export function BarcodeIcon() {
   );
 }
 
+export type OperationalIconName =
+  | "activity"
+  | "alert"
+  | "asset"
+  | "building"
+  | "file"
+  | "history"
+  | "people"
+  | "rows"
+  | "sync"
+  | "tag"
+  | "transfer"
+  | "user";
+
+export function OperationalIcon({ name }: { name: OperationalIconName }) {
+  const common = {
+    "aria-hidden": true,
+    viewBox: "0 0 24 24",
+    fill: "none",
+  } as const;
+
+  if (name === "activity") {
+    return (
+      <svg {...common}>
+        <path d="M3 12h4l2.2-5 4.1 10 2.2-5H21" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    );
+  }
+
+  if (name === "alert") {
+    return (
+      <svg {...common}>
+        <path d="M12 3.8 21 20H3Z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
+        <path d="M12 9v5m0 3h.01" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+      </svg>
+    );
+  }
+
+  if (name === "asset") {
+    return (
+      <svg {...common}>
+        <rect x="4" y="4" width="16" height="12" rx="2" stroke="currentColor" strokeWidth="1.8" />
+        <path d="M12 16v4m-4 0h8" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+      </svg>
+    );
+  }
+
+  if (name === "building") {
+    return (
+      <svg {...common}>
+        <path d="M5 21V5.5L12 3v18M12 8h7v13M8 8h1m-1 4h1m-1 4h1m7-4h1m-1 4h1M3 21h18" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    );
+  }
+
+  if (name === "file") {
+    return (
+      <svg {...common}>
+        <path d="M7 3h7l4 4v14H7Z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
+        <path d="M14 3v5h4M10 12h5m-5 4h5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+      </svg>
+    );
+  }
+
+  if (name === "history") {
+    return (
+      <svg {...common}>
+        <path d="M4.4 8.2A8 8 0 1 1 4 14" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+        <path d="M4 4v4.5h4.5M12 7.5V12l3 1.8" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    );
+  }
+
+  if (name === "people") {
+    return (
+      <svg {...common}>
+        <circle cx="9" cy="8" r="3" stroke="currentColor" strokeWidth="1.8" />
+        <path d="M3.5 19c.6-3.2 2.4-4.8 5.5-4.8s4.9 1.6 5.5 4.8M16 7a2.5 2.5 0 0 1 0 5m1.2 2.3c2 .5 3.1 2 3.4 4.2" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+      </svg>
+    );
+  }
+
+  if (name === "rows") {
+    return (
+      <svg {...common}>
+        <rect x="4" y="5" width="16" height="4" rx="1" stroke="currentColor" strokeWidth="1.7" />
+        <rect x="4" y="11" width="16" height="4" rx="1" stroke="currentColor" strokeWidth="1.7" />
+        <rect x="4" y="17" width="16" height="2" rx="1" stroke="currentColor" strokeWidth="1.7" />
+      </svg>
+    );
+  }
+
+  if (name === "sync") {
+    return (
+      <svg {...common}>
+        <path d="M19 7h-4V3M5 17h4v4M18.2 9A7 7 0 0 0 6.5 5.5L5 7m.8 8A7 7 0 0 0 17.5 18.5L19 17" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    );
+  }
+
+  if (name === "tag") {
+    return (
+      <svg {...common}>
+        <path d="m4 4 8.5.2L20 11.7 11.7 20 4.2 12.5Z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
+        <circle cx="8.4" cy="8.4" r="1.2" fill="currentColor" />
+      </svg>
+    );
+  }
+
+  if (name === "transfer") {
+    return (
+      <svg {...common}>
+        <path d="M4 8h14m-4-4 4 4-4 4M20 16H6m4-4-4 4 4 4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    );
+  }
+
+  return (
+    <svg {...common}>
+      <circle cx="9" cy="8" r="3" stroke="currentColor" strokeWidth="1.8" />
+      <path d="M3.5 19c.7-3.2 2.5-4.8 5.5-4.8s4.8 1.6 5.5 4.8m1-7 2 2 3.5-4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+export function OperationalMetric({
+  icon,
+  label,
+  value,
+  description,
+  tone = "brand",
+  compactValue = false,
+}: {
+  icon: OperationalIconName;
+  label: string;
+  value: number | string;
+  description: string;
+  tone?: "brand" | "blue" | "success" | "warning" | "danger";
+  compactValue?: boolean;
+}) {
+  return (
+    <article className={`operational-metric operational-metric-${tone} ${compactValue ? "operational-metric-compact" : ""}`.trim()}>
+      <span className="operational-metric-icon"><OperationalIcon name={icon} /></span>
+      <div className="operational-metric-content">
+        <span>{label}</span>
+        <strong>{value}</strong>
+        <small>{description}</small>
+      </div>
+    </article>
+  );
+}
+
 export function allocationStyle(value: number): CSSProperties {
   return { "--allocation": `${value}%` } as CSSProperties;
 }

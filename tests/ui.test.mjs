@@ -201,6 +201,8 @@ test("leitor LS2208 em modo HID localiza patrimônio sem API de hardware", () =>
 
 test("visão de núcleos oferece resumo, busca e edição auditável", () => {
   assert.match(nuclei, /className="nuclei-overview"/);
+  assert.match(nuclei, /<OperationalMetric/);
+  assert.match(nuclei, /className="search-control"/);
   assert.match(nuclei, /Buscar núcleo/);
   assert.match(nuclei, /Taxa de alocação/);
   assert.match(nuclei, /Ver inventário/);
@@ -213,6 +215,8 @@ test("visão de núcleos oferece resumo, busca e edição auditável", () => {
 
 test("perfil do colaborador diferencia patrimônios por categoria", () => {
   assert.match(collaborators, /Colaboradores por núcleo/);
+  assert.match(collaborators, /className="people-mobile-list"/);
+  assert.match(collaborators, /className="collaborator-avatar"/);
   assert.match(dialogs, /Patrimônios vinculados/);
   assert.match(ui, /data-asset-icon="office-chair"/);
   for (const type of ["cpu", "monitor_1", "monitor_2", "chair", "notebook"]) {
@@ -220,6 +224,18 @@ test("perfil do colaborador diferencia patrimônios por categoria", () => {
   }
   assert.match(css, /\.profile-asset-icon svg/);
   assert.match(css, /\.profile-asset-icon-chair/);
+});
+
+test("áreas operacionais compartilham métricas, filtros e cartões responsivos", () => {
+  assert.match(ui, /export function OperationalMetric/);
+  assert.match(operational, /Buscar no histórico/);
+  assert.match(operational, /Tipo de evento/);
+  assert.match(operational, /Rejeitados/);
+  assert.match(collaborators, /className="operational-summary operational-summary-three"/);
+  assert.match(css, /\.operational-metric/);
+  assert.match(css, /\.audit-flow-point/);
+  assert.match(css, /\.import-run-metrics/);
+  assert.match(css, /\.people-mobile-card/);
 });
 
 test("tema escuro é acessível, usa cookie e não armazena dados localmente", () => {
