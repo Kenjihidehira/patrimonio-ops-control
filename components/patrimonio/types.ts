@@ -32,7 +32,7 @@ export type Nucleus = {
   manager: string;
 };
 
-export type NucleusSummary = Nucleus & {
+type NucleusSummary = Nucleus & {
   total: number;
   allocated: number;
   untagged: number;
@@ -57,7 +57,7 @@ export type Asset = {
   lastMovement: Movement | null;
 };
 
-export type AuditRecord = Movement & {
+type AuditRecord = Movement & {
   assetId: string;
   hasPatrimony: boolean;
   assetType: string;
@@ -65,7 +65,7 @@ export type AuditRecord = Movement & {
   typeLabel: string;
 };
 
-export type CollaboratorAsset = {
+type CollaboratorAsset = {
   id: string;
   hasPatrimony: boolean;
   type: AssetType;
@@ -107,7 +107,7 @@ export type ImportPreview = {
   warnings: ImportIssue[];
 };
 
-export type ImportRun = {
+type ImportRun = {
   id: string;
   fileName: string;
   rowCount: number;
@@ -119,7 +119,7 @@ export type ImportRun = {
   createdAt: string;
 };
 
-export type Session = {
+type Session = {
   authenticated: boolean;
   displayName: string;
   identifier: string | null;

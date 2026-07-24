@@ -366,7 +366,7 @@ export function AssetDetails({
   );
 }
 
-export function MovementItem({ movement }: { movement: Movement }) {
+function MovementItem({ movement }: { movement: Movement }) {
   return (
     <article className="movement-item">
       <div>
@@ -456,7 +456,7 @@ export function EditIcon() {
   );
 }
 
-export function CopyIcon() {
+function CopyIcon() {
   return (
     <svg aria-hidden="true" viewBox="0 0 24 24" width="16" height="16" fill="none">
       <rect x="8" y="8" width="11" height="11" rx="2" stroke="currentColor" strokeWidth="1.8" />
@@ -473,7 +473,7 @@ export function TransferIcon() {
   );
 }
 
-export function StatusChangeIcon() {
+function StatusChangeIcon() {
   return (
     <svg aria-hidden="true" viewBox="0 0 24 24" width="18" height="18" fill="none">
       <path d="M20 7v5h-5M4 17v-5h5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
@@ -658,7 +658,7 @@ export function formValue(form: HTMLFormElement, name: string): string {
   return String(new FormData(form).get(name) ?? "").trim();
 }
 
-export function formatDate(value: string | null): string {
+function formatDate(value: string | null): string {
   if (!value) return "Não informado";
   const date = new Date(`${value}T00:00:00`);
   return Number.isNaN(date.getTime())
@@ -676,7 +676,7 @@ export function formatDateTime(value: string): string {
     }).format(date);
 }
 
-export function movementLabel(type: Movement["type"]): string {
+function movementLabel(type: Movement["type"]): string {
   return {
     registration: "Cadastro",
     transfer: "Transferência",

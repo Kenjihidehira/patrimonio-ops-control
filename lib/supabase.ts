@@ -59,7 +59,7 @@ export async function loadOrCreateWorkspace(ownerKey: string): Promise<Workspace
   return loadWorkspace(ownerKey);
 }
 
-export async function loadWorkspace(ownerKey: string): Promise<WorkspaceState> {
+async function loadWorkspace(ownerKey: string): Promise<WorkspaceState> {
   const result = await gatewayRequest<GatewayWorkspace>("load_workspace", { ownerKey });
   const movementsByAsset = new Map<string, Array<Record<string, unknown>>>();
   for (const row of result.movements) {
