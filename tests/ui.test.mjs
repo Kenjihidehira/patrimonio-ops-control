@@ -121,6 +121,7 @@ test("campos críticos possuem semântica e validação no cliente", () => {
 
 test("layout contém breakpoints de tablet, celular e redução de movimento", () => {
   assert.match(app, /className="app-header"/);
+  assert.match(app, /className="app-brand"/);
   assert.match(app, /className="primary-nav"/);
   assert.match(app, /className="nav-item-icon"/);
   assert.match(app, /<NavigationIcon view=\{item\} \/>/);

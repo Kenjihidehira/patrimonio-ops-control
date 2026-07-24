@@ -202,9 +202,9 @@ export default function PatrimonioApp() {
     <div className="app-shell">
       <header className="app-header">
         <div className="app-header-inner">
-          <button className="brand" type="button" aria-label="Dados CX, abrir inventário" onClick={() => setView("inventory")}>
-            <Image className="brand-logo" src="/brand/cx-mark-header.png" alt="" width={440} height={230} priority />
-            <span className="brand-copy"><strong>Patrimônio Ops</strong><small>Dados CX</small></span>
+          <button className="app-brand" type="button" aria-label="Dados CX, abrir inventário" onClick={() => setView("inventory")}>
+            <Image className="app-brand-logo" src="/brand/cx-mark-header.png" alt="" width={440} height={230} priority />
+            <span className="app-brand-copy"><strong>Patrimônio Ops</strong><small>Dados CX</small></span>
           </button>
           <nav className="primary-nav" aria-label="Navegação principal">
             {(Object.keys(viewCopy) as ViewId[]).map((item) => (
