@@ -338,6 +338,11 @@ test("contabiliza colaboradores pelos responsáveis distintos dos itens ativos",
     nucleusId: "nuc-fin",
     status: "discrepancy",
   }));
+  state.assets.push(validAsset({
+    id: "SRES01",
+    assignee: "  RESERVA  ",
+    status: "available",
+  }));
 
   const dashboard = buildDashboard(state);
 
@@ -348,6 +353,7 @@ test("contabiliza colaboradores pelos responsáveis distintos dos itens ativos",
   assert.equal(dashboard.collaborators.find((item) => item.name === "Rauan (aprendiz)").hasPatrimony, false);
   assert.equal(dashboard.collaborators.find((item) => item.name === "Rauan (aprendiz)").profileRegistered, false);
   assert.equal(dashboard.collaborators.find((item) => item.name === "Rauan (aprendiz)").assetCount, 2);
+  assert.equal(dashboard.collaborators.some((item) => item.name.trim().toLowerCase() === "reserva"), false);
 });
 
 test("cadastra perfil para responsável projetado e preserva seus vínculos", () => {
