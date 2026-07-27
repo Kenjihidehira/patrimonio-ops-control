@@ -135,7 +135,7 @@ a {
 
 .login-card {
   position: relative;
-  width: min(100%, 480px);
+  width: min(100%, 600px);
   overflow: hidden;
   border: 1px solid transparent;
   border-radius: 22px;
@@ -170,7 +170,7 @@ a {
 .login-brand {
   position: relative;
   overflow: hidden;
-  padding: 27px clamp(24px, 6vw, 38px) 25px;
+  padding: 32px clamp(32px, 6vw, 48px) 30px;
   background:
     radial-gradient(circle at 24% 18%, rgba(105, 184, 255, 0.36), transparent 38%),
     linear-gradient(135deg, var(--login-brand-start), var(--login-brand-end));
@@ -213,8 +213,8 @@ a {
 
 .login-brand-logo {
   display: block;
-  width: 120px;
-  height: 62px;
+  width: 146px;
+  height: 76px;
   object-fit: contain;
   filter: drop-shadow(0 9px 18px rgba(1, 24, 50, 0.42));
 }
@@ -229,12 +229,12 @@ a {
 }
 
 .login-brand-copy strong {
-  font-size: 17px;
+  font-size: 19px;
   line-height: 1.15;
 }
 
 .login-brand-copy small {
-  margin-top: 5px;
+  margin-top: 6px;
   color: var(--teal);
   font-size: 10px;
   font-weight: 800;
@@ -243,7 +243,7 @@ a {
 
 .login-content {
   position: relative;
-  padding: clamp(30px, 6vw, 44px);
+  padding: clamp(38px, 6vw, 50px) clamp(38px, 6vw, 52px) clamp(42px, 6vw, 54px);
 }
 
 .eyebrow {
@@ -258,15 +258,16 @@ a {
 .login-content h1 {
   margin: 0;
   color: var(--login-text);
-  font-size: 30px;
+  font-size: 34px;
   line-height: 1.16;
   letter-spacing: -0.025em;
 }
 
 .login-description {
-  margin: 10px 0 28px;
+  max-width: 450px;
+  margin: 12px 0 32px;
   color: var(--login-muted);
-  font-size: 14px;
+  font-size: 15px;
 }
 
 .error-message {
@@ -287,13 +288,13 @@ a {
   grid-template-columns: 24px minmax(0, 1fr) 20px;
   align-items: center;
   gap: 12px;
-  min-height: 58px;
-  padding: 12px 17px;
+  min-height: 62px;
+  padding: 13px 19px;
   border: 1px solid color-mix(in srgb, var(--login-button-start) 76%, #FFFFFF);
   border-radius: 10px;
   background: linear-gradient(135deg, var(--login-button-start), var(--login-button-end));
   color: var(--login-button-text);
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 800;
   text-decoration: none;
   box-shadow:
@@ -357,8 +358,8 @@ a {
   grid-template-columns: 30px minmax(0, 1fr);
   align-items: start;
   gap: 11px;
-  margin-top: 24px;
-  padding-top: 20px;
+  margin-top: 28px;
+  padding-top: 22px;
   border-top: 1px solid var(--login-divider);
   color: var(--login-muted);
   font-size: 11px;
