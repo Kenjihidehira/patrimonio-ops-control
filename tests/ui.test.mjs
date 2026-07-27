@@ -130,8 +130,8 @@ test("layout contém breakpoints de tablet, celular e redução de movimento", (
   assert.match(app, /className="primary-nav"/);
   assert.match(app, /className="nav-item-icon"/);
   assert.match(app, /<NavigationIcon view=\{item\} \/>/);
-  assert.match(app, /className="header-status-icon"/);
-  assert.match(app, /<DatabaseStatusIcon \/>/);
+  assert.match(app, /<small>Gestão empresarial<\/small>/);
+  assert.doesNotMatch(app, /header-status|DatabaseStatusIcon|Base operacional/);
   assert.match(app, /aria-current=\{view === item \? "page"/);
   assert.match(css, /\.app-header\s*\{[\s\S]*position:\s*sticky/);
   assert.match(css, /\.header-actions\s*\{[\s\S]*align-items:\s*flex-end/);

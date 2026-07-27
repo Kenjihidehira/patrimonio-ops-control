@@ -266,9 +266,9 @@ export default function PatrimonioApp() {
     <div className="app-shell">
       <header className="app-header">
         <div className="app-header-inner">
-          <button className="app-brand" type="button" aria-label="Dados CX, abrir inventário" onClick={() => setView("inventory")}>
+          <button className="app-brand" type="button" aria-label="Patrimônio Ops, abrir inventário" onClick={() => setView("inventory")}>
             <Image className="app-brand-logo" src="/brand/cx-mark-header.png" alt="" width={440} height={230} priority />
-            <span className="app-brand-copy"><strong>Patrimônio Ops</strong><small>Dados CX</small></span>
+            <span className="app-brand-copy"><strong>Patrimônio Ops</strong><small>Gestão empresarial</small></span>
           </button>
           <nav className="primary-nav" aria-label="Navegação principal">
             {visibleViews.map((item) => (
@@ -291,18 +291,6 @@ export default function PatrimonioApp() {
               </button>
             ))}
           </nav>
-          <div className="header-status" aria-label="Status da base de dados">
-            <span className="header-status-icon" aria-hidden="true"><DatabaseStatusIcon /></span>
-            <div className="header-status-copy">
-              <strong>Base operacional</strong>
-              <span>
-                {authenticated
-                  ? dashboard?.environment.activeDepartment.name ?? "Base empresarial Supabase"
-                  : "Dados protegidos"}
-              </span>
-            </div>
-            <span className="status-dot" aria-hidden="true" />
-          </div>
         </div>
       </header>
 
@@ -527,15 +515,6 @@ function NavigationIcon({ view }: { view: ViewId }) {
       <rect x="14" y="4" width="6" height="6" rx="1.2" stroke="currentColor" strokeWidth="1.7" />
       <rect x="4" y="14" width="6" height="6" rx="1.2" stroke="currentColor" strokeWidth="1.7" />
       <rect x="14" y="14" width="6" height="6" rx="1.2" stroke="currentColor" strokeWidth="1.7" />
-    </svg>
-  );
-}
-
-function DatabaseStatusIcon() {
-  return (
-    <svg aria-hidden="true" viewBox="0 0 24 24" fill="none">
-      <ellipse cx="12" cy="6" rx="7" ry="3" stroke="currentColor" strokeWidth="1.7" />
-      <path d="M5 6v6c0 1.7 3.1 3 7 3s7-1.3 7-3V6M5 12v6c0 1.7 3.1 3 7 3s7-1.3 7-3v-6" stroke="currentColor" strokeWidth="1.7" />
     </svg>
   );
 }
