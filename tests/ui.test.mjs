@@ -293,7 +293,11 @@ test("tela React de login oferece somente Google com navegação responsiva", ()
   assert.match(loginPage, /className="login-card"/);
   assert.match(loginPage, /role="alert"/);
   assert.match(loginCss, /\.login-shell\s*\{[\s\S]*place-items:\s*center/);
+  assert.match(loginCss, /\.login-shell::before\s*\{/);
   assert.match(loginCss, /\.login-card\s*\{[\s\S]*width:\s*min\(100%, 480px\)/);
+  assert.match(loginCss, /\.login-card\s*\{[\s\S]*backdrop-filter:\s*blur\(22px\)/);
+  assert.match(loginCss, /\.login-card::before\s*\{/);
+  assert.match(loginCss, /:root\[data-theme="dark"\]/);
   assert.match(loginCss, /@media \(max-width: 760px\)/);
   assert.doesNotMatch(loginPage, /brand-mark|brand-panel|access-panel|Voltar ao sistema/);
   assert.doesNotMatch(loginPage, /GitHub|\/api\/auth\/github\//);
