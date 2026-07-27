@@ -213,30 +213,6 @@ a {
   color: var(--brand-700);
 }
 
-.provider-github {
-  border-color: var(--brand-700);
-  background: var(--brand-700);
-  color: #ffffff;
-}
-
-.provider-github:hover {
-  border-color: var(--brand-950);
-  background: var(--brand-950);
-  color: #ffffff;
-}
-
-.github-mark {
-  display: grid;
-  width: 27px;
-  height: 27px;
-  place-items: center;
-  border-radius: 50%;
-  background: #ffffff;
-  color: var(--brand-950);
-  font-size: 9px;
-  font-weight: 900;
-}
-
 .google-mark {
   width: 27px;
   color: #4285f4;

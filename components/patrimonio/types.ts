@@ -123,7 +123,7 @@ type Session = {
   authenticated: boolean;
   displayName: string;
   identifier: string | null;
-  provider: "github" | "google" | null;
+  provider: "google" | null;
   source: "locked" | "supabase";
   signInUrl: string;
   signOutUrl: string;

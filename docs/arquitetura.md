@@ -85,10 +85,10 @@ Chaves estrangeiras preservam integridade e índices cobrem status, núcleo, tip
 
 ### Leitura autenticada
 
-1. A API inicia Authorization Code com `state` e PKCE; Google também recebe um `nonce` OIDC.
-2. GitHub ou Google autenticam a conta e devolvem o código para a URL de retorno registrada.
-3. GitHub é validado pela API `/user`; Google tem o ID token validado por JWKS, emissor, audiência e `nonce`.
-4. A política local restringe GitHub por login e Google por e-mail exato.
+1. A API inicia Authorization Code com `state`, PKCE e `nonce` OIDC.
+2. O Google autentica a conta e devolve o código para a URL de retorno registrada.
+3. O ID token é validado por JWKS, emissor, audiência e `nonce`.
+4. A política local restringe o acesso por e-mail exato.
 5. Uma sessão local assinada, `HttpOnly`, `Secure` e `SameSite=Lax` mantém apenas provedor, nome e identificador do usuário por oito horas.
 6. A API usa `PATRIMONIO_WORKSPACE_KEY` para carregar a base empresarial compartilhada e retorna `session.source = supabase`.
 
@@ -121,7 +121,7 @@ Chaves estrangeiras preservam integridade e índices cobrem status, núcleo, tip
 - Nenhum patrimônio, núcleo, colaborador ou evento da planilha é devolvido sem autenticação.
 - O ator vem da sessão de identidade validada e inclui o provedor, nunca do corpo da requisição enviado pelo cliente.
 - A chave empresarial é aleatória, tem 256 bits e permanece somente no ambiente de execução do servidor.
-- `state` e PKCE protegem os dois fluxos; Google também valida `nonce` para impedir a repetição indevida do token de identidade.
+- `state`, PKCE e `nonce` protegem o fluxo contra falsificação de requisição, interceptação do código e repetição indevida do token de identidade.
 - O token de acesso e o segredo do cliente nunca são enviados ao JavaScript da interface nem gravados na sessão local.
 - O serviço intermediário aceita somente operações enumeradas e exige `x-patrimonio-key`.
 - RLS está habilitado e políticas negam acesso direto a `anon` e `authenticated`.
@@ -167,11 +167,11 @@ Também faltam recuperação de desastre automatizada, política formal de reten
 
 **Motivo:** a integração de publicação não deve colocar uma chave privilegiada no navegador nem depender de identidade forjada pelo cliente.
 
-### ADR-005: múltiplos provedores com sessão local mínima
+### ADR-005: provedor externo com sessão local mínima
 
 **Decisão:** usar OAuth/OIDC Authorization Code com PKCE, validar a identidade no provedor e converter somente contas autorizadas em uma sessão curta comum assinada pela aplicação.
 
-**Motivo:** aceitar identidades GitHub e Google sem criar senhas locais, sem persistir tokens dos provedores e sem duplicar a autorização nas rotas de negócio.
+**Motivo:** aceitar identidades Google autorizadas sem criar senhas locais, sem persistir tokens do provedor e sem duplicar a autorização nas rotas de negócio.
 
 ### ADR-006: ambiente empresarial compartilhado
 

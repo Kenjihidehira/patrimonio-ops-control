@@ -9,8 +9,7 @@
   "workers_dev": true,
   "main": "./worker/index.ts",
   "vars": {
-    "SUPABASE_GATEWAY_URL": "https://boxbxyushapqhtbsxnyb.supabase.co/functions/v1/patrimonio-gateway",
-    "GITHUB_ALLOWED_LOGINS": "Kenjihidehira"
+    "SUPABASE_GATEWAY_URL": "https://boxbxyushapqhtbsxnyb.supabase.co/functions/v1/patrimonio-gateway"
   },
   "assets": {
     "directory": "dist/client",

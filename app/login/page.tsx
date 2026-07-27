@@ -6,9 +6,6 @@ export const metadata: Metadata = {
 };
 
 const messages: Record<string, string> = {
-  github_not_configured: "O acesso com GitHub ainda não foi configurado pelo administrador.",
-  github_login_failed: "Não foi possível concluir o acesso com GitHub.",
-  github_not_authorized: "Esta conta GitHub não possui permissão para acessar a base.",
   google_not_configured: "O acesso com Google ainda não foi configurado pelo administrador.",
   google_login_failed: "Não foi possível concluir o acesso com Google.",
   google_not_authorized: "Este e-mail Google não possui permissão para acessar a base.",
@@ -49,11 +46,6 @@ export default async function LoginPage({
             <p className="access-description">Escolha uma conta autorizada para continuar.</p>
             {message ? <div className="error-message" role="alert">{message}</div> : null}
             <div className="provider-list" aria-label="Opções de acesso">
-              <a className="provider-button provider-github" href={`/api/auth/github/login${query}`}>
-                <span className="github-mark" aria-hidden="true">GH</span>
-                <span>Continuar com GitHub</span>
-                <span className="provider-arrow" aria-hidden="true">→</span>
-              </a>
               <a className="provider-button" href={`/api/auth/google/login${query}`}>
                 <span className="google-mark" aria-hidden="true">G</span>
                 <span>Continuar com Google</span>

@@ -14,13 +14,11 @@ test("documentação usa nomes e links internos em PT-BR", () => {
 
 test("documentação de autenticação acompanha as rotas implementadas", () => {
   for (const route of [
-    "/api/auth/github/login",
-    "/api/auth/github/callback",
     "/api/auth/google/login",
     "/api/auth/google/callback",
     "/api/auth/logout",
   ]) {
     assert.match(api, new RegExp(route.replaceAll("/", "\\/")));
   }
-  assert.doesNotMatch(api, /\/api\/auth\/github\/logout/);
+  assert.doesNotMatch(api, /\/api\/auth\/github\//);
 });

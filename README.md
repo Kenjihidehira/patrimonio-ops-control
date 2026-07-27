@@ -44,7 +44,7 @@ Planilhas patrimoniais isoladas não registram bem responsabilidade, movimentaç
 - **API:** Node.js com manipuladores de rota TypeScript executados no Cloudflare Worker.
 - **Banco:** Supabase Postgres 17, funções RPC transacionais e índices operacionais.
 - **Integração:** Função Edge do Supabase autenticada por segredo de servidor.
-- **Autenticação:** GitHub OAuth e Google OpenID Connect, PKCE, allowlists e sessão `HttpOnly` compartilhada.
+- **Autenticação:** Google OpenID Connect, PKCE, allowlist e sessão `HttpOnly`.
 - **Planilhas:** `read-excel-file` e `write-excel-file`.
 - **Qualidade:** Node Test Runner, ESLint, TypeScript e GitHub Actions.
 
@@ -58,9 +58,9 @@ cp configuracao.exemplo .env.local
 pnpm dev
 ```
 
-Use [`configuracao.exemplo`](configuracao.exemplo) somente como modelo para criar `.env.local`. Preencha as variáveis Supabase, dos provedores de identidade e os segredos de sessão apenas no arquivo local, que é ignorado pelo Git. Acesse `http://localhost:5173/login`.
+Use [`configuracao.exemplo`](configuracao.exemplo) somente como modelo para criar `.env.local`. Preencha as variáveis Supabase, do provedor de identidade e os segredos de sessão apenas no arquivo local, que é ignorado pelo Git. Acesse `http://localhost:5173/login`.
 
-A interface anônima não recebe dados patrimoniais. A leitura da base empresarial, importação, exportação e operações de escrita exigem um login presente em `GITHUB_ALLOWED_LOGINS` ou um e-mail exato em `GOOGLE_ALLOWED_EMAILS`. O servidor valida `state`, PKCE, assinatura da identidade e lista de autorizados antes de criar uma sessão local de oito horas.
+A interface anônima não recebe dados patrimoniais. A leitura da base empresarial, importação, exportação e operações de escrita exigem um e-mail exato em `GOOGLE_ALLOWED_EMAILS`. O servidor valida `state`, PKCE, assinatura da identidade e lista de autorizados antes de criar uma sessão local de oito horas.
 
 ## Conectar um leitor de código de barras
 
@@ -88,16 +88,6 @@ pnpm build
 pnpm audit --prod
 ```
 
-## Configurar o login GitHub
-
-1. No GitHub, acesse **Configurações > Configurações do desenvolvedor > Aplicativos OAuth** e registre um aplicativo OAuth.
-2. Use `https://patrimonio-ops-control.kenjihidehira999.workers.dev` como URL da página inicial.
-3. Use `https://patrimonio-ops-control.kenjihidehira999.workers.dev/api/auth/github/callback` como URL de retorno da autorização.
-4. Armazene `GITHUB_CLIENT_ID` e `GITHUB_CLIENT_SECRET` somente no ambiente do servidor.
-5. Mantenha em `GITHUB_ALLOWED_LOGINS` apenas os operadores autorizados.
-
-O fluxo segue a documentação oficial do [fluxo OAuth para aplicações Web do GitHub](https://docs.github.com/pt/apps/oauth-apps/building-oauth-apps/authorizing-oauth-apps). O token de acesso é usado no servidor apenas para obter a identidade atual e não é persistido no navegador nem incluído na sessão local.
-
 ## Configurar o login Google
 
 No Google Cloud Console, crie um cliente OAuth do tipo Aplicativo da Web com a URL de retorno:
@@ -108,7 +98,7 @@ https://patrimonio-ops-control.kenjihidehira999.workers.dev/api/auth/google/call
 
 Cadastre `GOOGLE_CLIENT_ID` e `GOOGLE_CLIENT_SECRET` como segredos. Preencha `GOOGLE_ALLOWED_EMAILS` com uma lista explícita de e-mails separados por vírgula. O sistema não autoriza automaticamente qualquer conta Gmail ou qualquer conta de um domínio Google Workspace.
 
-GitHub e Google convergem para a mesma sessão local assinada. Tokens de acesso e atualização dos provedores não são gravados no navegador nem no banco.
+Depois de validar a identidade e a allowlist, o servidor cria uma sessão local assinada. Tokens de acesso e atualização do Google não são gravados no navegador nem no banco.
 
 ## Planilha-base
 

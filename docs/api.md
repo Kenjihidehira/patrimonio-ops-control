@@ -2,17 +2,15 @@
 
 Base local: `http://localhost:5173/api`
 
-Respostas dinâmicas usam `cache-control: no-store`. A identidade vem de uma sessão local assinada após o servidor concluir o fluxo OAuth do GitHub ou o fluxo OpenID Connect do Google e validar a conta no provedor correspondente.
+Respostas dinâmicas usam `cache-control: no-store`. A identidade vem de uma sessão local assinada após o servidor concluir o fluxo OpenID Connect do Google e validar a conta.
 
 ## Autenticação
 
 | Método | Rota | Finalidade |
 | --- | --- | --- |
-| `GET` | `/api/auth/github/login` | Iniciar o código de autorização do GitHub com `state` e PKCE |
-| `GET` | `/api/auth/github/callback` | Validar retorno OAuth, perfil e lista de autorizados; criar sessão `HttpOnly` |
 | `GET` | `/api/auth/google/login` | Iniciar o código de autorização do Google com `state`, PKCE e `nonce` |
 | `GET` | `/api/auth/google/callback` | Validar retorno OpenID Connect, identidade e lista de autorizados; criar sessão `HttpOnly` |
-| `GET` | `/api/auth/logout` | Encerrar a sessão local de qualquer provedor |
+| `GET` | `/api/auth/logout` | Encerrar a sessão local |
 
 `return_to` aceita apenas caminhos relativos locais e nunca pode apontar para as próprias rotas de autenticação.
 
@@ -30,7 +28,7 @@ Retorna revisão, resumo, inventário filtrado, colaboradores, núcleos, auditor
 | `nucleus` | Identificador de núcleo | `all` |
 | `sort` | `recent`, `asset_asc`, `nucleus`, `status` | `recent` |
 
-Usuários anônimos recebem uma projeção vazia, sem patrimônios, núcleos ou auditoria. Logins GitHub presentes na lista de autorizados recebem exclusivamente o ambiente empresarial importado da planilha e armazenado no Supabase.
+Usuários anônimos recebem uma projeção vazia, sem patrimônios, núcleos ou auditoria. Contas Google presentes na lista de e-mails autorizados recebem exclusivamente o ambiente empresarial importado da planilha e armazenado no Supabase.
 
 ## `POST /api/state`
 

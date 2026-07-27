@@ -22,7 +22,6 @@ const [
   importApi,
   exportApi,
   workspace,
-  githubAuth,
   googleAuth,
   sharedAuth,
   workbook,
@@ -45,7 +44,6 @@ const [
   read("app/api/import/route.ts"),
   read("app/api/export/route.ts"),
   read("lib/workspace.ts"),
-  read("app/github-auth.ts"),
   read("app/google-auth.ts"),
   read("app/auth.ts"),
   read("lib/workbook.ts"),
@@ -283,19 +281,17 @@ test("persistência permanece no servidor e escrita exige autenticação", () =>
   assert.doesNotMatch(reactUi, /SUPABASE_GATEWAY_KEY|PATRIMONIO_WORKSPACE_KEY/);
 });
 
-test("tela React de login oferece GitHub e Google com navegação responsiva", () => {
-  assert.match(loginPage, /Continuar com GitHub/);
+test("tela React de login oferece somente Google com navegação responsiva", () => {
   assert.match(loginPage, /Continuar com Google/);
-  assert.match(loginPage, /\/api\/auth\/github\/login/);
   assert.match(loginPage, /\/api\/auth\/google\/login/);
   assert.match(loginPage, /role="alert"/);
   assert.match(loginCss, /@media \(max-width: 760px\)/);
+  assert.doesNotMatch(loginPage, /GitHub|\/api\/auth\/github\//);
   assert.doesNotMatch(loginPage, /Microsoft/);
 });
 
-test("autenticação multiprovedor preserva PKCE, allowlists e sessão protegida", () => {
-  assert.match(githubAuth, /code_challenge_method: "S256"/);
-  assert.match(githubAuth, /isAllowedGitHubLogin/);
+test("autenticação Google preserva PKCE, allowlist e sessão protegida", () => {
+  assert.match(googleAuth, /code_challenge_method: "S256"/);
   assert.match(googleAuth, /openid profile email/);
   assert.match(googleAuth, /payload\.email_verified !== true/);
   assert.match(googleAuth, /isAllowedGoogleEmail/);

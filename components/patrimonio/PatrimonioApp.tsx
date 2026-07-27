@@ -449,6 +449,6 @@ function DatabaseStatusIcon() {
   );
 }
 
-function providerLabel(provider: "github" | "google" | null | undefined): string {
-  return provider === "github" ? "Conta GitHub" : provider === "google" ? "Conta Google" : "Sessão";
+function providerLabel(provider: "google" | null | undefined): string {
+  return provider === "google" ? "Conta Google" : "Sessão";
 }

@@ -2,12 +2,11 @@ import { env } from "cloudflare:workers";
 import { cookies } from "next/headers";
 import { jwtVerify, SignJWT } from "jose";
 import {
-  isAllowedGitHubLogin,
   isAllowedGoogleEmail,
   safeRelativeReturnPath,
 } from "@/lib/auth-utils";
 
-export type AuthProvider = "github" | "google";
+export type AuthProvider = "google";
 
 export type AuthenticatedUser = {
   provider: AuthProvider;
@@ -239,9 +238,6 @@ export function splitRuntimeList(name: keyof Cloudflare.Env): string[] {
 }
 
 function isIdentityStillAuthorized(identity: SessionIdentity): boolean {
-  if (identity.provider === "github") {
-    return isAllowedGitHubLogin(identity.identifier, splitRuntimeList("GITHUB_ALLOWED_LOGINS"));
-  }
   return isAllowedGoogleEmail(identity.identifier, splitRuntimeList("GOOGLE_ALLOWED_EMAILS"));
 }
 
@@ -252,7 +248,7 @@ function sessionSecret(): Uint8Array {
 }
 
 function isAuthProvider(value: unknown): value is AuthProvider {
-  return value === "github" || value === "google";
+  return value === "google";
 }
 
 function randomBase64Url(byteLength: number): string {
