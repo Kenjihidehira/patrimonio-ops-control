@@ -4,7 +4,7 @@ import { jwtVerify, SignJWT } from "jose";
 import {
   safeRelativeReturnPath,
 } from "@/lib/auth-utils";
-import { hasSystemAccess } from "@/lib/supabase";
+import { getSystemAccess, recordAuthEvent } from "@/lib/supabase";
 
 export type AuthProvider = "google";
 
@@ -14,6 +14,7 @@ export type AuthenticatedUser = {
   identifier: string;
   subject: string;
   actor: string;
+  sessionVersion: number;
 };
 
 export type OAuthTransaction = {
@@ -57,7 +58,8 @@ export async function getAuthenticatedUser(): Promise<AuthenticatedUser | null> 
       !isAuthProvider(payload.provider) ||
       typeof payload.name !== "string" ||
       typeof payload.identifier !== "string" ||
-      typeof payload.uid !== "string"
+      typeof payload.uid !== "string" ||
+      typeof payload.sv !== "number"
     ) {
       return null;
     }
@@ -68,6 +70,7 @@ export async function getAuthenticatedUser(): Promise<AuthenticatedUser | null> 
       identifier: payload.identifier,
       subject: payload.uid,
       actor: `${payload.provider}:${payload.identifier}`,
+      sessionVersion: payload.sv,
     };
     return await isIdentityStillAuthorized(identity) ? identity : null;
   } catch {
@@ -161,6 +164,7 @@ export async function createSessionResponse(
     name: identity.displayName,
     identifier: identity.identifier,
     uid: identity.subject,
+    sv: identity.sessionVersion,
   })
     .setProtectedHeader({ alg: "HS256", typ: "JWT" })
     .setIssuer(SESSION_ISSUER)
@@ -190,7 +194,13 @@ export function setOAuthTransactionCookie(
   );
 }
 
-export function logout(request: Request): Response {
+export async function logout(request: Request): Promise<Response> {
+  const user = await getAuthenticatedUser();
+  if (user) {
+    await recordAuthEvent(user.identifier, "logout", "success").catch(
+      (error) => console.error("Logout audit failed", safeAuditError(error)),
+    );
+  }
   const requestUrl = new URL(request.url);
   const requestedReturn = requestUrl.searchParams.get("return_to") ?? LOGIN_PATH;
   const returnTo = requestedReturn === LOGIN_PATH ? LOGIN_PATH : safeRelativeReturnPath(requestedReturn);
@@ -231,7 +241,8 @@ export function runtimeValue(name: keyof Cloudflare.Env): string {
 }
 
 async function isIdentityStillAuthorized(identity: SessionIdentity): Promise<boolean> {
-  return hasSystemAccess(identity.identifier);
+  const access = await getSystemAccess(identity.identifier);
+  return access.authorized && access.sessionVersion === identity.sessionVersion;
 }
 
 function sessionSecret(): Uint8Array {
@@ -277,4 +288,8 @@ function clearCookie(name: string, request: Request): string {
 function appendClearedOAuthCookies(response: Response, request: Request): void {
   response.headers.append("set-cookie", clearCookie(OAUTH_COOKIE, request));
   response.headers.append("set-cookie", clearCookie(SECURE_OAUTH_COOKIE, request));
+}
+
+function safeAuditError(error: unknown): string {
+  return error instanceof Error ? error.message : "Unknown audit error";
 }

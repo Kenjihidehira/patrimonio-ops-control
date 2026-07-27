@@ -29,6 +29,10 @@ const emptyUser: DepartmentUser = {
   displayName: "",
   isAdmin: false,
   active: true,
+  canWrite: false,
+  canImport: false,
+  canExport: false,
+  lastLoginAt: null,
   departmentSlugs: [],
 };
 
@@ -261,6 +265,59 @@ export function EnvironmentsView({
               />
               <span><strong>Administrador global</strong><small>Acesso a todos os departamentos e transferências.</small></span>
             </label>
+            <label className="environment-admin-check field-wide">
+              <input
+                type="checkbox"
+                checked={accessForm.active}
+                onChange={(event) => setAccessForm((current) => ({
+                  ...current,
+                  active: event.target.checked,
+                }))}
+              />
+              <span>
+                <strong>Usuário ativo</strong>
+                <small>Ao desativar, o acesso é bloqueado imediatamente e as sessões são revogadas.</small>
+              </span>
+            </label>
+            <fieldset className="environment-memberships field-wide">
+              <legend>Permissões operacionais</legend>
+              <label>
+                <input
+                  type="checkbox"
+                  checked={accessForm.isAdmin || accessForm.canWrite}
+                  disabled={accessForm.isAdmin || !accessForm.active}
+                  onChange={(event) => setAccessForm((current) => ({
+                    ...current,
+                    canWrite: event.target.checked,
+                  }))}
+                />
+                <span>Alterar cadastros e movimentações</span>
+              </label>
+              <label>
+                <input
+                  type="checkbox"
+                  checked={accessForm.isAdmin || accessForm.canImport}
+                  disabled={accessForm.isAdmin || !accessForm.active}
+                  onChange={(event) => setAccessForm((current) => ({
+                    ...current,
+                    canImport: event.target.checked,
+                  }))}
+                />
+                <span>Importar planilhas</span>
+              </label>
+              <label>
+                <input
+                  type="checkbox"
+                  checked={accessForm.isAdmin || accessForm.canExport}
+                  disabled={accessForm.isAdmin || !accessForm.active}
+                  onChange={(event) => setAccessForm((current) => ({
+                    ...current,
+                    canExport: event.target.checked,
+                  }))}
+                />
+                <span>Exportar dados pessoais e patrimoniais</span>
+              </label>
+            </fieldset>
             <fieldset className="environment-memberships field-wide">
               <legend>Departamentos liberados</legend>
               {environment.departments.map((department) => (
@@ -268,7 +325,7 @@ export function EnvironmentsView({
                   <input
                     type="checkbox"
                     checked={accessForm.departmentSlugs.includes(department.slug)}
-                    disabled={accessForm.isAdmin}
+                    disabled={accessForm.isAdmin || !accessForm.active}
                     onChange={(event) => toggleDepartment(department.slug, event.target.checked)}
                   />
                   <span>{department.name}</span>
@@ -298,14 +355,25 @@ export function EnvironmentsView({
                   <span>{user.identifier}</span>
                 </div>
                 <div className="environment-user-tags">
-                  {user.isAdmin
-                    ? <span>Administrador</span>
-                    : user.departmentSlugs.map((slug) => (
-                      <span key={slug}>
-                        {environment.departments.find((department) => department.slug === slug)?.name ?? slug}
-                      </span>
-                    ))}
+                  <span className={user.active ? "is-active" : "is-inactive"}>
+                    {user.active ? "Ativo" : "Desativado"}
+                  </span>
+                  {user.isAdmin ? <span>Administrador</span> : null}
+                  {!user.isAdmin && user.canWrite ? <span>Alteração</span> : null}
+                  {!user.isAdmin && user.canImport ? <span>Importação</span> : null}
+                  {!user.isAdmin && user.canExport ? <span>Exportação</span> : null}
+                  {!user.isAdmin && !user.canWrite && !user.canImport && !user.canExport
+                    ? <span>Somente leitura</span>
+                    : null}
+                  {user.departmentSlugs.map((slug) => (
+                    <span key={slug}>
+                      {environment.departments.find((department) => department.slug === slug)?.name ?? slug}
+                    </span>
+                  ))}
                 </div>
+                <small className="environment-last-login">
+                  Último acesso: {user.lastLoginAt ? formatDateTime(user.lastLoginAt) : "não registrado"}
+                </small>
                 <button
                   className="button button-secondary button-small"
                   type="button"
@@ -449,6 +517,62 @@ export function EnvironmentsView({
           />
         )}
       </section>
+
+      <section className="operational-panel environment-history" aria-labelledby="security-history-title">
+        <div className="operational-panel-toolbar">
+          <div>
+            <h2 id="security-history-title">Auditoria de segurança e acesso</h2>
+            <p>Logins, bloqueios, exportações e mudanças de permissão com retenção controlada.</p>
+          </div>
+          <span className="record-count">{environment.securityEvents.length} eventos</span>
+        </div>
+        {environment.securityEvents.length ? (
+          <div className="security-event-list">
+            {environment.securityEvents.map((event) => (
+              <article key={event.id}>
+                <div>
+                  <strong>{securityEventLabel(event.eventType)}</strong>
+                  <span className={`security-event-outcome is-${event.outcome}`}>
+                    {event.outcome === "success" ? "Concluído" : event.outcome === "denied" ? "Negado" : "Falha"}
+                  </span>
+                </div>
+                <p>
+                  {event.actorIdentifier ?? "Identidade não informada"}
+                  {event.targetIdentifier ? ` → ${event.targetIdentifier}` : ""}
+                </p>
+                <div>
+                  <span>{formatDateTime(event.at)}</span>
+                  <small>
+                    {event.departmentSlug
+                      ? environment.departments.find((department) => department.slug === event.departmentSlug)?.name
+                        ?? event.departmentSlug
+                      : "Sistema"}
+                  </small>
+                </div>
+              </article>
+            ))}
+          </div>
+        ) : (
+          <EmptyState
+            title="Nenhum evento de segurança registrado"
+            description="Os eventos passam a ser registrados a partir desta versão."
+          />
+        )}
+      </section>
     </section>
   );
+}
+
+function securityEventLabel(eventType: string): string {
+  const labels: Record<string, string> = {
+    access_updated: "Acesso atualizado",
+    user_deactivated: "Usuário desativado",
+    login_succeeded: "Login autorizado",
+    login_denied: "Login negado",
+    logout: "Encerramento de sessão",
+    export_authorized: "Exportação autorizada",
+    import_authorized: "Importação autorizada",
+    operation_denied: "Operação bloqueada",
+  };
+  return labels[eventType] ?? eventType.replaceAll("_", " ");
 }

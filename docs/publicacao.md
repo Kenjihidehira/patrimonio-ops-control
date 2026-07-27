@@ -6,7 +6,7 @@
 2. Aplique, em ordem, as migrações de `supabase/migrations`.
 3. Gere um segredo aleatório com pelo menos 64 caracteres.
 4. Cadastre o segredo como `PATRIMONIO_GATEWAY_KEY` no ambiente das Edge Functions.
-5. Publique `supabase/functions/patrimonio-gateway` com verificação JWT desativada somente porque a função implementa autenticação própria por `x-patrimonio-key`.
+5. Publique `supabase/functions/patrimonio-gateway` com verificação JWT desativada somente porque a função valida assinatura HMAC, timestamp e nonce de uso único.
 
 O esquema habilita RLS e nega acesso direto aos papéis `anon` e `authenticated`. Não substitua essa configuração por políticas abertas: a aplicação acessa os dados exclusivamente pelo serviço intermediário servidor-servidor.
 
@@ -19,6 +19,8 @@ https://patrimonio-ops-control.kenjihidehira999.workers.dev/api/auth/google/call
 ```
 
 Mantenha a tabela de usuários e associações por departamento como lista fechada. Não autorize automaticamente todo o domínio `gmail.com`.
+
+Defina `GOOGLE_WORKSPACE_DOMAIN` somente depois de confirmar que todas as contas autorizadas pertencem ao Google Workspace corporativo. A validação do claim `hd` bloqueará contas Gmail externas.
 
 ## 3. Configurar o Cloudflare Worker
 
@@ -38,6 +40,7 @@ SUPABASE_GATEWAY_KEY=O_MESMO_SEGREDO_DA_EDGE_FUNCTION
 GOOGLE_CLIENT_ID=CLIENT_ID_DO_GOOGLE
 GOOGLE_CLIENT_SECRET=CLIENT_SECRET_DO_GOOGLE
 AUTH_SESSION_SECRET=SEGREDO_ALEATORIO_COM_PELO_MENOS_64_CARACTERES
+GOOGLE_WORKSPACE_DOMAIN=DOMINIO_WORKSPACE_CONFIRMADO_OU_VAZIO
 ```
 
 Use `pnpm exec wrangler secret put NOME_DA_VARIAVEL` para cada valor. Não grave segredos no `wrangler.jsonc`, no Git ou em variáveis com prefixos `NEXT_PUBLIC_` ou `VITE_`.
@@ -77,18 +80,19 @@ Resultados esperados:
 - O login retorna HTTP `302` para o Google quando suas credenciais estão configuradas; uma configuração ausente retorna para `/login` com erro controlado.
 - `GET /api/export` sem login: HTTP `401`; autenticado: HTTP `200` e conteúdo XLSX da base empresarial.
 - `POST /api/state` sem login: HTTP `401`.
-- O serviço intermediário sem `x-patrimonio-key` retorna `401`.
+- O serviço intermediário sem assinatura HMAC válida retorna `401`.
 - O Supabase Security Advisor não aponta tabelas públicas sem RLS.
 
 ## Rotação do segredo
 
 1. Gere um novo valor.
-2. Atualize `PATRIMONIO_GATEWAY_KEY` no Supabase.
-3. Atualize `SUPABASE_GATEWAY_KEY` no Cloudflare Worker.
-4. Publique uma nova versão da Função Edge e do site.
-5. Verifique leitura autenticada antes de descartar o segredo anterior.
+2. Prepare uma versão temporária da Função Edge que aceite assinaturas com as duas chaves.
+3. Atualize `SUPABASE_GATEWAY_KEY` e publique o Cloudflare Worker.
+4. Verifique leitura, escrita e auditoria autenticadas.
+5. Atualize `PATRIMONIO_GATEWAY_KEY` e publique a Função Edge aceitando somente a nova chave.
+6. Remova imediatamente a compatibilidade temporária.
 
-A Função Edge aceita a chave configurada e, durante a transição atual, o resumo criptográfico SHA-256 da chave rotacionada. Depois que todos os consumidores usarem a nova chave, remova a chave anterior e o resumo de transição em uma nova publicação para encerrar a janela de compatibilidade.
+Não mantenha hash ou chave anterior no código.
 
 ## Domínio personalizado
 
@@ -99,11 +103,15 @@ GitHub Pages não substitui o Worker neste projeto. O serviço `github.io` publi
 ## Checklist de produção
 
 - [x] Restrição por lista de e-mails Google autorizados.
-- [ ] Controle de acesso por papéis (RBAC) entre administrador, operador e auditor.
-- [ ] Controle de acesso por papéis para leitura, cadastro, transferência, baixa, importação e auditoria.
+- [x] Separação entre administrador global, alteração, importação, exportação e leitura.
+- [x] Desativação de usuário e revogação de sessão.
+- [x] Auditoria de login, bloqueios, administração, importação e exportação.
 - [x] Isolamento da base por chave empresarial secreta.
+- [x] Assinatura HMAC, timestamp e nonce de uso único no gateway.
 - [x] Controle de concorrência por revisão e transações relacionais.
 - [x] Exportação XLSX do inventário e da auditoria.
-- [ ] Cópia de segurança gerenciada, retenção e teste de restauração.
-- [ ] Logs estruturados sem dados pessoais desnecessários.
+- [ ] Confirmar cópia de segurança gerenciada, RPO/RTO e teste de restauração.
+- [x] Retenção automática de registros técnicos vencidos.
+- [x] Minimização de e-mails em movimentos e importações.
+- [ ] Arquivar DPAs e mecanismo de transferência internacional.
 - [ ] Monitoramento de disponibilidade do serviço intermediário e latência das RPCs.

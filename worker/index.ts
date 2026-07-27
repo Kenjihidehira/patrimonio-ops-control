@@ -31,17 +31,88 @@ const worker = {
 
     if (url.pathname === "/_vinext/image") {
       const allowedWidths = [...DEFAULT_DEVICE_SIZES, ...DEFAULT_IMAGE_SIZES];
-      return handleImageOptimization(request, {
+      const imageResponse = await handleImageOptimization(request, {
         fetchAsset: (path) => env.ASSETS.fetch(new Request(new URL(path, request.url))),
         transformImage: async (body, { width, format, quality }) => {
           const result = await env.IMAGES.input(body).transform(width > 0 ? { width } : {}).output({ format, quality });
           return result.response();
         },
       }, allowedWidths);
+      return withSecurityHeaders(imageResponse);
     }
 
-    return handler.fetch(request, env, ctx);
+    const response = await handler.fetch(request, env, ctx);
+    return withSecurityHeaders(response);
   },
 };
 
 export default worker;
+
+function withSecurityHeaders(response: Response): Response {
+  const headers = new Headers(response.headers);
+  headers.set("strict-transport-security", "max-age=31536000; includeSubDomains");
+  headers.set("x-content-type-options", "nosniff");
+  headers.set("x-frame-options", "DENY");
+  headers.set("referrer-policy", "no-referrer");
+  headers.set(
+    "permissions-policy",
+    "camera=(), geolocation=(), microphone=(), payment=(), usb=(), browsing-topics=()",
+  );
+  headers.set("cross-origin-opener-policy", "same-origin");
+  headers.set("cross-origin-resource-policy", "same-origin");
+  headers.delete("x-powered-by");
+
+  const contentType = headers.get("content-type") ?? "";
+  if (!contentType.toLowerCase().includes("text/html")) {
+    return new Response(response.body, {
+      status: response.status,
+      statusText: response.statusText,
+      headers,
+    });
+  }
+
+  const nonce = randomNonce();
+  headers.set(
+    "content-security-policy",
+    [
+      "default-src 'self'",
+      `script-src 'self' 'nonce-${nonce}'`,
+      `style-src 'self' 'nonce-${nonce}'`,
+      "img-src 'self' data: blob:",
+      "font-src 'self'",
+      "connect-src 'self'",
+      "object-src 'none'",
+      "base-uri 'self'",
+      "form-action 'self'",
+      "frame-ancestors 'none'",
+      "manifest-src 'self'",
+      "worker-src 'none'",
+      "upgrade-insecure-requests",
+    ].join("; "),
+  );
+
+  const securedResponse = new Response(response.body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers,
+  });
+  return new HTMLRewriter()
+    .on("script", new NonceElementHandler(nonce))
+    .on("style", new NonceElementHandler(nonce))
+    .transform(securedResponse);
+}
+
+class NonceElementHandler implements HTMLRewriterElementContentHandlers {
+  constructor(private readonly nonce: string) {}
+
+  element(element: Element): void {
+    element.setAttribute("nonce", this.nonce);
+  }
+}
+
+function randomNonce(): string {
+  const bytes = crypto.getRandomValues(new Uint8Array(18));
+  let binary = "";
+  for (const byte of bytes) binary += String.fromCharCode(byte);
+  return btoa(binary).replaceAll("+", "-").replaceAll("/", "_").replace(/=+$/, "");
+}

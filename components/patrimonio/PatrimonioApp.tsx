@@ -205,6 +205,9 @@ export default function PatrimonioApp() {
     nextSelectedId?: string,
   ) => {
     if (!dashboard) throw new Error("A base ainda não foi carregada.");
+    if (!dashboard.environment.permissions.canWrite) {
+      throw new Error("Seu perfil possui acesso somente para consulta.");
+    }
     const result = await mutateDashboard(
       action,
       dashboard.revision,
@@ -250,6 +253,11 @@ export default function PatrimonioApp() {
 
   const copy = viewCopy[view];
   const authenticated = Boolean(dashboard?.session.authenticated);
+  const permissions = dashboard?.environment.permissions ?? {
+    canWrite: false,
+    canImport: false,
+    canExport: false,
+  };
   const visibleViews = (Object.keys(viewCopy) as ViewId[]).filter(
     (item) => item !== "environments" || dashboard?.environment.isAdmin,
   );
@@ -348,14 +356,14 @@ export default function PatrimonioApp() {
               {authenticated ? <a className="session-sign-out" href={dashboard?.session.signOutUrl}>Sair</a> : null}
             </div>
             <div className="data-actions">
-              <button className="button button-secondary" type="button" disabled={!authenticated} onClick={() => setModal({ kind: "import" })}>
+              <button className="button button-secondary" type="button" disabled={!permissions.canImport} onClick={() => setModal({ kind: "import" })}>
                 <span aria-hidden="true">↑</span> Importar
               </button>
-              <button className="button button-secondary" type="button" disabled={!authenticated} onClick={() => void handleExport()}>
+              <button className="button button-secondary" type="button" disabled={!permissions.canExport} onClick={() => void handleExport()}>
                 <span aria-hidden="true">↓</span> Exportar
               </button>
               {view === "inventory" ? (
-                <button className="button button-primary" type="button" disabled={!authenticated} onClick={() => setModal({ kind: "create-asset" })}>
+                <button className="button button-primary" type="button" disabled={!permissions.canWrite} onClick={() => setModal({ kind: "create-asset" })}>
                   <span aria-hidden="true">+</span> Novo patrimônio
                 </button>
               ) : null}
@@ -369,6 +377,14 @@ export default function PatrimonioApp() {
             <a className="button button-secondary button-small" href={dashboard.session.signInUrl}>Entrar</a>
           </div>
         ) : null}
+        {dashboard && authenticated && !permissions.canWrite ? (
+          <div className="demo-notice read-only-notice">
+            <div>
+              <strong>Acesso somente para consulta</strong>
+              <span>Alterações, importações e exportações dependem de autorização específica do administrador.</span>
+            </div>
+          </div>
+        ) : null}
 
         {view === "inventory" ? (
           <InventoryView
@@ -380,7 +396,7 @@ export default function PatrimonioApp() {
             onTransfer={(assetId) => setModal({ kind: "transfer", assetId })}
             onIdentifier={(assetId) => setModal({ kind: "identifier", assetId })}
             onStatusSubmit={(event, asset) => void handleStatusSubmit(event, asset)}
-            statusBusy={mutationBusy}
+            statusBusy={mutationBusy || !permissions.canWrite}
             statusError={mutationError}
             scannerState={scanner.state}
             scannerLabel={scanner.label}
@@ -421,6 +437,10 @@ export default function PatrimonioApp() {
             ? <LoadingState label="Carregando módulo..." />
             : <EmptyState title="Módulo indisponível" description={error ?? "Não foi possível carregar os dados."} />
         ) : null}
+        <footer className="app-footer">
+          <span>Uso interno · Dados pessoais protegidos</span>
+          <a href="/privacidade">Privacidade e direitos do titular</a>
+        </footer>
       </main>
 
       {dashboard ? (

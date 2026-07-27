@@ -1,47 +1,80 @@
-import { gatewayKeyMatches } from "./auth.js";
+import { verifyGatewayRequest } from "./auth.js";
 
 const gatewayKey = Deno.env.get("PATRIMONIO_GATEWAY_KEY") ?? "";
-const rotatedGatewayKeyHash =
-  "937108f7408c285b8666b3598a03b3cfe0b2e57cd36a4a29627fc9fb88a26d7b";
 const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
 const secretKeys = JSON.parse(Deno.env.get("SUPABASE_SECRET_KEYS") ?? "{}");
 const supabaseSecretKey = secretKeys.default ?? Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const slugPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
-const ownerKeyPattern = /^[a-f0-9]{64}$/;
+const MAX_REQUEST_BYTES = 5 * 1024 * 1024;
 
 Deno.serve(async (request) => {
   if (request.method !== "POST") return json({ error: "method_not_allowed" }, 405);
-  if (!supabaseUrl || !supabaseSecretKey) {
+  if (!supabaseUrl || !supabaseSecretKey || !gatewayKey) {
     return json({ error: "gateway_not_configured" }, 500);
   }
-  if (
-    !(await gatewayKeyMatches(
-      request.headers.get("x-patrimonio-key") ?? "",
-      gatewayKey,
-      rotatedGatewayKeyHash,
-    ))
-  ) {
+  if (request.headers.get("content-type")?.split(";")[0]?.trim() !== "application/json") {
+    return json({ error: "unsupported_media_type" }, 415);
+  }
+
+  const requestBody = await readRequestBody(request);
+  if (requestBody === null) return json({ error: "request_too_large" }, 413);
+  const timestamp = request.headers.get("x-patrimonio-timestamp") ?? "";
+  const nonce = request.headers.get("x-patrimonio-nonce") ?? "";
+  const signature = request.headers.get("x-patrimonio-signature") ?? "";
+  const verified = await verifyGatewayRequest({
+    secret: gatewayKey,
+    timestamp,
+    nonce,
+    signature,
+    body: requestBody,
+  });
+  if (!verified) {
     return json({ error: "unauthorized" }, 401);
   }
 
   try {
-    const body = await request.json();
+    const nonceAccepted = await dataRequest("rpc/patrimonio_consume_gateway_nonce", {
+      method: "POST",
+      body: JSON.stringify({
+        p_nonce: nonce,
+        p_expires_at: new Date(Number(timestamp) + 5 * 60 * 1000).toISOString(),
+      }),
+    });
+    if (nonceAccepted !== true) return json({ error: "replayed_request" }, 409);
+
+    const body = JSON.parse(requestBody);
     const operation = String(body.operation ?? "");
     const identifier = normalizeIdentifier(body.identifier);
+    if (identifier) await enforceRateLimit(identifier, operation);
 
     switch (operation) {
       case "check_user_access": {
         if (!identifier) return json({ data: { authorized: false } });
         const user = await loadUser(identifier);
-        return json({ data: { authorized: Boolean(user?.active) } });
+        return json({
+          data: {
+            authorized: Boolean(user?.active),
+            sessionVersion: Number(user?.session_version ?? 0),
+          },
+        });
       }
 
       case "load_workspace_context": {
         const access = await resolveDepartmentAccess(identifier, body.departmentSlug);
         const ownerKey = access.active.owner_key;
         await ensureWorkspace(ownerKey);
-        const [workspace, nuclei, assets, collaborators, movements, imports, transfers, users] =
+        const [
+          workspace,
+          nuclei,
+          assets,
+          collaborators,
+          movements,
+          imports,
+          transfers,
+          users,
+          securityEvents,
+        ] =
           await Promise.all([
             loadWorkspaceRevision(ownerKey),
             loadNuclei(ownerKey),
@@ -51,6 +84,7 @@ Deno.serve(async (request) => {
             loadImports(ownerKey),
             loadDepartmentTransfers(access.active.slug),
             access.isAdmin ? loadUserDirectory() : Promise.resolve([]),
+            access.isAdmin ? loadSecurityEvents() : Promise.resolve([]),
           ]);
 
         return json({
@@ -62,10 +96,12 @@ Deno.serve(async (request) => {
             movements,
             imports,
             transfers,
+            securityEvents,
             access: {
               activeDepartment: publicDepartment(access.active),
               departments: access.departments.map(publicDepartment),
               isAdmin: access.isAdmin,
+              permissions: access.permissions,
               users,
             },
           },
@@ -93,14 +129,50 @@ Deno.serve(async (request) => {
         const departmentSlugs = Array.isArray(body.user?.departmentSlugs)
           ? body.user.departmentSlugs.map(String)
           : [];
-        const data = await dataRequest("rpc/patrimonio_save_user_access", {
+        const data = await dataRequest("rpc/patrimonio_save_user_access_v2", {
           method: "POST",
           body: JSON.stringify({
             p_admin_identifier: identifier,
             p_identifier: targetIdentifier,
             p_display_name: String(body.user?.displayName ?? ""),
             p_is_admin: body.user?.isAdmin === true,
+            p_active: body.user?.active !== false,
+            p_can_write: body.user?.canWrite !== false,
+            p_can_import: body.user?.canImport !== false,
+            p_can_export: body.user?.canExport !== false,
             p_department_slugs: departmentSlugs,
+          }),
+        });
+        return json({ data });
+      }
+
+      case "authorize_operation": {
+        const requestedOperation = String(body.requestedOperation ?? "");
+        await enforceRateLimit(identifier, `authorize_${requestedOperation}`);
+        const data = await authorizeOperation(
+          identifier,
+          String(body.departmentSlug ?? ""),
+          requestedOperation,
+        );
+        return json({ data });
+      }
+
+      case "record_auth_event": {
+        const eventType = String(body.eventType ?? "");
+        const outcome = String(body.outcome ?? "");
+        if (!["login_succeeded", "login_denied", "logout"].includes(eventType)) {
+          return json({ error: "unsupported_auth_event" }, 400);
+        }
+        const data = await dataRequest("rpc/patrimonio_record_security_event", {
+          method: "POST",
+          body: JSON.stringify({
+            p_event_type: eventType,
+            p_outcome: outcome,
+            p_actor_identifier: identifier || null,
+            p_target_identifier: null,
+            p_department_slug: null,
+            p_metadata: {},
+            p_retention_days: 180,
           }),
         });
         return json({ data });
@@ -127,33 +199,11 @@ Deno.serve(async (request) => {
         return json({ data });
       }
 
-      case "ensure_workspace": {
-        const ownerKey = legacyOwnerKey(body.ownerKey);
-        await ensureWorkspace(ownerKey);
-        return json({ data: null });
-      }
-
-      case "load_workspace": {
-        const ownerKey = legacyOwnerKey(body.ownerKey);
-        const [workspaces, nuclei, assets, collaborators, movements] = await Promise.all([
-          loadWorkspaceRevision(ownerKey),
-          loadNuclei(ownerKey),
-          loadAssets(ownerKey),
-          loadCollaborators(ownerKey),
-          loadMovements(ownerKey),
-        ]);
-        return json({ data: { workspaces, nuclei, assets, collaborators, movements } });
-      }
-
-      case "load_imports": {
-        return json({ data: await loadImports(legacyOwnerKey(body.ownerKey)) });
-      }
-
       case "apply_action": {
-        const ownerKey = identifier
-          ? (await resolveDepartmentAccess(identifier, body.departmentSlug)).active.owner_key
-          : legacyOwnerKey(body.ownerKey);
-        const actor = identifier ? `google:${identifier}` : String(body.actor ?? "");
+        const access = await resolveDepartmentAccess(identifier, body.departmentSlug);
+        await authorizeOperation(identifier, access.active.slug, "write");
+        const ownerKey = access.active.owner_key;
+        const actor = actorLabel(access.user);
         const data = await dataRequest("rpc/patrimonio_apply_action", {
           method: "POST",
           body: JSON.stringify({
@@ -167,10 +217,10 @@ Deno.serve(async (request) => {
       }
 
       case "import_assets": {
-        const ownerKey = identifier
-          ? (await resolveDepartmentAccess(identifier, body.departmentSlug)).active.owner_key
-          : legacyOwnerKey(body.ownerKey);
-        const actor = identifier ? `google:${identifier}` : String(body.actor ?? "");
+        const access = await resolveDepartmentAccess(identifier, body.departmentSlug);
+        await authorizeOperation(identifier, access.active.slug, "import");
+        const ownerKey = access.active.owner_key;
+        const actor = actorLabel(access.user);
         const payload = body.payload ?? {};
         const data = await dataRequest("rpc/patrimonio_import_workspace", {
           method: "POST",
@@ -193,6 +243,7 @@ Deno.serve(async (request) => {
         return json({ error: "unsupported_operation" }, 400);
     }
   } catch (error) {
+    if (error instanceof SyntaxError) return json({ error: "invalid_json" }, 400);
     const status = Number(error?.status ?? 500);
     return json(
       {
@@ -228,6 +279,12 @@ async function resolveDepartmentAccess(identifier, requestedSlug) {
     active,
     departments,
     isAdmin: user.is_admin === true,
+    user,
+    permissions: {
+      canWrite: user.is_admin === true || user.can_write === true,
+      canImport: user.is_admin === true || user.can_import === true,
+      canExport: user.is_admin === true || user.can_export === true,
+    },
   };
 }
 
@@ -257,7 +314,7 @@ async function loadUser(identifier) {
   if (!identifier) return null;
   const filter = encodeURIComponent(`eq.${identifier}`);
   const users = await dataRequest(
-    `patrimonio_users?identifier=${filter}&select=identifier,display_name,is_admin,active&limit=1`,
+    `patrimonio_users?identifier=${filter}&select=identifier,display_name,is_admin,active,can_write,can_import,can_export,session_version&limit=1`,
   );
   return users[0] ?? null;
 }
@@ -265,7 +322,7 @@ async function loadUser(identifier) {
 async function loadUserDirectory() {
   const [users, memberships] = await Promise.all([
     dataRequest(
-      "patrimonio_users?select=identifier,display_name,is_admin,active&order=display_name.asc,identifier.asc",
+      "patrimonio_users?select=identifier,display_name,is_admin,active,can_write,can_import,can_export,last_login_at&order=display_name.asc,identifier.asc",
     ),
     dataRequest(
       "patrimonio_department_memberships?select=user_identifier,department_slug&order=department_slug.asc",
@@ -282,6 +339,10 @@ async function loadUserDirectory() {
     displayName: user.display_name,
     isAdmin: user.is_admin,
     active: user.active,
+    canWrite: user.is_admin || user.can_write,
+    canImport: user.is_admin || user.can_import,
+    canExport: user.is_admin || user.can_export,
+    lastLoginAt: user.last_login_at,
     departmentSlugs: departmentsByUser.get(user.identifier) ?? [],
   }));
 }
@@ -345,6 +406,12 @@ function loadDepartmentTransfers(departmentSlug) {
   );
 }
 
+function loadSecurityEvents() {
+  return dataRequest(
+    "patrimonio_security_events?select=id,event_type,outcome,actor_identifier,target_identifier,department_slug,metadata,occurred_at,expires_at&order=occurred_at.desc&limit=100",
+  );
+}
+
 function publicDepartment(department) {
   return { slug: department.slug, name: department.name };
 }
@@ -354,16 +421,83 @@ function normalizeIdentifier(value) {
   return emailPattern.test(identifier) ? identifier : "";
 }
 
-function legacyOwnerKey(value) {
-  const ownerKey = String(value ?? "");
-  if (!ownerKeyPattern.test(ownerKey)) {
-    throw httpError("invalid_owner_key", 400, "22023");
-  }
-  return ownerKey;
-}
-
 function httpError(message, status, code) {
   return Object.assign(new Error(message), { status, code });
+}
+
+async function authorizeOperation(identifier, departmentSlug, operation) {
+  if (!identifier) throw httpError("invalid_user_identifier", 400, "22023");
+  return dataRequest("rpc/patrimonio_authorize_operation", {
+    method: "POST",
+    body: JSON.stringify({
+      p_identifier: identifier,
+      p_department_slug: String(departmentSlug ?? "").trim().toLowerCase(),
+      p_operation: String(operation ?? "").trim().toLowerCase(),
+    }),
+  });
+}
+
+async function enforceRateLimit(identifier, operation) {
+  const limits = {
+    check_user_access: [300, 60],
+    load_workspace_context: [240, 60],
+    load_department_nuclei: [120, 60],
+    apply_action: [60, 60],
+    import_assets: [10, 300],
+    authorize_operation: [60, 60],
+    authorize_export: [10, 300],
+    authorize_import: [10, 300],
+    authorize_read: [240, 60],
+    authorize_write: [60, 60],
+    authorize_admin: [30, 60],
+    save_user_access: [30, 60],
+    transfer_department_entity: [20, 60],
+    record_auth_event: [30, 60],
+  };
+  const [limit, windowSeconds] = limits[operation] ?? [30, 60];
+  const allowed = await dataRequest("rpc/patrimonio_consume_rate_limit", {
+    method: "POST",
+    body: JSON.stringify({
+      p_identifier: identifier,
+      p_operation: operation || "unknown",
+      p_limit: limit,
+      p_window_seconds: windowSeconds,
+    }),
+  });
+  if (allowed !== true) throw httpError("rate_limit_exceeded", 429, "42900");
+}
+
+function actorLabel(user) {
+  const displayName = String(user?.display_name ?? "").trim();
+  return displayName || "Usuário autorizado";
+}
+
+async function readRequestBody(request) {
+  const declaredLength = Number(request.headers.get("content-length") ?? 0);
+  if (declaredLength > MAX_REQUEST_BYTES) return null;
+  if (!request.body) return "";
+
+  const reader = request.body.getReader();
+  const chunks: Uint8Array[] = [];
+  let totalBytes = 0;
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    totalBytes += value.byteLength;
+    if (totalBytes > MAX_REQUEST_BYTES) {
+      await reader.cancel();
+      return null;
+    }
+    chunks.push(value);
+  }
+
+  const body = new Uint8Array(totalBytes);
+  let offset = 0;
+  for (const chunk of chunks) {
+    body.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+  return new TextDecoder().decode(body);
 }
 
 async function dataRequest(path, init = {}) {

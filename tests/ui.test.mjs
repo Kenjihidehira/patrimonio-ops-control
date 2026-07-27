@@ -7,6 +7,7 @@ const [
   demoPage,
   loginPage,
   layout,
+  themeInit,
   app,
   inventory,
   nuclei,
@@ -31,6 +32,7 @@ const [
   read("app/demo/page.tsx"),
   read("app/login/page.tsx"),
   read("app/layout.tsx"),
+  read("public/theme-init.js"),
   read("components/patrimonio/PatrimonioApp.tsx"),
   read("components/patrimonio/InventoryView.tsx"),
   read("components/patrimonio/NucleiView.tsx"),
@@ -281,7 +283,8 @@ test("tema escuro é acessível, usa cookie e não armazena dados localmente", (
   assert.match(app, /className="theme-toggle-label" suppressHydrationWarning/);
   assert.match(hooks, /patrimonio_theme=/);
   assert.match(hooks, /document\.documentElement\.dataset\.theme = theme/);
-  assert.match(layout, /prefers-color-scheme: dark/);
+  assert.match(layout, /\/theme-init\.js/);
+  assert.match(themeInit, /prefers-color-scheme: dark/);
   assert.match(css, /:root\[data-theme="dark"\]/);
   assert.match(css, /--heading-text:\s*#FFFFFF/i);
   assert.match(css, /--icon-accent:\s*#8EC9FF/i);
@@ -328,8 +331,8 @@ test("autenticação Google preserva PKCE, autorização por departamento e sess
   assert.match(googleAuth, /code_challenge_method: "S256"/);
   assert.match(googleAuth, /openid profile email/);
   assert.match(googleAuth, /payload\.email_verified !== true/);
-  assert.match(googleAuth, /hasSystemAccess/);
-  assert.match(sharedAuth, /hasSystemAccess/);
+  assert.match(googleAuth, /getSystemAccess/);
+  assert.match(sharedAuth, /getSystemAccess/);
   assert.match(sharedAuth, /HttpOnly/i);
   assert.match(sharedAuth, /SameSite=|sameSite/i);
   assert.match(sharedAuth, /const APP_PATH = "\/demo"/);

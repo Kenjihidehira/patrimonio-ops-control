@@ -1,32 +1,84 @@
-export async function gatewayKeyMatches(supplied, configured = "", rotatedHash = "") {
-  if (!supplied) return false;
-  if (configured && (await valuesMatch(supplied, configured))) return true;
-  if (!/^[a-f0-9]{64}$/.test(rotatedHash)) return false;
+const encoder = new TextEncoder();
+const MAX_CLOCK_SKEW_MS = 5 * 60 * 1000;
+const noncePattern = /^[A-Za-z0-9_-]{16,80}$/;
 
-  const suppliedHash = new Uint8Array(
-    await crypto.subtle.digest("SHA-256", new TextEncoder().encode(supplied)),
-  );
-  return bytesMatch(suppliedHash, hexToBytes(rotatedHash));
-}
-
-async function valuesMatch(left, right) {
-  const encoder = new TextEncoder();
-  const [leftHash, rightHash] = await Promise.all([
-    crypto.subtle.digest("SHA-256", encoder.encode(left)),
-    crypto.subtle.digest("SHA-256", encoder.encode(right)),
-  ]);
-  return bytesMatch(new Uint8Array(leftHash), new Uint8Array(rightHash));
-}
-
-function hexToBytes(value) {
-  return Uint8Array.from(value.match(/.{2}/g), (pair) => Number.parseInt(pair, 16));
-}
-
-function bytesMatch(left, right) {
-  if (left.length !== right.length) return false;
-  let difference = 0;
-  for (let index = 0; index < left.length; index += 1) {
-    difference |= left[index] ^ right[index];
+export async function signGatewayRequest(secret, timestamp, nonce, body) {
+  if (!secret || !noncePattern.test(nonce)) {
+    throw new Error("Invalid gateway signing input.");
   }
-  return difference === 0;
+  const key = await hmacKey(secret, ["sign"]);
+  const signature = await crypto.subtle.sign(
+    "HMAC",
+    key,
+    encoder.encode(signingPayload(timestamp, nonce, body)),
+  );
+  return base64Url(new Uint8Array(signature));
+}
+
+export async function verifyGatewayRequest({
+  secret,
+  timestamp,
+  nonce,
+  signature,
+  body,
+  now = Date.now(),
+}) {
+  if (
+    !secret
+    || !signature
+    || !noncePattern.test(nonce)
+    || !/^\d{13}$/.test(timestamp)
+  ) {
+    return false;
+  }
+
+  const issuedAt = Number(timestamp);
+  if (!Number.isSafeInteger(issuedAt) || Math.abs(now - issuedAt) > MAX_CLOCK_SKEW_MS) {
+    return false;
+  }
+
+  let signatureBytes;
+  try {
+    signatureBytes = fromBase64Url(signature);
+  } catch {
+    return false;
+  }
+
+  const key = await hmacKey(secret, ["verify"]);
+  return crypto.subtle.verify(
+    "HMAC",
+    key,
+    signatureBytes,
+    encoder.encode(signingPayload(timestamp, nonce, body)),
+  );
+}
+
+function signingPayload(timestamp, nonce, body) {
+  return `${timestamp}.${nonce}.${body}`;
+}
+
+function hmacKey(secret, usages) {
+  return crypto.subtle.importKey(
+    "raw",
+    encoder.encode(secret),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    usages,
+  );
+}
+
+function base64Url(bytes) {
+  let binary = "";
+  for (const byte of bytes) binary += String.fromCharCode(byte);
+  return btoa(binary)
+    .replaceAll("+", "-")
+    .replaceAll("/", "_")
+    .replace(/=+$/, "");
+}
+
+function fromBase64Url(value) {
+  if (!/^[A-Za-z0-9_-]{43}$/.test(value)) throw new Error("Invalid signature.");
+  const padded = value.replaceAll("-", "+").replaceAll("_", "/") + "=";
+  const binary = atob(padded);
+  return Uint8Array.from(binary, (character) => character.charCodeAt(0));
 }

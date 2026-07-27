@@ -130,6 +130,10 @@ export async function saveDepartmentUser(user: {
   identifier: string;
   displayName: string;
   isAdmin: boolean;
+  active: boolean;
+  canWrite: boolean;
+  canImport: boolean;
+  canExport: boolean;
   departmentSlugs: string[];
 }): Promise<{ message: string }> {
   const response = await fetch("/api/departments", {

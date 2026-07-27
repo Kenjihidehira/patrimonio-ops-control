@@ -34,12 +34,12 @@ Usuários anônimos recebem uma projeção vazia. Contas Google ativas recebem a
 ## `/api/departments`
 
 - `GET`: carrega os núcleos e a revisão do departamento de destino autorizado.
-- `POST save_user_access`: administrador libera departamentos para um e-mail ou concede acesso global.
+- `POST save_user_access`: administrador ativa ou desativa usuário, libera departamentos e define permissões de alteração, importação e exportação.
 - `POST transfer_department_entity`: administrador transfere patrimônio ou colaborador com seus itens, preservando auditoria.
 
 ## `POST /api/state`
 
-Exige autenticação. Toda ação inclui `expectedRevision`; o ator é obtido da sessão.
+Exige autenticação e permissão de alteração. Toda ação inclui `expectedRevision`; o ator é obtido da sessão.
 
 ### Cadastrar patrimônio
 
@@ -174,7 +174,7 @@ Uma alteração de nome atualiza as atribuições existentes na mesma transaçã
 
 ## `POST /api/import`
 
-Exige autenticação e recebe `multipart/form-data`.
+Exige autenticação, permissão de importação e recebe `multipart/form-data`.
 
 | Campo | Valores | Obrigatório |
 | --- | --- | --- |
@@ -218,7 +218,7 @@ Gera um `.xlsx` sem preços de aquisição e com quatro abas:
 - `Auditoria`
 - `Importações`
 
-Exige autenticação. Usuários autenticados exportam o ambiente empresarial carregado da planilha; requisições anônimas recebem `401`.
+Exige autenticação e permissão explícita de exportação. A autorização e o departamento são registrados na auditoria de segurança; requisições anônimas recebem `401` e perfis sem permissão recebem `403`.
 
 ## Códigos de resposta
 
@@ -227,8 +227,10 @@ Exige autenticação. Usuários autenticados exportam o ambiente empresarial car
 | `200` | Leitura, prévia ou mutação concluída |
 | `400` | Corpo da requisição, modo ou arquivo inválido |
 | `401` | Sessão não autenticada para escrita |
+| `403` | Departamento ou operação não autorizado para o perfil |
 | `409` | Revisão obsoleta; recarregamento necessário |
-| `413` | Arquivo vazio ou maior que 2 MB |
+| `413` | Arquivo vazio, maior que 2 MB ou planilha acima dos limites estruturais |
 | `415` | Formato diferente de `.xlsx` |
 | `422` | Regra de domínio violada ou importação sem linhas válidas |
+| `429` | Limite de requisições, importações ou exportações atingido |
 | `500` | Falha inesperada de infraestrutura |

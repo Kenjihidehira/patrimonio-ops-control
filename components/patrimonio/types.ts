@@ -146,6 +146,10 @@ export type DepartmentUser = {
   displayName: string;
   isAdmin: boolean;
   active: boolean;
+  canWrite: boolean;
+  canImport: boolean;
+  canExport: boolean;
+  lastLoginAt: string | null;
   departmentSlugs: string[];
 };
 
@@ -164,12 +168,30 @@ export type DepartmentTransfer = {
   at: string;
 };
 
+export type SecurityEvent = {
+  id: string;
+  eventType: string;
+  outcome: "success" | "denied" | "failure";
+  actorIdentifier: string | null;
+  targetIdentifier: string | null;
+  departmentSlug: string | null;
+  metadata: Record<string, unknown>;
+  at: string;
+  expiresAt: string;
+};
+
 export type DepartmentEnvironment = {
   activeDepartment: Department;
   departments: Department[];
   isAdmin: boolean;
+  permissions: {
+    canWrite: boolean;
+    canImport: boolean;
+    canExport: boolean;
+  };
   users: DepartmentUser[];
   transfers: DepartmentTransfer[];
+  securityEvents: SecurityEvent[];
 };
 
 export type Dashboard = {

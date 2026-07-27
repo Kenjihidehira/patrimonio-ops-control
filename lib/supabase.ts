@@ -1,4 +1,8 @@
 import { env } from "cloudflare:workers";
+import {
+  createGatewayNonce,
+  createGatewaySignature,
+} from "@/lib/gateway-signature";
 
 type WorkspaceState = {
   revision: number;
@@ -26,6 +30,10 @@ type DepartmentUser = {
   displayName: string;
   isAdmin: boolean;
   active: boolean;
+  canWrite: boolean;
+  canImport: boolean;
+  canExport: boolean;
+  lastLoginAt: string | null;
   departmentSlugs: string[];
 };
 
@@ -37,10 +45,16 @@ type GatewayWorkspaceContext = {
   movements: Array<Record<string, unknown>>;
   imports: Array<Record<string, unknown>>;
   transfers: Array<Record<string, unknown>>;
+  securityEvents: Array<Record<string, unknown>>;
   access: {
     activeDepartment: Department;
     departments: Department[];
     isAdmin: boolean;
+    permissions: {
+      canWrite: boolean;
+      canImport: boolean;
+      canExport: boolean;
+    };
     users: DepartmentUser[];
   };
 };
@@ -69,11 +83,24 @@ export class SupabaseError extends Error {
   }
 }
 
-export async function hasSystemAccess(identifier: string): Promise<boolean> {
-  const result = await gatewayRequest<{ authorized: boolean }>("check_user_access", {
+export async function getSystemAccess(identifier: string): Promise<{
+  authorized: boolean;
+  sessionVersion: number;
+}> {
+  const result = await gatewayRequest<{
+    authorized: boolean;
+    sessionVersion: number;
+  }>("check_user_access", {
     identifier,
   });
-  return result.authorized === true;
+  return {
+    authorized: result.authorized === true,
+    sessionVersion: Number(result.sessionVersion ?? 0),
+  };
+}
+
+export async function hasSystemAccess(identifier: string): Promise<boolean> {
+  return (await getSystemAccess(identifier)).authorized;
 }
 
 export async function loadDepartmentWorkspace(
@@ -110,6 +137,19 @@ export async function loadDepartmentWorkspace(
         actor: String(row.actor),
         note: String(row.note),
         at: String(row.occurred_at),
+      })),
+      securityEvents: result.securityEvents.map((row) => ({
+        id: String(row.id),
+        eventType: String(row.event_type),
+        outcome: String(row.outcome) as "success" | "denied" | "failure",
+        actorIdentifier: row.actor_identifier ? String(row.actor_identifier) : null,
+        targetIdentifier: row.target_identifier ? String(row.target_identifier) : null,
+        departmentSlug: row.department_slug ? String(row.department_slug) : null,
+        metadata: row.metadata && typeof row.metadata === "object"
+          ? row.metadata as Record<string, unknown>
+          : {},
+        at: String(row.occurred_at),
+        expiresAt: String(row.expires_at),
       })),
     },
   };
@@ -177,12 +217,47 @@ export async function saveUserAccess(
     identifier: string;
     displayName: string;
     isAdmin: boolean;
+    active: boolean;
+    canWrite: boolean;
+    canImport: boolean;
+    canExport: boolean;
     departmentSlugs: string[];
   },
 ) {
   return gatewayRequest("save_user_access", {
     identifier: adminIdentifier,
     user,
+  });
+}
+
+export async function authorizeDepartmentOperation(
+  identifier: string,
+  departmentSlug: string,
+  requestedOperation: "read" | "write" | "import" | "export" | "admin",
+) {
+  return gatewayRequest<{
+    departmentSlug: string;
+    canWrite: boolean;
+    canImport: boolean;
+    canExport: boolean;
+    isAdmin: boolean;
+    sessionVersion: number;
+  }>("authorize_operation", {
+    identifier,
+    departmentSlug,
+    requestedOperation,
+  });
+}
+
+export async function recordAuthEvent(
+  identifier: string,
+  eventType: "login_succeeded" | "login_denied" | "logout",
+  outcome: "success" | "denied" | "failure",
+): Promise<void> {
+  await gatewayRequest("record_auth_event", {
+    identifier,
+    eventType,
+    outcome,
   });
 }
 
@@ -288,14 +363,25 @@ async function gatewayRequest<T = unknown>(
   payload: Record<string, unknown>,
 ): Promise<T> {
   const config = getGatewayConfig();
+  const requestBody = JSON.stringify({ operation, ...payload });
+  const timestamp = String(Date.now());
+  const nonce = createGatewayNonce();
+  const signature = await createGatewaySignature(
+    config.key,
+    timestamp,
+    nonce,
+    requestBody,
+  );
   const response = await fetch(config.url, {
     method: "POST",
     headers: {
       accept: "application/json",
       "content-type": "application/json",
-      "x-patrimonio-key": config.key,
+      "x-patrimonio-timestamp": timestamp,
+      "x-patrimonio-nonce": nonce,
+      "x-patrimonio-signature": signature,
     },
-    body: JSON.stringify({ operation, ...payload }),
+    body: requestBody,
   });
   const responseText = await response.text();
   const body = safeJson(responseText);

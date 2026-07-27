@@ -1012,7 +1012,7 @@ function ScannerAssetDialog({
             key={scanToken}
             asset={asset}
             dashboard={dashboard}
-            authenticated={dashboard.session.authenticated}
+            authenticated={dashboard.environment.permissions.canWrite}
             activeTab={detailTab}
             onTabChange={(tab) => setTabState({ scanToken, tab })}
             onTransfer={() => onTransfer(asset.id)}

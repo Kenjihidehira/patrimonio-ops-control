@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  type CSSProperties,
   type FormEvent,
   type ReactNode,
   useEffect,
@@ -648,10 +647,6 @@ export function OperationalMetric({
       </div>
     </article>
   );
-}
-
-export function allocationStyle(value: number): CSSProperties {
-  return { "--allocation": `${value}%` } as CSSProperties;
 }
 
 export function formValue(form: HTMLFormElement, name: string): string {

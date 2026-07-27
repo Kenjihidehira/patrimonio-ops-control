@@ -722,6 +722,29 @@ textarea:disabled {
   display: block;
 }
 
+.read-only-notice {
+  border-left-color: var(--brand-700);
+  background: var(--brand-100);
+}
+
+.app-footer {
+  display: flex;
+  max-width: 1560px;
+  margin: 28px auto 0;
+  padding: 18px 0 4px;
+  border-top: 1px solid var(--line);
+  justify-content: space-between;
+  gap: 18px;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.app-footer a {
+  color: var(--brand-700);
+  font-weight: 750;
+  text-underline-offset: 3px;
+}
+
 .demo-notice strong {
   font-size: 12px;
 }
@@ -2027,6 +2050,10 @@ tbody tr:last-child td {
 }
 
 .nucleus-progress {
+  display: block;
+  width: 100%;
+  appearance: none;
+  border: 0;
   height: 5px;
   margin-top: 7px;
   overflow: hidden;
@@ -2034,10 +2061,13 @@ tbody tr:last-child td {
   background: var(--loading-bg);
 }
 
-.nucleus-progress span {
-  display: block;
-  width: var(--allocation);
-  height: 100%;
+.nucleus-progress::-webkit-progress-bar {
+  border-radius: inherit;
+  background: var(--loading-bg);
+}
+
+.nucleus-progress::-webkit-progress-value,
+.nucleus-progress::-moz-progress-bar {
   border-radius: inherit;
   background: var(--blue);
 }
@@ -3893,7 +3923,7 @@ tbody tr:last-child td {
 
 .environment-user-list > article {
   display: grid;
-  grid-template-columns: minmax(180px, 1fr) minmax(180px, 1.2fr) auto;
+  grid-template-columns: minmax(180px, 1fr) minmax(200px, 1.3fr) minmax(120px, auto) auto;
   gap: 14px;
   align-items: center;
   padding: 14px 20px;
@@ -3936,6 +3966,21 @@ tbody tr:last-child td {
   font-weight: 800;
 }
 
+.environment-user-tags > span.is-active {
+  background: var(--success-soft);
+  color: var(--success);
+}
+
+.environment-user-tags > span.is-inactive {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+.environment-last-login {
+  color: var(--muted);
+  font-size: 9px;
+}
+
 .environment-warning {
   margin: 0;
   padding: 11px 12px;
@@ -3947,6 +3992,72 @@ tbody tr:last-child td {
 
 .environment-transfer-history {
   display: grid;
+}
+
+.security-event-list {
+  display: grid;
+}
+
+.security-event-list > article {
+  display: grid;
+  grid-template-columns: minmax(190px, 0.8fr) minmax(220px, 1.4fr) minmax(160px, 0.7fr);
+  gap: 16px;
+  align-items: center;
+  padding: 14px 20px;
+  border-top: 1px solid var(--line);
+}
+
+.security-event-list > article:first-child {
+  border-top: 0;
+}
+
+.security-event-list p,
+.security-event-list span,
+.security-event-list small {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.security-event-list strong,
+.security-event-list span,
+.security-event-list small {
+  display: block;
+}
+
+.security-event-list strong {
+  color: var(--heading-text);
+  font-size: 11px;
+}
+
+.security-event-list p {
+  color: var(--ink);
+  font-size: 10px;
+}
+
+.security-event-list span,
+.security-event-list small {
+  color: var(--muted);
+  font-size: 9px;
+}
+
+.security-event-outcome {
+  width: fit-content;
+  margin-top: 5px !important;
+  padding: 3px 6px;
+  border-radius: 999px;
+  background: var(--surface-soft);
+  font-weight: 800;
+}
+
+.security-event-outcome.is-success {
+  background: var(--success-soft);
+  color: var(--success);
+}
+
+.security-event-outcome.is-denied,
+.security-event-outcome.is-failure {
+  background: var(--danger-soft);
+  color: var(--danger);
 }
 
 .environment-transfer-history > article {
@@ -4263,7 +4374,8 @@ tbody tr:last-child td {
   }
 
   .environment-user-list > article,
-  .environment-transfer-history > article {
+  .environment-transfer-history > article,
+  .security-event-list > article {
     grid-template-columns: minmax(0, 1fr);
   }
 
@@ -4277,6 +4389,11 @@ tbody tr:last-child td {
 
   .demo-notice {
     align-items: stretch;
+    flex-direction: column;
+  }
+
+  .app-footer {
+    align-items: flex-start;
     flex-direction: column;
   }
 

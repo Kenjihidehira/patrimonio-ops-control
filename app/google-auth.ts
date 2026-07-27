@@ -8,11 +8,12 @@ import {
   runtimeValue,
   setOAuthTransactionCookie,
 } from "@/app/auth";
-import { hasSystemAccess } from "@/lib/supabase";
+import { getSystemAccess, recordAuthEvent } from "@/lib/supabase";
 
 type GoogleConfig = {
   clientId: string;
   clientSecret: string;
+  workspaceDomain: string;
 };
 
 type GoogleMetadata = {
@@ -44,6 +45,7 @@ export async function startGoogleLogin(request: Request): Promise<Response> {
       code_challenge: transaction.challenge,
       code_challenge_method: "S256",
       prompt: "select_account",
+      ...(config.workspaceDomain ? { hd: config.workspaceDomain } : {}),
     }).toString();
 
     const response = redirectResponse(authorizationUrl.toString());
@@ -93,16 +95,26 @@ export async function completeGoogleLogin(request: Request): Promise<Response> {
       audience: config.clientId,
     });
     const email = typeof payload.email === "string" ? payload.email.trim().toLowerCase() : "";
+    const access = email ? await getSystemAccess(email) : { authorized: false, sessionVersion: 0 };
     if (
       payload.nonce !== transaction.nonce ||
       typeof payload.sub !== "string" ||
       payload.email_verified !== true ||
-      !(await hasSystemAccess(email))
+      (config.workspaceDomain && payload.hd !== config.workspaceDomain) ||
+      !access.authorized
     ) {
       console.warn("Google login rejected by department access");
+      if (email) {
+        await recordAuthEvent(email, "login_denied", "denied").catch(
+          (error) => console.error("Login denial audit failed", safeAuthError(error)),
+        );
+      }
       return authFailureResponse(request, "google", "not_authorized", returnTo);
     }
 
+    await recordAuthEvent(email, "login_succeeded", "success").catch(
+      (error) => console.error("Login audit failed", safeAuthError(error)),
+    );
     return createSessionResponse(
       request,
       {
@@ -111,6 +123,7 @@ export async function completeGoogleLogin(request: Request): Promise<Response> {
         identifier: email,
         subject: payload.sub,
         actor: `google:${email}`,
+        sessionVersion: access.sessionVersion,
       },
       returnTo,
     );
@@ -123,10 +136,14 @@ export async function completeGoogleLogin(request: Request): Promise<Response> {
 function getGoogleConfig(): GoogleConfig {
   const clientId = runtimeValue("GOOGLE_CLIENT_ID");
   const clientSecret = runtimeValue("GOOGLE_CLIENT_SECRET");
+  const workspaceDomain = runtimeValue("GOOGLE_WORKSPACE_DOMAIN").toLowerCase();
   if (!clientId.endsWith(".apps.googleusercontent.com") || !clientSecret) {
     throw new Error("Google OpenID Connect is not configured.");
   }
-  return { clientId, clientSecret };
+  if (workspaceDomain && !/^[a-z0-9.-]+\.[a-z]{2,}$/.test(workspaceDomain)) {
+    throw new Error("GOOGLE_WORKSPACE_DOMAIN is invalid.");
+  }
+  return { clientId, clientSecret, workspaceDomain };
 }
 
 async function getGoogleMetadata(): Promise<GoogleMetadata> {

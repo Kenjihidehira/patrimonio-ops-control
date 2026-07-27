@@ -1,6 +1,10 @@
 import { getAuthenticatedUser, loginPagePath } from "@/app/auth";
 import { buildDashboard } from "@/lib/domain";
 import { createExportWorkbook } from "@/lib/workbook";
+import {
+  authorizeDepartmentOperation,
+  SupabaseError,
+} from "@/lib/supabase";
 import { loadWorkspaceContext } from "@/lib/workspace";
 
 export const dynamic = "force-dynamic";
@@ -18,9 +22,17 @@ export async function GET(request: Request) {
       );
     }
     const url = new URL(request.url);
+    const departmentSlug = url.searchParams.get("department") ?? "";
+    if (!departmentSlug) {
+      return Response.json(
+        { error: "Informe o departamento que será exportado." },
+        { status: 400, headers: { "cache-control": "no-store" } },
+      );
+    }
+    await authorizeDepartmentOperation(user.identifier, departmentSlug, "export");
     const workspace = await loadWorkspaceContext(
       user,
-      url.searchParams.get("department"),
+      departmentSlug,
     );
     const dashboard = buildDashboard(workspace.state, { sort: "asset_asc" });
     const workbook = await createExportWorkbook(dashboard, workspace.imports);
@@ -34,6 +46,18 @@ export async function GET(request: Request) {
       },
     });
   } catch (error) {
+    if (error instanceof SupabaseError && error.status === 403) {
+      return Response.json(
+        { error: "Seu perfil não possui permissão para exportar este departamento." },
+        { status: 403, headers: { "cache-control": "no-store" } },
+      );
+    }
+    if (error instanceof SupabaseError && error.status === 429) {
+      return Response.json(
+        { error: "Limite de exportações atingido. Aguarde e tente novamente." },
+        { status: 429, headers: { "cache-control": "no-store" } },
+      );
+    }
     console.error("Failed to export patrimonial workbook", error);
     return Response.json(
       { error: "Não foi possível exportar o inventário." },

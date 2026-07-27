@@ -36,6 +36,9 @@ Planilhas patrimoniais isoladas não registram bem responsabilidade, movimentaç
 - Exportação XLSX com inventário, núcleos, auditoria e histórico de importações.
 - Operação sem exposição de preço ou valor de aquisição dos patrimônios.
 - Ambientes isolados por departamento, com acesso individual, administração global e transferência auditável.
+- Permissões independentes para consulta, alteração, importação e exportação.
+- Desativação imediata, revogação de sessão e auditoria de login e administração.
+- Aviso de privacidade, retenção técnica e runbooks de incidente e restauração.
 
 ## Tecnologias
 
@@ -43,7 +46,7 @@ Planilhas patrimoniais isoladas não registram bem responsabilidade, movimentaç
 - **Aplicação:** Vinext/Vite com App Router e componentes funcionais.
 - **API:** Node.js com manipuladores de rota TypeScript executados no Cloudflare Worker.
 - **Banco:** Supabase Postgres 17, funções RPC transacionais e índices operacionais.
-- **Integração:** Função Edge do Supabase autenticada por segredo de servidor.
+- **Integração:** Função Edge do Supabase com requisições HMAC, janela curta e nonce de uso único.
 - **Autenticação:** Google OpenID Connect, PKCE, autorização por departamento e sessão `HttpOnly`.
 - **Planilhas:** `read-excel-file` e `write-excel-file`.
 - **Qualidade:** Node Test Runner, ESLint, TypeScript e GitHub Actions.
@@ -138,9 +141,11 @@ A referência anterior permanece como alias interno. Assim, reimportar a planilh
 
 Documentação completa: [`docs/arquitetura.md`](docs/arquitetura.md).
 
-### Limitação produtiva explícita
+### Modelo de autorização
 
-Todos os logins presentes na lista de autorizados acessam a mesma base e possuem as mesmas permissões de escrita. Ainda não há controle de acesso por papéis (RBAC) para função ou núcleo. Antes de ampliar o acesso para perfis somente leitura, auditores ou múltiplas empresas, adicione `organizations`, `memberships` e políticas de autorização por papel.
+Administradores globais controlam departamentos, usuários e transferências. Usuários comuns recebem departamentos específicos e permissões independentes para alteração, importação e exportação; sem essas permissões, o acesso é somente leitura. A autorização é novamente consultada no servidor a cada requisição e alterações de acesso incrementam a versão da sessão, invalidando cookies anteriores.
+
+Os controles técnicos e as pendências de governança estão em [`docs/lgpd.md`](docs/lgpd.md). Resposta a incidentes e recuperação estão em [`docs/incidentes.md`](docs/incidentes.md) e [`docs/backup-restauracao.md`](docs/backup-restauracao.md).
 
 ## Decisões de UX
 
@@ -180,7 +185,7 @@ GitHub Pages não hospeda este ambiente de execução: ele publica apenas arquiv
 
 ## Evoluções possíveis
 
-- RBAC por empresa, núcleo e função.
+- Papéis adicionais por núcleo quando houver necessidade operacional comprovada.
 - Etiquetas QR Code e leitura por câmera.
 - Termo digital de responsabilidade e aceite do colaborador.
 - Anexos de nota fiscal, laudo e foto do ativo em Supabase Storage.

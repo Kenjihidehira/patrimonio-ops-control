@@ -123,7 +123,7 @@ Chaves estrangeiras preservam integridade e índices cobrem status, núcleo, tip
 - A chave empresarial é aleatória, tem 256 bits e permanece somente no ambiente de execução do servidor.
 - `state`, PKCE e `nonce` protegem o fluxo contra falsificação de requisição, interceptação do código e repetição indevida do token de identidade.
 - O token de acesso e o segredo do cliente nunca são enviados ao JavaScript da interface nem gravados na sessão local.
-- O serviço intermediário aceita somente operações enumeradas e exige `x-patrimonio-key`.
+- O serviço intermediário aceita somente operações enumeradas e exige assinatura HMAC sobre o corpo, timestamp dentro da janela permitida e nonce de uso único.
 - RLS está habilitado e políticas negam acesso direto a `anon` e `authenticated`.
 - O envio de arquivo tem limite de tamanho, extensão controlada e analisador estruturado.
 - A prévia não devolve nomes dos colaboradores da planilha.
@@ -137,9 +137,9 @@ Chaves estrangeiras preservam integridade e índices cobrem status, núcleo, tip
 
 ## Limitações e evolução produtiva
 
-O ambiente empresarial atual representa uma empresa e é compartilhado por todos os logins presentes na lista de autorizados. A sessão identifica o ator da auditoria, mas todos possuem as mesmas permissões. Para múltiplas empresas ou perfis distintos, o próximo incremento deve introduzir `organizations`, `memberships` e papéis como administrador, operador e auditor.
+Cada departamento possui workspace e chave próprios. Administradores globais acessam todos; demais usuários recebem associações explícitas e permissões independentes para alteração, importação e exportação. Mudanças de acesso revogam sessões anteriores e são registradas na auditoria administrativa.
 
-Também faltam recuperação de desastre automatizada, política formal de retenção e armazenamento de anexos. A exportação XLSX reduz o risco operacional, mas não substitui uma cópia de segurança gerenciada do Postgres.
+Eventos técnicos vencidos possuem eliminação automática, mas o prazo dos registros patrimoniais depende da política corporativa e de obrigações legais. Backup gerenciado, RPO, RTO e teste de restauração ainda precisam ser confirmados no plano do Supabase. A exportação XLSX não substitui uma cópia de segurança gerenciada do Postgres.
 
 ## Decisões registradas
 

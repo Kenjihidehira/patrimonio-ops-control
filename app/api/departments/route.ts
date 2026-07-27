@@ -50,6 +50,10 @@ export async function POST(request: Request) {
         identifier: String(requestedUser.identifier ?? ""),
         displayName: String(requestedUser.displayName ?? ""),
         isAdmin: requestedUser.isAdmin === true,
+        active: requestedUser.active !== false,
+        canWrite: requestedUser.canWrite === true,
+        canImport: requestedUser.canImport === true,
+        canExport: requestedUser.canExport === true,
         departmentSlugs: Array.isArray(requestedUser.departmentSlugs)
           ? requestedUser.departmentSlugs.map(String)
           : [],
@@ -127,6 +131,9 @@ function departmentError(error: unknown, fallback: string) {
       invalid_user_identifier: "Informe um e-mail válido.",
       invalid_transfer_note: "Informe o motivo da transferência.",
       cannot_remove_own_admin: "Você não pode remover seu próprio acesso administrativo.",
+      no_department_access: "Libere ao menos um departamento para o usuário ativo.",
+      operation_not_allowed: "Seu perfil não permite executar esta operação.",
+      rate_limit_exceeded: "Muitas tentativas em pouco tempo. Aguarde e tente novamente.",
     };
     const message = messages[error.message] ?? fallback;
     const status = error.status === 403 ? 403 : error.status === 400 ? 400 : 422;

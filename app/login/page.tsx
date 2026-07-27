@@ -67,6 +67,12 @@ export default async function LoginPage({
               compartilhada com o Patrimônio Ops.
             </p>
           </div>
+          <nav className="login-legal" aria-label="Privacidade">
+            <a href="/privacidade">Aviso de privacidade e direitos do titular</a>
+            <a href="https://www.gazin.com.br/pagina/privacidade" rel="noreferrer">
+              Política corporativa Gazin
+            </a>
+          </nav>
         </div>
       </section>
     </main>

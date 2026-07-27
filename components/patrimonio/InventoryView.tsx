@@ -384,7 +384,7 @@ export function InventoryView({
             <AssetDetails
               asset={selectedAsset}
               dashboard={dashboard}
-              authenticated={dashboard.session.authenticated}
+              authenticated={dashboard.environment.permissions.canWrite}
               activeTab={detailTab}
               onTabChange={setDetailTab}
               onTransfer={() => onTransfer(selectedAsset.id)}

@@ -1,0 +1,85 @@
+# LGPD e governança dos dados
+
+Este documento registra os controles técnicos do Patrimônio Ops. Ele não substitui
+o inventário corporativo de tratamento, contratos com operadores nem a decisão do
+controlador e do encarregado.
+
+## Inventário resumido
+
+| Categoria | Exemplos | Finalidade | Acesso |
+| --- | --- | --- | --- |
+| Identificação profissional | nome, código, e-mail autorizado | autenticação e identificação do responsável | departamento liberado |
+| Estrutura organizacional | departamento, núcleo, gestor, localização | organização e localização patrimonial | departamento liberado |
+| Vínculo patrimonial | ativo, modelo, série, responsável, status | gestão e segurança dos bens | departamento liberado |
+| Auditoria operacional | movimentação, motivo, ator e data | rastreabilidade e exercício de direitos | operadores do departamento |
+| Auditoria de segurança | login, bloqueio, permissão, importação e exportação | prevenção, investigação e prestação de contas | administrador global |
+
+Não devem ser inseridos dados de saúde, biometria, religião, filiação sindical,
+opinião política ou vida sexual em nomes, observações ou planilhas.
+
+## Bases e finalidades
+
+O aviso publicado em `/privacidade` descreve legítimo interesse na gestão e
+segurança patrimonial, execução de relações de trabalho e contratos e cumprimento
+de obrigação legal ou regulatória, conforme a operação. A área responsável e o
+encarregado devem validar o registro corporativo dessas bases antes de ampliar o
+uso do sistema.
+
+## Operadores e transferência internacional
+
+| Operador | Serviço | Situação a comprovar |
+| --- | --- | --- |
+| Google | OpenID Connect | contrato, política corporativa e configuração da organização |
+| Cloudflare | Worker, entrega e proteção da aplicação | DPA, suboperadores e mecanismo de transferência |
+| Supabase | Postgres e Função Edge nos EUA | DPA, suboperadores e mecanismo da Resolução ANPD nº 19/2024 |
+
+A localização do Supabase em `us-east-2` caracteriza tratamento internacional.
+Antes da homologação corporativa, Jurídico/Privacidade deve confirmar cláusulas
+contratuais padrão ou outro mecanismo válido e manter a evidência junto ao contrato.
+
+## Retenção
+
+- Eventos de login e logout: até 180 dias.
+- Eventos de acesso, importação, exportação e bloqueio: até 5 anos.
+- Limites técnicos e nonces: no máximo 2 dias e 10 minutos, respectivamente.
+- Registros patrimoniais: prazo definido pela área proprietária junto ao
+  encarregado, conforme a política corporativa e obrigações aplicáveis.
+
+A rotina `patrimonio_apply_retention` elimina somente registros técnicos cujo
+prazo já venceu. Ela não apaga automaticamente inventário, colaboradores,
+movimentações ou transferências.
+
+Política corporativa:
+<https://www.gazin.com.br/pagina/politica-retencao-dados>
+
+## Direitos dos titulares
+
+O titular pode solicitar confirmação e acesso, correção, informação sobre
+compartilhamento, anonimização, bloqueio ou eliminação de dados excessivos,
+oposição e revisão quando aplicável.
+
+O canal e o encarregado estão publicados em:
+<https://www.gazin.com.br/pagina/privacidade>
+
+Fluxo interno mínimo:
+
+1. registrar a solicitação e validar a identidade do titular;
+2. identificar departamentos, ativos, movimentos, importações e eventos relacionados;
+3. entregar ou corrigir somente os dados do titular;
+4. consultar Jurídico/Privacidade antes de eliminar registros sujeitos a retenção;
+5. registrar decisão, responsável, data e fundamento.
+
+## Revisão obrigatória
+
+- Trimestral: usuários ativos, administradores e permissões de exportação.
+- Semestral: operadores, transferências internacionais e tabela de retenção.
+- Anual: aviso de privacidade, inventário de tratamento e teste de resposta a incidente.
+- Imediata: desligamento, mudança de função ou suspeita de comprometimento.
+
+## Pendências corporativas
+
+- confirmar qual empresa do Grupo Gazin é controladora em cada departamento;
+- arquivar DPAs e mecanismo de transferência de Google, Cloudflare e Supabase;
+- aprovar os prazos dos registros patrimoniais;
+- confirmar RTO, RPO e plano contratado de backup/PITR;
+- avaliar a necessidade de RIPD com o encarregado.

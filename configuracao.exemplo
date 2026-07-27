@@ -2,4 +2,7 @@ SUPABASE_GATEWAY_URL=https://seu-projeto.supabase.co/functions/v1/patrimonio-gat
 SUPABASE_GATEWAY_KEY=substitua_por_um_segredo_aleatorio_de_64_caracteres
 GOOGLE_CLIENT_ID=substitua_pelo_id_do_cliente_oauth_google.apps.googleusercontent.com
 GOOGLE_CLIENT_SECRET=substitua_pelo_segredo_do_cliente_oauth_google
+# Opcional: use gazin.com.br somente depois de confirmar que todas as contas autorizadas
+# pertencem ao Google Workspace corporativo. Contas Gmail deixam de funcionar quando definido.
+GOOGLE_WORKSPACE_DOMAIN=
 AUTH_SESSION_SECRET=substitua_por_um_segredo_aleatorio_com_pelo_menos_64_caracteres

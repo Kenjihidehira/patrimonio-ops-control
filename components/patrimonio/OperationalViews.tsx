@@ -190,7 +190,7 @@ export function ImportsView({
           <button
             className="button button-primary"
             type="button"
-            disabled={!dashboard.session.authenticated}
+            disabled={!dashboard.environment.permissions.canImport}
             onClick={onImport}
           >
             <span aria-hidden="true">↑</span> Importar planilha

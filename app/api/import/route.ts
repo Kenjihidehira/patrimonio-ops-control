@@ -1,6 +1,10 @@
 import { getAuthenticatedUser, loginPagePath } from "@/app/auth";
 import { parsePatrimonioRows } from "@/lib/spreadsheet-import";
-import { importAssets, SupabaseError } from "@/lib/supabase";
+import {
+  authorizeDepartmentOperation,
+  importAssets,
+  SupabaseError,
+} from "@/lib/supabase";
 import { readWorkbookRows } from "@/lib/workbook";
 import { loadWorkspaceContext } from "@/lib/workspace";
 
@@ -41,6 +45,14 @@ export async function POST(request: Request) {
     const formData = await request.formData();
     const file = formData.get("file");
     const mode = String(formData.get("mode") ?? "preview");
+    const departmentSlug = String(formData.get("department") ?? "").trim();
+    if (!departmentSlug) {
+      return Response.json(
+        { error: "Informe o departamento que receberá a importação." },
+        { status: 400, headers: responseHeaders },
+      );
+    }
+    await authorizeDepartmentOperation(user.identifier, departmentSlug, "import");
     if (!(file instanceof File)) {
       return Response.json(
         { error: "Selecione um arquivo XLSX." },
@@ -59,8 +71,20 @@ export async function POST(request: Request) {
         { status: 413, headers: responseHeaders },
       );
     }
+    if (!(await hasXlsxSignature(file))) {
+      return Response.json(
+        { error: "O conteúdo enviado não corresponde a um arquivo XLSX válido." },
+        { status: 415, headers: responseHeaders },
+      );
+    }
 
     const rows = await readWorkbookRows(file);
+    if (!workbookWithinLimits(rows)) {
+      return Response.json(
+        { error: "A planilha excede o limite de 10.000 linhas, 64 colunas ou 250.000 células." },
+        { status: 413, headers: responseHeaders },
+      );
+    }
     const preview = parsePatrimonioRows(rows) as SpreadsheetPreview;
     if (mode === "preview") {
       return Response.json(publicPreview(preview), { headers: responseHeaders });
@@ -78,7 +102,6 @@ export async function POST(request: Request) {
       );
     }
 
-    const departmentSlug = String(formData.get("department") ?? "").trim();
     const workspace = await loadWorkspaceContext(user, departmentSlug || null);
     const expectedRevision = Number(formData.get("revision"));
     if (!Number.isInteger(expectedRevision) || expectedRevision !== workspace.state.revision) {
@@ -108,6 +131,18 @@ export async function POST(request: Request) {
     );
   } catch (error) {
     if (error instanceof SupabaseError && error.code === "40001") return revisionConflict();
+    if (error instanceof SupabaseError && error.status === 403) {
+      return Response.json(
+        { error: "Seu perfil não possui permissão para importar neste departamento." },
+        { status: 403, headers: responseHeaders },
+      );
+    }
+    if (error instanceof SupabaseError && error.status === 429) {
+      return Response.json(
+        { error: "Limite de importações atingido. Aguarde e tente novamente." },
+        { status: 429, headers: responseHeaders },
+      );
+    }
     console.error("Failed to import patrimonial spreadsheet", error);
     return Response.json(
       { error: "Não foi possível processar a planilha. Verifique se o arquivo XLSX está íntegro." },
@@ -140,4 +175,27 @@ function revisionConflict() {
 
 function safeFileName(value: string) {
   return value.replace(/[^\p{L}\p{N}._ -]/gu, "_").slice(0, 255);
+}
+
+async function hasXlsxSignature(file: File): Promise<boolean> {
+  const signature = new Uint8Array(await file.slice(0, 4).arrayBuffer());
+  return signature.length === 4
+    && signature[0] === 0x50
+    && signature[1] === 0x4b
+    && signature[2] === 0x03
+    && signature[3] === 0x04;
+}
+
+function workbookWithinLimits(rows: unknown[][]): boolean {
+  if (rows.length > 10_000) return false;
+  let cells = 0;
+  for (const row of rows) {
+    if (!Array.isArray(row) || row.length > 64) return false;
+    cells += row.length;
+    if (cells > 250_000) return false;
+    for (const cell of row) {
+      if (typeof cell === "string" && cell.length > 2_000) return false;
+    }
+  }
+  return true;
 }

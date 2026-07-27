@@ -8,7 +8,6 @@ import {
   EmptyState,
   OperationalMetric,
   SearchIcon,
-  allocationStyle,
   normalizedText,
 } from "./ui";
 
@@ -43,7 +42,7 @@ export function NucleiView({
           className="button button-primary"
           type="button"
           onClick={onCreate}
-          disabled={!dashboard.session.authenticated}
+          disabled={!dashboard.environment.permissions.canWrite}
         >
           <span aria-hidden="true">+</span> Novo núcleo
         </button>
@@ -121,7 +120,7 @@ export function NucleiView({
                     type="button"
                     aria-label={`Editar núcleo ${nucleus.name}`}
                     title="Editar núcleo"
-                    disabled={!dashboard.session.authenticated}
+                    disabled={!dashboard.environment.permissions.canWrite}
                     onClick={() => onEdit(nucleus.id)}
                   >
                     <EditIcon />
@@ -134,16 +133,12 @@ export function NucleiView({
                 </div>
                 <div className="nucleus-allocation">
                   <div><span>Taxa de alocação</span><strong>{allocation}%</strong></div>
-                  <div
+                  <progress
                     className="nucleus-progress"
-                    role="progressbar"
                     aria-label={`Taxa de alocação de ${nucleus.name}`}
-                    aria-valuemin={0}
-                    aria-valuemax={100}
-                    aria-valuenow={allocation}
-                  >
-                    <span style={allocationStyle(allocation)} />
-                  </div>
+                    max={100}
+                    value={allocation}
+                  />
                 </div>
                 <div className="nucleus-metrics">
                   <div><span>Ativos</span><strong>{nucleus.total}</strong></div>

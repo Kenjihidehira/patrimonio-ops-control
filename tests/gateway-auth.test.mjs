@@ -1,18 +1,56 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { gatewayKeyMatches } from "../supabase/functions/patrimonio-gateway/auth.js";
+import {
+  signGatewayRequest,
+  verifyGatewayRequest,
+} from "../supabase/functions/patrimonio-gateway/auth.js";
 
-test("aceita a chave configurada e rejeita valores diferentes", async () => {
-  assert.equal(await gatewayKeyMatches("segredo-valido", "segredo-valido"), true);
-  assert.equal(await gatewayKeyMatches("segredo-invalido", "segredo-valido"), false);
+const secret = "segredo-de-teste-com-entropia-suficiente-para-assinatura-hmac";
+const nonce = "nonce_seguro_1234567890";
+const body = JSON.stringify({ operation: "load_workspace_context", identifier: "user@example.com" });
+
+test("aceita assinatura HMAC válida dentro da janela de tempo", async () => {
+  const now = Date.now();
+  const timestamp = String(now);
+  const signature = await signGatewayRequest(secret, timestamp, nonce, body);
+
+  assert.equal(await verifyGatewayRequest({
+    secret,
+    timestamp,
+    nonce,
+    signature,
+    body,
+    now,
+  }), true);
 });
 
-test("aceita uma chave rotacionada somente pelo hash SHA-256", async () => {
-  const secret = "chave-rotacionada-de-teste";
-  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(secret));
-  const hash = Buffer.from(digest).toString("hex");
+test("rejeita corpo alterado, assinatura inválida e requisição expirada", async () => {
+  const now = Date.now();
+  const timestamp = String(now);
+  const signature = await signGatewayRequest(secret, timestamp, nonce, body);
 
-  assert.equal(await gatewayKeyMatches(secret, "", hash), true);
-  assert.equal(await gatewayKeyMatches("outra-chave", "", hash), false);
-  assert.equal(await gatewayKeyMatches(secret, "", "hash-invalido"), false);
+  assert.equal(await verifyGatewayRequest({
+    secret,
+    timestamp,
+    nonce,
+    signature,
+    body: `${body} `,
+    now,
+  }), false);
+  assert.equal(await verifyGatewayRequest({
+    secret,
+    timestamp,
+    nonce,
+    signature: "A".repeat(43),
+    body,
+    now,
+  }), false);
+  assert.equal(await verifyGatewayRequest({
+    secret,
+    timestamp,
+    nonce,
+    signature,
+    body,
+    now: now + 6 * 60 * 1000,
+  }), false);
 });
