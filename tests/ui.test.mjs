@@ -132,6 +132,7 @@ test("layout contém breakpoints de tablet, celular e redução de movimento", (
   assert.match(app, /<DatabaseStatusIcon \/>/);
   assert.match(app, /aria-current=\{view === item \? "page"/);
   assert.match(css, /\.app-header\s*\{[\s\S]*position:\s*sticky/);
+  assert.match(css, /\.header-actions\s*\{[\s\S]*align-items:\s*flex-end/);
   assert.match(css, /@media \(max-width: 940px\)/);
   assert.match(css, /@media \(max-width: 720px\)/);
   assert.match(css, /@media \(max-width: 430px\)/);
