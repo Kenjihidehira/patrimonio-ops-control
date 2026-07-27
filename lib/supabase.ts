@@ -16,12 +16,33 @@ type ImportPayload = {
   warnings: Array<Record<string, unknown>>;
 };
 
-type GatewayWorkspace = {
-  workspaces: Array<{ revision: number }>;
+type Department = {
+  slug: string;
+  name: string;
+};
+
+type DepartmentUser = {
+  identifier: string;
+  displayName: string;
+  isAdmin: boolean;
+  active: boolean;
+  departmentSlugs: string[];
+};
+
+type GatewayWorkspaceContext = {
+  workspace: Array<{ revision: number }>;
   nuclei: Array<Record<string, unknown>>;
   assets: Array<Record<string, unknown>>;
   collaborators: Array<Record<string, unknown>>;
   movements: Array<Record<string, unknown>>;
+  imports: Array<Record<string, unknown>>;
+  transfers: Array<Record<string, unknown>>;
+  access: {
+    activeDepartment: Department;
+    departments: Department[];
+    isAdmin: boolean;
+    users: DepartmentUser[];
+  };
 };
 
 type GatewayConfig = {
@@ -32,35 +53,166 @@ type GatewayConfig = {
 export class SupabaseError extends Error {
   code: string | null;
   details: string | null;
+  status: number;
 
-  constructor(message: string, code: string | null = null, details: string | null = null) {
+  constructor(
+    message: string,
+    code: string | null = null,
+    details: string | null = null,
+    status = 500,
+  ) {
     super(message);
     this.name = "SupabaseError";
     this.code = code;
     this.details = details;
+    this.status = status;
   }
 }
 
-export function companyWorkspaceKey(): string {
-  const key = String(
-    env.PATRIMONIO_WORKSPACE_KEY ?? process.env.PATRIMONIO_WORKSPACE_KEY ?? "",
-  ).trim().toLowerCase();
-  if (!/^[a-f0-9]{64}$/.test(key)) {
-    throw new SupabaseError(
-      "Workspace empresarial não configurado. Defina PATRIMONIO_WORKSPACE_KEY no ambiente do servidor.",
-      "missing_configuration",
-    );
-  }
-  return key;
+export async function hasSystemAccess(identifier: string): Promise<boolean> {
+  const result = await gatewayRequest<{ authorized: boolean }>("check_user_access", {
+    identifier,
+  });
+  return result.authorized === true;
 }
 
-export async function loadOrCreateWorkspace(ownerKey: string): Promise<WorkspaceState> {
-  await gatewayRequest("ensure_workspace", { ownerKey });
-  return loadWorkspace(ownerKey);
+export async function loadDepartmentWorkspace(
+  identifier: string,
+  departmentSlug: string | null,
+) {
+  const result = await gatewayRequest<GatewayWorkspaceContext>("load_workspace_context", {
+    identifier,
+    departmentSlug,
+  });
+  const departmentNames = new Map(
+    result.access.departments.map((department) => [department.slug, department.name]),
+  );
+
+  return {
+    state: mapWorkspaceState(result),
+    imports: mapImportRuns(result.imports),
+    environment: {
+      ...result.access,
+      transfers: result.transfers.map((row) => ({
+        id: String(row.id),
+        sourceDepartmentSlug: String(row.source_department_slug),
+        sourceDepartmentName: departmentNames.get(String(row.source_department_slug))
+          ?? humanizeSlug(String(row.source_department_slug)),
+        targetDepartmentSlug: String(row.target_department_slug),
+        targetDepartmentName: departmentNames.get(String(row.target_department_slug))
+          ?? humanizeSlug(String(row.target_department_slug)),
+        entityType: String(row.entity_type) as "asset" | "collaborator",
+        entityId: String(row.entity_id),
+        entityLabel: String(row.entity_label),
+        assetCodes: Array.isArray(row.asset_codes)
+          ? row.asset_codes.map(String)
+          : [],
+        actor: String(row.actor),
+        note: String(row.note),
+        at: String(row.occurred_at),
+      })),
+    },
+  };
 }
 
-async function loadWorkspace(ownerKey: string): Promise<WorkspaceState> {
-  const result = await gatewayRequest<GatewayWorkspace>("load_workspace", { ownerKey });
+export async function applyPersistedAction(
+  identifier: string,
+  departmentSlug: string,
+  expectedRevision: number,
+  action: unknown,
+) {
+  return gatewayRequest<number>("apply_action", {
+    identifier,
+    departmentSlug,
+    expectedRevision,
+    action,
+  });
+}
+
+export async function importAssets(
+  identifier: string,
+  departmentSlug: string,
+  expectedRevision: number,
+  payload: ImportPayload,
+) {
+  return gatewayRequest<{
+    revision: number;
+    inserted: number;
+    updated: number;
+    rejected: number;
+    collaborators: number;
+  }>("import_assets", {
+    identifier,
+    departmentSlug,
+    expectedRevision,
+    payload,
+  });
+}
+
+export async function loadDepartmentNuclei(
+  identifier: string,
+  departmentSlug: string,
+) {
+  const result = await gatewayRequest<{
+    department: Department;
+    revision: number;
+    nuclei: Array<Record<string, unknown>>;
+  }>("load_department_nuclei", { identifier, departmentSlug });
+  return {
+    department: result.department,
+    revision: Number(result.revision),
+    nuclei: result.nuclei.map((row) => ({
+      id: String(row.id),
+      code: String(row.code),
+      name: String(row.name),
+      location: String(row.location),
+      manager: String(row.manager),
+    })),
+  };
+}
+
+export async function saveUserAccess(
+  adminIdentifier: string,
+  user: {
+    identifier: string;
+    displayName: string;
+    isAdmin: boolean;
+    departmentSlugs: string[];
+  },
+) {
+  return gatewayRequest("save_user_access", {
+    identifier: adminIdentifier,
+    user,
+  });
+}
+
+export async function transferDepartmentEntity(
+  adminIdentifier: string,
+  input: {
+    sourceDepartmentSlug: string;
+    targetDepartmentSlug: string;
+    expectedSourceRevision: number;
+    expectedTargetRevision: number;
+    entityType: "asset" | "collaborator";
+    entityId: string;
+    targetNucleusId: string;
+    targetLocation: string;
+    targetAssignee: string;
+    note: string;
+  },
+) {
+  return gatewayRequest<{
+    sourceRevision: number;
+    targetRevision: number;
+    transferredAssets: number;
+    targetDepartmentSlug: string;
+  }>("transfer_department_entity", {
+    identifier: adminIdentifier,
+    ...input,
+  });
+}
+
+function mapWorkspaceState(result: GatewayWorkspaceContext): WorkspaceState {
   const movementsByAsset = new Map<string, Array<Record<string, unknown>>>();
   for (const row of result.movements) {
     const assetCode = String(row.asset_code);
@@ -78,7 +230,7 @@ async function loadWorkspace(ownerKey: string): Promise<WorkspaceState> {
   }
 
   return {
-    revision: Number(result.workspaces[0]?.revision ?? 0),
+    revision: Number(result.workspace[0]?.revision ?? 0),
     nuclei: result.nuclei.map((row) => ({
       id: row.id,
       code: row.code,
@@ -109,8 +261,7 @@ async function loadWorkspace(ownerKey: string): Promise<WorkspaceState> {
   };
 }
 
-export async function loadImportRuns(ownerKey: string) {
-  const rows = await gatewayRequest<Array<Record<string, unknown>>>("load_imports", { ownerKey });
+function mapImportRuns(rows: Array<Record<string, unknown>>) {
   return rows.map((row) => ({
     id: String(row.id),
     fileName: String(row.file_name),
@@ -124,36 +275,18 @@ export async function loadImportRuns(ownerKey: string) {
   }));
 }
 
-export async function applyPersistedAction(
-  ownerKey: string,
-  actor: string,
-  expectedRevision: number,
-  action: unknown,
-) {
-  return gatewayRequest<number>("apply_action", {
-    ownerKey,
-    actor,
-    expectedRevision,
-    action,
-  });
+function humanizeSlug(value: string): string {
+  return value
+    .split("-")
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toLocaleUpperCase("pt-BR") + part.slice(1))
+    .join(" ");
 }
 
-export async function importAssets(
-  ownerKey: string,
-  actor: string,
-  expectedRevision: number,
-  payload: ImportPayload,
-) {
-  return gatewayRequest<{
-    revision: number;
-    inserted: number;
-    updated: number;
-    rejected: number;
-    collaborators: number;
-  }>("import_assets", { ownerKey, actor, expectedRevision, payload });
-}
-
-async function gatewayRequest<T = unknown>(operation: string, payload: Record<string, unknown>): Promise<T> {
+async function gatewayRequest<T = unknown>(
+  operation: string,
+  payload: Record<string, unknown>,
+): Promise<T> {
   const config = getGatewayConfig();
   const response = await fetch(config.url, {
     method: "POST",
@@ -172,6 +305,7 @@ async function gatewayRequest<T = unknown>(operation: string, payload: Record<st
       String(body?.message ?? body?.error ?? "Falha na persistência Supabase."),
       typeof body?.code === "string" ? body.code : null,
       typeof body?.details === "string" ? body.details : null,
+      response.status,
     );
   }
 

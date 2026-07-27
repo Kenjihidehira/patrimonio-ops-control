@@ -550,6 +550,7 @@ function movementShortLabel(type: Asset["movements"][number]["type"]): string {
   return {
     registration: "Cadastro",
     transfer: "Transferência",
+    department_transfer: "Transferência de departamento",
     status_change: "Status alterado",
     identifier_change: "Patrimônio alterado",
     details_update: "Cadastro atualizado",

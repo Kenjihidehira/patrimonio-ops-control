@@ -5,7 +5,13 @@ export type AssetStatus =
   | "maintenance"
   | "discrepancy"
   | "retired";
-export type ViewId = "inventory" | "nuclei" | "audit" | "imports" | "collaborators";
+export type ViewId =
+  | "inventory"
+  | "nuclei"
+  | "audit"
+  | "imports"
+  | "collaborators"
+  | "environments";
 export type QuickFilter = "all" | "unassigned" | "untagged" | "maintenance" | "discrepancy";
 
 export type Movement = {
@@ -13,6 +19,7 @@ export type Movement = {
   type:
     | "registration"
     | "transfer"
+    | "department_transfer"
     | "status_change"
     | "identifier_change"
     | "details_update"
@@ -129,6 +136,42 @@ type Session = {
   signOutUrl: string;
 };
 
+export type Department = {
+  slug: string;
+  name: string;
+};
+
+export type DepartmentUser = {
+  identifier: string;
+  displayName: string;
+  isAdmin: boolean;
+  active: boolean;
+  departmentSlugs: string[];
+};
+
+export type DepartmentTransfer = {
+  id: string;
+  sourceDepartmentSlug: string;
+  sourceDepartmentName: string;
+  targetDepartmentSlug: string;
+  targetDepartmentName: string;
+  entityType: "asset" | "collaborator";
+  entityId: string;
+  entityLabel: string;
+  assetCodes: string[];
+  actor: string;
+  note: string;
+  at: string;
+};
+
+export type DepartmentEnvironment = {
+  activeDepartment: Department;
+  departments: Department[];
+  isAdmin: boolean;
+  users: DepartmentUser[];
+  transfers: DepartmentTransfer[];
+};
+
 export type Dashboard = {
   revision: number;
   summary: {
@@ -148,6 +191,7 @@ export type Dashboard = {
   audit: AuditRecord[];
   collaborators: Collaborator[];
   imports: ImportRun[];
+  environment: DepartmentEnvironment;
   resultCount: number;
   options: {
     assetTypes: Record<AssetType, string>;

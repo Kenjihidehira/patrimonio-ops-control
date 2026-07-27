@@ -27,8 +27,15 @@ Retorna revisão, resumo, inventário filtrado, colaboradores, núcleos, auditor
 | `status` | `available`, `allocated`, `maintenance`, `discrepancy`, `retired` | `all` |
 | `nucleus` | Identificador de núcleo | `all` |
 | `sort` | `recent`, `asset_asc`, `nucleus`, `status` | `recent` |
+| `department` | Slug de um departamento liberado ao usuário | primeiro departamento autorizado |
 
-Usuários anônimos recebem uma projeção vazia, sem patrimônios, núcleos ou auditoria. Contas Google presentes na lista de e-mails autorizados recebem exclusivamente o ambiente empresarial importado da planilha e armazenado no Supabase.
+Usuários anônimos recebem uma projeção vazia. Contas Google ativas recebem apenas os departamentos vinculados ao usuário; administradores globais podem acessar todos.
+
+## `/api/departments`
+
+- `GET`: carrega os núcleos e a revisão do departamento de destino autorizado.
+- `POST save_user_access`: administrador libera departamentos para um e-mail ou concede acesso global.
+- `POST transfer_department_entity`: administrador transfere patrimônio ou colaborador com seus itens, preservando auditoria.
 
 ## `POST /api/state`
 

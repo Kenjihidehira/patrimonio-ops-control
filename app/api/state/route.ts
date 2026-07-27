@@ -12,7 +12,10 @@ export async function GET(request: Request) {
   try {
     const user = await getAuthenticatedUser();
     const url = new URL(request.url);
-    const workspace = await loadWorkspaceContext(user);
+    const workspace = await loadWorkspaceContext(
+      user,
+      url.searchParams.get("department"),
+    );
     const dashboard = buildDashboard(workspace.state, {
       search: url.searchParams.get("search"),
       type: url.searchParams.get("type"),
@@ -25,6 +28,7 @@ export async function GET(request: Request) {
       {
         ...dashboard,
         imports: workspace.imports,
+        environment: workspace.environment,
         session: {
           authenticated: Boolean(user),
           displayName: user?.displayName ?? "Acesso não autenticado",
@@ -66,21 +70,33 @@ export async function POST(request: Request) {
         { status: 400, headers: responseHeaders },
       );
     }
-    const workspace = await loadWorkspaceContext(user);
+    const departmentSlug = String(
+      (action as Record<string, unknown>).departmentSlug ?? "",
+    ).trim();
+    const workspace = await loadWorkspaceContext(user, departmentSlug || null);
     const expectedRevision = Number((action as Record<string, unknown>).expectedRevision);
     if (!Number.isInteger(expectedRevision) || expectedRevision !== workspace.state.revision) {
       return revisionConflict();
     }
 
     applyAction(workspace.state, action, user.actor);
-    if (!workspace.ownerKey) throw new Error("Authenticated workspace has no owner key.");
-    await applyPersistedAction(workspace.ownerKey, user.actor, expectedRevision, action);
-    const updated = await loadWorkspaceContext(user);
+    if (!workspace.environment) throw new Error("Authenticated workspace has no department.");
+    await applyPersistedAction(
+      user.identifier,
+      workspace.environment.activeDepartment.slug,
+      expectedRevision,
+      action,
+    );
+    const updated = await loadWorkspaceContext(
+      user,
+      workspace.environment.activeDepartment.slug,
+    );
 
     return Response.json(
       {
         ...buildDashboard(updated.state),
         imports: updated.imports,
+        environment: updated.environment,
         message: "Alteração registrada com sucesso.",
       },
       { headers: responseHeaders },
@@ -109,6 +125,12 @@ export async function POST(request: Request) {
             : "Já existe um registro com esses dados.",
         },
         { status: 422, headers: responseHeaders },
+      );
+    }
+    if (error instanceof SupabaseError && error.status === 403) {
+      return Response.json(
+        { error: "Você não possui acesso ao departamento solicitado." },
+        { status: 403, headers: responseHeaders },
       );
     }
 

@@ -2,9 +2,9 @@ import { env } from "cloudflare:workers";
 import { cookies } from "next/headers";
 import { jwtVerify, SignJWT } from "jose";
 import {
-  isAllowedGoogleEmail,
   safeRelativeReturnPath,
 } from "@/lib/auth-utils";
+import { hasSystemAccess } from "@/lib/supabase";
 
 export type AuthProvider = "google";
 
@@ -69,7 +69,7 @@ export async function getAuthenticatedUser(): Promise<AuthenticatedUser | null> 
       subject: payload.uid,
       actor: `${payload.provider}:${payload.identifier}`,
     };
-    return isIdentityStillAuthorized(identity) ? identity : null;
+    return await isIdentityStillAuthorized(identity) ? identity : null;
   } catch {
     return null;
   }
@@ -230,15 +230,8 @@ export function runtimeValue(name: keyof Cloudflare.Env): string {
   return String(env[name] ?? process.env[name] ?? "").trim();
 }
 
-export function splitRuntimeList(name: keyof Cloudflare.Env): string[] {
-  return runtimeValue(name)
-    .split(",")
-    .map((value) => value.trim().toLowerCase())
-    .filter(Boolean);
-}
-
-function isIdentityStillAuthorized(identity: SessionIdentity): boolean {
-  return isAllowedGoogleEmail(identity.identifier, splitRuntimeList("GOOGLE_ALLOWED_EMAILS"));
+async function isIdentityStillAuthorized(identity: SessionIdentity): Promise<boolean> {
+  return hasSystemAccess(identity.identifier);
 }
 
 function sessionSecret(): Uint8Array {

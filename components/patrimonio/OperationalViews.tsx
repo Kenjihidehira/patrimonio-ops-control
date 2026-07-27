@@ -241,7 +241,7 @@ export function ImportsView({
 }
 
 function auditEventIcon(type: Dashboard["audit"][number]["type"]): OperationalIconName {
-  if (type === "transfer") return "transfer";
+  if (type === "transfer" || type === "department_transfer") return "transfer";
   if (type === "registration" || type === "import") return "file";
   if (type === "status_change") return "activity";
   if (type === "identifier_change") return "tag";

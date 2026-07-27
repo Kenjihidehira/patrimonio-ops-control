@@ -1,5 +1,6 @@
 import type {
   Dashboard,
+  Department,
   ImportPreview,
   InventoryFilters,
   MutationAction,
@@ -25,6 +26,7 @@ type ApiMessage = {
 
 export async function fetchDashboard(
   filters: InventoryFilters,
+  departmentSlug: string | null,
   signal?: AbortSignal,
 ): Promise<Dashboard> {
   const query = new URLSearchParams({
@@ -34,6 +36,7 @@ export async function fetchDashboard(
     nucleus: filters.nucleus,
     sort: filters.sort,
   });
+  if (departmentSlug) query.set("department", departmentSlug);
   const response = await fetch(`/api/state?${query}`, {
     headers: { accept: "application/json" },
     cache: "no-store",
@@ -45,6 +48,7 @@ export async function fetchDashboard(
 export async function mutateDashboard(
   action: MutationAction,
   expectedRevision: number,
+  departmentSlug: string,
 ): Promise<{ message: string }> {
   const response = await fetch("/api/state", {
     method: "POST",
@@ -52,7 +56,7 @@ export async function mutateDashboard(
       accept: "application/json",
       "content-type": "application/json",
     },
-    body: JSON.stringify({ ...action, expectedRevision }),
+    body: JSON.stringify({ ...action, expectedRevision, departmentSlug }),
   });
   return readJson<{ message: string }>(
     response,
@@ -60,19 +64,24 @@ export async function mutateDashboard(
   );
 }
 
-export async function previewSpreadsheet(file: File): Promise<ImportPreview> {
-  return sendSpreadsheet(file, "preview", null);
+export async function previewSpreadsheet(
+  file: File,
+  departmentSlug: string,
+): Promise<ImportPreview> {
+  return sendSpreadsheet(file, "preview", null, departmentSlug);
 }
 
 export async function importSpreadsheet(
   file: File,
   expectedRevision: number,
+  departmentSlug: string,
 ): Promise<{ message: string }> {
-  return sendSpreadsheet(file, "commit", expectedRevision);
+  return sendSpreadsheet(file, "commit", expectedRevision, departmentSlug);
 }
 
-export async function downloadExport(): Promise<string> {
-  const response = await fetch("/api/export", {
+export async function downloadExport(departmentSlug: string): Promise<string> {
+  const query = new URLSearchParams({ department: departmentSlug });
+  const response = await fetch(`/api/export?${query}`, {
     headers: {
       accept: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     },
@@ -98,14 +107,81 @@ export async function downloadExport(): Promise<string> {
   return fileName;
 }
 
+export async function fetchDepartmentNuclei(departmentSlug: string): Promise<{
+  department: Department;
+  revision: number;
+  nuclei: Array<{
+    id: string;
+    code: string;
+    name: string;
+    location: string;
+    manager: string;
+  }>;
+}> {
+  const query = new URLSearchParams({ department: departmentSlug });
+  const response = await fetch(`/api/departments?${query}`, {
+    headers: { accept: "application/json" },
+    cache: "no-store",
+  });
+  return readJson(response, "Não foi possível carregar os núcleos de destino.");
+}
+
+export async function saveDepartmentUser(user: {
+  identifier: string;
+  displayName: string;
+  isAdmin: boolean;
+  departmentSlugs: string[];
+}): Promise<{ message: string }> {
+  const response = await fetch("/api/departments", {
+    method: "POST",
+    headers: {
+      accept: "application/json",
+      "content-type": "application/json",
+    },
+    body: JSON.stringify({ type: "save_user_access", user }),
+  });
+  return readJson(response, "Não foi possível atualizar o acesso do usuário.");
+}
+
+export async function transferDepartment(input: {
+  sourceDepartmentSlug: string;
+  targetDepartmentSlug: string;
+  expectedSourceRevision: number;
+  expectedTargetRevision: number;
+  entityType: "asset" | "collaborator";
+  entityId: string;
+  targetNucleusId: string;
+  targetLocation: string;
+  targetAssignee: string;
+  note: string;
+}): Promise<{
+  sourceRevision: number;
+  targetRevision: number;
+  transferredAssets: number;
+  targetDepartmentSlug: string;
+  message: string;
+}> {
+  const response = await fetch("/api/departments", {
+    method: "POST",
+    headers: {
+      accept: "application/json",
+      "content-type": "application/json",
+    },
+    body: JSON.stringify({ type: "transfer_department_entity", ...input }),
+  });
+  return readJson(response, "Não foi possível transferir entre departamentos.");
+}
+
 async function sendSpreadsheet<T>(
   file: File,
   mode: "preview" | "commit",
   expectedRevision: number | null,
+  departmentSlug: string,
 ): Promise<T> {
   const body = new FormData();
   body.set("file", file);
   body.set("mode", mode);
+  body.set("department", departmentSlug);
   if (expectedRevision !== null) body.set("revision", String(expectedRevision));
 
   const response = await fetch("/api/import", { method: "POST", body });

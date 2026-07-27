@@ -78,20 +78,26 @@ export async function POST(request: Request) {
       );
     }
 
-    const workspace = await loadWorkspaceContext(user);
+    const departmentSlug = String(formData.get("department") ?? "").trim();
+    const workspace = await loadWorkspaceContext(user, departmentSlug || null);
     const expectedRevision = Number(formData.get("revision"));
     if (!Number.isInteger(expectedRevision) || expectedRevision !== workspace.state.revision) {
       return revisionConflict();
     }
-    if (!workspace.ownerKey) throw new Error("Authenticated workspace has no owner key.");
-    const result = await importAssets(workspace.ownerKey, user.actor, expectedRevision, {
+    if (!workspace.environment) throw new Error("Authenticated workspace has no department.");
+    const result = await importAssets(
+      user.identifier,
+      workspace.environment.activeDepartment.slug,
+      expectedRevision,
+      {
       fileName: safeFileName(file.name),
       nuclei: preview.nuclei,
       assets: preview.assets,
       collaborators: preview.collaborators,
       rejectedCount: preview.rejectedCount,
       warnings: [...preview.warnings, ...preview.errors],
-    });
+      },
+    );
 
     return Response.json(
       {

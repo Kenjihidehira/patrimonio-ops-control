@@ -35,7 +35,7 @@ Planilhas patrimoniais isoladas não registram bem responsabilidade, movimentaç
 - Importação XLSX em duas etapas: pré-validação e confirmação transacional.
 - Exportação XLSX com inventário, núcleos, auditoria e histórico de importações.
 - Operação sem exposição de preço ou valor de aquisição dos patrimônios.
-- Acesso público sem dados patrimoniais e ambiente empresarial compartilhado no Supabase.
+- Ambientes isolados por departamento, com acesso individual, administração global e transferência auditável.
 
 ## Tecnologias
 
@@ -44,7 +44,7 @@ Planilhas patrimoniais isoladas não registram bem responsabilidade, movimentaç
 - **API:** Node.js com manipuladores de rota TypeScript executados no Cloudflare Worker.
 - **Banco:** Supabase Postgres 17, funções RPC transacionais e índices operacionais.
 - **Integração:** Função Edge do Supabase autenticada por segredo de servidor.
-- **Autenticação:** Google OpenID Connect, PKCE, allowlist e sessão `HttpOnly`.
+- **Autenticação:** Google OpenID Connect, PKCE, autorização por departamento e sessão `HttpOnly`.
 - **Planilhas:** `read-excel-file` e `write-excel-file`.
 - **Qualidade:** Node Test Runner, ESLint, TypeScript e GitHub Actions.
 
@@ -60,7 +60,7 @@ pnpm dev
 
 Use [`configuracao.exemplo`](configuracao.exemplo) somente como modelo para criar `.env.local`. Preencha as variáveis Supabase, do provedor de identidade e os segredos de sessão apenas no arquivo local, que é ignorado pelo Git. Acesse `http://localhost:5173/login`.
 
-A rota `/demo` redireciona visitantes sem sessão diretamente para `/login`. A leitura da base empresarial, importação, exportação e operações de escrita exigem um e-mail exato em `GOOGLE_ALLOWED_EMAILS`. O servidor valida `state`, PKCE, assinatura da identidade e lista de autorizados antes de criar uma sessão local de oito horas.
+A rota `/demo` redireciona visitantes sem sessão diretamente para `/login`. O servidor valida `state`, PKCE e assinatura da identidade antes de consultar no Supabase se o usuário está ativo e quais departamentos pode acessar. A sessão local dura oito horas.
 
 ## Conectar um leitor de código de barras
 
@@ -96,9 +96,9 @@ No Google Cloud Console, crie um cliente OAuth do tipo Aplicativo da Web com a U
 https://patrimonio-ops-control.kenjihidehira999.workers.dev/api/auth/google/callback
 ```
 
-Cadastre `GOOGLE_CLIENT_ID` e `GOOGLE_CLIENT_SECRET` como segredos. Preencha `GOOGLE_ALLOWED_EMAILS` com uma lista explícita de e-mails separados por vírgula. O sistema não autoriza automaticamente qualquer conta Gmail ou qualquer conta de um domínio Google Workspace.
+Cadastre `GOOGLE_CLIENT_ID` e `GOOGLE_CLIENT_SECRET` como segredos. Usuários e departamentos autorizados são administrados no módulo **Ambientes**; cadastrar um usuário não autoriza automaticamente outras contas Gmail nem todo um domínio Google Workspace.
 
-Depois de validar a identidade e a allowlist, o servidor cria uma sessão local assinada. Tokens de acesso e atualização do Google não são gravados no navegador nem no banco.
+Depois de validar a identidade e o acesso persistido, o servidor cria uma sessão local assinada. Tokens de acesso e atualização do Google não são gravados no navegador nem no banco.
 
 ## Planilha-base
 
@@ -128,7 +128,7 @@ Filtros, payloads e códigos de resposta estão em [`docs/api.md`](docs/api.md).
 
 As telas ficam em [`app/demo`](app/demo) e os componentes funcionais em [`components/patrimonio`](components/patrimonio). O cliente React usa uma camada HTTP tipada e nunca acessa o Supabase diretamente. Leituras obsoletas são canceladas com `AbortController`; o painel sincroniza em segundo plano e também ao recuperar foco, conexão ou visibilidade.
 
-As regras ficam em [`lib/domain.js`](lib/domain.js), independentes de HTTP e banco. O servidor Node usa uma chave empresarial aleatória, disponível apenas no ambiente de execução, para localizar a base compartilhada. O serviço intermediário do Supabase também exige um segredo de servidor; as tabelas têm RLS habilitado e negam acesso direto a `anon` e `authenticated`.
+As regras ficam em [`lib/domain.js`](lib/domain.js), independentes de HTTP e banco. O servidor envia ao gateway apenas a identidade validada e o departamento solicitado; o gateway resolve internamente a chave do ambiente após conferir a permissão. O serviço intermediário do Supabase exige um segredo de servidor, e as tabelas têm RLS habilitado com acesso direto negado a `anon` e `authenticated`.
 
 Mutações e importações usam RPCs transacionais com revisão otimista. Núcleos são reconciliados pela sigla estável e os IDs persistidos são resolvidos antes de gravar patrimônios e perfis. Um responsável encontrado no inventário continua visível mesmo sem perfil auxiliar; o próprio pop-up permite cadastrar esse perfil sem perder as atribuições existentes. Uma gravação obsoleta recebe `409 Conflict`, evitando que duas sessões sobrescrevam silenciosamente o trabalho uma da outra.
 

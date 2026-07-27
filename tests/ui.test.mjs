@@ -11,6 +11,7 @@ const [
   inventory,
   nuclei,
   collaborators,
+  environments,
   operational,
   dialogs,
   hooks,
@@ -21,6 +22,7 @@ const [
   api,
   importApi,
   exportApi,
+  departmentsApi,
   workspace,
   googleAuth,
   sharedAuth,
@@ -33,6 +35,7 @@ const [
   read("components/patrimonio/InventoryView.tsx"),
   read("components/patrimonio/NucleiView.tsx"),
   read("components/patrimonio/CollaboratorsView.tsx"),
+  read("components/patrimonio/EnvironmentsView.tsx"),
   read("components/patrimonio/OperationalViews.tsx"),
   read("components/patrimonio/Dialogs.tsx"),
   read("components/patrimonio/hooks.ts"),
@@ -43,6 +46,7 @@ const [
   read("app/api/state/route.ts"),
   read("app/api/import/route.ts"),
   read("app/api/export/route.ts"),
+  read("app/api/departments/route.ts"),
   read("lib/workspace.ts"),
   read("app/google-auth.ts"),
   read("app/auth.ts"),
@@ -55,6 +59,7 @@ const reactUi = [
   inventory,
   nuclei,
   collaborators,
+  environments,
   operational,
   dialogs,
   hooks,
@@ -255,6 +260,20 @@ test("áreas operacionais compartilham métricas, filtros e cartões responsivos
   assert.match(css, /\.people-mobile-card/);
 });
 
+test("ambientes isolam departamentos, usuários e transferências administrativas", () => {
+  assert.match(app, /className="department-switcher"/);
+  assert.match(app, /dashboard\.environment\.activeDepartment/);
+  assert.match(app, /dashboard\.environment\.isAdmin/);
+  assert.match(environments, /Acesso por usuário/);
+  assert.match(environments, /Transferir entre departamentos/);
+  assert.match(environments, /Colaborador e seus itens/);
+  assert.match(environments, /fetchDepartmentNuclei/);
+  assert.match(environments, /saveDepartmentUser/);
+  assert.match(environments, /transferDepartment/);
+  assert.match(departmentsApi, /save_user_access/);
+  assert.match(departmentsApi, /transfer_department_entity/);
+});
+
 test("tema escuro é acessível, usa cookie e não armazena dados localmente", () => {
   assert.match(app, /role="switch"/);
   assert.match(app, /aria-checked=\{theme === "dark"\}/);
@@ -304,11 +323,12 @@ test("tela React de login oferece somente Google com navegação responsiva", ()
   assert.doesNotMatch(loginPage, /Microsoft/);
 });
 
-test("autenticação Google preserva PKCE, allowlist e sessão protegida", () => {
+test("autenticação Google preserva PKCE, autorização por departamento e sessão protegida", () => {
   assert.match(googleAuth, /code_challenge_method: "S256"/);
   assert.match(googleAuth, /openid profile email/);
   assert.match(googleAuth, /payload\.email_verified !== true/);
-  assert.match(googleAuth, /isAllowedGoogleEmail/);
+  assert.match(googleAuth, /hasSystemAccess/);
+  assert.match(sharedAuth, /hasSystemAccess/);
   assert.match(sharedAuth, /HttpOnly/i);
   assert.match(sharedAuth, /SameSite=|sameSite/i);
   assert.match(sharedAuth, /const APP_PATH = "\/demo"/);

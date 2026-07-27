@@ -7,14 +7,12 @@ import {
   redirectResponse,
   runtimeValue,
   setOAuthTransactionCookie,
-  splitRuntimeList,
 } from "@/app/auth";
-import { isAllowedGoogleEmail } from "@/lib/auth-utils";
+import { hasSystemAccess } from "@/lib/supabase";
 
 type GoogleConfig = {
   clientId: string;
   clientSecret: string;
-  allowedEmails: string[];
 };
 
 type GoogleMetadata = {
@@ -99,9 +97,9 @@ export async function completeGoogleLogin(request: Request): Promise<Response> {
       payload.nonce !== transaction.nonce ||
       typeof payload.sub !== "string" ||
       payload.email_verified !== true ||
-      !isAllowedGoogleEmail(email, config.allowedEmails)
+      !(await hasSystemAccess(email))
     ) {
-      console.warn("Google login rejected by email allowlist");
+      console.warn("Google login rejected by department access");
       return authFailureResponse(request, "google", "not_authorized", returnTo);
     }
 
@@ -125,11 +123,10 @@ export async function completeGoogleLogin(request: Request): Promise<Response> {
 function getGoogleConfig(): GoogleConfig {
   const clientId = runtimeValue("GOOGLE_CLIENT_ID");
   const clientSecret = runtimeValue("GOOGLE_CLIENT_SECRET");
-  const allowedEmails = splitRuntimeList("GOOGLE_ALLOWED_EMAILS");
-  if (!clientId.endsWith(".apps.googleusercontent.com") || !clientSecret || allowedEmails.length === 0) {
+  if (!clientId.endsWith(".apps.googleusercontent.com") || !clientSecret) {
     throw new Error("Google OpenID Connect is not configured.");
   }
-  return { clientId, clientSecret, allowedEmails };
+  return { clientId, clientSecret };
 }
 
 async function getGoogleMetadata(): Promise<GoogleMetadata> {

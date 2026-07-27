@@ -6,6 +6,9 @@ const rotatedGatewayKeyHash =
 const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
 const secretKeys = JSON.parse(Deno.env.get("SUPABASE_SECRET_KEYS") ?? "{}");
 const supabaseSecretKey = secretKeys.default ?? Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const slugPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+const ownerKeyPattern = /^[a-f0-9]{64}$/;
 
 Deno.serve(async (request) => {
   if (request.method !== "POST") return json({ error: "method_not_allowed" }, 405);
@@ -24,44 +27,138 @@ Deno.serve(async (request) => {
 
   try {
     const body = await request.json();
-    const ownerKey = String(body.ownerKey ?? "");
-    if (!/^[a-f0-9]{64}$/.test(ownerKey)) return json({ error: "invalid_owner_key" }, 400);
+    const operation = String(body.operation ?? "");
+    const identifier = normalizeIdentifier(body.identifier);
 
-    switch (body.operation) {
-      case "ensure_workspace":
-        await dataRequest("patrimonio_workspaces", {
-          method: "POST",
-          headers: { Prefer: "resolution=merge-duplicates,return=minimal" },
-          body: JSON.stringify({ owner_key: ownerKey }),
+    switch (operation) {
+      case "check_user_access": {
+        if (!identifier) return json({ data: { authorized: false } });
+        const user = await loadUser(identifier);
+        return json({ data: { authorized: Boolean(user?.active) } });
+      }
+
+      case "load_workspace_context": {
+        const access = await resolveDepartmentAccess(identifier, body.departmentSlug);
+        const ownerKey = access.active.owner_key;
+        await ensureWorkspace(ownerKey);
+        const [workspace, nuclei, assets, collaborators, movements, imports, transfers, users] =
+          await Promise.all([
+            loadWorkspaceRevision(ownerKey),
+            loadNuclei(ownerKey),
+            loadAssets(ownerKey),
+            loadCollaborators(ownerKey),
+            loadMovements(ownerKey),
+            loadImports(ownerKey),
+            loadDepartmentTransfers(access.active.slug),
+            access.isAdmin ? loadUserDirectory() : Promise.resolve([]),
+          ]);
+
+        return json({
+          data: {
+            workspace,
+            nuclei,
+            assets,
+            collaborators,
+            movements,
+            imports,
+            transfers,
+            access: {
+              activeDepartment: publicDepartment(access.active),
+              departments: access.departments.map(publicDepartment),
+              isAdmin: access.isAdmin,
+              users,
+            },
+          },
         });
+      }
+
+      case "load_department_nuclei": {
+        const access = await resolveDepartmentAccess(identifier, body.departmentSlug);
+        const [workspace, nuclei] = await Promise.all([
+          loadWorkspaceRevision(access.active.owner_key),
+          loadNuclei(access.active.owner_key),
+        ]);
+        return json({
+          data: {
+            department: publicDepartment(access.active),
+            revision: Number(workspace[0]?.revision ?? 0),
+            nuclei,
+          },
+        });
+      }
+
+      case "save_user_access": {
+        await requireGlobalAdmin(identifier);
+        const targetIdentifier = normalizeIdentifier(body.user?.identifier);
+        const departmentSlugs = Array.isArray(body.user?.departmentSlugs)
+          ? body.user.departmentSlugs.map(String)
+          : [];
+        const data = await dataRequest("rpc/patrimonio_save_user_access", {
+          method: "POST",
+          body: JSON.stringify({
+            p_admin_identifier: identifier,
+            p_identifier: targetIdentifier,
+            p_display_name: String(body.user?.displayName ?? ""),
+            p_is_admin: body.user?.isAdmin === true,
+            p_department_slugs: departmentSlugs,
+          }),
+        });
+        return json({ data });
+      }
+
+      case "transfer_department_entity": {
+        await requireGlobalAdmin(identifier);
+        const data = await dataRequest("rpc/patrimonio_transfer_department_entity", {
+          method: "POST",
+          body: JSON.stringify({
+            p_admin_identifier: identifier,
+            p_source_department_slug: String(body.sourceDepartmentSlug ?? ""),
+            p_target_department_slug: String(body.targetDepartmentSlug ?? ""),
+            p_expected_source_revision: body.expectedSourceRevision,
+            p_expected_target_revision: body.expectedTargetRevision,
+            p_entity_type: String(body.entityType ?? ""),
+            p_entity_id: String(body.entityId ?? ""),
+            p_target_nucleus_id: String(body.targetNucleusId ?? ""),
+            p_target_location: String(body.targetLocation ?? ""),
+            p_target_assignee: String(body.targetAssignee ?? ""),
+            p_note: String(body.note ?? ""),
+          }),
+        });
+        return json({ data });
+      }
+
+      case "ensure_workspace": {
+        const ownerKey = legacyOwnerKey(body.ownerKey);
+        await ensureWorkspace(ownerKey);
         return json({ data: null });
+      }
 
       case "load_workspace": {
-        const ownerFilter = encodeURIComponent(`eq.${ownerKey}`);
+        const ownerKey = legacyOwnerKey(body.ownerKey);
         const [workspaces, nuclei, assets, collaborators, movements] = await Promise.all([
-          dataRequest(`patrimonio_workspaces?owner_key=${ownerFilter}&select=revision&limit=1`),
-          dataRequest(`patrimonio_nuclei?owner_key=${ownerFilter}&select=id,code,name,location,manager&order=name.asc`),
-          dataRequest(`patrimonio_assets?owner_key=${ownerFilter}&select=code,type,nucleus_id,assignee,location,serial,brand_model,acquired_at,acquisition_value,status,notes,created_at&order=updated_at.desc`),
-          dataRequest(`patrimonio_collaborators?owner_key=${ownerFilter}&select=id,name,nucleus_id&order=name.asc`),
-          dataRequest(`patrimonio_movements?owner_key=${ownerFilter}&select=id,asset_code,type,actor,from_label,to_label,note,occurred_at&order=occurred_at.desc`),
+          loadWorkspaceRevision(ownerKey),
+          loadNuclei(ownerKey),
+          loadAssets(ownerKey),
+          loadCollaborators(ownerKey),
+          loadMovements(ownerKey),
         ]);
         return json({ data: { workspaces, nuclei, assets, collaborators, movements } });
       }
 
       case "load_imports": {
-        const ownerFilter = encodeURIComponent(`eq.${ownerKey}`);
-        const imports = await dataRequest(
-          `patrimonio_import_runs?owner_key=${ownerFilter}&select=id,file_name,row_count,inserted_count,updated_count,rejected_count,warnings,imported_by,created_at&order=created_at.desc&limit=30`,
-        );
-        return json({ data: imports });
+        return json({ data: await loadImports(legacyOwnerKey(body.ownerKey)) });
       }
 
       case "apply_action": {
+        const ownerKey = identifier
+          ? (await resolveDepartmentAccess(identifier, body.departmentSlug)).active.owner_key
+          : legacyOwnerKey(body.ownerKey);
+        const actor = identifier ? `google:${identifier}` : String(body.actor ?? "");
         const data = await dataRequest("rpc/patrimonio_apply_action", {
           method: "POST",
           body: JSON.stringify({
             p_owner_key: ownerKey,
-            p_actor: body.actor,
+            p_actor: actor,
             p_expected_revision: body.expectedRevision,
             p_action: body.action,
           }),
@@ -70,12 +167,16 @@ Deno.serve(async (request) => {
       }
 
       case "import_assets": {
+        const ownerKey = identifier
+          ? (await resolveDepartmentAccess(identifier, body.departmentSlug)).active.owner_key
+          : legacyOwnerKey(body.ownerKey);
+        const actor = identifier ? `google:${identifier}` : String(body.actor ?? "");
         const payload = body.payload ?? {};
         const data = await dataRequest("rpc/patrimonio_import_workspace", {
           method: "POST",
           body: JSON.stringify({
             p_owner_key: ownerKey,
-            p_actor: body.actor,
+            p_actor: actor,
             p_expected_revision: body.expectedRevision,
             p_file_name: payload.fileName,
             p_nuclei: payload.nuclei,
@@ -103,6 +204,167 @@ Deno.serve(async (request) => {
     );
   }
 });
+
+async function resolveDepartmentAccess(identifier, requestedSlug) {
+  const user = await requireUser(identifier);
+  const allDepartments = await dataRequest(
+    "patrimonio_departments?active=eq.true&select=slug,name,owner_key&order=name.asc",
+  );
+  const departments = user.is_admin
+    ? allDepartments
+    : await allowedDepartments(identifier, allDepartments);
+
+  if (!departments.length) throw httpError("no_department_access", 403, "42501");
+  const normalizedRequestedSlug = String(requestedSlug ?? "").trim().toLowerCase();
+  if (normalizedRequestedSlug && !slugPattern.test(normalizedRequestedSlug)) {
+    throw httpError("invalid_department", 400, "22023");
+  }
+  const active = normalizedRequestedSlug
+    ? departments.find((department) => department.slug === normalizedRequestedSlug)
+    : departments[0];
+  if (!active) throw httpError("department_not_authorized", 403, "42501");
+
+  return {
+    active,
+    departments,
+    isAdmin: user.is_admin === true,
+  };
+}
+
+async function allowedDepartments(identifier, allDepartments) {
+  const identifierFilter = encodeURIComponent(`eq.${identifier}`);
+  const memberships = await dataRequest(
+    `patrimonio_department_memberships?user_identifier=${identifierFilter}&select=department_slug`,
+  );
+  const allowed = new Set(memberships.map((membership) => membership.department_slug));
+  return allDepartments.filter((department) => allowed.has(department.slug));
+}
+
+async function requireGlobalAdmin(identifier) {
+  const user = await requireUser(identifier);
+  if (user.is_admin !== true) throw httpError("admin_required", 403, "42501");
+  return user;
+}
+
+async function requireUser(identifier) {
+  if (!identifier) throw httpError("invalid_user_identifier", 400, "22023");
+  const user = await loadUser(identifier);
+  if (!user?.active) throw httpError("user_not_authorized", 403, "42501");
+  return user;
+}
+
+async function loadUser(identifier) {
+  if (!identifier) return null;
+  const filter = encodeURIComponent(`eq.${identifier}`);
+  const users = await dataRequest(
+    `patrimonio_users?identifier=${filter}&select=identifier,display_name,is_admin,active&limit=1`,
+  );
+  return users[0] ?? null;
+}
+
+async function loadUserDirectory() {
+  const [users, memberships] = await Promise.all([
+    dataRequest(
+      "patrimonio_users?select=identifier,display_name,is_admin,active&order=display_name.asc,identifier.asc",
+    ),
+    dataRequest(
+      "patrimonio_department_memberships?select=user_identifier,department_slug&order=department_slug.asc",
+    ),
+  ]);
+  const departmentsByUser = new Map();
+  for (const membership of memberships) {
+    const slugs = departmentsByUser.get(membership.user_identifier) ?? [];
+    slugs.push(membership.department_slug);
+    departmentsByUser.set(membership.user_identifier, slugs);
+  }
+  return users.map((user) => ({
+    identifier: user.identifier,
+    displayName: user.display_name,
+    isAdmin: user.is_admin,
+    active: user.active,
+    departmentSlugs: departmentsByUser.get(user.identifier) ?? [],
+  }));
+}
+
+async function ensureWorkspace(ownerKey) {
+  await dataRequest("patrimonio_workspaces", {
+    method: "POST",
+    headers: { Prefer: "resolution=merge-duplicates,return=minimal" },
+    body: JSON.stringify({ owner_key: ownerKey }),
+  });
+}
+
+function loadWorkspaceRevision(ownerKey) {
+  const ownerFilter = encodeURIComponent(`eq.${ownerKey}`);
+  return dataRequest(
+    `patrimonio_workspaces?owner_key=${ownerFilter}&select=revision&limit=1`,
+  );
+}
+
+function loadNuclei(ownerKey) {
+  const ownerFilter = encodeURIComponent(`eq.${ownerKey}`);
+  return dataRequest(
+    `patrimonio_nuclei?owner_key=${ownerFilter}&select=id,code,name,location,manager&order=name.asc`,
+  );
+}
+
+function loadAssets(ownerKey) {
+  const ownerFilter = encodeURIComponent(`eq.${ownerKey}`);
+  return dataRequest(
+    `patrimonio_assets?owner_key=${ownerFilter}&select=code,type,nucleus_id,assignee,location,serial,brand_model,acquired_at,acquisition_value,status,notes,created_at&order=updated_at.desc`,
+  );
+}
+
+function loadCollaborators(ownerKey) {
+  const ownerFilter = encodeURIComponent(`eq.${ownerKey}`);
+  return dataRequest(
+    `patrimonio_collaborators?owner_key=${ownerFilter}&select=id,name,nucleus_id&order=name.asc`,
+  );
+}
+
+function loadMovements(ownerKey) {
+  const ownerFilter = encodeURIComponent(`eq.${ownerKey}`);
+  return dataRequest(
+    `patrimonio_movements?owner_key=${ownerFilter}&select=id,asset_code,type,actor,from_label,to_label,note,occurred_at&order=occurred_at.desc`,
+  );
+}
+
+function loadImports(ownerKey) {
+  const ownerFilter = encodeURIComponent(`eq.${ownerKey}`);
+  return dataRequest(
+    `patrimonio_import_runs?owner_key=${ownerFilter}&select=id,file_name,row_count,inserted_count,updated_count,rejected_count,warnings,imported_by,created_at&order=created_at.desc&limit=30`,
+  );
+}
+
+function loadDepartmentTransfers(departmentSlug) {
+  const filter = encodeURIComponent(
+    `(source_department_slug.eq.${departmentSlug},target_department_slug.eq.${departmentSlug})`,
+  );
+  return dataRequest(
+    `patrimonio_department_transfers?or=${filter}&select=id,source_department_slug,target_department_slug,entity_type,entity_id,entity_label,asset_codes,actor,note,occurred_at&order=occurred_at.desc&limit=50`,
+  );
+}
+
+function publicDepartment(department) {
+  return { slug: department.slug, name: department.name };
+}
+
+function normalizeIdentifier(value) {
+  const identifier = String(value ?? "").trim().toLowerCase();
+  return emailPattern.test(identifier) ? identifier : "";
+}
+
+function legacyOwnerKey(value) {
+  const ownerKey = String(value ?? "");
+  if (!ownerKeyPattern.test(ownerKey)) {
+    throw httpError("invalid_owner_key", 400, "22023");
+  }
+  return ownerKey;
+}
+
+function httpError(message, status, code) {
+  return Object.assign(new Error(message), { status, code });
+}
 
 async function dataRequest(path, init = {}) {
   const response = await fetch(`${supabaseUrl}/rest/v1/${path}`, {

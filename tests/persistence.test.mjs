@@ -42,6 +42,10 @@ const responsibleRegistrationMigration = await readFile(
   new URL("../supabase/migrations/20260723103000_register_responsibles_from_inventory.sql", import.meta.url),
   "utf8",
 );
+const departmentMigration = await readFile(
+  new URL("../supabase/migrations/20260727153629_add_department_environments.sql", import.meta.url),
+  "utf8",
+);
 
 test("importação reconcilia núcleos pela sigla persistida", () => {
   assert.match(nucleusMigration, /on conflict \(owner_key, code\) do update/);
@@ -110,4 +114,19 @@ test("edição do inventário do núcleo é transacional, validada e auditável"
   assert.match(nucleusInventoryEditMigration, /details_update/);
   assert.match(nucleusInventoryEditMigration, /Campos atualizados:/);
   assert.match(nucleusInventoryEditMigration, /grant execute[\s\S]*service_role/);
+});
+
+test("departamentos possuem isolamento, acesso por usuário e transferência auditável", () => {
+  assert.match(departmentMigration, /create table public\.patrimonio_departments/);
+  assert.match(departmentMigration, /create table public\.patrimonio_department_memberships/);
+  assert.match(departmentMigration, /create table public\.patrimonio_department_transfers/);
+  assert.match(departmentMigration, /Atendimento ao Cliente/);
+  assert.match(departmentMigration, /Gazin LOG/);
+  assert.match(departmentMigration, /patrimonio_save_user_access/);
+  assert.match(departmentMigration, /patrimonio_transfer_department_entity/);
+  assert.match(departmentMigration, /admin_required/);
+  assert.match(departmentMigration, /department_transfer/);
+  assert.match(departmentMigration, /using \(false\) with check \(false\)/);
+  assert.match(gateway, /access\.active\.owner_key/);
+  assert.doesNotMatch(gateway, /access\.active\.ownerKey/);
 });

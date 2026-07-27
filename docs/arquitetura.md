@@ -88,9 +88,9 @@ Chaves estrangeiras preservam integridade e índices cobrem status, núcleo, tip
 1. A API inicia Authorization Code com `state`, PKCE e `nonce` OIDC.
 2. O Google autentica a conta e devolve o código para a URL de retorno registrada.
 3. O ID token é validado por JWKS, emissor, audiência e `nonce`.
-4. A política local restringe o acesso por e-mail exato.
+4. O gateway confirma que o e-mail está ativo na tabela de usuários.
 5. Uma sessão local assinada, `HttpOnly`, `Secure` e `SameSite=Lax` mantém apenas provedor, nome e identificador do usuário por oito horas.
-6. A API usa `PATRIMONIO_WORKSPACE_KEY` para carregar a base empresarial compartilhada e retorna `session.source = supabase`.
+6. A API envia identidade e departamento solicitado; o gateway valida a associação e resolve a chave interna do ambiente.
 
 ### Mutação
 

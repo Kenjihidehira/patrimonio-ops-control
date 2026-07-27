@@ -680,6 +680,7 @@ function movementLabel(type: Movement["type"]): string {
   return {
     registration: "Cadastro",
     transfer: "Transferência",
+    department_transfer: "Transferência entre departamentos",
     status_change: "Alteração de status",
     identifier_change: "Alteração de patrimônio",
     details_update: "Atualização cadastral",

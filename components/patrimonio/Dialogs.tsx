@@ -162,6 +162,7 @@ export function Dialogs({
       <ImportDialog
         open={modal.kind === "import"}
         revision={dashboard.revision}
+        departmentSlug={dashboard.environment.activeDepartment.slug}
         onClose={close}
         onImported={onImported}
         onToast={onToast}
@@ -876,12 +877,14 @@ function CollaboratorDialog({
 function ImportDialog({
   open,
   revision,
+  departmentSlug,
   onClose,
   onImported,
   onToast,
 }: {
   open: boolean;
   revision: number;
+  departmentSlug: string;
   onClose: () => void;
   onImported: () => Promise<void>;
   onToast: (message: string, error?: boolean) => void;
@@ -896,7 +899,7 @@ function ImportDialog({
     setBusy(true);
     setError(null);
     try {
-      setPreview(await previewSpreadsheet(file));
+      setPreview(await previewSpreadsheet(file, departmentSlug));
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "Não foi possível validar a planilha.");
     } finally {
@@ -908,7 +911,7 @@ function ImportDialog({
     setBusy(true);
     setError(null);
     try {
-      const result = await importSpreadsheet(file, revision);
+      const result = await importSpreadsheet(file, revision, departmentSlug);
       await onImported();
       onClose();
       onToast(result.message || "Planilha importada com sucesso.");

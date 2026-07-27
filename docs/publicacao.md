@@ -18,7 +18,7 @@ No Google Cloud Console, crie um cliente OAuth do tipo Aplicativo da Web com a U
 https://patrimonio-ops-control.kenjihidehira999.workers.dev/api/auth/google/callback
 ```
 
-Mantenha `GOOGLE_ALLOWED_EMAILS` como lista fechada de e-mails. Não use apenas o domínio `gmail.com` como autorização.
+Mantenha a tabela de usuários e associações por departamento como lista fechada. Não autorize automaticamente todo o domínio `gmail.com`.
 
 ## 3. Configurar o Cloudflare Worker
 
@@ -31,14 +31,12 @@ pnpm exec wrangler login
 pnpm exec wrangler whoami
 ```
 
-`SUPABASE_GATEWAY_URL` fica em `wrangler.jsonc`. Cadastre credenciais, segredos e a lista de e-mails Google autorizados diretamente no Worker:
+`SUPABASE_GATEWAY_URL` fica em `wrangler.jsonc`. Cadastre as credenciais e os segredos diretamente no Worker:
 
 ```text
 SUPABASE_GATEWAY_KEY=O_MESMO_SEGREDO_DA_EDGE_FUNCTION
-PATRIMONIO_WORKSPACE_KEY=64_CARACTERES_HEXADECIMAIS_ALEATORIOS
 GOOGLE_CLIENT_ID=CLIENT_ID_DO_GOOGLE
 GOOGLE_CLIENT_SECRET=CLIENT_SECRET_DO_GOOGLE
-GOOGLE_ALLOWED_EMAILS=EMAILS_AUTORIZADOS_SEPARADOS_POR_VIRGULA
 AUTH_SESSION_SECRET=SEGREDO_ALEATORIO_COM_PELO_MENOS_64_CARACTERES
 ```
 

@@ -1,19 +1,25 @@
 import type { AuthenticatedUser } from "@/app/auth";
 import { normalizeState } from "@/lib/domain";
-import { companyWorkspaceKey, loadImportRuns, loadOrCreateWorkspace } from "@/lib/supabase";
+import { loadDepartmentWorkspace } from "@/lib/supabase";
 
-export async function loadWorkspaceContext(user: AuthenticatedUser | null) {
+export async function loadWorkspaceContext(
+  user: AuthenticatedUser | null,
+  departmentSlug: string | null = null,
+) {
   if (!user) {
     return {
       state: normalizeState({ revision: 0, nuclei: [], assets: [], collaborators: [] }),
       imports: [],
-      ownerKey: null,
+      environment: null,
       source: "locked" as const,
     };
   }
 
-  const ownerKey = companyWorkspaceKey();
-  const state = normalizeState(await loadOrCreateWorkspace(ownerKey));
-  const imports = await loadImportRuns(ownerKey);
-  return { state, imports, ownerKey, source: "supabase" as const };
+  const workspace = await loadDepartmentWorkspace(user.identifier, departmentSlug);
+  return {
+    state: normalizeState(workspace.state),
+    imports: workspace.imports,
+    environment: workspace.environment,
+    source: "supabase" as const,
+  };
 }

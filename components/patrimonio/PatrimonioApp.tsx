@@ -12,6 +12,7 @@ import Image from "next/image";
 import { downloadExport, mutateDashboard } from "./api";
 import { CollaboratorsView } from "./CollaboratorsView";
 import { Dialogs } from "./Dialogs";
+import { EnvironmentsView } from "./EnvironmentsView";
 import {
   normalizeScannedIdentifier,
   useBarcodeScanner,
@@ -65,10 +66,19 @@ const viewCopy: Record<ViewId, { eyebrow: string; title: string; description: st
     title: "Responsáveis pelos patrimônios",
     description: "Consulte e ajuste os perfis derivados dos responsáveis presentes na base.",
   },
+  environments: {
+    eyebrow: "Administração / Departamentos",
+    title: "Ambientes e acessos",
+    description: "Controle departamentos, usuários autorizados e transferências entre ambientes.",
+  },
 };
 
 export default function PatrimonioApp() {
   const [view, setView] = useState<ViewId>("inventory");
+  const [departmentSlug, setDepartmentSlug] = useState<string | null>(() => {
+    if (typeof window === "undefined") return null;
+    return new URLSearchParams(window.location.search).get("department");
+  });
   const [filterDraft, setFilterDraft] = useState<InventoryFilters>(defaultFilters);
   const [selectedAssetId, setSelectedAssetId] = useState<string | null>(null);
   const [modal, setModal] = useState<ModalState>({ kind: "closed" });
@@ -83,11 +93,25 @@ export default function PatrimonioApp() {
     () => ({ ...filterDraft, search: debouncedSearch }),
     [debouncedSearch, filterDraft],
   );
-  const { dashboard, loading, error, lastSyncAt, refresh } = useDashboard(apiFilters);
+  const { dashboard, loading, error, lastSyncAt, refresh } = useDashboard(
+    apiFilters,
+    departmentSlug,
+  );
   const { theme, setTheme } = useTheme();
 
   const showToast = useCallback((message: string, isError = false) => {
     setToast({ message, error: isError });
+  }, []);
+
+  const switchDepartment = useCallback((slug: string) => {
+    setDepartmentSlug(slug);
+    setView("inventory");
+    setFilterDraft(defaultFilters);
+    setSelectedAssetId(null);
+    setModal({ kind: "closed" });
+    const url = new URL(window.location.href);
+    url.searchParams.set("department", slug);
+    window.history.replaceState(null, "", `${url.pathname}${url.search}${url.hash}`);
   }, []);
 
   const openScannedAsset = useCallback((asset: Asset, identifier: string) => {
@@ -181,7 +205,11 @@ export default function PatrimonioApp() {
     nextSelectedId?: string,
   ) => {
     if (!dashboard) throw new Error("A base ainda não foi carregada.");
-    const result = await mutateDashboard(action, dashboard.revision);
+    const result = await mutateDashboard(
+      action,
+      dashboard.revision,
+      dashboard.environment.activeDepartment.slug,
+    );
     if (nextSelectedId) setSelectedAssetId(nextSelectedId);
     await refresh({ quiet: true });
     showToast(result.message || "Alteração registrada com sucesso.");
@@ -212,7 +240,8 @@ export default function PatrimonioApp() {
 
   const handleExport = async () => {
     try {
-      await downloadExport();
+      if (!dashboard) throw new Error("A base ainda não foi carregada.");
+      await downloadExport(dashboard.environment.activeDepartment.slug);
       showToast("Inventário exportado em XLSX.");
     } catch (cause) {
       showToast(cause instanceof Error ? cause.message : "Não foi possível exportar o inventário.", true);
@@ -221,6 +250,9 @@ export default function PatrimonioApp() {
 
   const copy = viewCopy[view];
   const authenticated = Boolean(dashboard?.session.authenticated);
+  const visibleViews = (Object.keys(viewCopy) as ViewId[]).filter(
+    (item) => item !== "environments" || dashboard?.environment.isAdmin,
+  );
 
   return (
     <div className="app-shell">
@@ -231,7 +263,7 @@ export default function PatrimonioApp() {
             <span className="app-brand-copy"><strong>Patrimônio Ops</strong><small>Dados CX</small></span>
           </button>
           <nav className="primary-nav" aria-label="Navegação principal">
-            {(Object.keys(viewCopy) as ViewId[]).map((item) => (
+            {visibleViews.map((item) => (
               <button
                 key={item}
                 className={`nav-item ${view === item ? "is-active" : ""}`}
@@ -246,6 +278,7 @@ export default function PatrimonioApp() {
                   audit: "Auditoria",
                   imports: "Importações",
                   collaborators: "Colaboradores",
+                  environments: "Ambientes",
                 }[item]}</span>
               </button>
             ))}
@@ -254,7 +287,11 @@ export default function PatrimonioApp() {
             <span className="header-status-icon" aria-hidden="true"><DatabaseStatusIcon /></span>
             <div className="header-status-copy">
               <strong>Base operacional</strong>
-              <span>{authenticated ? "Base empresarial Supabase" : "Dados protegidos"}</span>
+              <span>
+                {authenticated
+                  ? dashboard?.environment.activeDepartment.name ?? "Base empresarial Supabase"
+                  : "Dados protegidos"}
+              </span>
             </div>
             <span className="status-dot" aria-hidden="true" />
           </div>
@@ -269,6 +306,22 @@ export default function PatrimonioApp() {
             <p>{copy.description}</p>
           </div>
           <div className="header-actions">
+            {dashboard?.environment.departments.length ? (
+              <label className="department-switcher">
+                <span>Departamento</span>
+                <select
+                  aria-label="Departamento ativo"
+                  value={dashboard.environment.activeDepartment.slug}
+                  onChange={(event) => switchDepartment(event.target.value)}
+                >
+                  {dashboard.environment.departments.map((department) => (
+                    <option key={department.slug} value={department.slug}>
+                      {department.name}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            ) : null}
             <button
               className="theme-toggle"
               type="button"
@@ -355,6 +408,14 @@ export default function PatrimonioApp() {
         {dashboard && view === "imports" ? (
           <ImportsView dashboard={dashboard} onImport={() => setModal({ kind: "import" })} />
         ) : null}
+        {dashboard && view === "environments" && dashboard.environment.isAdmin ? (
+          <EnvironmentsView
+            dashboard={dashboard}
+            onRefresh={() => refresh({ quiet: true }).then(() => undefined)}
+            onSwitchDepartment={switchDepartment}
+            onToast={showToast}
+          />
+        ) : null}
         {!dashboard && view !== "inventory" ? (
           loading
             ? <LoadingState label="Carregando módulo..." />
@@ -426,6 +487,16 @@ function NavigationIcon({ view }: { view: ViewId }) {
         <circle cx="9" cy="8" r="3" stroke="currentColor" strokeWidth="1.7" />
         <path d="M3.5 19c.7-3.3 2.5-5 5.5-5s4.8 1.7 5.5 5" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
         <path d="M15 7.5a2.5 2.5 0 0 1 0 5M16.5 15c2.2.5 3.5 1.8 4 4" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+      </svg>
+    );
+  }
+
+  if (view === "environments") {
+    return (
+      <svg {...common}>
+        <rect x="3.5" y="5" width="7" height="6" rx="1.4" stroke="currentColor" strokeWidth="1.7" />
+        <rect x="13.5" y="5" width="7" height="6" rx="1.4" stroke="currentColor" strokeWidth="1.7" />
+        <path d="M7 14v5M17 14v5M4.5 17h5M14.5 17h5" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
       </svg>
     );
   }

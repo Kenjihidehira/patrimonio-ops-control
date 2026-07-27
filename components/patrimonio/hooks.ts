@@ -26,7 +26,10 @@ export function useDebouncedValue<T>(value: T, delay: number): T {
   return debounced;
 }
 
-export function useDashboard(filters: InventoryFilters) {
+export function useDashboard(
+  filters: InventoryFilters,
+  departmentSlug: string | null,
+) {
   const [dashboard, setDashboard] = useState<Dashboard | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -48,7 +51,12 @@ export function useDashboard(filters: InventoryFilters) {
     activeRequest.current = controller;
 
     try {
-      const next = await fetchDashboard(options.filters ?? filters, controller.signal);
+      if (!options.background) setLoading(true);
+      const next = await fetchDashboard(
+        options.filters ?? filters,
+        departmentSlug,
+        controller.signal,
+      );
       if (requestId !== requestSequence.current) return null;
       setDashboard((current) => (
         options.background && current?.revision === next.revision ? current : next
@@ -65,7 +73,7 @@ export function useDashboard(filters: InventoryFilters) {
     } finally {
       if (requestId === requestSequence.current) setLoading(false);
     }
-  }, [filters]);
+  }, [departmentSlug, filters]);
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
