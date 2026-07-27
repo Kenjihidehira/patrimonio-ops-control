@@ -289,8 +289,13 @@ test("rota operacional redireciona visitantes sem sessão para o login", () => {
 test("tela React de login oferece somente Google com navegação responsiva", () => {
   assert.match(loginPage, /Continuar com Google/);
   assert.match(loginPage, /\/api\/auth\/google\/login/);
+  assert.match(loginPage, /\/brand\/cx-mark-header\.png/);
+  assert.match(loginPage, /className="login-card"/);
   assert.match(loginPage, /role="alert"/);
+  assert.match(loginCss, /\.login-shell\s*\{[\s\S]*place-items:\s*center/);
+  assert.match(loginCss, /\.login-card\s*\{[\s\S]*width:\s*min\(100%, 480px\)/);
   assert.match(loginCss, /@media \(max-width: 760px\)/);
+  assert.doesNotMatch(loginPage, /brand-mark|brand-panel|access-panel|Voltar ao sistema/);
   assert.doesNotMatch(loginPage, /GitHub|\/api\/auth\/github\//);
   assert.doesNotMatch(loginPage, /Microsoft/);
 });
