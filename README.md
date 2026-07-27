@@ -60,7 +60,7 @@ pnpm dev
 
 Use [`configuracao.exemplo`](configuracao.exemplo) somente como modelo para criar `.env.local`. Preencha as variáveis Supabase, do provedor de identidade e os segredos de sessão apenas no arquivo local, que é ignorado pelo Git. Acesse `http://localhost:5173/login`.
 
-A interface anônima não recebe dados patrimoniais. A leitura da base empresarial, importação, exportação e operações de escrita exigem um e-mail exato em `GOOGLE_ALLOWED_EMAILS`. O servidor valida `state`, PKCE, assinatura da identidade e lista de autorizados antes de criar uma sessão local de oito horas.
+A rota `/demo` redireciona visitantes sem sessão diretamente para `/login`. A leitura da base empresarial, importação, exportação e operações de escrita exigem um e-mail exato em `GOOGLE_ALLOWED_EMAILS`. O servidor valida `state`, PKCE, assinatura da identidade e lista de autorizados antes de criar uma sessão local de oito horas.
 
 ## Conectar um leitor de código de barras
 

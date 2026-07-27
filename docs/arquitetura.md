@@ -79,9 +79,9 @@ Chaves estrangeiras preservam integridade e índices cobrem status, núcleo, tip
 
 ### Leitura anônima
 
-1. A API não encontra identidade autenticada.
-2. Cria uma projeção vazia, sem dados patrimoniais.
-3. Retorna `session.source = locked`; leitura empresarial, exportação e escrita permanecem bloqueadas.
+1. A rota `/demo` não encontra identidade autenticada e redireciona para `/login?return_to=%2Fdemo` antes de renderizar o painel.
+2. A API acessada diretamente cria uma projeção vazia, sem dados patrimoniais.
+3. A resposta da API usa `session.source = locked`; leitura empresarial, exportação e escrita permanecem bloqueadas.
 
 ### Leitura autenticada
 

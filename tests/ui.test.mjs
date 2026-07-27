@@ -281,6 +281,11 @@ test("persistência permanece no servidor e escrita exige autenticação", () =>
   assert.doesNotMatch(reactUi, /SUPABASE_GATEWAY_KEY|PATRIMONIO_WORKSPACE_KEY/);
 });
 
+test("rota operacional redireciona visitantes sem sessão para o login", () => {
+  assert.match(demoPage, /await getAuthenticatedUser\(\)/);
+  assert.match(demoPage, /if \(!user\) redirect\(loginPagePath\("\/demo"\)\)/);
+});
+
 test("tela React de login oferece somente Google com navegação responsiva", () => {
   assert.match(loginPage, /Continuar com Google/);
   assert.match(loginPage, /\/api\/auth\/google\/login/);
