@@ -181,6 +181,11 @@ test("inventário oferece filtros, paginação e experiência móvel dedicada", 
   assert.match(inventory, /<SummaryIcon type="discrepancy" \/>/);
   assert.match(css, /\.mobile-asset-card/);
   assert.match(css, /\.detail-panel\.is-open/);
+  for (const image of ["cpu.png", "monitor.png", "chair.png", "notebook.png"]) {
+    assert.match(ui, new RegExp(`/assets/item-types/${image.replace(".", "\\.")}`));
+  }
+  assert.match(ui, /className=\{`asset-type-image \$\{className\}`\.trim\(\)\}/);
+  assert.match(enterpriseCss, /\/\* Realistic asset type thumbnails \*\//);
 });
 
 test("leitor LS2208 em modo HID localiza patrimônio sem API de hardware", () => {
@@ -257,12 +262,12 @@ test("perfil do colaborador diferencia patrimônios por categoria", () => {
   assert.match(collaborators, /className="people-mobile-list"/);
   assert.match(collaborators, /className="collaborator-avatar"/);
   assert.match(dialogs, /Patrimônios vinculados/);
-  assert.match(ui, /data-asset-icon="office-chair"/);
+  assert.match(ui, /chair: "\/assets\/item-types\/chair\.png"/);
   for (const type of ["cpu", "monitor_1", "monitor_2", "chair", "notebook"]) {
     assert.match(types, new RegExp(type));
   }
-  assert.match(css, /\.profile-asset-icon svg/);
-  assert.match(css, /\.profile-asset-icon-chair/);
+  assert.match(enterpriseCss, /\.profile-asset-icon\s*\{[\s\S]*width:\s*50px/);
+  assert.match(enterpriseCss, /\.asset-type-image/);
 });
 
 test("áreas operacionais compartilham métricas, filtros e cartões responsivos", () => {

@@ -6,6 +6,7 @@ import {
   useEffect,
   useRef,
 } from "react";
+import Image from "next/image";
 import type {
   Asset,
   AssetStatus,
@@ -141,51 +142,28 @@ export function AssetTypeIcon({
   type: AssetType;
   className?: string;
 }) {
-  const common = {
-    "aria-hidden": true,
-    viewBox: "0 0 24 24",
-    width: 20,
-    height: 20,
-    fill: "none",
-    className,
-  } as const;
-
-  if (type === "chair") {
-    return (
-      <svg {...common} data-asset-icon="office-chair">
-        <path d="M8 5.5a3 3 0 0 1 6 0V12H8Z" stroke="currentColor" strokeWidth="1.7" />
-        <path d="M6 11.5h10v3.25A2.25 2.25 0 0 1 13.75 17h-5.5A2.25 2.25 0 0 1 6 14.75Z" stroke="currentColor" strokeWidth="1.7" />
-        <path d="M11 17v3m-4 0h8" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
-      </svg>
-    );
-  }
-
-  if (type === "notebook") {
-    return (
-      <svg {...common}>
-        <rect x="5" y="4" width="14" height="11" rx="1.5" stroke="currentColor" strokeWidth="1.7" />
-        <path d="M3.5 18h17" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
-      </svg>
-    );
-  }
-
-  if (type === "monitor_1" || type === "monitor_2") {
-    return (
-      <svg {...common}>
-        <rect x="3.5" y="4.5" width="17" height="11.5" rx="1.5" stroke="currentColor" strokeWidth="1.7" />
-        <path d="M12 16v3m-4 0h8" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
-      </svg>
-    );
-  }
-
   return (
-    <svg {...common}>
-      <rect x="6" y="2.5" width="12" height="19" rx="2" stroke="currentColor" strokeWidth="1.7" />
-      <path d="M9.5 7h5M9.5 11h5" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
-      <circle cx="12" cy="17" r="1" fill="currentColor" />
-    </svg>
+    <Image
+      className={`asset-type-image ${className}`.trim()}
+      src={assetTypeImagePaths[type]}
+      alt=""
+      aria-hidden="true"
+      width={384}
+      height={384}
+      sizes="64px"
+      draggable={false}
+      unoptimized
+    />
   );
 }
+
+const assetTypeImagePaths: Record<AssetType, string> = {
+  cpu: "/assets/item-types/cpu.png",
+  monitor_1: "/assets/item-types/monitor.png",
+  monitor_2: "/assets/item-types/monitor.png",
+  chair: "/assets/item-types/chair.png",
+  notebook: "/assets/item-types/notebook.png",
+};
 
 export function AssetIdentifier({ asset }: { asset: Pick<Asset, "id" | "hasPatrimony"> }) {
   return <>{asset.hasPatrimony ? `#${asset.id}` : "Sem patrimônio"}</>;
