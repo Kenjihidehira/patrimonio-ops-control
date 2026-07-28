@@ -5,6 +5,7 @@ import test from "node:test";
 const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
 const readme = read("README.md");
 const api = read("docs/api.md");
+const lgpd = read("docs/lgpd.md");
 
 test("documentação usa nomes e links internos em PT-BR", () => {
   assert.match(readme, /docs\/arquitetura\.md/);
@@ -21,4 +22,12 @@ test("documentação de autenticação acompanha as rotas implementadas", () => 
     assert.match(api, new RegExp(route.replaceAll("/", "\\/")));
   }
   assert.doesNotMatch(api, /\/api\/auth\/github\//);
+  assert.match(api, /\| `POST` \| `\/api\/auth\/logout`/);
+  assert.match(api, /304 Not Modified/);
+});
+
+test("documentação separa controles técnicos de homologação LGPD", () => {
+  assert.match(lgpd, /Situação de homologação/);
+  assert.match(lgpd, /Informação pendente de validação/);
+  assert.match(lgpd, /não deve ser declarado integralmente conforme à LGPD/);
 });

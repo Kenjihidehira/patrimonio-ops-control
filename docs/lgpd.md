@@ -4,6 +4,22 @@ Este documento registra os controles técnicos do Patrimônio Ops. Ele não subs
 o inventário corporativo de tratamento, contratos com operadores nem a decisão do
 controlador e do encarregado.
 
+## Situação de homologação
+
+| Evidência | Situação |
+| --- | --- |
+| Controles técnicos, RLS, trilha de auditoria e revogação de sessão | Implementado e verificável no sistema |
+| Controlador definido para cada departamento | Informação pendente de validação |
+| Registro das operações de tratamento e avaliação de legítimo interesse | Informação pendente de validação |
+| DPA e mecanismo de transferência internacional de Google, Cloudflare e Supabase | Informação pendente de validação |
+| Prazos aprovados para inventário, colaboradores e movimentações | Informação pendente de validação |
+| Responsáveis internos pelo atendimento a titulares e incidentes | Informação pendente de validação |
+| RPO, RTO, backup gerenciado e teste de restauração | Informação pendente de validação |
+
+O sistema não deve ser declarado integralmente conforme à LGPD enquanto as
+evidências marcadas como pendentes não forem aprovadas e arquivadas pelos
+responsáveis corporativos.
+
 ## Inventário resumido
 
 | Categoria | Exemplos | Finalidade | Acesso |

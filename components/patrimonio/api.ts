@@ -28,7 +28,8 @@ export async function fetchDashboard(
   filters: InventoryFilters,
   departmentSlug: string | null,
   signal?: AbortSignal,
-): Promise<Dashboard> {
+  knownRevision: number | null = null,
+): Promise<Dashboard | null> {
   const query = new URLSearchParams({
     search: filters.search,
     type: filters.type,
@@ -37,11 +38,13 @@ export async function fetchDashboard(
     sort: filters.sort,
   });
   if (departmentSlug) query.set("department", departmentSlug);
+  if (knownRevision !== null) query.set("revision", String(knownRevision));
   const response = await fetch(`/api/state?${query}`, {
     headers: { accept: "application/json" },
     cache: "no-store",
     signal,
   });
+  if (response.status === 304) return null;
   return readJson<Dashboard>(response, "Não foi possível carregar o controle patrimonial.");
 }
 

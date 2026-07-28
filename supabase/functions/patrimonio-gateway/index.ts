@@ -63,9 +63,23 @@ Deno.serve(async (request) => {
       case "load_workspace_context": {
         const access = await resolveDepartmentAccess(identifier, body.departmentSlug);
         const ownerKey = access.active.owner_key;
-        await ensureWorkspace(ownerKey);
+        let workspace = await loadWorkspaceRevision(ownerKey);
+        if (!workspace.length) {
+          await ensureWorkspace(ownerKey);
+          workspace = await loadWorkspaceRevision(ownerKey);
+        }
+        const revision = Number(workspace[0]?.revision ?? 0);
+        const knownRevision = normalizeRevision(body.knownRevision);
+        if (knownRevision !== null && knownRevision === revision) {
+          return json({
+            data: {
+              notModified: true,
+              revision,
+            },
+          });
+        }
+
         const [
-          workspace,
           nuclei,
           assets,
           collaborators,
@@ -76,7 +90,6 @@ Deno.serve(async (request) => {
           securityEvents,
         ] =
           await Promise.all([
-            loadWorkspaceRevision(ownerKey),
             loadNuclei(ownerKey),
             loadAssets(ownerKey),
             loadCollaborators(ownerKey),
@@ -90,6 +103,7 @@ Deno.serve(async (request) => {
         return json({
           data: {
             workspace,
+            notModified: false,
             nuclei,
             assets,
             collaborators,
@@ -419,6 +433,12 @@ function publicDepartment(department) {
 function normalizeIdentifier(value) {
   const identifier = String(value ?? "").trim().toLowerCase();
   return emailPattern.test(identifier) ? identifier : "";
+}
+
+function normalizeRevision(value) {
+  if (value === null || value === undefined || value === "") return null;
+  const revision = Number(value);
+  return Number.isSafeInteger(revision) && revision >= 0 ? revision : null;
 }
 
 function httpError(message, status, code) {

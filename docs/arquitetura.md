@@ -77,11 +77,11 @@ Chaves estrangeiras preservam integridade e índices cobrem status, núcleo, tip
 
 ## Fluxos de dados
 
-### Leitura anônima
+### Acesso sem sessão
 
 1. A rota `/demo` não encontra identidade autenticada e redireciona para `/login?return_to=%2Fdemo` antes de renderizar o painel.
-2. A API acessada diretamente cria uma projeção vazia, sem dados patrimoniais.
-3. A resposta da API usa `session.source = locked`; leitura empresarial, exportação e escrita permanecem bloqueadas.
+2. A API acessada diretamente responde `401` e informa somente a URL local de login.
+3. Se a sessão expirar durante a sincronização, o cliente substitui a navegação pelo login sem tentar renderizar um ambiente incompleto.
 
 ### Leitura autenticada
 
@@ -91,6 +91,9 @@ Chaves estrangeiras preservam integridade e índices cobrem status, núcleo, tip
 4. O gateway confirma que o e-mail está ativo na tabela de usuários.
 5. Uma sessão local assinada, `HttpOnly`, `Secure` e `SameSite=Lax` mantém apenas provedor, nome e identificador do usuário por oito horas.
 6. A API envia identidade e departamento solicitado; o gateway valida a associação e resolve a chave interna do ambiente.
+7. Sincronizações em segundo plano enviam a revisão conhecida. Se não houve
+   mutação, o gateway devolve apenas `notModified` e a API responde `304`,
+   evitando reler todo o inventário e o histórico.
 
 ### Mutação
 

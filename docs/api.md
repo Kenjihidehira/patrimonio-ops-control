@@ -10,7 +10,7 @@ Respostas dinâmicas usam `cache-control: no-store`. A identidade vem de uma ses
 | --- | --- | --- |
 | `GET` | `/api/auth/google/login` | Iniciar o código de autorização do Google com `state`, PKCE e `nonce` |
 | `GET` | `/api/auth/google/callback` | Validar retorno OpenID Connect, identidade e lista de autorizados; criar sessão `HttpOnly` |
-| `GET` | `/api/auth/logout` | Encerrar a sessão local |
+| `POST` | `/api/auth/logout` | Encerrar a sessão local |
 
 `return_to` aceita apenas caminhos relativos locais e nunca pode apontar para as próprias rotas de autenticação.
 
@@ -28,8 +28,12 @@ Retorna revisão, resumo, inventário filtrado, colaboradores, núcleos, auditor
 | `nucleus` | Identificador de núcleo | `all` |
 | `sort` | `recent`, `asset_asc`, `nucleus`, `status` | `recent` |
 | `department` | Slug de um departamento liberado ao usuário | primeiro departamento autorizado |
+| `revision` | Revisão inteira já carregada em sincronizações de segundo plano | vazio |
 
-Usuários anônimos recebem uma projeção vazia. Contas Google ativas recebem apenas os departamentos vinculados ao usuário; administradores globais podem acessar todos.
+Usuários anônimos recebem `401` com a URL local de login. Quando `revision`
+coincide com a revisão persistida, a API retorna `304 Not Modified` sem
+recarregar inventário e movimentações. Contas Google ativas recebem apenas os
+departamentos vinculados ao usuário; administradores globais podem acessar todos.
 
 ## `/api/departments`
 
@@ -225,8 +229,9 @@ Exige autenticação e permissão explícita de exportação. A autorização e 
 | Código | Situação |
 | --- | --- |
 | `200` | Leitura, prévia ou mutação concluída |
+| `304` | Sincronização sem alteração desde a revisão informada |
 | `400` | Corpo da requisição, modo ou arquivo inválido |
-| `401` | Sessão não autenticada para escrita |
+| `401` | Sessão ausente ou expirada |
 | `403` | Departamento ou operação não autorizado para o perfil |
 | `409` | Revisão obsoleta; recarregamento necessário |
 | `413` | Arquivo vazio, maior que 2 MB ou planilha acima dos limites estruturais |

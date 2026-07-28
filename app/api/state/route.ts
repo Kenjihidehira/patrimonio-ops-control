@@ -11,11 +11,32 @@ const responseHeaders = { "cache-control": "no-store" };
 export async function GET(request: Request) {
   try {
     const user = await getAuthenticatedUser();
+    if (!user) {
+      return Response.json(
+        {
+          error: "Sua sessão expirou. Entre novamente para continuar.",
+          signInUrl: loginPagePath(APP_PATH),
+        },
+        { status: 401, headers: responseHeaders },
+      );
+    }
+
     const url = new URL(request.url);
+    const knownRevision = parseKnownRevision(url.searchParams.get("revision"));
     const workspace = await loadWorkspaceContext(
       user,
       url.searchParams.get("department"),
+      knownRevision,
     );
+    if (workspace.notModified) {
+      return new Response(null, {
+        status: 304,
+        headers: {
+          ...responseHeaders,
+          etag: `"revision-${workspace.revision}"`,
+        },
+      });
+    }
     const dashboard = buildDashboard(workspace.state, {
       search: url.searchParams.get("search"),
       type: url.searchParams.get("type"),
@@ -30,10 +51,10 @@ export async function GET(request: Request) {
         imports: workspace.imports,
         environment: workspace.environment,
         session: {
-          authenticated: Boolean(user),
-          displayName: user?.displayName ?? "Acesso não autenticado",
-          identifier: user?.identifier ?? null,
-          provider: user?.provider ?? null,
+          authenticated: true,
+          displayName: user.displayName,
+          identifier: user.identifier,
+          provider: user.provider,
           source: workspace.source,
           signInUrl: loginPagePath(APP_PATH),
           signOutUrl: signOutPath(),
@@ -48,6 +69,12 @@ export async function GET(request: Request) {
       { status: 500, headers: responseHeaders },
     );
   }
+}
+
+function parseKnownRevision(value: string | null): number | null {
+  if (!value || !/^\d+$/.test(value)) return null;
+  const revision = Number(value);
+  return Number.isSafeInteger(revision) ? revision : null;
 }
 
 export async function POST(request: Request) {

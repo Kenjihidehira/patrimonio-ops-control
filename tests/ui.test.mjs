@@ -21,12 +21,14 @@ const [
   css,
   loginCss,
   api,
+  clientApi,
   importApi,
   exportApi,
   departmentsApi,
   workspace,
   googleAuth,
   sharedAuth,
+  logoutRoute,
   workbook,
 ] = await Promise.all([
   read("app/demo/page.tsx"),
@@ -46,12 +48,14 @@ const [
   read("app/demo/patrimonio.css"),
   read("app/login/login.css"),
   read("app/api/state/route.ts"),
+  read("components/patrimonio/api.ts"),
   read("app/api/import/route.ts"),
   read("app/api/export/route.ts"),
   read("app/api/departments/route.ts"),
   read("lib/workspace.ts"),
   read("app/google-auth.ts"),
   read("app/auth.ts"),
+  read("app/api/auth/logout/route.ts"),
   read("lib/workbook.ts"),
 ]);
 
@@ -106,11 +110,14 @@ test("interface contém os fluxos comerciais essenciais", () => {
 
 test("estado remoto usa requisições canceláveis e sincronização de atividade", () => {
   assert.match(hooks, /AbortController/);
-  assert.match(hooks, /DASHBOARD_REFRESH_INTERVAL_MS = 10_000/);
+  assert.match(hooks, /DASHBOARD_REFRESH_INTERVAL_MS = 30_000/);
   assert.match(hooks, /window\.addEventListener\("focus"/);
   assert.match(hooks, /window\.addEventListener\("online"/);
   assert.match(hooks, /document\.addEventListener\("visibilitychange"/);
-  assert.match(hooks, /current\?\.revision === next\.revision/);
+  assert.match(hooks, /dashboardRef\.current\?\.revision/);
+  assert.match(hooks, /window\.location\.replace\(cause\.signInUrl\)/);
+  assert.match(clientApi, /knownRevision !== null/);
+  assert.match(clientApi, /response\.status === 304/);
   assert.match(collaborators, /dashboard\.collaborators\.length/);
   assert.match(collaborators, /responsáveis distintos/);
 });
@@ -266,7 +273,7 @@ test("áreas operacionais compartilham métricas, filtros e cartões responsivos
 test("ambientes isolam departamentos, usuários e transferências administrativas", () => {
   assert.match(app, /className="department-switcher"/);
   assert.match(app, /dashboard\.environment\.activeDepartment/);
-  assert.match(app, /dashboard\.environment\.isAdmin/);
+  assert.match(app, /environment\?\.isAdmin/);
   assert.match(environments, /Acesso por usuário/);
   assert.match(environments, /Transferir entre departamentos/);
   assert.match(environments, /Colaborador e seus itens/);
@@ -292,8 +299,10 @@ test("tema escuro é acessível, usa cookie e não armazena dados localmente", (
 });
 
 test("persistência permanece no servidor e escrita exige autenticação", () => {
-  assert.match(api, /if \(!user\)/);
+  assert.match(api, /Sua sessão expirou/);
   assert.match(api, /status: 401/);
+  assert.match(api, /status: 304/);
+  assert.doesNotMatch(api, /authenticated: Boolean\(user\)/);
   assert.match(api, /applyPersistedAction/);
   assert.match(api, /error\.code === "23505"/);
   assert.match(importApi, /MAX_FILE_BYTES/);
@@ -337,4 +346,7 @@ test("autenticação Google preserva PKCE, autorização por departamento e sess
   assert.match(sharedAuth, /SameSite=|sameSite/i);
   assert.match(sharedAuth, /const APP_PATH = "\/demo"/);
   assert.match(sharedAuth, /const LOGIN_PATH = "\/login"/);
+  assert.match(logoutRoute, /export async function POST/);
+  assert.doesNotMatch(logoutRoute, /export async function GET/);
+  assert.match(app, /<form action=\{dashboard\?\.session\.signOutUrl\} method="post">/);
 });

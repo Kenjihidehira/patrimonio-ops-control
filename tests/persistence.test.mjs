@@ -130,3 +130,10 @@ test("departamentos possuem isolamento, acesso por usuário e transferência aud
   assert.match(gateway, /access\.active\.owner_key/);
   assert.doesNotMatch(gateway, /access\.active\.ownerKey/);
 });
+
+test("sincronização por revisão evita recarregar inventário sem alteração", () => {
+  assert.match(gateway, /const knownRevision = normalizeRevision\(body\.knownRevision\)/);
+  assert.match(gateway, /knownRevision === revision/);
+  assert.match(gateway, /notModified: true/);
+  assert.match(gateway, /if \(!workspace\.length\)/);
+});

@@ -4,7 +4,6 @@ import handler from "vinext/server/app-router-entry";
 
 interface Env {
   ASSETS: Fetcher;
-  DB: D1Database;
   IMAGES: {
     input(stream: ReadableStream): {
       transform(options: Record<string, unknown>): {
@@ -97,15 +96,19 @@ function withSecurityHeaders(response: Response): Response {
     headers,
   });
   return new HTMLRewriter()
-    .on("script", new NonceElementHandler(nonce))
+    .on("script", new NonceElementHandler(nonce, true))
     .on("style", new NonceElementHandler(nonce))
     .transform(securedResponse);
 }
 
 class NonceElementHandler implements HTMLRewriterElementContentHandlers {
-  constructor(private readonly nonce: string) {}
+  constructor(
+    private readonly nonce: string,
+    private readonly inlineOnly = false,
+  ) {}
 
   element(element: Element): void {
+    if (this.inlineOnly && element.getAttribute("src")) return;
     element.setAttribute("nonce", this.nonce);
   }
 }
