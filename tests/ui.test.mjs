@@ -19,6 +19,7 @@ const [
   ui,
   types,
   css,
+  enterpriseCss,
   loginCss,
   api,
   clientApi,
@@ -46,6 +47,7 @@ const [
   read("components/patrimonio/ui.tsx"),
   read("components/patrimonio/types.ts"),
   read("app/demo/patrimonio.css"),
+  read("app/demo/enterprise.css"),
   read("app/login/login.css"),
   read("app/api/state/route.ts"),
   read("components/patrimonio/api.ts"),
@@ -132,9 +134,12 @@ test("campos críticos possuem semântica e validação no cliente", () => {
 });
 
 test("layout contém breakpoints de tablet, celular e redução de movimento", () => {
-  assert.match(app, /className="app-header"/);
+  assert.match(app, /<header className=\{`app-header \$\{mobileNavigationOpen \? "is-open" : ""\}`\}>/);
   assert.match(app, /className="app-brand"/);
   assert.match(app, /className="primary-nav"/);
+  assert.match(app, /className="mobile-menu-toggle"/);
+  assert.doesNotMatch(app, /className="navigation-scrim"/);
+  assert.doesNotMatch(app, /className="sidebar-department"/);
   assert.match(app, /className="nav-item-icon"/);
   assert.match(app, /<NavigationIcon view=\{item\} \/>/);
   assert.match(app, /<small>Gestão empresarial<\/small>/);
@@ -146,6 +151,11 @@ test("layout contém breakpoints de tablet, celular e redução de movimento", (
   assert.match(css, /@media \(max-width: 720px\)/);
   assert.match(css, /@media \(max-width: 430px\)/);
   assert.match(css, /prefers-reduced-motion/);
+  assert.match(enterpriseCss, /\/\* Horizontal application header \*\//);
+  assert.match(enterpriseCss, /\.app-header-inner\s*\{[\s\S]*grid-template-columns:\s*auto minmax\(0, 1fr\) auto/);
+  assert.match(enterpriseCss, /\.app-header\.is-open/);
+  assert.match(enterpriseCss, /@media \(max-width: 820px\)/);
+  assert.match(enterpriseCss, /prefers-reduced-motion/);
 });
 
 test("inventário oferece filtros, paginação e experiência móvel dedicada", () => {

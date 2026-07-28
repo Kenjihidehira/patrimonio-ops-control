@@ -40,34 +40,28 @@ import {
 
 const OFFICIAL_PATRIMONY_PATTERN = /^\d{6}$/;
 
-const viewCopy: Record<ViewId, { eyebrow: string; title: string; description: string }> = {
+const viewCopy: Record<ViewId, { title: string; description: string }> = {
   inventory: {
-    eyebrow: "Operações / Inventário",
     title: "Controle de patrimônios",
     description: "Localize ativos, acompanhe responsáveis e trate divergências por núcleo.",
   },
   nuclei: {
-    eyebrow: "Estrutura / Núcleos",
     title: "Responsabilidade por núcleo",
     description: "Acompanhe concentração, alocação e alertas em cada área da empresa.",
   },
   audit: {
-    eyebrow: "Governança / Auditoria",
     title: "Histórico de movimentações",
     description: "Consulte alterações de posse, status e cadastro registradas pela operação.",
   },
   imports: {
-    eyebrow: "Dados / Importações",
     title: "Carga e conciliação de planilhas",
     description: "Pré-valide arquivos XLSX e acompanhe o resultado das importações.",
   },
   collaborators: {
-    eyebrow: "Pessoas / Colaboradores",
     title: "Responsáveis pelos patrimônios",
     description: "Consulte e ajuste os perfis derivados dos responsáveis presentes na base.",
   },
   environments: {
-    eyebrow: "Administração / Departamentos",
     title: "Ambientes e acessos",
     description: "Controle departamentos, usuários autorizados e transferências entre ambientes.",
   },
@@ -75,6 +69,7 @@ const viewCopy: Record<ViewId, { eyebrow: string; title: string; description: st
 
 export default function PatrimonioApp() {
   const [view, setView] = useState<ViewId>("inventory");
+  const [mobileNavigationOpen, setMobileNavigationOpen] = useState(false);
   const [departmentSlug, setDepartmentSlug] = useState<string | null>(() => {
     if (typeof window === "undefined") return null;
     return new URLSearchParams(window.location.search).get("department");
@@ -265,11 +260,34 @@ export default function PatrimonioApp() {
 
   return (
     <div className="app-shell">
-      <header className="app-header">
+      <header className={`app-header ${mobileNavigationOpen ? "is-open" : ""}`}>
         <div className="app-header-inner">
-          <button className="app-brand" type="button" aria-label="Patrimônio Ops, abrir inventário" onClick={() => setView("inventory")}>
+          <button
+            className="app-brand"
+            type="button"
+            aria-label="Patrimônio Ops, abrir inventário"
+            onClick={() => {
+              setView("inventory");
+              setMobileNavigationOpen(false);
+            }}
+          >
             <Image className="app-brand-logo" src="/brand/cx-mark-header.png" alt="" width={440} height={230} priority />
             <span className="app-brand-copy"><strong>Patrimônio Ops</strong><small>Gestão empresarial</small></span>
+          </button>
+          <button
+            className="mobile-menu-toggle"
+            type="button"
+            aria-label={mobileNavigationOpen ? "Fechar navegação" : "Abrir navegação"}
+            aria-expanded={mobileNavigationOpen}
+            onClick={() => setMobileNavigationOpen((isOpen) => !isOpen)}
+          >
+            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none">
+              {mobileNavigationOpen ? (
+                <path d="m6 6 12 12M18 6 6 18" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+              ) : (
+                <path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+              )}
+            </svg>
           </button>
           <nav className="primary-nav" aria-label="Navegação principal">
             {visibleViews.map((item) => (
@@ -278,7 +296,10 @@ export default function PatrimonioApp() {
                 className={`nav-item ${view === item ? "is-active" : ""}`}
                 type="button"
                 aria-current={view === item ? "page" : undefined}
-                onClick={() => setView(item)}
+                onClick={() => {
+                  setView(item);
+                  setMobileNavigationOpen(false);
+                }}
               >
                 <span className="nav-item-icon"><NavigationIcon view={item} /></span>
                 <span>{{
@@ -292,16 +313,6 @@ export default function PatrimonioApp() {
               </button>
             ))}
           </nav>
-        </div>
-      </header>
-
-      <main className="main-content" id="main-content">
-        <header className="topbar">
-          <div className="page-heading">
-            <p className="eyebrow">{copy.eyebrow}</p>
-            <h1>{copy.title}</h1>
-            <p>{copy.description}</p>
-          </div>
           <div className="header-actions">
             {environment?.departments.length ? (
               <label className="department-switcher">
@@ -348,19 +359,30 @@ export default function PatrimonioApp() {
                 </form>
               ) : null}
             </div>
-            <div className="data-actions">
-              <button className="button button-secondary" type="button" disabled={!permissions.canImport} onClick={() => setModal({ kind: "import" })}>
-                <span aria-hidden="true">↑</span> Importar
-              </button>
-              <button className="button button-secondary" type="button" disabled={!permissions.canExport} onClick={() => void handleExport()}>
-                <span aria-hidden="true">↓</span> Exportar
-              </button>
-              {view === "inventory" ? (
-                <button className="button button-primary" type="button" disabled={!permissions.canWrite} onClick={() => setModal({ kind: "create-asset" })}>
-                  <span aria-hidden="true">+</span> Novo patrimônio
-                </button>
-              ) : null}
+          </div>
+        </div>
+      </header>
+
+      <main className="main-content" id="main-content">
+        <header className="topbar">
+          <div className="topbar-main">
+            <div className="page-heading">
+              <h1>{copy.title}</h1>
+              <p>{copy.description}</p>
             </div>
+          </div>
+          <div className="data-actions">
+            <button className="button button-secondary" type="button" disabled={!permissions.canImport} onClick={() => setModal({ kind: "import" })}>
+              <CommandIcon type="import" /> Importar
+            </button>
+            <button className="button button-secondary" type="button" disabled={!permissions.canExport} onClick={() => void handleExport()}>
+              <CommandIcon type="export" /> Exportar
+            </button>
+            {view === "inventory" ? (
+              <button className="button button-primary" type="button" disabled={!permissions.canWrite} onClick={() => setModal({ kind: "create-asset" })}>
+                <CommandIcon type="create" /> Novo patrimônio
+              </button>
+            ) : null}
           </div>
         </header>
 
@@ -520,6 +542,29 @@ function NavigationIcon({ view }: { view: ViewId }) {
       <rect x="14" y="4" width="6" height="6" rx="1.2" stroke="currentColor" strokeWidth="1.7" />
       <rect x="4" y="14" width="6" height="6" rx="1.2" stroke="currentColor" strokeWidth="1.7" />
       <rect x="14" y="14" width="6" height="6" rx="1.2" stroke="currentColor" strokeWidth="1.7" />
+    </svg>
+  );
+}
+
+function CommandIcon({ type }: { type: "import" | "export" | "create" }) {
+  if (type === "create") {
+    return (
+      <svg aria-hidden="true" viewBox="0 0 24 24" fill="none">
+        <path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+      </svg>
+    );
+  }
+
+  return (
+    <svg aria-hidden="true" viewBox="0 0 24 24" fill="none">
+      <path
+        d={type === "import" ? "M12 16V5m0 0L8 9m4-4 4 4" : "M12 5v11m0 0-4-4m4 4 4-4"}
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path d="M5 19h14" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
     </svg>
   );
 }
