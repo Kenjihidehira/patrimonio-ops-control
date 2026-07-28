@@ -6,10 +6,10 @@ import {
   useRef,
   useState,
 } from "react";
-import { fetchDashboard } from "./api";
+import { ApiError, fetchDashboard } from "./api";
 import type { Dashboard, InventoryFilters } from "./types";
 
-const DASHBOARD_REFRESH_INTERVAL_MS = 10_000;
+const DASHBOARD_REFRESH_INTERVAL_MS = 30_000;
 const ACTIVITY_REFRESH_COOLDOWN_MS = 1_500;
 const SCANNER_CHARACTER_TIMEOUT_MS = 100;
 const SCANNER_BUFFER_TIMEOUT_MS = 250;
@@ -34,6 +34,7 @@ export function useDashboard(
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [lastSyncAt, setLastSyncAt] = useState<Date | null>(null);
+  const dashboardRef = useRef<Dashboard | null>(null);
   const requestSequence = useRef(0);
   const activeRequest = useRef<AbortController | null>(null);
   const lastActivityAt = useRef(0);
@@ -56,15 +57,25 @@ export function useDashboard(
         options.filters ?? filters,
         departmentSlug,
         controller.signal,
+        options.background ? dashboardRef.current?.revision ?? null : null,
       );
       if (requestId !== requestSequence.current) return null;
-      setDashboard((current) => (
-        options.background && current?.revision === next.revision ? current : next
-      ));
+      if (!next) {
+        setLastSyncAt(new Date());
+        return dashboardRef.current;
+      }
+      dashboardRef.current = next;
+      setDashboard(next);
       setLastSyncAt(new Date());
       return next;
     } catch (cause) {
       if (controller.signal.aborted) return null;
+      if (cause instanceof ApiError && cause.status === 401 && cause.signInUrl) {
+        dashboardRef.current = null;
+        setDashboard(null);
+        window.location.replace(cause.signInUrl);
+        return null;
+      }
       const message = cause instanceof Error
         ? cause.message
         : "Não foi possível carregar o controle patrimonial.";

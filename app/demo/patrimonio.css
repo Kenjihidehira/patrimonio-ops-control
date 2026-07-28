@@ -553,12 +553,19 @@ textarea:disabled {
 }
 
 .session-sign-out {
-  margin-left: auto;
   padding: 6px;
+  border: 0;
+  background: transparent;
   color: var(--muted);
+  cursor: pointer;
+  font-family: inherit;
   font-size: 10px;
   font-weight: 700;
   text-decoration: none;
+}
+
+.session-control form {
+  margin-left: auto;
 }
 
 .session-sign-out:hover,

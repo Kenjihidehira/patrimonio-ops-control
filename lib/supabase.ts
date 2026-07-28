@@ -38,6 +38,7 @@ type DepartmentUser = {
 };
 
 type GatewayWorkspaceContext = {
+  notModified?: false;
   workspace: Array<{ revision: number }>;
   nuclei: Array<Record<string, unknown>>;
   assets: Array<Record<string, unknown>>;
@@ -57,6 +58,11 @@ type GatewayWorkspaceContext = {
     };
     users: DepartmentUser[];
   };
+};
+
+type GatewayWorkspaceNotModified = {
+  notModified: true;
+  revision: number;
 };
 
 type GatewayConfig = {
@@ -106,16 +112,23 @@ export async function hasSystemAccess(identifier: string): Promise<boolean> {
 export async function loadDepartmentWorkspace(
   identifier: string,
   departmentSlug: string | null,
+  knownRevision: number | null = null,
 ) {
-  const result = await gatewayRequest<GatewayWorkspaceContext>("load_workspace_context", {
+  const result = await gatewayRequest<
+    GatewayWorkspaceContext | GatewayWorkspaceNotModified
+  >("load_workspace_context", {
     identifier,
     departmentSlug,
+    knownRevision,
   });
+  if (result.notModified) return result;
+
   const departmentNames = new Map(
     result.access.departments.map((department) => [department.slug, department.name]),
   );
 
   return {
+    notModified: false as const,
     state: mapWorkspaceState(result),
     imports: mapImportRuns(result.imports),
     environment: {

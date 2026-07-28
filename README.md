@@ -120,7 +120,7 @@ A planilha corporativa original não faz parte do repositório. O arquivo [`data
 
 | Método | Rota | Autenticação | Finalidade |
 | --- | --- | --- | --- |
-| `GET` | `/api/state` | Opcional | Painel, inventário, colaboradores, núcleos, auditoria, importações e sessão |
+| `GET` | `/api/state` | Obrigatória | Painel, inventário, colaboradores, núcleos, auditoria, importações e sessão |
 | `POST` | `/api/state` | Obrigatória | Cadastro, transferência, status, edição cadastral e gestão de núcleos |
 | `POST` | `/api/import` | Obrigatória | Pré-validar ou confirmar importação XLSX |
 | `GET` | `/api/export` | Obrigatória | Gerar cópia de segurança XLSX do ambiente empresarial |
@@ -129,7 +129,7 @@ Filtros, payloads e códigos de resposta estão em [`docs/api.md`](docs/api.md).
 
 ## Arquitetura e segurança
 
-As telas ficam em [`app/demo`](app/demo) e os componentes funcionais em [`components/patrimonio`](components/patrimonio). O cliente React usa uma camada HTTP tipada e nunca acessa o Supabase diretamente. Leituras obsoletas são canceladas com `AbortController`; o painel sincroniza em segundo plano e também ao recuperar foco, conexão ou visibilidade.
+As telas ficam em [`app/demo`](app/demo) e os componentes funcionais em [`components/patrimonio`](components/patrimonio). O cliente React usa uma camada HTTP tipada e nunca acessa o Supabase diretamente. Leituras obsoletas são canceladas com `AbortController`; o painel sincroniza em segundo plano e também ao recuperar foco, conexão ou visibilidade. A sincronização informa a revisão já carregada e recebe `304 Not Modified` quando não houve mutação, evitando transferir novamente todo o inventário e o histórico.
 
 As regras ficam em [`lib/domain.js`](lib/domain.js), independentes de HTTP e banco. O servidor envia ao gateway apenas a identidade validada e o departamento solicitado; o gateway resolve internamente a chave do ambiente após conferir a permissão. O serviço intermediário do Supabase exige um segredo de servidor, e as tabelas têm RLS habilitado com acesso direto negado a `anon` e `authenticated`.
 
@@ -168,7 +168,7 @@ O painel oferece temas claro e escuro, respeita a preferência do sistema na pri
 
 ## Publicação
 
-O projeto está configurado para Cloudflare Workers em [`wrangler.jsonc`](wrangler.jsonc). Use `pnpm deploy:cloudflare` após autenticar o Wrangler e cadastrar os segredos do ambiente de execução. O procedimento reproduzível, as migrações e os controles de pré-publicação estão em [`docs/publicacao.md`](docs/publicacao.md).
+O projeto está configurado para Cloudflare Workers em [`wrangler.jsonc`](wrangler.jsonc). Use `pnpm deploy:cloudflare` após autenticar o Wrangler e cadastrar os segredos do ambiente de execução. O comando grava o SHA do commit como mensagem e tag da versão do Worker, permitindo rastrear o código publicado. O procedimento reproduzível, as migrações e os controles de pré-publicação estão em [`docs/publicacao.md`](docs/publicacao.md).
 
 GitHub Pages não hospeda este ambiente de execução: ele publica apenas arquivos estáticos e não executa manipuladores de rota, cookies `HttpOnly` ou integrações servidor-servidor. O código e a integração contínua (CI) ficam no GitHub; a API permanece no Worker para não expor os segredos do Supabase.
 

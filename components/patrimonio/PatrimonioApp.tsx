@@ -204,7 +204,7 @@ export default function PatrimonioApp() {
     action: MutationAction,
     nextSelectedId?: string,
   ) => {
-    if (!dashboard) throw new Error("A base ainda não foi carregada.");
+    if (!dashboard?.environment) throw new Error("A base ainda não foi carregada.");
     if (!dashboard.environment.permissions.canWrite) {
       throw new Error("Seu perfil possui acesso somente para consulta.");
     }
@@ -243,7 +243,7 @@ export default function PatrimonioApp() {
 
   const handleExport = async () => {
     try {
-      if (!dashboard) throw new Error("A base ainda não foi carregada.");
+      if (!dashboard?.environment) throw new Error("A base ainda não foi carregada.");
       await downloadExport(dashboard.environment.activeDepartment.slug);
       showToast("Inventário exportado em XLSX.");
     } catch (cause) {
@@ -253,13 +253,14 @@ export default function PatrimonioApp() {
 
   const copy = viewCopy[view];
   const authenticated = Boolean(dashboard?.session.authenticated);
-  const permissions = dashboard?.environment.permissions ?? {
+  const environment = dashboard?.environment ?? null;
+  const permissions = environment?.permissions ?? {
     canWrite: false,
     canImport: false,
     canExport: false,
   };
   const visibleViews = (Object.keys(viewCopy) as ViewId[]).filter(
-    (item) => item !== "environments" || dashboard?.environment.isAdmin,
+    (item) => item !== "environments" || environment?.isAdmin,
   );
 
   return (
@@ -302,15 +303,15 @@ export default function PatrimonioApp() {
             <p>{copy.description}</p>
           </div>
           <div className="header-actions">
-            {dashboard?.environment.departments.length ? (
+            {environment?.departments.length ? (
               <label className="department-switcher">
                 <span>Departamento</span>
                 <select
                   aria-label="Departamento ativo"
-                  value={dashboard.environment.activeDepartment.slug}
+                  value={environment.activeDepartment.slug}
                   onChange={(event) => switchDepartment(event.target.value)}
                 >
-                  {dashboard.environment.departments.map((department) => (
+                  {environment.departments.map((department) => (
                     <option key={department.slug} value={department.slug}>
                       {department.name}
                     </option>
@@ -341,7 +342,11 @@ export default function PatrimonioApp() {
                 <small>{authenticated ? providerLabel(dashboard?.session.provider) : "Acesso restrito"}</small>
                 <strong title={dashboard?.session.displayName}>{dashboard?.session.displayName ?? "Carregando"}</strong>
               </span>
-              {authenticated ? <a className="session-sign-out" href={dashboard?.session.signOutUrl}>Sair</a> : null}
+              {authenticated ? (
+                <form action={dashboard?.session.signOutUrl} method="post">
+                  <button className="session-sign-out" type="submit">Sair</button>
+                </form>
+              ) : null}
             </div>
             <div className="data-actions">
               <button className="button button-secondary" type="button" disabled={!permissions.canImport} onClick={() => setModal({ kind: "import" })}>
@@ -412,7 +417,7 @@ export default function PatrimonioApp() {
         {dashboard && view === "imports" ? (
           <ImportsView dashboard={dashboard} onImport={() => setModal({ kind: "import" })} />
         ) : null}
-        {dashboard && view === "environments" && dashboard.environment.isAdmin ? (
+        {dashboard && environment?.isAdmin && view === "environments" ? (
           <EnvironmentsView
             dashboard={dashboard}
             onRefresh={() => refresh({ quiet: true }).then(() => undefined)}
