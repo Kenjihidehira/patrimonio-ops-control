@@ -153,6 +153,7 @@ test("layout contém breakpoints de tablet, celular e redução de movimento", (
   assert.match(css, /prefers-reduced-motion/);
   assert.match(enterpriseCss, /\/\* Horizontal application header \*\//);
   assert.match(enterpriseCss, /\.app-header-inner\s*\{[\s\S]*grid-template-columns:\s*auto minmax\(0, 1fr\) auto/);
+  assert.match(enterpriseCss, /\.header-actions\s*\{[\s\S]*align-items:\s*flex-end/);
   assert.match(enterpriseCss, /\.app-header\.is-open/);
   assert.match(enterpriseCss, /@media \(max-width: 820px\)/);
   assert.match(enterpriseCss, /prefers-reduced-motion/);
