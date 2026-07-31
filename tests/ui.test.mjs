@@ -21,6 +21,7 @@ const [
   css,
   enterpriseCss,
   loginCss,
+  privacyCss,
   api,
   clientApi,
   importApi,
@@ -49,6 +50,7 @@ const [
   read("app/demo/patrimonio.css"),
   read("app/demo/enterprise.css"),
   read("app/login/login.css"),
+  read("app/privacidade/privacy.css"),
   read("app/api/state/route.ts"),
   read("components/patrimonio/api.ts"),
   read("app/api/import/route.ts"),
@@ -244,13 +246,19 @@ test("leitura sem correspondência oferece cadastro auditável com o identificad
   assert.match(css, /\.scanner-create-modal/);
 });
 
-test("visão de núcleos oferece resumo, busca e edição auditável", () => {
+test("visão de núcleos oferece diretório SaaS responsivo, busca e edição auditável", () => {
   assert.match(nuclei, /className="nuclei-overview"/);
   assert.match(nuclei, /<OperationalMetric/);
   assert.match(nuclei, /className="search-control"/);
-  assert.match(nuclei, /Buscar núcleo/);
+  assert.match(nuclei, /Filtrar núcleos por situação/);
+  assert.match(nuclei, /aria-pressed=/);
+  assert.match(nuclei, /className="nuclei-table"/);
+  assert.match(nuclei, /className="nuclei-mobile-list"/);
+  assert.match(nuclei, /Gestor responsável/);
   assert.match(nuclei, /Taxa de alocação/);
   assert.match(nuclei, /Ver inventário/);
+  assert.match(enterpriseCss, /\.nuclei-table-shell/);
+  assert.match(enterpriseCss, /\.nucleus-mobile-card/);
   assert.match(dialogs, /type: "update_nucleus"/);
   assert.match(dialogs, /type: "update_asset_details"/);
   assert.match(dialogs, /className="nucleus-inventory-dialog"/);
@@ -314,6 +322,14 @@ test("tema escuro é acessível, usa cookie e não armazena dados localmente", (
   assert.doesNotMatch(reactUi, /localStorage|sessionStorage/);
 });
 
+test("visual empresarial permanece plano e sem efeitos neon", () => {
+  const applicationStyles = [css, enterpriseCss, loginCss, privacyCss].join("\n");
+  assert.doesNotMatch(applicationStyles, /(?:linear|radial|conic)-gradient|drop-shadow/);
+  assert.match(enterpriseCss, /--canvas: #111d29/);
+  assert.match(loginCss, /--login-canvas: #18232D/);
+  assert.match(loginCss, /\.provider-button[\s\S]*background: var\(--login-button-start\)/);
+});
+
 test("persistência permanece no servidor e escrita exige autenticação", () => {
   assert.match(api, /Sua sessão expirou/);
   assert.match(api, /status: 401/);
@@ -343,7 +359,7 @@ test("tela React de login oferece somente Google com navegação responsiva", ()
   assert.match(loginCss, /\.login-shell\s*\{[\s\S]*place-items:\s*center/);
   assert.match(loginCss, /\.login-shell::before\s*\{/);
   assert.match(loginCss, /\.login-card\s*\{[\s\S]*width:\s*min\(100%, 600px\)/);
-  assert.match(loginCss, /\.login-card\s*\{[\s\S]*backdrop-filter:\s*blur\(22px\)/);
+  assert.match(loginCss, /\.login-card\s*\{[\s\S]*background:\s*var\(--login-card\)/);
   assert.match(loginCss, /\.login-card::before\s*\{/);
   assert.match(loginCss, /:root\[data-theme="dark"\]/);
   assert.match(loginCss, /@media \(max-width: 760px\)/);

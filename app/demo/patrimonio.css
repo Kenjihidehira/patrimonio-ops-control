@@ -261,7 +261,7 @@ textarea:disabled {
   width: 112px;
   height: 58px;
   object-fit: contain;
-  filter: drop-shadow(0 6px 12px rgba(1, 24, 50, 0.32));
+  filter: none;
   transition: transform 160ms ease, filter 160ms ease;
 }
 
@@ -272,7 +272,7 @@ textarea:disabled {
 
 .app-brand:hover .app-brand-logo {
   transform: translateY(-1px);
-  filter: drop-shadow(0 8px 14px rgba(1, 24, 50, 0.38));
+  filter: none;
 }
 
 .app-brand-copy {
@@ -3703,9 +3703,7 @@ tbody tr:last-child td {
   overflow: hidden;
   border: 1px solid var(--line);
   border-radius: 12px;
-  background:
-    radial-gradient(circle at 96% 0%, color-mix(in srgb, var(--brand-700) 12%, transparent), transparent 42%),
-    var(--surface);
+  background: var(--surface);
   box-shadow: var(--shadow-soft);
 }
 
