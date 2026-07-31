@@ -179,6 +179,34 @@ export async function transferDepartment(input: {
   return readJson(response, "Não foi possível transferir entre departamentos.");
 }
 
+export async function uploadAssetDocument(
+  file: File,
+  input: {
+    departmentSlug: string;
+    expectedRevision: number;
+    assetId: string;
+    category: string;
+    note: string;
+    retentionUntil: string;
+  },
+): Promise<{ id: string; revision: number; message: string }> {
+  const body = new FormData();
+  body.set("file", file);
+  body.set("department", input.departmentSlug);
+  body.set("revision", String(input.expectedRevision));
+  body.set("assetId", input.assetId);
+  body.set("category", input.category);
+  body.set("note", input.note);
+  body.set("retentionUntil", input.retentionUntil);
+  const response = await fetch("/api/documents", { method: "POST", body });
+  return readJson(response, "Não foi possível armazenar o documento.");
+}
+
+export function assetDocumentUrl(documentId: string, departmentSlug: string): string {
+  const query = new URLSearchParams({ id: documentId, department: departmentSlug });
+  return `/api/documents?${query}`;
+}
+
 async function sendSpreadsheet<T>(
   file: File,
   mode: "preview" | "commit",

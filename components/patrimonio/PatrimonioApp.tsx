@@ -22,6 +22,7 @@ import {
 } from "./hooks";
 import { InventoryView } from "./InventoryView";
 import { NucleiView } from "./NucleiView";
+import { OperationsCenterView } from "./OperationsCenterView";
 import { AuditView, ImportsView } from "./OperationalViews";
 import type {
   Asset,
@@ -44,6 +45,10 @@ const viewCopy: Record<ViewId, { title: string; description: string }> = {
   inventory: {
     title: "Controle de patrimônios",
     description: "Localize ativos, acompanhe responsáveis e trate divergências por núcleo.",
+  },
+  operations: {
+    title: "Centro de operações patrimoniais",
+    description: "Execute inventários, custódia, manutenção e rastreamento em um único fluxo auditável.",
   },
   nuclei: {
     title: "Responsabilidade por núcleo",
@@ -304,6 +309,7 @@ export default function PatrimonioApp() {
                 <span className="nav-item-icon"><NavigationIcon view={item} /></span>
                 <span>{{
                   inventory: "Inventário",
+                  operations: "Operações",
                   nuclei: "Núcleos",
                   audit: "Auditoria",
                   imports: "Importações",
@@ -428,6 +434,14 @@ export default function PatrimonioApp() {
             onOpenInventory={(nucleusId) => setModal({ kind: "nucleus-inventory", nucleusId })}
           />
         ) : null}
+        {dashboard && view === "operations" ? (
+          <OperationsCenterView
+            dashboard={dashboard}
+            onMutate={handleMutation}
+            onToast={showToast}
+            onRefresh={() => refresh({ quiet: true }).then(() => undefined)}
+          />
+        ) : null}
         {dashboard && view === "collaborators" ? (
           <CollaboratorsView
             dashboard={dashboard}
@@ -494,6 +508,17 @@ function NavigationIcon({ view }: { view: ViewId }) {
         <rect x="14" y="4" width="6" height="6" rx="1.3" stroke="currentColor" strokeWidth="1.7" />
         <rect x="9" y="14" width="6" height="6" rx="1.3" stroke="currentColor" strokeWidth="1.7" />
         <path d="M7 10v2h10v-2M12 12v2" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+      </svg>
+    );
+  }
+
+  if (view === "operations") {
+    return (
+      <svg {...common}>
+        <path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+        <circle cx="8" cy="7" r="1.8" fill="currentColor" />
+        <circle cx="16" cy="12" r="1.8" fill="currentColor" />
+        <circle cx="10" cy="17" r="1.8" fill="currentColor" />
       </svg>
     );
   }

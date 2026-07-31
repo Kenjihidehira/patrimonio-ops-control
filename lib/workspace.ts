@@ -7,6 +7,7 @@ type ActiveWorkspace = Extract<LoadedWorkspace, { notModified: false }>;
 type WorkspaceContext = {
   state: ReturnType<typeof normalizeState>;
   imports: ActiveWorkspace["imports"];
+  operations: ActiveWorkspace["operations"];
   environment: ActiveWorkspace["environment"] | null;
   source: "locked" | "supabase";
   notModified: false;
@@ -34,6 +35,30 @@ export async function loadWorkspaceContext(
     return {
       state: normalizeState({ revision: 0, nuclei: [], assets: [], collaborators: [] }),
       imports: [],
+      operations: {
+        inventoryCampaigns: [],
+        inventoryCampaignAssets: [],
+        custodyTerms: [],
+        maintenanceOrders: [],
+        trackingTags: [],
+        trackingEvents: [],
+        assetDocuments: [],
+        assetContracts: [],
+        assetAccounting: [],
+        assetKits: [],
+        assetKitItems: [],
+        reservations: [],
+        reservationAssets: [],
+        offboardingCases: [],
+        offboardingAssets: [],
+        lifecycleRequests: [],
+        customFields: [],
+        assetCustomValues: [],
+        integrations: [],
+        integrationEvents: [],
+        reconciliationIssues: [],
+        assetInspections: [],
+      },
       environment: null,
       source: "locked" as const,
       notModified: false as const,
@@ -55,6 +80,7 @@ export async function loadWorkspaceContext(
   return {
     state: normalizeState(workspace.state),
     imports: workspace.imports,
+    operations: workspace.operations,
     environment: workspace.environment,
     source: "supabase" as const,
     notModified: false as const,

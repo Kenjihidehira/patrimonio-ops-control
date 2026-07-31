@@ -11,6 +11,8 @@ flowchart LR
     API --> GATEWAY[Função Edge do Supabase]
     GATEWAY --> RPC[RPCs transacionais]
     RPC --> PG[(Supabase Postgres)]
+    GATEWAY --> STORAGE[(Supabase Storage privado)]
+    UI --> IDB[(Fila mínima offline em IndexedDB)]
 ```
 
 O navegador nunca recebe a URL privilegiada nem o segredo do serviço intermediário. A API do Cloudflare Worker chama a Função Edge pelo servidor, e a função executa apenas as operações permitidas contra o Postgres.
@@ -32,13 +34,14 @@ O navegador nunca recebe a URL privilegiada nem o segredo do serviço intermedi�
 ## Arquitetura React
 
 - `PatrimonioApp.tsx` compõe navegação, sincronização, comandos e janelas operacionais.
-- `InventoryView.tsx`, `NucleiView.tsx`, `CollaboratorsView.tsx` e `OperationalViews.tsx` isolam cada fluxo de negócio.
+- `InventoryView.tsx`, `NucleiView.tsx`, `CollaboratorsView.tsx` e `OperationalViews.tsx` isolam os fluxos cadastrais.
+- `OperationsCenterView.tsx` e `components/patrimonio/operations/*` implementam inventário cíclico, custódia, manutenção, rastreamento, ciclo de vida, documentos e integrações.
 - `Dialogs.tsx` concentra formulários e janelas modais reutilizando validações e contratos de comando.
 - `hooks.ts` controla leitura abortável, sincronização periódica, tema e captura do leitor HID.
 - `api.ts` é a única fronteira HTTP do navegador; componentes não conhecem credenciais nem detalhes do Supabase.
 - `types.ts` formaliza a projeção devolvida pela API e reduz divergências entre filtros, formulários e respostas.
 
-O estado operacional permanece no servidor. O navegador mantém apenas estado efêmero de tela e o cookie não sensível de tema; não há persistência em `localStorage` ou `sessionStorage`.
+O estado autoritativo permanece no servidor. O navegador mantém estado efêmero de tela, o cookie não sensível de tema e, somente durante inventário sem conexão, uma fila IndexedDB com departamento, campanha, ativo, resultado, local, observação e horário. Não há persistência em `localStorage` ou `sessionStorage`, nem cópia local de nomes, séries, modelos ou documentos.
 
 ## Invariantes do domínio
 
@@ -50,18 +53,20 @@ O estado operacional permanece no servidor. O navegador mantém apenas estado ef
 6. Patrimônio baixado não pode ser transferido.
 7. A edição cadastral altera apenas tipo, modelo, série, responsável, localização, aquisição e observações; número patrimonial, núcleo e status usam comandos específicos.
 8. Baixa é lógica; o registro e seu histórico não são apagados.
-9. Datas são normalizadas antes da persistência; preços não fazem parte da experiência operacional.
+9. Datas são normalizadas antes da persistência; preços não aparecem no inventário comum e dados contábeis são restritos a administradores.
 10. Uma revisão obsoleta não pode sobrescrever uma revisão mais nova.
 11. A contagem de colaboradores deriva dos nomes distintos e não vazios no campo `Responsável` dos itens ativos; perfis sem atribuição atual não aumentam o total.
 12. A sigla identifica o núcleo durante a reconciliação de importações; IDs internos não são assumidos como estáveis.
 13. Renomear um colaborador preserva suas atribuições; um responsável ainda sem perfil pode ser cadastrado a partir do inventário, e mudar seu núcleo não transfere patrimônios sem auditoria.
 14. `x` representa ausência de item; `Sem patrimônio` representa um item físico existente que deve permanecer no inventário como divergência.
 15. Alterar o número patrimonial exige seis dígitos, unicidade e motivo; a identidade relacional dos movimentos existentes é preservada por cascata.
-16. A leitura por bipador aceita apenas identificadores válidos recebidos como teclado HID; ela consulta a API autenticada e abre uma janela de conferência. Mudanças de status continuam exigindo motivo e passam pelo comando auditável `update_status`.
+16. A leitura por bipador ou câmera aceita apenas identificadores válidos; a câmera usa QR ou código de barras e a consulta permanece autenticada.
+17. Campanhas, custódia, manutenção, rastreamento e recursos avançados passam por RPCs transacionais, respeitam a revisão do workspace e registram ator e horário.
+18. Documento patrimonial é privado, possui checksum e só pode ser aberto por URL assinada depois de nova autorização.
 
 ## Modelo de persistência
 
-O Postgres usa sete tabelas relacionais:
+O Postgres organiza a persistência em grupos relacionais:
 
 | Tabela | Finalidade |
 | --- | --- |
@@ -72,8 +77,16 @@ O Postgres usa sete tabelas relacionais:
 | `patrimonio_collaborators` | Perfis complementares dos responsáveis e vínculo atual com o núcleo |
 | `patrimonio_movements` | Histórico imutável de cadastro, transferência, status e importação |
 | `patrimonio_import_runs` | Resultado e avisos de cada importação |
+| `patrimonio_inventory_campaigns`, `patrimonio_inventory_campaign_assets` | Campanhas de contagem e resultado por item |
+| `patrimonio_custody_terms`, `patrimonio_maintenance_orders` | Responsabilidade formal e ordens de serviço |
+| `patrimonio_tracking_tags`, `patrimonio_tracking_events` | Tags e telemetria recebida de dispositivos |
+| `patrimonio_asset_documents`, `patrimonio_asset_contracts`, `patrimonio_asset_accounting` | Arquivo privado, vigências e dados contábeis |
+| `patrimonio_asset_kits`, `patrimonio_reservations`, `patrimonio_offboarding_cases` | Kits, agenda de equipamentos e recolhimentos |
+| `patrimonio_lifecycle_requests`, `patrimonio_custom_fields` | Aprovações e extensão controlada do cadastro |
+| `patrimonio_integrations`, `patrimonio_integration_events`, `patrimonio_reconciliation_issues` | Conectores, idempotência e conciliação |
+| `patrimonio_asset_inspections` | Fila, resultado e revisão de inspeções fotográficas |
 
-Chaves estrangeiras preservam integridade e índices cobrem status, núcleo, tipo, responsável, atualização, movimentos e histórico de importações. As RPCs `patrimonio_apply_action` e `patrimonio_import_workspace` executam validação de revisão, escrita e auditoria na mesma transação.
+Chaves estrangeiras preservam integridade e índices cobrem status, núcleo, tipo, responsável, datas e filas operacionais. As RPCs `patrimonio_apply_action`, `patrimonio_apply_operational_action`, `patrimonio_apply_advanced_action` e `patrimonio_import_workspace` executam autorização interna, revisão, escrita e auditoria na mesma transação. `patrimonio_load_advanced_context` agrega o contexto avançado e remove finanças e integrações da resposta de perfis não administrativos.
 
 ## Fluxos de dados
 
@@ -118,6 +131,21 @@ Chaves estrangeiras preservam integridade e índices cobrem status, núcleo, tip
 2. O servidor gera as abas `Inventário`, `Núcleos`, `Auditoria` e `Importações`.
 3. O arquivo é entregue com `no-store`, `nosniff` e nome datado.
 
+### Inventário com contingência offline
+
+1. O operador seleciona uma campanha ativa e lê a etiqueta por HID, câmera ou digitação.
+2. Com conexão, a conferência é registrada imediatamente pela RPC operacional.
+3. Sem conexão, somente o registro mínimo é enfileirado no IndexedDB do dispositivo.
+4. A sincronização envia um lote com a revisão atual; itens só são removidos localmente depois da confirmação do servidor.
+5. Conflito de revisão mantém a fila intacta para recarga e nova tentativa.
+
+### Documento privado
+
+1. A rota autentica o usuário, valida departamento, tipo e tamanho antes do envio.
+2. O gateway repete as validações, grava em caminho não previsível no bucket privado e calcula SHA-256.
+3. A RPC registra metadados e revisão; se falhar, o objeto recém-enviado é removido.
+4. A abertura exige nova autorização e usa URL assinada por 60 segundos.
+
 ## Segurança
 
 - Nenhum segredo é versionado ou exposto ao cliente.
@@ -133,9 +161,12 @@ Chaves estrangeiras preservam integridade e índices cobrem status, núcleo, tip
 - Redirecionamentos de autenticação são restritos a caminhos relativos seguros.
 - Erros internos e detalhes do banco não são expostos ao navegador.
 - Conteúdo dinâmico é escapado antes de entrar em templates HTML.
-- A preferência de tema usa somente o cookie não sensível `patrimonio_theme`; dados operacionais não são persistidos no navegador.
+- A preferência de tema usa somente o cookie não sensível `patrimonio_theme`; a única persistência operacional no navegador é a fila mínima e segregada de inventário offline.
 - Filtros rápidos, paginação e abas de detalhe são estado efêmero da interface; filtros estruturais continuam sendo processados pela API.
 - A captura do bipador ignora campos editáveis comuns, usa `Enter` ou `Tab` quando disponível e reconcilia a busca patrimonial exata como contingência para leitores sem terminador; não usa WebUSB, Web Serial nem permissões privilegiadas do navegador.
+- A câmera é iniciada somente após ação do usuário, prioriza a lente traseira e também aceita imagem local; o fluxo não envia vídeo ao servidor.
+- Documentos ficam em bucket privado com limite de tipo e tamanho, checksum e URL assinada curta.
+- Configurações secretas de integrações não são devolvidas pela função de contexto.
 - Não existe exclusão física exposta pela API.
 
 ## Limitações e evolução produtiva
@@ -143,6 +174,8 @@ Chaves estrangeiras preservam integridade e índices cobrem status, núcleo, tip
 Cada departamento possui workspace e chave próprios. Administradores globais acessam todos; demais usuários recebem associações explícitas e permissões independentes para alteração, importação e exportação. Mudanças de acesso revogam sessões anteriores e são registradas na auditoria administrativa.
 
 Eventos técnicos vencidos possuem eliminação automática, mas o prazo dos registros patrimoniais depende da política corporativa e de obrigações legais. Backup gerenciado, RPO, RTO e teste de restauração ainda precisam ser confirmados no plano do Supabase. A exportação XLSX não substitui uma cópia de segurança gerenciada do Postgres.
+
+Os conectores, chips e inspeções possuem contratos de ingestão e revisão implementados, mas a operação produtiva depende da homologação dos fornecedores escolhidos, de credenciais próprias e, no caso de RFID, NFC, BLE, UWB ou GPS, dos leitores e tags físicos correspondentes.
 
 ## Decisões registradas
 

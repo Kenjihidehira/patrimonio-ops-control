@@ -9,6 +9,9 @@ const slugPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const MAX_REQUEST_BYTES = 5 * 1024 * 1024;
 const DATA_PAGE_SIZE = 1_000;
 const MAX_DATA_PAGES = 100;
+const DOCUMENT_BUCKET = "patrimonio-documents";
+const DOCUMENT_MAX_BYTES = 2_500_000;
+const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const operationalActionTypes = new Set([
   "create_inventory_campaign",
   "record_inventory_check",
@@ -19,6 +22,32 @@ const operationalActionTypes = new Set([
   "update_maintenance_order",
   "assign_tracking_tag",
   "record_tracking_event",
+]);
+const advancedActionTypes = new Set([
+  "create_asset_document",
+  "delete_asset_document",
+  "create_asset_contract",
+  "update_asset_contract_status",
+  "upsert_asset_accounting",
+  "create_asset_kit",
+  "dissolve_asset_kit",
+  "create_reservation",
+  "update_reservation_status",
+  "create_offboarding_case",
+  "update_offboarding_asset",
+  "complete_offboarding_case",
+  "create_lifecycle_request",
+  "decide_lifecycle_request",
+  "create_custom_field",
+  "set_asset_custom_value",
+  "create_integration",
+  "record_integration_event",
+  "create_reconciliation_issue",
+  "resolve_reconciliation_issue",
+  "create_asset_inspection",
+  "record_asset_inspection_result",
+  "review_asset_inspection",
+  "record_inventory_checks_batch",
 ]);
 
 Deno.serve(async (request) => {
@@ -102,6 +131,7 @@ Deno.serve(async (request) => {
           users,
           securityEvents,
           operational,
+          advanced,
         ] =
           await Promise.all([
             loadNuclei(ownerKey),
@@ -113,6 +143,7 @@ Deno.serve(async (request) => {
             access.isAdmin ? loadUserDirectory() : Promise.resolve([]),
             access.isAdmin ? loadSecurityEvents() : Promise.resolve([]),
             loadOperationalData(ownerKey),
+            loadAdvancedData(ownerKey, identifier, access.isAdmin),
           ]);
 
         return json({
@@ -127,6 +158,7 @@ Deno.serve(async (request) => {
             transfers,
             securityEvents,
             ...operational,
+            ...advanced,
             access: {
               activeDepartment: publicDepartment(access.active),
               departments: access.departments.map(publicDepartment),
@@ -235,10 +267,14 @@ Deno.serve(async (request) => {
         const ownerKey = access.active.owner_key;
         const actor = actorLabel(access.user);
         const actionType = String(body.action?.type ?? "");
-        const rpcName = operationalActionTypes.has(actionType)
-          ? "rpc/patrimonio_apply_operational_action"
-          : "rpc/patrimonio_apply_action";
-        const rpcBody = operationalActionTypes.has(actionType)
+        const identityAwareAction = operationalActionTypes.has(actionType)
+          || advancedActionTypes.has(actionType);
+        const rpcName = advancedActionTypes.has(actionType)
+          ? "rpc/patrimonio_apply_advanced_action"
+          : operationalActionTypes.has(actionType)
+            ? "rpc/patrimonio_apply_operational_action"
+            : "rpc/patrimonio_apply_action";
+        const rpcBody = identityAwareAction
           ? {
               p_owner_key: ownerKey,
               p_actor: actor,
@@ -258,6 +294,91 @@ Deno.serve(async (request) => {
           body: JSON.stringify(rpcBody),
         });
         return json({ data });
+      }
+
+      case "upload_asset_document": {
+        const access = await resolveDepartmentAccess(identifier, body.departmentSlug);
+        await authorizeOperation(identifier, access.active.slug, "write");
+        const ownerKey = access.active.owner_key;
+        const actor = actorLabel(access.user);
+        const document = body.document ?? {};
+        const documentId = String(document.id ?? "").trim();
+        const assetCode = String(document.assetId ?? "").trim();
+        const mimeType = String(document.mimeType ?? "").trim().toLowerCase();
+        const fileBytes = decodeBase64File(String(body.contentBase64 ?? ""));
+        const extension = documentExtension(mimeType);
+        if (!uuidPattern.test(documentId) || !assetCode || !extension || !fileBytes.length) {
+          return json({ error: "invalid_asset_document" }, 400);
+        }
+        const storagePath = `${ownerKey}/${assetCode}/${documentId}.${extension}`;
+        const checksumSha256 = await sha256Hex(fileBytes);
+        await storageRequest(
+          `object/${DOCUMENT_BUCKET}/${encodeStoragePath(storagePath)}`,
+          {
+            method: "POST",
+            headers: {
+              "content-type": mimeType,
+              "x-upsert": "false",
+              "cache-control": "private, max-age=0, no-store",
+            },
+            body: fileBytes,
+          },
+        );
+        try {
+          const revision = await dataRequest("rpc/patrimonio_apply_advanced_action", {
+            method: "POST",
+            body: JSON.stringify({
+              p_owner_key: ownerKey,
+              p_actor: actor,
+              p_actor_identifier: identifier,
+              p_is_admin: access.isAdmin,
+              p_expected_revision: body.expectedRevision,
+              p_action: {
+                type: "create_asset_document",
+                document: {
+                  ...document,
+                  id: documentId,
+                  assetId: assetCode,
+                  mimeType,
+                  byteSize: fileBytes.length,
+                  storagePath,
+                  checksumSha256,
+                },
+              },
+            }),
+          });
+          return json({ data: { id: documentId, revision } });
+        } catch (error) {
+          await storageRequest(
+            `object/${DOCUMENT_BUCKET}/${encodeStoragePath(storagePath)}`,
+            { method: "DELETE" },
+          ).catch(() => undefined);
+          throw error;
+        }
+      }
+
+      case "get_asset_document_url": {
+        const access = await resolveDepartmentAccess(identifier, body.departmentSlug);
+        await authorizeOperation(identifier, access.active.slug, "read");
+        const ownerFilter = encodeURIComponent(`eq.${access.active.owner_key}`);
+        const idFilter = encodeURIComponent(`eq.${String(body.documentId ?? "").trim()}`);
+        const documents = await dataRequest(
+          `patrimonio_asset_documents?owner_key=${ownerFilter}&id=${idFilter}&deleted_at=is.null&select=storage_path,file_name&limit=1`,
+        );
+        const document = documents[0];
+        if (!document) throw httpError("asset_document_not_found", 404, "P0002");
+        const signed = await storageRequest(
+          `object/sign/${DOCUMENT_BUCKET}/${encodeStoragePath(String(document.storage_path))}`,
+          { method: "POST", body: JSON.stringify({ expiresIn: 60 }) },
+        );
+        const signedPath = String(signed?.signedURL ?? signed?.signedUrl ?? "");
+        if (!signedPath) throw httpError("document_signing_failed", 502, "storage_error");
+        return json({
+          data: {
+            url: new URL(signedPath, supabaseUrl).toString(),
+            fileName: String(document.file_name),
+          },
+        });
       }
 
       case "import_assets": {
@@ -484,6 +605,18 @@ async function loadOperationalData(ownerKey) {
   };
 }
 
+async function loadAdvancedData(ownerKey, actorIdentifier, isAdmin) {
+  const data = await dataRequest("rpc/patrimonio_load_advanced_context", {
+    method: "POST",
+    body: JSON.stringify({
+      p_owner_key: ownerKey,
+      p_actor_identifier: actorIdentifier,
+      p_is_admin: isAdmin === true,
+    }),
+  });
+  return data && typeof data === "object" ? data : {};
+}
+
 function loadDepartmentTransfers(departmentSlug) {
   const filter = encodeURIComponent(
     `(source_department_slug.eq.${departmentSlug},target_department_slug.eq.${departmentSlug})`,
@@ -546,6 +679,8 @@ async function enforceRateLimit(identifier, operation) {
     save_user_access: [30, 60],
     transfer_department_entity: [20, 60],
     record_auth_event: [30, 60],
+    upload_asset_document: [20, 300],
+    get_asset_document_url: [120, 60],
   };
   const [limit, windowSeconds] = limits[operation] ?? [30, 60];
   const allowed = await dataRequest("rpc/patrimonio_consume_rate_limit", {
@@ -624,6 +759,71 @@ async function dataRequest(path, init = {}) {
   return body;
 }
 
+async function storageRequest(path, init = {}) {
+  const response = await fetch(`${supabaseUrl}/storage/v1/${path}`, {
+    ...init,
+    headers: {
+      accept: "application/json",
+      apikey: supabaseSecretKey,
+      authorization: `Bearer ${supabaseSecretKey}`,
+      ...((typeof init.body === "string") ? { "content-type": "application/json" } : {}),
+      ...init.headers,
+    },
+  });
+  const text = await response.text();
+  const body = text ? JSON.parse(text) : null;
+  if (!response.ok) {
+    throw Object.assign(new Error(body?.message ?? body?.error ?? "storage_error"), {
+      status: response.status,
+      code: body?.code ?? "storage_error",
+    });
+  }
+  return body;
+}
+
+function decodeBase64File(value) {
+  if (!value || value.length > Math.ceil(DOCUMENT_MAX_BYTES * 4 / 3) + 8) {
+    throw httpError("asset_document_too_large", 413, "22023");
+  }
+  try {
+    const binary = atob(value);
+    if (binary.length < 1 || binary.length > DOCUMENT_MAX_BYTES) {
+      throw httpError("asset_document_too_large", 413, "22023");
+    }
+    const bytes = new Uint8Array(binary.length);
+    for (let index = 0; index < binary.length; index += 1) {
+      bytes[index] = binary.charCodeAt(index);
+    }
+    return bytes;
+  } catch (error) {
+    if (error?.status) throw error;
+    throw httpError("invalid_asset_document_content", 400, "22023");
+  }
+}
+
+function documentExtension(mimeType) {
+  return {
+    "application/pdf": "pdf",
+    "image/jpeg": "jpg",
+    "image/png": "png",
+    "image/webp": "webp",
+    "text/plain": "txt",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document": "docx",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": "xlsx",
+  }[mimeType] ?? null;
+}
+
+function encodeStoragePath(value) {
+  return value.split("/").map(encodeURIComponent).join("/");
+}
+
+async function sha256Hex(value) {
+  const hash = await crypto.subtle.digest("SHA-256", value);
+  return [...new Uint8Array(hash)]
+    .map((byte) => byte.toString(16).padStart(2, "0"))
+    .join("");
+}
+
 async function dataRequestAll(path, pageSize = DATA_PAGE_SIZE) {
   const rows = [];
   for (let page = 0; page < MAX_DATA_PAGES; page += 1) {
@@ -653,4 +853,3 @@ function json(body, status = 200) {
     },
   });
 }
-

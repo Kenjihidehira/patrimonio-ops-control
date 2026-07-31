@@ -32,6 +32,14 @@ const [
   sharedAuth,
   logoutRoute,
   workbook,
+  operationsCenter,
+  inventoryOperations,
+  lifecycleOperations,
+  documentsOperations,
+  integrationOperations,
+  qrScanner,
+  offlineInventory,
+  documentsApi,
 ] = await Promise.all([
   read("app/demo/page.tsx"),
   read("app/login/page.tsx"),
@@ -61,6 +69,14 @@ const [
   read("app/auth.ts"),
   read("app/api/auth/logout/route.ts"),
   read("lib/workbook.ts"),
+  read("components/patrimonio/OperationsCenterView.tsx"),
+  read("components/patrimonio/operations/InventoryOperations.tsx"),
+  read("components/patrimonio/operations/LifecycleOperations.tsx"),
+  read("components/patrimonio/operations/DocumentsOperations.tsx"),
+  read("components/patrimonio/operations/IntegrationOperations.tsx"),
+  read("components/patrimonio/operations/QrCameraScanner.tsx"),
+  read("components/patrimonio/operations/offlineInventory.ts"),
+  read("app/api/documents/route.ts"),
 ]);
 
 const reactUi = [
@@ -75,6 +91,12 @@ const reactUi = [
   hooks,
   ui,
   types,
+  operationsCenter,
+  inventoryOperations,
+  lifecycleOperations,
+  documentsOperations,
+  integrationOperations,
+  qrScanner,
 ].join("\n");
 
 test("interface operacional foi convertida para componentes React e TypeScript", () => {
@@ -108,7 +130,8 @@ test("interface contém os fluxos comerciais essenciais", () => {
   assert.match(dialogs, /type: "update_asset_details"/);
   assert.match(dialogs, /"update_collaborator"/);
   assert.match(dialogs, /"register_responsible"/);
-  assert.doesNotMatch(reactUi, /Valor de aquisição/);
+  assert.doesNotMatch([inventory, dialogs, operational].join("\n"), /Valor de aquisição/);
+  assert.match(documentsOperations, /Valor de aquisição/);
   assert.doesNotMatch(workbook, /"Valor",|asset\.value/);
 });
 
@@ -153,6 +176,7 @@ test("layout contém breakpoints de tablet, celular e redução de movimento", (
   assert.match(css, /@media \(max-width: 720px\)/);
   assert.match(css, /@media \(max-width: 430px\)/);
   assert.match(css, /prefers-reduced-motion/);
+  assert.doesNotMatch(css, /min-width:\s*320px/);
   assert.match(enterpriseCss, /\/\* Horizontal application header \*\//);
   assert.match(enterpriseCss, /\.app-header-inner\s*\{[\s\S]*grid-template-columns:\s*auto minmax\(0, 1fr\) auto/);
   assert.match(enterpriseCss, /\.header-actions\s*\{[\s\S]*align-items:\s*flex-end/);
@@ -308,7 +332,7 @@ test("ambientes isolam departamentos, usuários e transferências administrativa
   assert.match(departmentsApi, /transfer_department_entity/);
 });
 
-test("tema escuro é acessível, usa cookie e não armazena dados localmente", () => {
+test("tema escuro é acessível e persiste somente a preferência em cookie", () => {
   assert.match(app, /role="switch"/);
   assert.match(app, /aria-checked=\{theme === "dark"\}/);
   assert.match(app, /className="theme-toggle-label" suppressHydrationWarning/);
@@ -381,4 +405,60 @@ test("autenticação Google preserva PKCE, autorização por departamento e sess
   assert.match(logoutRoute, /export async function POST/);
   assert.doesNotMatch(logoutRoute, /export async function GET/);
   assert.match(app, /<form action=\{dashboard\?\.session\.signOutUrl\} method="post">/);
+});
+
+test("central operacional reúne o ciclo físico, financeiro e integrado do patrimônio", () => {
+  for (const marker of [
+    "Inventário cíclico",
+    "Custódia",
+    "Manutenção",
+    "Rastreamento",
+    "Ciclo de vida",
+    "Documentos",
+    "Integrações",
+  ]) {
+    assert.match(reactUi, new RegExp(marker));
+  }
+  assert.match(app, /operations:\s*\{/);
+  assert.match(operationsCenter, /Índice de risco/);
+  assert.match(operationsCenter, /<span>Utilização<\/span>/);
+  assert.match(operationsCenter, /Cobertura documental/);
+  assert.match(inventoryOperations, /create_inventory_campaign/);
+  assert.match(lifecycleOperations, /create_asset_kit/);
+  assert.match(lifecycleOperations, /create_reservation/);
+  assert.match(lifecycleOperations, /create_offboarding_case/);
+  assert.match(documentsOperations, /create_asset_contract/);
+  assert.match(documentsOperations, /upsert_asset_accounting/);
+  assert.match(documentsOperations, /create_custom_field/);
+  assert.match(integrationOperations, /create_reconciliation_issue/);
+});
+
+test("leitor QR usa câmera, imagem de contingência e parser restrito", () => {
+  assert.match(qrScanner, /BrowserMultiFormatReader/);
+  assert.match(qrScanner, /facingMode: \{ ideal: "environment" \}/);
+  assert.match(qrScanner, /decodeFromImageUrl/);
+  assert.match(qrScanner, /accept="image\/\*"/);
+  assert.match(qrScanner, /extractAssetIdentifier/);
+  assert.match(inventoryOperations, /<QrCameraScanner/);
+});
+
+test("inventário offline usa IndexedDB com fila mínima e sincronização em lote", () => {
+  assert.match(offlineInventory, /indexedDB\.open/);
+  assert.match(offlineInventory, /departmentSlug/);
+  assert.match(offlineInventory, /campaignId/);
+  assert.match(offlineInventory, /assetId/);
+  assert.match(offlineInventory, /MAX_OFFLINE_AGE_MS = 30/);
+  assert.doesNotMatch(offlineInventory, /assignee|serial|model|localStorage|sessionStorage/);
+  assert.match(inventoryOperations, /record_inventory_checks_batch/);
+  assert.match(inventoryOperations, /navigator\.onLine/);
+});
+
+test("documentos privados exigem sessão e aplicam limites antes do gateway", () => {
+  assert.match(documentsApi, /await getAuthenticatedUser\(\)/);
+  assert.match(documentsApi, /status: 401/);
+  assert.match(documentsApi, /MAX_FILE_BYTES = 2_500_000/);
+  assert.match(documentsApi, /allowedMimeTypes/);
+  assert.match(documentsApi, /uploadAssetDocument/);
+  assert.match(documentsApi, /getAssetDocumentUrl/);
+  assert.match(documentsApi, /status: 302/);
 });

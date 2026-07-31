@@ -27,6 +27,9 @@ responsáveis corporativos.
 | Identificação profissional | nome, código, e-mail autorizado | autenticação e identificação do responsável | departamento liberado |
 | Estrutura organizacional | departamento, núcleo, gestor, localização | organização e localização patrimonial | departamento liberado |
 | Vínculo patrimonial | ativo, modelo, série, responsável, status | gestão e segurança dos bens | departamento liberado |
+| Operação física | custódia, manutenção, localização observada e conferência | inventário, conservação e prevenção de perdas | departamento liberado |
+| Documentos patrimoniais | nota, garantia, contrato, laudo e foto | prova de aquisição, vigência, inspeção e auditoria | departamento liberado; finanças apenas para administrador |
+| Integrações | referência externa, tipo de evento, estado e divergência | conciliação com sistemas corporativos | administrador global |
 | Auditoria operacional | movimentação, motivo, ator e data | rastreabilidade e exercício de direitos | operadores do departamento |
 | Auditoria de segurança | login, bloqueio, permissão, importação e exportação | prevenção, investigação e prestação de contas | administrador global |
 
@@ -60,10 +63,20 @@ contratuais padrão ou outro mecanismo válido e manter a evidência junto ao co
 - Limites técnicos e nonces: no máximo 2 dias e 10 minutos, respectivamente.
 - Registros patrimoniais: prazo definido pela área proprietária junto ao
   encarregado, conforme a política corporativa e obrigações aplicáveis.
+- Documentos, telemetria, contratos e inspeções: prazo definido por categoria,
+  obrigação fiscal, contratual ou de segurança; o campo de retenção deve seguir a
+  tabela aprovada pelo controlador.
+- Fila de inventário offline: removida após sincronização ou, no máximo, em 30 dias.
 
 A rotina `patrimonio_apply_retention` elimina somente registros técnicos cujo
 prazo já venceu. Ela não apaga automaticamente inventário, colaboradores,
 movimentações ou transferências.
+
+O IndexedDB é usado somente para a contingência de inventário sem rede e contém
+departamento, campanha, identificador do ativo, resultado, local, observação e
+horário. Nomes, e-mails, série, modelo, documentos e credenciais não são copiados
+para essa fila. Em dispositivo compartilhado, o operador deve sincronizar e encerrar
+a sessão ao concluir a contagem.
 
 Política corporativa:
 <https://www.gazin.com.br/pagina/politica-retencao-dados>
@@ -97,5 +110,6 @@ Fluxo interno mínimo:
 - confirmar qual empresa do Grupo Gazin é controladora em cada departamento;
 - arquivar DPAs e mecanismo de transferência de Google, Cloudflare e Supabase;
 - aprovar os prazos dos registros patrimoniais;
+- aprovar a tabela de retenção de documentos, telemetria, contratos e inspeções;
 - confirmar RTO, RPO e plano contratado de backup/PITR;
 - avaliar a necessidade de RIPD com o encarregado.

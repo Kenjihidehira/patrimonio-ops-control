@@ -7,6 +7,7 @@ export type AssetStatus =
   | "retired";
 export type ViewId =
   | "inventory"
+  | "operations"
   | "nuclei"
   | "audit"
   | "imports"
@@ -194,6 +195,358 @@ export type DepartmentEnvironment = {
   securityEvents: SecurityEvent[];
 };
 
+export type InventoryCampaignStatus = "active" | "completed" | "cancelled";
+export type InventoryCheckResult =
+  | "pending"
+  | "confirmed"
+  | "missing"
+  | "wrong_location"
+  | "damaged";
+
+export type InventoryCampaign = {
+  id: string;
+  name: string;
+  nucleusId: string | null;
+  status: InventoryCampaignStatus;
+  dueAt: string | null;
+  targetCount: number;
+  checkedCount: number;
+  issueCount: number;
+  createdBy: string;
+  createdAt: string;
+  completedAt: string | null;
+  updatedAt: string;
+};
+
+export type InventoryCampaignAsset = {
+  campaignId: string;
+  assetId: string;
+  result: InventoryCheckResult;
+  observedLocation: string;
+  note: string;
+  checkedBy: string | null;
+  checkedAt: string | null;
+};
+
+export type CustodyTermStatus = "pending" | "accepted" | "rejected" | "cancelled";
+
+export type CustodyTerm = {
+  id: string;
+  assetId: string;
+  assignee: string;
+  assigneeIdentifier: string;
+  status: CustodyTermStatus;
+  note: string;
+  issuedBy: string;
+  issuedAt: string;
+  respondedBy: string | null;
+  respondedAt: string | null;
+  responseNote: string;
+};
+
+export type MaintenanceKind = "preventive" | "corrective" | "inspection";
+export type MaintenancePriority = "low" | "normal" | "high" | "critical";
+export type MaintenanceStatus = "open" | "in_progress" | "completed" | "cancelled";
+
+export type MaintenanceOrder = {
+  id: string;
+  assetId: string;
+  kind: MaintenanceKind;
+  priority: MaintenancePriority;
+  status: MaintenanceStatus;
+  title: string;
+  notes: string;
+  dueAt: string | null;
+  createdBy: string;
+  createdAt: string;
+  updatedBy: string;
+  updatedAt: string;
+  completedAt: string | null;
+};
+
+export type TrackingTechnology =
+  | "qr"
+  | "barcode"
+  | "rfid_uhf"
+  | "ble"
+  | "uwb"
+  | "gps"
+  | "mdm";
+
+export type TrackingEventTechnology = TrackingTechnology | "manual";
+
+export type TrackingTag = {
+  id: string;
+  assetId: string;
+  technology: TrackingTechnology;
+  tagId: string;
+  active: boolean;
+  installedBy: string;
+  installedAt: string;
+  updatedAt: string;
+};
+
+export type TrackingEvent = {
+  id: string;
+  assetId: string;
+  technology: TrackingEventTechnology;
+  tagId: string;
+  readerId: string;
+  location: string;
+  latitude: number | null;
+  longitude: number | null;
+  accuracyMeters: number | null;
+  confidence: number | null;
+  batteryPercent: number | null;
+  note: string;
+  observedBy: string;
+  observedAt: string;
+};
+
+export type AssetDocument = {
+  id: string;
+  assetId: string;
+  category: "invoice" | "warranty" | "inspection" | "photo" | "contract" | "manual" | "disposal" | "other";
+  fileName: string;
+  mimeType: string;
+  byteSize: number;
+  checksumSha256: string | null;
+  note: string;
+  uploadedBy: string;
+  uploadedAt: string;
+  retentionUntil: string | null;
+};
+
+export type AssetContract = {
+  id: string;
+  assetId: string;
+  kind: "purchase" | "lease" | "insurance" | "warranty" | "license" | "service";
+  name: string;
+  provider: string;
+  contractNumber: string;
+  startsOn: string | null;
+  endsOn: string | null;
+  renewalNoticeDays: number;
+  monthlyCost: number | null;
+  currency: string;
+  status: "active" | "expired" | "cancelled";
+  documentId: string | null;
+  notes: string;
+  createdBy: string;
+  createdAt: string;
+  updatedBy: string;
+  updatedAt: string;
+};
+
+export type AssetAccounting = {
+  assetId: string;
+  acquisitionValue: number;
+  residualValue: number;
+  depreciationMethod: "straight_line" | "none";
+  usefulLifeMonths: number | null;
+  depreciationStartsOn: string | null;
+  costCenter: string;
+  ledgerAccount: string;
+  supplier: string;
+  purchaseOrder: string;
+  invoiceNumber: string;
+  updatedBy: string;
+  updatedAt: string;
+};
+
+export type AssetKit = {
+  id: string;
+  name: string;
+  description: string;
+  itemCount: number;
+  status: "active" | "dissolved";
+  createdBy: string;
+  createdAt: string;
+  dissolvedBy: string | null;
+  dissolvedAt: string | null;
+};
+
+export type AssetKitItem = {
+  kitId: string;
+  assetId: string;
+  addedAt: string;
+  releasedAt: string | null;
+};
+
+export type AssetReservation = {
+  id: string;
+  requesterName: string;
+  requesterIdentifier: string;
+  startsAt: string;
+  endsAt: string;
+  purpose: string;
+  status: "requested" | "approved" | "checked_out" | "returned" | "rejected" | "cancelled";
+  createdBy: string;
+  createdAt: string;
+  approvedBy: string | null;
+  approvedAt: string | null;
+  checkedOutAt: string | null;
+  returnedAt: string | null;
+  updatedBy: string;
+  updatedAt: string;
+};
+
+export type ReservationAsset = {
+  reservationId: string;
+  assetId: string;
+};
+
+export type OffboardingCase = {
+  id: string;
+  collaboratorName: string;
+  collaboratorIdentifier: string;
+  dueAt: string | null;
+  status: "open" | "completed" | "cancelled";
+  notes: string;
+  createdBy: string;
+  createdAt: string;
+  completedBy: string | null;
+  completedAt: string | null;
+  updatedAt: string;
+};
+
+export type OffboardingAsset = {
+  caseId: string;
+  assetId: string;
+  result: "pending" | "returned" | "missing" | "reassigned";
+  destinationAssignee: string;
+  note: string;
+  checkedBy: string | null;
+  checkedAt: string | null;
+};
+
+export type LifecycleRequest = {
+  id: string;
+  requestType: "purchase" | "transfer" | "disposal" | "repair" | "replacement";
+  assetId: string | null;
+  title: string;
+  reason: string;
+  quantity: number;
+  estimatedCost: number | null;
+  status: "pending_approval" | "approved" | "rejected" | "completed" | "cancelled";
+  requestedBy: string;
+  requestedAt: string;
+  decidedBy: string | null;
+  decidedAt: string | null;
+  decisionNote: string;
+  completedAt: string | null;
+  updatedAt: string;
+};
+
+export type CustomField = {
+  id: string;
+  name: string;
+  fieldType: "text" | "number" | "date" | "boolean" | "select";
+  options: string[];
+  required: boolean;
+  active: boolean;
+  createdBy: string;
+  createdAt: string;
+};
+
+export type AssetCustomValue = {
+  assetId: string;
+  fieldId: string;
+  value: unknown;
+  updatedBy: string;
+  updatedAt: string;
+};
+
+export type AssetIntegration = {
+  id: string;
+  name: string;
+  provider: "hr" | "erp" | "mdm" | "service_desk" | "iot" | "directory" | "custom";
+  direction: "inbound" | "outbound" | "bidirectional";
+  status: "active" | "paused" | "error";
+  lastSyncAt: string | null;
+  lastSyncStatus: string | null;
+  createdBy: string;
+  createdAt: string;
+  updatedBy: string;
+  updatedAt: string;
+};
+
+export type IntegrationEvent = {
+  id: string;
+  integrationId: string;
+  externalId: string;
+  eventType: string;
+  entityType: string;
+  entityId: string;
+  status: "pending" | "processed" | "failed" | "ignored";
+  attempts: number;
+  errorMessage: string;
+  receivedAt: string;
+  processedAt: string | null;
+};
+
+export type ReconciliationIssue = {
+  id: string;
+  integrationId: string | null;
+  source: string;
+  externalRef: string;
+  entityType: string;
+  entityId: string;
+  issueType: string;
+  severity: "low" | "medium" | "high" | "critical";
+  details: Record<string, unknown>;
+  status: "open" | "resolved" | "ignored";
+  assignedTo: string;
+  createdAt: string;
+  resolvedBy: string | null;
+  resolvedAt: string | null;
+  resolutionNote: string;
+};
+
+export type AssetInspection = {
+  id: string;
+  assetId: string;
+  documentId: string | null;
+  inspectionType: "condition" | "identification" | "count";
+  status: "pending" | "processing" | "needs_review" | "approved" | "rejected" | "failed";
+  provider: string;
+  detectedAssetCode: string;
+  confidence: number | null;
+  findings: Record<string, unknown>;
+  modelVersion: string;
+  requestedBy: string;
+  requestedAt: string;
+  processedAt: string | null;
+  reviewedBy: string | null;
+  reviewedAt: string | null;
+  reviewNote: string;
+};
+
+export type OperationsData = {
+  inventoryCampaigns: InventoryCampaign[];
+  inventoryCampaignAssets: InventoryCampaignAsset[];
+  custodyTerms: CustodyTerm[];
+  maintenanceOrders: MaintenanceOrder[];
+  trackingTags: TrackingTag[];
+  trackingEvents: TrackingEvent[];
+  assetDocuments: AssetDocument[];
+  assetContracts: AssetContract[];
+  assetAccounting: AssetAccounting[];
+  assetKits: AssetKit[];
+  assetKitItems: AssetKitItem[];
+  reservations: AssetReservation[];
+  reservationAssets: ReservationAsset[];
+  offboardingCases: OffboardingCase[];
+  offboardingAssets: OffboardingAsset[];
+  lifecycleRequests: LifecycleRequest[];
+  customFields: CustomField[];
+  assetCustomValues: AssetCustomValue[];
+  integrations: AssetIntegration[];
+  integrationEvents: IntegrationEvent[];
+  reconciliationIssues: ReconciliationIssue[];
+  assetInspections: AssetInspection[];
+};
+
 export type Dashboard = {
   revision: number;
   summary: {
@@ -213,6 +566,7 @@ export type Dashboard = {
   audit: AuditRecord[];
   collaborators: Collaborator[];
   imports: ImportRun[];
+  operations: OperationsData;
   environment: DepartmentEnvironment;
   resultCount: number;
   options: {

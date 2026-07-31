@@ -21,6 +21,18 @@ Planilhas patrimoniais isoladas não registram bem responsabilidade, movimentaç
 - Perfil editável do colaborador com nome, núcleo e relação de patrimônios vinculados.
 - Busca por ID, série, modelo, pessoa, local ou núcleo.
 - Leitura direta de etiquetas por bipador USB ou Bluetooth configurado como teclado HID, com abertura automática do patrimônio em janela de conferência.
+- Leitura de QR Code e código de barras pela câmera traseira ou por imagem enviada pelo operador.
+- Inventário cíclico por campanha, com escopo, conferência em lote, fila offline mínima e reconciliação de divergências.
+- Termos de custódia com emissão, aceite ou recusa e histórico do responsável.
+- Ordens de manutenção com prioridade, fornecedor, prazos, custos e evolução de status.
+- Rastreamento por QR, RFID, NFC, BLE, UWB, GPS ou MDM, com cadastro de tags e ingestão de eventos de localização.
+- Solicitações de compra, transferência, baixa, reparo e substituição com decisão auditável.
+- Kits patrimoniais, reservas de equipamentos e recolhimento estruturado no desligamento de colaboradores.
+- Arquivo privado de notas, garantias, fotos, laudos e contratos com checksum e acesso temporário assinado.
+- Garantias, locações, seguros, licenças, depreciação, centro de custo e campos customizados; dados financeiros são restritos a administradores.
+- Inspeções fotográficas com fila de análise, resultado estruturado e revisão humana obrigatória.
+- Conectores de RH, ERP, MDM, chamados, IoT e diretório, com eventos idempotentes e fila de conciliação.
+- Indicadores de utilização, capacidade ociosa, risco, cobertura documental e alertas de vencimento.
 - Filtros de tipo, status e núcleo, com ordenação operacional.
 - Visualizações rápidas para itens sem responsável, sem patrimônio, em manutenção ou com divergência.
 - Paginação configurável para bases extensas, com 15, 25 ou 50 registros por página.
@@ -34,7 +46,7 @@ Planilhas patrimoniais isoladas não registram bem responsabilidade, movimentaç
 - Auditoria com ator, data, origem, destino e motivo.
 - Importação XLSX em duas etapas: pré-validação e confirmação transacional.
 - Exportação XLSX com inventário, núcleos, auditoria e histórico de importações.
-- Operação sem exposição de preço ou valor de aquisição dos patrimônios.
+- Inventário e exportação operacional sem exposição de preço; dados contábeis ficam em área administrativa protegida.
 - Ambientes isolados por departamento, com acesso individual, administração global e transferência auditável.
 - Permissões independentes para consulta, alteração, importação e exportação.
 - Desativação imediata, revogação de sessão e auditoria de login e administração.
@@ -47,6 +59,8 @@ Planilhas patrimoniais isoladas não registram bem responsabilidade, movimentaç
 - **API:** Node.js com manipuladores de rota TypeScript executados no Cloudflare Worker.
 - **Banco:** Supabase Postgres 17, funções RPC transacionais e índices operacionais.
 - **Integração:** Função Edge do Supabase com requisições HMAC, janela curta e nonce de uso único.
+- **Documentos:** bucket privado no Supabase Storage, limite de 2,5 MB, checksum SHA-256 e URLs assinadas de curta duração.
+- **Leitura móvel:** ZXing para câmera e imagem; IndexedDB somente para a fila mínima de conferências offline.
 - **Autenticação:** Google OpenID Connect, PKCE, autorização por departamento e sessão `HttpOnly`.
 - **Planilhas:** `read-excel-file` e `write-excel-file`.
 - **Qualidade:** Node Test Runner, ESLint, TypeScript e GitHub Actions.
@@ -80,6 +94,12 @@ O sufixo `Enter` ou `Tab` continua recomendado para confirmar a leitura imediata
 Na janela de conferência, um operador autenticado pode selecionar outro status e informar o motivo obrigatório. A alteração usa a mesma API transacional do painel, incrementa a revisão da base e registra o usuário na auditoria.
 
 Somente identificadores oficiais com seis dígitos e referências internas no formato `Sxxxxx` são aceitos. A busca exige autenticação e não grava nem altera o patrimônio. Leitores configurados exclusivamente como porta `COM` ou serial não funcionam neste fluxo; nesses casos, é necessário identificar o fabricante e o modelo para integrar o protocolo específico.
+
+## Ler etiquetas pela câmera
+
+No módulo **Operações > Inventário cíclico**, selecione uma campanha ativa e use **Ler QR**. O navegador solicita acesso à câmera traseira; como contingência, o operador pode escolher uma imagem da etiqueta. O código reconhecido precisa conter um patrimônio de seis dígitos ou uma referência interna válida.
+
+Quando a conexão estiver indisponível, a conferência pode ser mantida na fila offline. O navegador guarda somente departamento, campanha, identificador do ativo, resultado, local, observação e horário. Nomes, séries, modelos e documentos não são persistidos localmente. A sincronização em lote usa a revisão atual e remove da fila apenas os registros confirmados pelo servidor.
 
 ### Validação completa
 
@@ -120,8 +140,10 @@ A planilha corporativa original não faz parte do repositório. O arquivo [`data
 
 | Método | Rota | Autenticação | Finalidade |
 | --- | --- | --- | --- |
-| `GET` | `/api/state` | Obrigatória | Painel, inventário, colaboradores, núcleos, auditoria, importações e sessão |
-| `POST` | `/api/state` | Obrigatória | Cadastro, transferência, status, edição cadastral e gestão de núcleos |
+| `GET` | `/api/state` | Obrigatória | Painel, inventário, operações, documentos, integrações, auditoria e sessão |
+| `POST` | `/api/state` | Obrigatória | Mutações patrimoniais e dos módulos operacionais avançados |
+| `POST` | `/api/documents` | Obrigatória | Validar e armazenar documento no bucket privado |
+| `GET` | `/api/documents` | Obrigatória | Autorizar e redirecionar para uma URL assinada temporária |
 | `POST` | `/api/import` | Obrigatória | Pré-validar ou confirmar importação XLSX |
 | `GET` | `/api/export` | Obrigatória | Gerar cópia de segurança XLSX do ambiente empresarial |
 
@@ -162,9 +184,9 @@ A interface segue o padrão de relatório em lista com detalhe do objeto, comum 
 
 A identidade visual usa azul cobalto e amarelo como referências da presença digital da Gazin, mantendo superfícies neutras e cores semânticas independentes para garantir leitura operacional e contraste.
 
-Foram adotados padrões operacionais recorrentes nessas soluções: visibilidade imediata de status, busca por posse e localização, filtros rápidos de exceção, paginação para inventários extensos e acesso contextual ao histórico. O leitor HID de código de barras é suportado sem acesso privilegiado ao hardware. Recursos financeiros, contratos, garantias, leitura de QR Code por câmera e campos customizados não foram reproduzidos porque não existem na planilha-base atual.
+Foram adotados padrões operacionais recorrentes nessas soluções: visibilidade imediata de status, busca por posse e localização, filtros rápidos de exceção, paginação para inventários extensos e acesso contextual ao histórico. O sistema também reúne inventário cíclico, custódia, manutenção, rastreamento, contratos, garantias, contabilidade, reservas, kits, desligamentos, documentos privados, inspeções e integrações em uma central operacional.
 
-O painel oferece temas claro e escuro, respeita a preferência do sistema na primeira visita e persiste a escolha explícita sem armazenar dados operacionais no navegador.
+O painel oferece temas claro e escuro, respeita a preferência do sistema na primeira visita e persiste a escolha explícita em cookie. Fora da conferência offline, dados operacionais não são persistidos no navegador; a fila IndexedDB contém somente os campos mínimos necessários para sincronizar a contagem.
 
 ## Publicação
 
@@ -186,11 +208,10 @@ GitHub Pages não hospeda este ambiente de execução: ele publica apenas arquiv
 ## Evoluções possíveis
 
 - Papéis adicionais por núcleo quando houver necessidade operacional comprovada.
-- Etiquetas QR Code e leitura por câmera.
-- Termo digital de responsabilidade e aceite do colaborador.
-- Anexos de nota fiscal, laudo e foto do ativo em Supabase Storage.
-- Inventário cíclico com conferência offline e reconciliação.
-- Integrações com RH, chamados de manutenção e diretório corporativo.
+- Assinatura eletrônica externa do termo de responsabilidade com validação jurídica corporativa.
+- Provisionamento das credenciais e webhooks reais de RH, ERP, MDM, chamados e diretório corporativo.
+- Homologação de leitores e tags RFID, NFC, BLE, UWB ou GPS escolhidos pela operação.
+- Provedor de visão computacional para preencher resultados de inspeção antes da revisão humana.
 
 ## Licença
 

@@ -28,8 +28,8 @@ export default function PrivacyPage() {
             </p>
           </div>
           <dl className="privacy-version">
-            <div><dt>Versão</dt><dd>1.0</dd></div>
-            <div><dt>Atualização</dt><dd>27/07/2026</dd></div>
+            <div><dt>Versão</dt><dd>1.1</dd></div>
+            <div><dt>Atualização</dt><dd>31/07/2026</dd></div>
             <div><dt>Classificação</dt><dd>Uso interno</dd></div>
           </dl>
         </header>
@@ -55,6 +55,8 @@ export default function PrivacyPage() {
               <li>nome, código interno, departamento, núcleo e localização de trabalho;</li>
               <li>e-mail corporativo ou autorizado e nome exibido no login Google;</li>
               <li>vínculo entre colaborador, patrimônio, série, modelo, status e observações;</li>
+              <li>custódia, manutenção, conferências, localizações observadas e processos de desligamento;</li>
+              <li>documentos, garantias, contratos, fotos e laudos vinculados ao patrimônio;</li>
               <li>histórico de movimentações, importações, exportações e alterações de acesso;</li>
               <li>datas, horários e registros técnicos necessários à segurança da aplicação.</li>
             </ul>
@@ -104,6 +106,12 @@ export default function PrivacyPage() {
               importação e exportação, por até cinco anos, salvo obrigação de preservação.
             </p>
             <p>
+              Durante uma conferência sem internet, o dispositivo pode manter por até 30 dias
+              uma fila mínima com departamento, campanha, patrimônio, resultado, local,
+              observação e horário. A fila é removida após a sincronização e não contém nome,
+              e-mail, série, modelo, documento ou credencial.
+            </p>
+            <p>
               O prazo dos registros patrimoniais depende da finalidade, de obrigações legais e
               da política corporativa. A exclusão não deve ocorrer quando os dados ainda forem
               necessários para auditoria, defesa de direitos ou obrigação regulatória. Consulte a{" "}
@@ -130,6 +138,7 @@ export default function PrivacyPage() {
               <li>cada usuário visualiza somente departamentos liberados;</li>
               <li>alteração, importação e exportação exigem permissões independentes;</li>
               <li>mudanças administrativas, logins e exportações são auditados;</li>
+              <li>documentos usam armazenamento privado e acesso temporário autorizado;</li>
               <li>senhas Google não são recebidas ou armazenadas pelo Patrimônio Ops.</li>
             </ul>
             <p>

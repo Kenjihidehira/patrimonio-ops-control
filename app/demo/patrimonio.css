@@ -136,14 +136,12 @@
 }
 
 html {
-  min-width: 320px;
   background: var(--surface);
   scroll-behavior: smooth;
 }
 
 body {
   margin: 0;
-  min-width: 320px;
   min-height: 100vh;
   background: var(--surface);
   color: var(--ink);

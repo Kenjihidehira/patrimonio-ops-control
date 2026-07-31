@@ -16,7 +16,7 @@ Respostas dinâmicas usam `cache-control: no-store`. A identidade vem de uma ses
 
 ## `GET /api/state`
 
-Retorna revisão, resumo, inventário filtrado, colaboradores, núcleos, auditoria, histórico de importações, catálogos e contexto da sessão.
+Retorna revisão, resumo, inventário filtrado, colaboradores, núcleos, auditoria, histórico de importações, catálogos, ambiente, sessão e o contexto agregado da central de operações.
 
 ### Parâmetros de consulta
 
@@ -176,6 +176,37 @@ A operação exige uma alteração real e um motivo. Patrimônio, núcleo e stat
 
 Uma alteração de nome atualiza as atribuições existentes na mesma transação. Alterar o núcleo do perfil não transfere patrimônios automaticamente; transferências continuam exigindo a ação auditável específica.
 
+### Central de operações
+
+Os comandos abaixo usam o mesmo contrato autenticado de `POST /api/state`, sempre com `departmentSlug` e `expectedRevision`. A escrita é executada por RPC transacional e o servidor obtém o ator da sessão.
+
+| Domínio | Ações aceitas |
+| --- | --- |
+| Inventário | `create_inventory_campaign`, `record_inventory_check`, `record_inventory_checks_batch`, `complete_inventory_campaign` |
+| Custódia | `create_custody_term`, `respond_custody_term` |
+| Manutenção | `create_maintenance_order`, `update_maintenance_order` |
+| Rastreamento | `assign_tracking_tag`, `record_tracking_event` |
+| Ciclo de vida | `create_lifecycle_request`, `decide_lifecycle_request`, `create_asset_kit`, `dissolve_asset_kit` |
+| Reservas e desligamentos | `create_reservation`, `update_reservation_status`, `create_offboarding_case`, `update_offboarding_asset`, `complete_offboarding_case` |
+| Documentos e contratos | `delete_asset_document`, `create_asset_contract`, `update_asset_contract_status` |
+| Contábil e cadastro | `upsert_asset_accounting`, `create_custom_field`, `set_asset_custom_value` |
+| Inspeções | `create_asset_inspection`, `record_asset_inspection_result`, `review_asset_inspection` |
+| Integrações | `create_integration`, `record_integration_event`, `create_reconciliation_issue`, `resolve_reconciliation_issue` |
+
+Dados contábeis, custos contratuais e configuração técnica de integrações são devolvidos somente para administradores. A projeção pública de um conector nunca inclui segredo, senha, token ou chave de API.
+
+## `/api/documents`
+
+### `POST /api/documents`
+
+Recebe `multipart/form-data`, exige permissão de alteração e aceita os campos `file`, `department`, `assetId`, `category`, `revision`, `note` e `retentionUntil`. O arquivo deve ter até 2,5 MB e ser PDF, JPEG, PNG, WebP, TXT, DOCX ou XLSX.
+
+O servidor normaliza o nome, envia o conteúdo por canal assinado ao gateway, calcula SHA-256 e registra os metadados na mesma revisão do departamento. O bucket é privado e uma falha na gravação do metadado remove o objeto recém-enviado.
+
+### `GET /api/documents`
+
+Recebe `department` e `id` na consulta. Depois de validar sessão e acesso ao departamento, responde `302` para uma URL privada assinada por 60 segundos. O endereço permanente do objeto não é exposto ao cliente.
+
 ## `POST /api/import`
 
 Exige autenticação, permissão de importação e recebe `multipart/form-data`.
@@ -234,8 +265,8 @@ Exige autenticação e permissão explícita de exportação. A autorização e 
 | `401` | Sessão ausente ou expirada |
 | `403` | Departamento ou operação não autorizado para o perfil |
 | `409` | Revisão obsoleta; recarregamento necessário |
-| `413` | Arquivo vazio, maior que 2 MB ou planilha acima dos limites estruturais |
-| `415` | Formato diferente de `.xlsx` |
+| `413` | Planilha vazia, maior que 2 MB ou acima dos limites estruturais |
+| `415` | Formato de planilha ou documento não permitido |
 | `422` | Regra de domínio violada ou importação sem linhas válidas |
 | `429` | Limite de requisições, importações ou exportações atingido |
 | `500` | Falha inesperada de infraestrutura |

@@ -46,6 +46,26 @@ const departmentMigration = await readFile(
   new URL("../supabase/migrations/20260727153629_add_department_environments.sql", import.meta.url),
   "utf8",
 );
+const operationalMigration = await readFile(
+  new URL("../supabase/migrations/20260731124837_add_operational_control.sql", import.meta.url),
+  "utf8",
+);
+const advancedLifecycleMigration = await readFile(
+  new URL("../supabase/migrations/20260731155452_add_advanced_asset_lifecycle.sql", import.meta.url),
+  "utf8",
+);
+const advancedContextMigration = await readFile(
+  new URL("../supabase/migrations/20260731155615_add_advanced_context_query.sql", import.meta.url),
+  "utf8",
+);
+const advancedIndexMigration = await readFile(
+  new URL("../supabase/migrations/20260731183517_add_advanced_fk_indexes.sql", import.meta.url),
+  "utf8",
+);
+const advancedFinancialMigration = await readFile(
+  new URL("../supabase/migrations/20260731183814_harden_advanced_financial_writes.sql", import.meta.url),
+  "utf8",
+);
 
 test("importação reconcilia núcleos pela sigla persistida", () => {
   assert.match(nucleusMigration, /on conflict \(owner_key, code\) do update/);
@@ -136,4 +156,85 @@ test("sincronização por revisão evita recarregar inventário sem alteração"
   assert.match(gateway, /knownRevision === revision/);
   assert.match(gateway, /notModified: true/);
   assert.match(gateway, /if \(!workspace\.length\)/);
+});
+
+test("operações físicas possuem inventário, custódia, manutenção e rastreamento transacionais", () => {
+  for (const table of [
+    "patrimonio_inventory_campaigns",
+    "patrimonio_custody_terms",
+    "patrimonio_maintenance_orders",
+    "patrimonio_tracking_tags",
+    "patrimonio_tracking_events",
+  ]) {
+    assert.match(operationalMigration, new RegExp(`create table public\\.${table}`));
+    assert.match(operationalMigration, new RegExp(`alter table public\\.${table} enable row level security`));
+  }
+  assert.match(operationalMigration, /create_inventory_campaign/);
+  assert.match(operationalMigration, /respond_custody_term/);
+  assert.match(operationalMigration, /update_maintenance_order/);
+  assert.match(operationalMigration, /rfid_uhf/);
+  assert.match(operationalMigration, /uwb/);
+  assert.match(operationalMigration, /mdm/);
+  assert.match(gateway, /rpc\/patrimonio_apply_operational_action/);
+});
+
+test("ciclo de vida avançado mantém tabelas privadas e escrita em RPC única", () => {
+  for (const table of [
+    "patrimonio_asset_documents",
+    "patrimonio_asset_contracts",
+    "patrimonio_asset_accounting",
+    "patrimonio_asset_kits",
+    "patrimonio_reservations",
+    "patrimonio_offboarding_cases",
+    "patrimonio_lifecycle_requests",
+    "patrimonio_integrations",
+    "patrimonio_reconciliation_issues",
+    "patrimonio_asset_inspections",
+  ]) {
+    assert.match(advancedLifecycleMigration, new RegExp(`create table public\\.${table}`));
+    assert.match(advancedLifecycleMigration, new RegExp(`alter table public\\.${table} enable row level security`));
+    assert.match(advancedLifecycleMigration, new RegExp(`${table}_no_direct_access`));
+  }
+  assert.match(advancedLifecycleMigration, /create or replace function public\.patrimonio_apply_advanced_action/);
+  assert.match(advancedLifecycleMigration, /record_inventory_checks_batch/);
+  assert.match(advancedLifecycleMigration, /asset_unavailable_for_reservation/);
+  assert.match(advancedLifecycleMigration, /offboarding_has_pending_assets/);
+  assert.match(advancedLifecycleMigration, /configuration \?\| array\['secret', 'password', 'token', 'apiKey', 'api_key'\]/);
+  assert.match(advancedLifecycleMigration, /to service_role/);
+  assert.match(gateway, /rpc\/patrimonio_apply_advanced_action/);
+});
+
+test("documentos usam bucket privado, checksum e URLs assinadas", () => {
+  assert.match(advancedLifecycleMigration, /'patrimonio-documents'/);
+  assert.match(advancedLifecycleMigration, /public, file_size_limit, allowed_mime_types/);
+  assert.match(advancedLifecycleMigration, /false,[\s\S]*2500000/);
+  assert.match(gateway, /sha256Hex\(fileBytes\)/);
+  assert.match(gateway, /storage\/v1/);
+  assert.match(gateway, /object\/sign/);
+  assert.match(gateway, /expiresIn: 60/);
+  assert.match(gateway, /"x-upsert": "false"/);
+});
+
+test("contexto avançado é agregado e oculta finanças de não administradores", () => {
+  assert.match(advancedContextMigration, /patrimonio_load_advanced_context/);
+  assert.match(advancedContextMigration, /case when coalesce\(p_is_admin, false\) then monthly_cost else null end/);
+  assert.match(advancedContextMigration, /'assetAccounting', case when coalesce\(p_is_admin, false\)/);
+  assert.match(advancedContextMigration, /'integrations', case when coalesce\(p_is_admin, false\)/);
+  assert.match(gateway, /loadAdvancedData\(ownerKey, identifier, access\.isAdmin\)/);
+  assert.match(gateway, /rpc\/patrimonio_load_advanced_context/);
+});
+
+test("chaves estrangeiras avançadas possuem índices de cobertura", () => {
+  assert.match(advancedIndexMigration, /patrimonio_asset_contracts \(owner_key, document_id\)/);
+  assert.match(advancedIndexMigration, /patrimonio_asset_custom_values \(owner_key, field_id\)/);
+  assert.match(advancedIndexMigration, /patrimonio_asset_inspections \(owner_key, document_id\)/);
+  assert.match(advancedIndexMigration, /patrimonio_lifecycle_requests \(owner_key, asset_code\)/);
+  assert.match(advancedIndexMigration, /patrimonio_reconciliation_issues \(owner_key, integration_id\)/);
+});
+
+test("escritas financeiras avançadas são protegidas no banco", () => {
+  assert.match(advancedFinancialMigration, /upsert_asset_accounting[\s\S]*not coalesce\(p_is_admin, false\)/);
+  assert.match(advancedFinancialMigration, /create_asset_contract[\s\S]*jsonb_set\(v_action, '\{contract,monthlyCost\}', '0'::jsonb/);
+  assert.match(advancedFinancialMigration, /from public, anon, authenticated/);
+  assert.match(advancedFinancialMigration, /to service_role/);
 });
