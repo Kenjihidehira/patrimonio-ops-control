@@ -19,6 +19,8 @@ test("worker aplica cabeçalhos de segurança e CSP com nonce", () => {
   assert.match(worker, /HTMLRewriter/);
   assert.match(worker, /new NonceElementHandler\(nonce, true\)/);
   assert.match(worker, /this\.inlineOnly && element\.getAttribute\("src"\)/);
+  assert.match(worker, /camera=\(self\)/);
+  assert.match(worker, /microphone=\(\)/);
   assert.doesNotMatch(read("app/layout.tsx"), /dangerouslySetInnerHTML/);
 });
 
