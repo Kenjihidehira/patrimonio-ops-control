@@ -116,7 +116,10 @@ export function extractAssetIdentifier(rawValue: string): string | null {
   const official = normalized.match(/(?:^|\D)(\d{6})(?:\D|$)/)?.[1];
   if (official) return official;
   const internal = normalized.match(/(?:^|[^A-Z0-9])(S[A-Z0-9]{5})(?:[^A-Z0-9]|$)/)?.[1];
-  return internal && normalizeScannedIdentifier(internal) ? internal : null;
+  if (internal && normalizeScannedIdentifier(internal)) return internal;
+
+  const sabiumInternal = normalized.match(/(?:^|[^A-F0-9])(G[A-F0-9]{20})(?:[^A-F0-9]|$)/)?.[1];
+  return sabiumInternal && normalizeScannedIdentifier(sabiumInternal) ? sabiumInternal : null;
 }
 
 function CameraIcon() {

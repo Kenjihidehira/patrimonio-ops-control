@@ -71,13 +71,17 @@ export async function GET(request: Request) {
         },
       });
     }
-    const dashboard = buildDashboard(workspace.state, {
-      search: url.searchParams.get("search"),
-      type: url.searchParams.get("type"),
-      status: url.searchParams.get("status"),
-      nucleus: url.searchParams.get("nucleus"),
-      sort: url.searchParams.get("sort"),
-    });
+    const dashboard = buildDashboard(
+      workspace.state,
+      {
+        search: url.searchParams.get("search"),
+        type: url.searchParams.get("type"),
+        status: url.searchParams.get("status"),
+        nucleus: url.searchParams.get("nucleus"),
+        sort: url.searchParams.get("sort"),
+      },
+      { includeFinancials: workspace.environment?.isAdmin === true },
+    );
 
     return Response.json(
       {
@@ -159,7 +163,11 @@ export async function POST(request: Request) {
 
     return Response.json(
       {
-        ...buildDashboard(updated.state),
+        ...buildDashboard(
+          updated.state,
+          {},
+          { includeFinancials: updated.environment?.isAdmin === true },
+        ),
         imports: updated.imports,
         operations: updated.operations,
         environment: updated.environment,

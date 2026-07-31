@@ -1,4 +1,18 @@
-export type AssetType = "cpu" | "monitor_1" | "monitor_2" | "chair" | "notebook";
+export type AssetType =
+  | "cpu"
+  | "monitor_1"
+  | "monitor_2"
+  | "chair"
+  | "notebook"
+  | "fleet"
+  | "car"
+  | "trailer"
+  | "vehicle_component"
+  | "equipment"
+  | "furniture"
+  | "extinguisher"
+  | "software"
+  | "other";
 export type AssetStatus =
   | "available"
   | "allocated"
@@ -56,8 +70,19 @@ export type Asset = {
   serial: string;
   brandModel: string;
   acquiredAt: string | null;
+  value: number | null;
   status: AssetStatus;
   notes: string;
+  sourceSystem: "sabium" | null;
+  baseCode: string;
+  incorporation: number | null;
+  sourceIdentifier: string;
+  sourceDescription: string;
+  assetGroup: string;
+  branchCode: string;
+  disposedAt: string | null;
+  operationValue: number | null;
+  invoiceNumber: string;
   createdAt: string;
   movements: Movement[];
   hasPatrimony: boolean;
@@ -68,6 +93,10 @@ export type Asset = {
 type AuditRecord = Movement & {
   assetId: string;
   hasPatrimony: boolean;
+  sourceSystem: "sabium" | null;
+  sourceIdentifier: string;
+  baseCode: string;
+  incorporation: number | null;
   assetType: string;
   nucleusName: string;
   typeLabel: string;
@@ -80,6 +109,10 @@ type CollaboratorAsset = {
   brandModel: string;
   location: string;
   status: AssetStatus;
+  sourceSystem: "sabium" | null;
+  sourceIdentifier: string;
+  baseCode: string;
+  incorporation: number | null;
 };
 
 export type Collaborator = {

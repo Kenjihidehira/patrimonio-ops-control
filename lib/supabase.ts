@@ -397,6 +397,24 @@ function mapWorkspaceState(result: GatewayWorkspaceContext): WorkspaceState {
       value: Number(row.acquisition_value ?? 0),
       status: row.status,
       notes: row.notes,
+      sourceSystem: row.source_system === "sabium" ? "sabium" : null,
+      sourceFingerprint: row.source_fingerprint ?? "",
+      baseCode: row.base_code ?? "",
+      incorporation: row.incorporation === null || row.incorporation === undefined
+        ? null
+        : Number(row.incorporation),
+      sourceIdentifier: row.source_identifier ?? "",
+      sourceDescription: row.source_description ?? "",
+      assetGroup: row.asset_group ?? "",
+      branchCode: row.branch_code ?? "",
+      disposedAt: row.disposed_at ?? null,
+      operationValue: row.operation_value === null || row.operation_value === undefined
+        ? null
+        : Number(row.operation_value),
+      invoiceNumber: row.invoice_number ?? "",
+      sourceRow: row.source_row === null || row.source_row === undefined
+        ? null
+        : Number(row.source_row),
       createdAt: row.created_at,
       movements: movementsByAsset.get(String(row.code)) ?? [],
     })),

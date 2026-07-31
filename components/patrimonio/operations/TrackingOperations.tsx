@@ -12,6 +12,7 @@ import {
   assetLabel,
   type OperationProps,
 } from "./shared";
+import { QrLabelGenerator } from "./QrLabelGenerator";
 
 const technologyLabels: Record<TrackingEventTechnology, string> = {
   qr: "QR Code",
@@ -133,6 +134,8 @@ export function TrackingOperations({ dashboard, onMutate }: OperationProps) {
           <FormActions busy={busyKey === "tag"} submitLabel="Vincular identificador" />
         </form>
       </section>
+
+      <QrLabelGenerator dashboard={dashboard} />
 
       <section className="operational-panel operation-form-panel" aria-labelledby="tracking-event-title">
         <div className="operational-panel-toolbar">

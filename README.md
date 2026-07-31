@@ -14,18 +14,20 @@ Planilhas patrimoniais isoladas não registram bem responsabilidade, movimentaç
 
 ## Escopo funcional
 
-- Patrimônios oficiais com exatamente 6 números e referências internas distintas para itens ainda não etiquetados.
-- Tipos controlados: CPU (Computador), Monitor 1, Monitor 2, Cadeira e Notebook.
+- Patrimônios convencionais com 6 números, frotas no formato `número-da-frota.0` e referências internas distintas para itens ainda não etiquetados.
+- Integração com a base Sabium do Gazin LOG, preservando código-base, incorporação, identificador de origem, grupo, filial e situação de baixa.
+- Tipos controlados: CPU, monitores, cadeira, notebook, frota, automóvel, implemento rodoviário, componente de frota, equipamento, móvel, extintor, software e outros bens.
 - Organização por núcleo, gestor, responsável e localização física.
 - Diretório de colaboradores importados, inclusive quando não há patrimônio associado.
 - Perfil editável do colaborador com nome, núcleo e relação de patrimônios vinculados.
 - Busca por ID, série, modelo, pessoa, local ou núcleo.
-- Leitura direta de etiquetas por bipador USB ou Bluetooth configurado como teclado HID, com abertura automática do patrimônio em janela de conferência.
+- Leitura direta de etiquetas por bipador USB ou Bluetooth configurado como teclado HID, inclusive identificadores decimais do Sabium, com abertura automática do patrimônio em janela de conferência.
 - Leitura de QR Code e código de barras pela câmera traseira ou por imagem enviada pelo operador.
+- Geração de etiqueta QR única por ativo; no Sabium, o QR usa a chave técnica para distinguir incorporações que compartilham o mesmo identificador visível.
 - Inventário cíclico por campanha, com escopo, conferência em lote, fila offline mínima e reconciliação de divergências.
 - Termos de custódia com emissão, aceite ou recusa e histórico do responsável.
 - Ordens de manutenção com prioridade, fornecedor, prazos, custos e evolução de status.
-- Rastreamento por QR, RFID, NFC, BLE, UWB, GPS ou MDM, com cadastro de tags e ingestão de eventos de localização.
+- Rastreamento por QR, código de barras, RFID UHF, BLE, UWB, GPS ou MDM, com cadastro de tags e ingestão de eventos de localização.
 - Solicitações de compra, transferência, baixa, reparo e substituição com decisão auditável.
 - Kits patrimoniais, reservas de equipamentos e recolhimento estruturado no desligamento de colaboradores.
 - Arquivo privado de notas, garantias, fotos, laudos e contratos com checksum e acesso temporário assinado.
@@ -86,18 +88,18 @@ O sistema aceita leitores USB ou Bluetooth no modo **HID Keyboard**, também cha
 1. Conecte o leitor ao computador por USB ou faça o pareamento Bluetooth.
 2. No manual do equipamento, selecione o modo `HID Keyboard`.
 3. Configure o sufixo de leitura como `Enter` ou `Tab`.
-4. Teste no Bloco de Notas: ao bipar, o leitor deve escrever os seis números da etiqueta e avançar o cursor.
+4. Teste no Bloco de Notas: ao bipar, o leitor deve escrever o identificador completo da etiqueta e avançar o cursor.
 5. Entre no sistema e bipe a etiqueta em qualquer tela. O inventário será aberto, os filtros serão limpos e uma janela exibirá o patrimônio, responsável, núcleo, localização, modelo, série, histórico e status.
 
 O sufixo `Enter` ou `Tab` continua recomendado para confirmar a leitura imediatamente. Como contingência, quando o leitor apenas preenche os seis números no campo de busca, o sistema abre a mesma janela assim que a API confirma uma correspondência patrimonial exata.
 
 Na janela de conferência, um operador autenticado pode selecionar outro status e informar o motivo obrigatório. A alteração usa a mesma API transacional do painel, incrementa a revisão da base e registra o usuário na auditoria.
 
-Somente identificadores oficiais com seis dígitos e referências internas no formato `Sxxxxx` são aceitos. A busca exige autenticação e não grava nem altera o patrimônio. Leitores configurados exclusivamente como porta `COM` ou serial não funcionam neste fluxo; nesses casos, é necessário identificar o fabricante e o modelo para integrar o protocolo específico.
+São aceitos patrimônios convencionais com seis dígitos, frotas no formato `número.0`, identificadores decimais vindos do Sabium e referências internas no formato `Sxxxxx`. A busca exige autenticação e não grava nem altera o patrimônio. Leitores configurados exclusivamente como porta `COM` ou serial não funcionam neste fluxo; nesses casos, é necessário identificar o fabricante e o modelo para integrar o protocolo específico.
 
 ## Ler etiquetas pela câmera
 
-No módulo **Operações > Inventário cíclico**, selecione uma campanha ativa e use **Ler QR**. O navegador solicita acesso à câmera traseira; como contingência, o operador pode escolher uma imagem da etiqueta. O código reconhecido precisa conter um patrimônio de seis dígitos ou uma referência interna válida.
+No módulo **Operações > Inventário cíclico**, selecione uma campanha ativa e use **Ler QR**. O navegador solicita acesso à câmera traseira; como contingência, o operador pode escolher uma imagem da etiqueta. O código reconhecido precisa conter um patrimônio convencional, uma frota, um identificador Sabium ou uma referência interna válida.
 
 Quando a conexão estiver indisponível, a conferência pode ser mantida na fila offline. O navegador guarda somente departamento, campanha, identificador do ativo, resultado, local, observação e horário. Nomes, séries, modelos e documentos não são persistidos localmente. A sincronização em lote usa a revisão atual e remove da fila apenas os registros confirmados pelo servidor.
 
@@ -129,6 +131,16 @@ O importador aceita dois formatos:
 
 1. Matriz operacional com blocos `Colaborador(a)`, `Núcleo`, `Máquina`, `Tela 1`, `Tela 2`, `Cadeira` e `Notebook`.
 2. Arquivo plano exportado pelo próprio sistema, com uma linha por item.
+
+### Preparar uma carga do Sabium
+
+A carga patrimonial do Gazin LOG usa um utilitário administrativo separado do importador XLSX comum. Ele valida as 11 colunas da exportação Sabium, gera chave técnica e fingerprint determinísticos, classifica os tipos e pode dividir a saída em lotes:
+
+```bash
+pnpm prepare:sabium -- caminho/arquivo.xlsx work/sabium-normalizado.json 500 1
+```
+
+O quarto argumento é o tamanho opcional do lote e o quinto identifica a aba por número ou nome. O campo `rows` do JSON resultante é destinado à RPC protegida `patrimonio_import_sabium_assets`; essa função aceita somente `service_role`, grava exclusivamente no ambiente `gazin-log` e mantém os identificadores de origem imutáveis na interface.
 
 Antes de gravar, a API reabre o XLSX no servidor, normaliza IDs de cinco dígitos com zero à esquerda, rejeita códigos fora do padrão e exclui todas as ocorrências duplicadas. A prévia retorna apenas contagens e posições dos problemas; nomes da planilha não são enviados ao navegador nessa etapa.
 
@@ -210,7 +222,7 @@ GitHub Pages não hospeda este ambiente de execução: ele publica apenas arquiv
 - Papéis adicionais por núcleo quando houver necessidade operacional comprovada.
 - Assinatura eletrônica externa do termo de responsabilidade com validação jurídica corporativa.
 - Provisionamento das credenciais e webhooks reais de RH, ERP, MDM, chamados e diretório corporativo.
-- Homologação de leitores e tags RFID, NFC, BLE, UWB ou GPS escolhidos pela operação.
+- Homologação de leitores e tags RFID UHF, BLE, UWB ou GPS escolhidos pela operação.
 - Provedor de visão computacional para preencher resultados de inspeção antes da revisão humana.
 
 ## Licença

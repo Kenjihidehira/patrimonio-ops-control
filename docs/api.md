@@ -23,7 +23,7 @@ Retorna revisão, resumo, inventário filtrado, colaboradores, núcleos, auditor
 | Parâmetro | Valores | Padrão |
 | --- | --- | --- |
 | `search` | Texto livre | vazio |
-| `type` | `cpu`, `monitor_1`, `monitor_2`, `chair`, `notebook` | `all` |
+| `type` | `cpu`, `monitor_1`, `monitor_2`, `chair`, `notebook`, `fleet`, `car`, `trailer`, `vehicle_component`, `equipment`, `furniture`, `extinguisher`, `software`, `other` | `all` |
 | `status` | `available`, `allocated`, `maintenance`, `discrepancy`, `retired` | `all` |
 | `nucleus` | Identificador de núcleo | `all` |
 | `sort` | `recent`, `asset_asc`, `nucleus`, `status` | `recent` |
@@ -104,7 +104,7 @@ Exige autenticação e permissão de alteração. Toda ação inclui `expectedRe
 }
 ```
 
-`newAssetId` aceita somente seis dígitos e precisa ser único no ambiente empresarial. A operação preserva núcleo, responsável, localização e movimentos anteriores, além de registrar a troca na auditoria.
+`newAssetId` aceita seis dígitos para bens convencionais e o formato `número-da-frota.0` para frotas, sempre com unicidade no ambiente empresarial. Identificadores importados do Sabium são imutáveis por esse comando. A operação preserva núcleo, responsável, localização e movimentos anteriores, além de registrar a troca na auditoria.
 
 ### Editar dados cadastrais do item
 

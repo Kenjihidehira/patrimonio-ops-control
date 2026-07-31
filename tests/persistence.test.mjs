@@ -46,6 +46,20 @@ const departmentMigration = await readFile(
   new URL("../supabase/migrations/20260727153629_add_department_environments.sql", import.meta.url),
   "utf8",
 );
+const fleetMigration = await readFile(
+  new URL("../supabase/migrations/20260730145633_support_gazin_log_fleet_assets.sql", import.meta.url),
+  "utf8",
+);
+const sabiumMigration = (await Promise.all([
+  "20260730184839_add_sabium_source_columns.sql",
+  "20260730184938_widen_sabium_asset_codes.sql",
+  "20260730184955_validate_sabium_asset_metadata.sql",
+  "20260730185019_create_sabium_asset_import.sql",
+  "20260730185027_validate_sabium_source_updates.sql",
+].map((file) => readFile(
+  new URL(`../supabase/migrations/${file}`, import.meta.url),
+  "utf8",
+)))).join("\n");
 const operationalMigration = await readFile(
   new URL("../supabase/migrations/20260731124837_add_operational_control.sql", import.meta.url),
   "utf8",
@@ -149,6 +163,39 @@ test("departamentos possuem isolamento, acesso por usuário e transferência aud
   assert.match(departmentMigration, /using \(false\) with check \(false\)/);
   assert.match(gateway, /access\.active\.owner_key/);
   assert.doesNotMatch(gateway, /access\.active\.ownerKey/);
+});
+
+test("frotas usam patrimônio número-da-frota.0 somente no ambiente Gazin LOG", () => {
+  assert.match(fleetMigration, /alter column code type varchar\(16\)/);
+  assert.match(fleetMigration, /\[0-9\]\{1,10\}\\\.0/);
+  assert.match(fleetMigration, /'notebook', 'fleet'/);
+  assert.match(fleetMigration, /department\.slug = 'gazin-log'/);
+  assert.match(fleetMigration, /fleet_department_required/);
+  assert.match(fleetMigration, /on update cascade/);
+  assert.match(fleetMigration, /grant execute[\s\S]*service_role/);
+});
+
+test("carga Sabium preserva identidade de origem sem sobrescrever identificadores repetidos", () => {
+  assert.match(sabiumMigration, /source_fingerprint varchar\(64\)/);
+  assert.match(sabiumMigration, /source_identifier varchar\(80\)/);
+  assert.match(sabiumMigration, /source_description varchar\(500\)/);
+  assert.match(sabiumMigration, /operation_value numeric\(14, 2\)/);
+  assert.match(sabiumMigration, /patrimonio_assets_owner_source_fingerprint_uidx/);
+  assert.match(sabiumMigration, /G\[A-F0-9\]\{20\}/);
+  assert.match(sabiumMigration, /patrimonio_import_sabium_assets/);
+  assert.match(sabiumMigration, /jsonb_array_length\(p_rows\)/);
+  assert.match(sabiumMigration, /source_system = 'sabium'/);
+  assert.match(sabiumMigration, /grant execute[\s\S]*service_role/);
+  assert.match(gateway, /source_identifier,source_description,asset_group,branch_code/);
+});
+
+test("gateway pagina todos os patrimônios acima do limite de 1000 linhas", () => {
+  assert.match(gateway, /const DATA_PAGE_SIZE = 1_000/);
+  assert.match(gateway, /return dataRequestAll\(/);
+  assert.match(gateway, /order=updated_at\.desc,code\.asc/);
+  assert.match(gateway, /"Range-Unit": "items"/);
+  assert.match(gateway, /Range: `\$\{from\}-\$\{from \+ pageSize - 1\}`/);
+  assert.match(gateway, /if \(batch\.length < pageSize\) return rows/);
 });
 
 test("sincronização por revisão evita recarregar inventário sem alteração", () => {

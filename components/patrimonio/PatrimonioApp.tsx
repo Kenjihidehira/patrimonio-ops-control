@@ -9,6 +9,10 @@ import {
   useState,
 } from "react";
 import Image from "next/image";
+import {
+  isFleetPatrimonyId,
+  isOfficialPatrimonyId,
+} from "@/lib/asset-identifiers";
 import { downloadExport, mutateDashboard } from "./api";
 import { CollaboratorsView } from "./CollaboratorsView";
 import { Dialogs } from "./Dialogs";
@@ -38,8 +42,6 @@ import {
   Toast,
   formValue,
 } from "./ui";
-
-const OFFICIAL_PATRIMONY_PATTERN = /^\d{6}$/;
 
 const viewCopy: Record<ViewId, { title: string; description: string }> = {
   inventory: {
@@ -79,6 +81,16 @@ export default function PatrimonioApp() {
     if (typeof window === "undefined") return null;
     return new URLSearchParams(window.location.search).get("department");
   });
+
+  useEffect(() => {
+    const desktopNavigation = window.matchMedia("(min-width: 1181px)");
+    const closeMobileNavigation = () => {
+      if (desktopNavigation.matches) setMobileNavigationOpen(false);
+    };
+    closeMobileNavigation();
+    desktopNavigation.addEventListener("change", closeMobileNavigation);
+    return () => desktopNavigation.removeEventListener("change", closeMobileNavigation);
+  }, []);
   const [filterDraft, setFilterDraft] = useState<InventoryFilters>(defaultFilters);
   const [selectedAssetId, setSelectedAssetId] = useState<string | null>(null);
   const [modal, setModal] = useState<ModalState>({ kind: "closed" });
@@ -152,11 +164,32 @@ export default function PatrimonioApp() {
       }
       return;
     }
-    const asset = next.inventory.find((item) => item.id === identifier);
+    const matchingAssets = next.inventory.filter((item) =>
+      item.id === identifier
+      || item.sourceIdentifier === identifier
+      || item.baseCode === identifier,
+    );
+    if (matchingAssets.length > 1) {
+      setFilterDraft(scanFilters);
+      scannerUpdateRef.current("success", `${matchingAssets.length} itens localizados`);
+      showToast(
+        `${matchingAssets.length} registros usam a referência ${identifier}. Selecione a incorporação correta.`,
+      );
+      return;
+    }
+    const asset = matchingAssets[0];
     if (!asset) {
-      if (!OFFICIAL_PATRIMONY_PATTERN.test(identifier)) {
+      if (!isOfficialPatrimonyId(identifier)) {
         scannerUpdateRef.current("error", "Referência não encontrada");
         showToast(`A referência interna ${identifier} não está cadastrada.`, true);
+        return;
+      }
+      if (
+        isFleetPatrimonyId(identifier)
+        && next.environment.activeDepartment.slug !== "gazin-log"
+      ) {
+        scannerUpdateRef.current("error", "Frota restrita ao Gazin LOG");
+        showToast("Identificadores de frota só podem ser cadastrados no ambiente Gazin LOG.", true);
         return;
       }
       setFilterDraft(scanFilters);
@@ -189,8 +222,13 @@ export default function PatrimonioApp() {
       || lastProcessedScanRef.current === identifier
     ) return;
 
-    const asset = dashboard.inventory.find((item) => item.id === identifier);
-    if (!asset) return;
+    const matchingAssets = dashboard.inventory.filter((item) =>
+      item.id === identifier
+      || item.sourceIdentifier === identifier
+      || item.baseCode === identifier,
+    );
+    if (matchingAssets.length !== 1) return;
+    const asset = matchingAssets[0];
     const timer = window.setTimeout(() => openScannedAsset(asset, identifier), 0);
     return () => window.clearTimeout(timer);
   }, [
@@ -262,6 +300,7 @@ export default function PatrimonioApp() {
   const visibleViews = (Object.keys(viewCopy) as ViewId[]).filter(
     (item) => item !== "environments" || environment?.isAdmin,
   );
+  const gazinLogBrand = environment?.activeDepartment.slug === "gazin-log";
 
   return (
     <div className="app-shell">
@@ -270,13 +309,20 @@ export default function PatrimonioApp() {
           <button
             className="app-brand"
             type="button"
-            aria-label="Patrimônio Ops, abrir inventário"
+            aria-label={`${gazinLogBrand ? "Gazin" : "Dados CX"} Patrimônio Ops, abrir inventário`}
             onClick={() => {
               setView("inventory");
               setMobileNavigationOpen(false);
             }}
           >
-            <Image className="app-brand-logo" src="/brand/cx-mark-header.png" alt="" width={440} height={230} priority />
+            <Image
+              className={`app-brand-logo ${gazinLogBrand ? "app-brand-logo--gazin" : ""}`.trim()}
+              src={gazinLogBrand ? "/brand/gazin-logo.png" : "/brand/cx-mark-header.png"}
+              alt=""
+              width={gazinLogBrand ? 800 : 440}
+              height={gazinLogBrand ? 200 : 230}
+              priority
+            />
             <span className="app-brand-copy"><strong>Patrimônio Ops</strong><small>Gestão empresarial</small></span>
           </button>
           <button

@@ -186,15 +186,27 @@ export function InventoryOperations({ dashboard, onMutate, onToast }: OperationP
     }
   }, [dashboard, departmentSlug, onMutate, onToast, refreshOfflineQueue, selectedCampaign]);
 
-  const handleCameraResult = useCallback((assetId: string) => {
+  const handleCameraResult = useCallback((identifier: string) => {
     if (!selectedCampaign) return;
+    const matchingAssets = dashboard.nucleusInventory.filter((asset) =>
+      asset.id === identifier
+      || asset.sourceIdentifier === identifier
+      || asset.baseCode === identifier,
+    );
+    if (matchingAssets.length !== 1) {
+      setError(matchingAssets.length
+        ? `A referência ${identifier} possui mais de uma incorporação. Selecione o item na lista.`
+        : `O patrimônio ${identifier} não foi encontrado neste departamento.`);
+      return;
+    }
+    const assetId = matchingAssets[0].id;
     const item = dashboard.operations.inventoryCampaignAssets.find((candidate) => candidate.campaignId === selectedCampaign.id && candidate.assetId === assetId);
     if (!item) {
       setError(`O patrimônio ${assetId} não pertence à campanha selecionada.`);
       return;
     }
     void recordCheck(assetId, "confirmed");
-  }, [dashboard.operations.inventoryCampaignAssets, recordCheck, selectedCampaign]);
+  }, [dashboard.nucleusInventory, dashboard.operations.inventoryCampaignAssets, recordCheck, selectedCampaign]);
 
   async function completeCampaign() {
     if (!selectedCampaign) return;

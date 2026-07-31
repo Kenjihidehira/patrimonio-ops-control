@@ -39,12 +39,16 @@ export function AssetSelect({
 }
 
 export function assetLabel(asset: Asset): string {
+  const sourceContext = asset.sourceSystem === "sabium" && asset.incorporation !== null
+    ? ` · Inc. ${asset.incorporation}`
+    : "";
+  const identifier = `${asset.sourceIdentifier || asset.id}${sourceContext}`;
   const details = [asset.brandModel, asset.assignee, asset.location]
     .map((value) => value.trim())
     .filter(Boolean)
     .slice(0, 2)
     .join(" · ");
-  return details ? `${asset.id} · ${details}` : asset.id;
+  return details ? `${identifier} · ${details}` : identifier;
 }
 
 export function assetById(dashboard: Dashboard, assetId: string): Asset | undefined {

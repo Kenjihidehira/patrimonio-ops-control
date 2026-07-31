@@ -55,7 +55,7 @@ function withSecurityHeaders(response: Response): Response {
   headers.set("referrer-policy", "no-referrer");
   headers.set(
     "permissions-policy",
-    "camera=(self), geolocation=(), microphone=(), payment=(), usb=(), browsing-topics=()",
+    "camera=(self), geolocation=(self), microphone=(), payment=(), usb=(), browsing-topics=()",
   );
   headers.set("cross-origin-opener-policy", "same-origin");
   headers.set("cross-origin-resource-policy", "same-origin");

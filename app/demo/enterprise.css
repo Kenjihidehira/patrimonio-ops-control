@@ -892,6 +892,83 @@ body {
   }
 }
 
+.app-brand-logo.app-brand-logo--gazin {
+  width: 104px;
+  height: 38px;
+  padding: 5px 7px;
+  flex-basis: 104px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  object-fit: contain;
+  object-position: center;
+}
+
+.qr-label-generator {
+  display: grid;
+  gap: 14px;
+  padding: 18px;
+}
+
+.qr-label-preview {
+  display: grid;
+  grid-template-columns: 128px minmax(0, 1fr);
+  align-items: center;
+  gap: 14px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: #ffffff;
+  color: #10263a;
+}
+
+.qr-label-preview > div {
+  display: grid;
+  min-width: 0;
+  gap: 7px;
+}
+
+.qr-label-preview span,
+.qr-label-preview small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.qr-label-preview span {
+  font-size: 11px;
+}
+
+.qr-label-preview small {
+  color: #52687c;
+  font-size: 10px;
+}
+
+.qr-label-preview .button {
+  width: max-content;
+  max-width: 100%;
+}
+
+@media (max-width: 720px) {
+  .app-brand-logo.app-brand-logo--gazin {
+    width: 92px;
+    height: 34px;
+    padding: 4px 6px;
+    flex-basis: 92px;
+  }
+}
+
+@media (max-width: 520px) {
+  .qr-label-preview {
+    grid-template-columns: 96px minmax(0, 1fr);
+  }
+
+  .qr-label-preview img {
+    width: 96px;
+    height: 96px;
+  }
+}
+
 /* Operations center */
 .operations-view {
   --operations-sidebar: minmax(300px, 360px);

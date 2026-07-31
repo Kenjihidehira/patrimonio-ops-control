@@ -24,7 +24,7 @@ O navegador nunca recebe a URL privilegiada nem o segredo do serviço intermedi�
 | Interface | `app/demo/*`, `app/login/*`, `components/patrimonio/*` | Rotas React, estado visual, filtros, formulários, acessibilidade e cliente HTTP tipado |
 | API | `app/api/*` | Sessão, contratos HTTP, recebimento de arquivos, exportação e respostas padronizadas |
 | Domínio | `lib/domain.js` | Invariantes, ações, auditoria e projeção do painel |
-| Planilhas | `lib/spreadsheet-import.js`, `lib/workbook.ts` | Leitura, normalização, prévia e geração XLSX |
+| Planilhas | `lib/spreadsheet-import.js`, `lib/workbook.ts`, `scripts/prepare-sabium-import.mjs` | Leitura, normalização, prévia, preparação Sabium e geração XLSX |
 | Identidade | `app/auth.ts`, `app/*-auth.ts`, `app/api/auth/*` | OAuth/OIDC, PKCE, validação de tokens, allowlists e sessão local comum |
 | Persistência | `lib/supabase.ts`, `lib/workspace.ts` | Chave empresarial, serviço intermediário e hidratação do estado |
 | Banco | `supabase/migrations/*` | Tabelas, índices, RLS, RPCs e integridade referencial |
@@ -45,8 +45,8 @@ O estado autoritativo permanece no servidor. O navegador mantém estado efêmero
 
 ## Invariantes do domínio
 
-1. O patrimônio oficial contém exatamente seis dígitos; itens ainda não etiquetados usam uma referência interna única iniciada por `S` e nunca são exibidos como patrimônio oficial.
-2. O tipo pertence ao catálogo fechado de cinco itens.
+1. O patrimônio convencional contém seis dígitos, a frota usa `número-da-frota.0` e itens ainda não etiquetados usam uma referência interna única iniciada por `S`.
+2. O tipo pertence ao catálogo fechado de bens de TI, frota, veículos, componentes, equipamentos, móveis, extintores, software e outros bens.
 3. Todo patrimônio referencia um núcleo existente.
 4. Toda mutação incrementa a revisão do ambiente empresarial.
 5. Transferências, mudanças de status, alterações de patrimônio e importações geram movimentos auditáveis.
@@ -59,8 +59,8 @@ O estado autoritativo permanece no servidor. O navegador mantém estado efêmero
 12. A sigla identifica o núcleo durante a reconciliação de importações; IDs internos não são assumidos como estáveis.
 13. Renomear um colaborador preserva suas atribuições; um responsável ainda sem perfil pode ser cadastrado a partir do inventário, e mudar seu núcleo não transfere patrimônios sem auditoria.
 14. `x` representa ausência de item; `Sem patrimônio` representa um item físico existente que deve permanecer no inventário como divergência.
-15. Alterar o número patrimonial exige seis dígitos, unicidade e motivo; a identidade relacional dos movimentos existentes é preservada por cascata.
-16. A leitura por bipador ou câmera aceita apenas identificadores válidos; a câmera usa QR ou código de barras e a consulta permanece autenticada.
+15. Alterar o número patrimonial exige formato compatível com o tipo, unicidade e motivo; identificadores Sabium não aceitam edição manual e a identidade relacional dos movimentos existentes é preservada por cascata.
+16. A leitura por bipador ou câmera aceita identificadores convencionais, de frota, Sabium ou internos válidos; a câmera usa QR ou código de barras e a consulta permanece autenticada.
 17. Campanhas, custódia, manutenção, rastreamento e recursos avançados passam por RPCs transacionais, respeitam a revisão do workspace e registram ator e horário.
 18. Documento patrimonial é privado, possui checksum e só pode ser aberto por URL assinada depois de nova autorização.
 
@@ -124,6 +124,14 @@ Chaves estrangeiras preservam integridade e índices cobrem status, núcleo, tip
 4. A confirmação reprocessa o arquivo no servidor e chama uma RPC transacional.
 5. Núcleos são reconciliados por sigla e seus IDs persistidos são resolvidos antes dos demais vínculos.
 6. Ativos e colaboradores são sincronizados, movimentos são adicionados e o resultado é registrado.
+
+### Carga patrimonial Sabium
+
+1. O utilitário administrativo valida o cabeçalho da exportação e normaliza datas, valores, descrições, grupos e filiais.
+2. Cada linha recebe uma chave técnica `G...` e um fingerprint SHA-256 determinístico; o identificador exibido continua sendo o código de origem Sabium.
+3. A RPC `patrimonio_import_sabium_assets` aceita somente `service_role`, resolve internamente o workspace `gazin-log` e rejeita metadados incompletos.
+4. A chave técnica e o fingerprint impedem colisões; código-base e incorporação distinguem registros que compartilham o mesmo identificador visível.
+5. Valores de aquisição, operação e nota fiscal são removidos da projeção de usuários não administradores.
 
 ### Exportação XLSX
 

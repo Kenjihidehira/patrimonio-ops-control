@@ -4886,6 +4886,24 @@ tbody tr:last-child td {
   }
 }
 
+.inventory-asset-detail .detail-grid .detail-section-title,
+.scanner-asset-detail .detail-grid .detail-section-title {
+  grid-column: 1 / -1;
+  min-height: auto;
+  padding: 18px 0 7px;
+  border-bottom: 1px solid var(--line-strong);
+  border-left: 0;
+}
+
+.inventory-asset-detail .detail-grid .detail-section-title span,
+.scanner-asset-detail .detail-grid .detail-section-title span {
+  color: var(--muted);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

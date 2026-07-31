@@ -13,7 +13,7 @@ const DASHBOARD_REFRESH_INTERVAL_MS = 30_000;
 const ACTIVITY_REFRESH_COOLDOWN_MS = 1_500;
 const SCANNER_CHARACTER_TIMEOUT_MS = 100;
 const SCANNER_BUFFER_TIMEOUT_MS = 250;
-const SCANNABLE_IDENTIFIER_PATTERN = /^(?:\d{6}|S[A-Z0-9]{5})$/;
+const SCANNABLE_IDENTIFIER_PATTERN = /^(?:\d{1,10}(?:\.\d{1,6})?|S[A-Z0-9]{5}|G[A-F0-9]{20})$/;
 
 export function useDebouncedValue<T>(value: T, delay: number): T {
   const [debounced, setDebounced] = useState(value);

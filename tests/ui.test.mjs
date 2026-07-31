@@ -217,13 +217,13 @@ test("inventário oferece filtros, paginação e experiência móvel dedicada", 
 
 test("leitor LS2208 em modo HID localiza patrimônio sem API de hardware", () => {
   assert.match(hooks, /SCANNER_CHARACTER_TIMEOUT_MS = 100/);
-  assert.match(hooks, /SCANNABLE_IDENTIFIER_PATTERN = \/\^\(\?:\\d\{6\}\|S\[A-Z0-9\]\{5\}\)\$\//);
+  assert.match(hooks, /SCANNABLE_IDENTIFIER_PATTERN = \/\^\(\?:\\d\{1,10\}\(\?:\\\.\\d\{1,6\}\)\?\|S\[A-Z0-9\]\{5\}\|G\[A-F0-9\]\{20\}\)\$\//);
   assert.match(hooks, /export function normalizeScannedIdentifier/);
   assert.match(hooks, /document\.addEventListener\("keydown", handleKeydown, true\)/);
   assert.match(hooks, /event\.key === "Enter" \|\| event\.key === "Tab"/);
   assert.match(app, /normalizeScannedIdentifier\(debouncedSearch\)/);
   assert.match(app, /lastProcessedScanRef\.current === identifier/);
-  assert.match(app, /dashboard\.inventory\.find\(\(item\) => item\.id === identifier\)/);
+  assert.match(app, /item\.id === identifier[\s\S]*item\.sourceIdentifier === identifier[\s\S]*item\.baseCode === identifier/);
   assert.match(app, /const next = await refresh\([\s\S]*setFilterDraft\(scanFilters\);[\s\S]*openScannedAsset\(asset, identifier\)/);
   assert.match(app, /openScannedAsset\(asset, identifier\)/);
   assert.match(app, /setModal\(\{ kind: "scanner", assetId: asset\.id, scanToken: scanSequenceRef\.current \}\)/);
@@ -257,7 +257,8 @@ test("leitor LS2208 em modo HID localiza patrimônio sem API de hardware", () =>
 test("leitura sem correspondência oferece cadastro auditável com o identificador lido", () => {
   assert.match(app, /kind: "scanner-missing"/);
   assert.match(app, /openMissingScannedAsset\(identifier\)/);
-  assert.match(app, /OFFICIAL_PATRIMONY_PATTERN\.test\(identifier\)/);
+  assert.match(app, /isOfficialPatrimonyId\(identifier\)/);
+  assert.match(app, /isFleetPatrimonyId\(identifier\)[\s\S]*activeDepartment\.slug !== "gazin-log"/);
   assert.match(dialogs, /function ScannerMissingDialog/);
   assert.match(dialogs, /Deseja adicionar este item ao inventário\?/);
   assert.match(dialogs, /Adicionar ao inventário/);

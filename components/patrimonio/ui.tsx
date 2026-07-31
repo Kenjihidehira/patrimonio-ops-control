@@ -163,9 +163,40 @@ const assetTypeImagePaths: Record<AssetType, string> = {
   monitor_2: "/assets/item-types/monitor.png",
   chair: "/assets/item-types/chair.png",
   notebook: "/assets/item-types/notebook.png",
+  fleet: "/assets/item-types/fleet.png",
+  car: "/assets/item-types/car.png",
+  trailer: "/assets/item-types/trailer.png",
+  vehicle_component: "/assets/item-types/vehicle-component.png",
+  equipment: "/assets/item-types/equipment.png",
+  furniture: "/assets/item-types/furniture.png",
+  extinguisher: "/assets/item-types/extinguisher.png",
+  software: "/assets/item-types/software.png",
+  other: "/assets/item-types/other.png",
 };
 
-export function AssetIdentifier({ asset }: { asset: Pick<Asset, "id" | "hasPatrimony"> }) {
+export function AssetIdentifier({
+  asset,
+}: {
+  asset: Pick<
+    Asset,
+    "id" | "hasPatrimony" | "sourceSystem" | "sourceIdentifier" | "baseCode" | "incorporation"
+  > & {
+    type?: AssetType | Movement["type"];
+  };
+}) {
+  if (asset.sourceSystem === "sabium") {
+    const incorporation = asset.incorporation === null || asset.incorporation === undefined
+      ? ""
+      : ` · Inc. ${asset.incorporation}`;
+    if (asset.type === "fleet" && asset.incorporation === 0) {
+      return <>Frota {asset.baseCode} · #{asset.sourceIdentifier}{incorporation}</>;
+    }
+    return <>#{asset.sourceIdentifier}{incorporation}</>;
+  }
+  if (asset.type === "fleet") {
+    const fleetNumber = asset.id.endsWith(".0") ? asset.id.slice(0, -2) : "";
+    if (fleetNumber) return <>Frota {fleetNumber} · #{asset.id}</>;
+  }
   return <>{asset.hasPatrimony ? `#${asset.id}` : "Sem patrimônio"}</>;
 }
 
@@ -242,20 +273,22 @@ export function AssetDetails({
           >
             <TransferIcon /> Transferir
           </button>
-          <button
-            className="button button-secondary"
-            type="button"
-            onClick={onIdentifier}
-            disabled={!authenticated}
-          >
-            <EditIcon /> Alterar patrimônio
-          </button>
+          {asset.sourceSystem !== "sabium" ? (
+            <button
+              className="button button-secondary"
+              type="button"
+              onClick={onIdentifier}
+              disabled={!authenticated}
+            >
+              <EditIcon /> Alterar patrimônio
+            </button>
+          ) : null}
           <button
             className="button button-quiet"
             type="button"
             aria-label="Copiar ID"
             title="Copiar ID"
-            onClick={() => void navigator.clipboard.writeText(asset.id)}
+            onClick={() => void navigator.clipboard.writeText(asset.sourceIdentifier || asset.id)}
           >
             <CopyIcon /> <span className={scannerContext ? "" : "sr-only"}>Copiar ID</span>
           </button>
@@ -292,7 +325,26 @@ export function AssetDetails({
             <div><dt>Localização</dt><dd>{asset.location}</dd></div>
             <div><dt>Número de série</dt><dd>{asset.serial || "Não informado"}</dd></div>
             <div><dt>Aquisição</dt><dd>{formatDate(asset.acquiredAt)}</dd></div>
-            <div><dt>Marca e modelo</dt><dd>{asset.brandModel}</dd></div>
+            {dashboard.environment.isAdmin ? <div><dt>Valor de aquisição</dt><dd>{formatCurrency(asset.value)}</dd></div> : null}
+            <div className="detail-wide"><dt>Marca e modelo</dt><dd>{asset.brandModel}</dd></div>
+            {asset.sourceSystem === "sabium" ? (
+              <>
+                <div className="detail-section-title"><span>Dados de origem · Sabium</span></div>
+                <div><dt>Patrimônio-base</dt><dd>{asset.baseCode}</dd></div>
+                <div><dt>Incorporação</dt><dd>{asset.incorporation ?? "Não informada"}</dd></div>
+                <div><dt>Identificador Sabium</dt><dd>{asset.sourceIdentifier}</dd></div>
+                <div><dt>Grupo</dt><dd>{asset.assetGroup || "Não informado"}</dd></div>
+                <div><dt>Filial</dt><dd>{asset.branchCode || "Não informada"}</dd></div>
+                <div><dt>Data de baixa</dt><dd>{formatDate(asset.disposedAt)}</dd></div>
+                {dashboard.environment.isAdmin ? (
+                  <>
+                    <div><dt>Valor da operação</dt><dd>{formatCurrency(asset.operationValue)}</dd></div>
+                    <div><dt>Número da nota</dt><dd>{asset.invoiceNumber || "Não informado"}</dd></div>
+                  </>
+                ) : null}
+                <div className="detail-wide"><dt>Descrição original</dt><dd>{asset.sourceDescription || "Não informada"}</dd></div>
+              </>
+            ) : null}
             <div className="detail-wide"><dt>Observações</dt><dd>{asset.notes || "Sem observações"}</dd></div>
           </dl>
           <form className="status-form" key={`${asset.id}:${asset.status}`} onSubmit={onStatusSubmit}>
@@ -637,6 +689,14 @@ function formatDate(value: string | null): string {
   return Number.isNaN(date.getTime())
     ? "Não informado"
     : new Intl.DateTimeFormat("pt-BR").format(date);
+}
+
+export function formatCurrency(value: number | null) {
+  if (value === null || !Number.isFinite(value)) return "Não informado";
+  return new Intl.NumberFormat("pt-BR", {
+    style: "currency",
+    currency: "BRL",
+  }).format(value);
 }
 
 export function formatDateTime(value: string): string {

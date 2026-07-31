@@ -86,6 +86,15 @@ export async function POST(request: Request) {
       );
     }
     const preview = parsePatrimonioRows(rows) as SpreadsheetPreview;
+    if (
+      departmentSlug !== "gazin-log"
+      && preview.assets.some((asset) => asset.type === "fleet")
+    ) {
+      return Response.json(
+        { error: "Itens do tipo Frota só podem ser importados no ambiente Gazin LOG." },
+        { status: 422, headers: responseHeaders },
+      );
+    }
     if (mode === "preview") {
       return Response.json(publicPreview(preview), { headers: responseHeaders });
     }
