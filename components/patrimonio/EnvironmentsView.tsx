@@ -223,7 +223,7 @@ export function EnvironmentsView({
           <div className="operational-panel-toolbar">
             <div>
               <h2 id="access-title">Acesso por usuário</h2>
-              <p>Administradores veem todos os ambientes; demais usuários veem apenas os departamentos marcados.</p>
+              <p>Administradores e auditores veem todos os ambientes; o auditor permanece somente leitura.</p>
             </div>
             <span className="record-count">{environment.users.length} usuários</span>
           </div>
@@ -276,7 +276,7 @@ export function EnvironmentsView({
                 <option value="admin">Administrador global</option>
               </select>
               <small className="field-help">
-                Auditor consulta, acompanha e exporta dados dos departamentos liberados, sem alterar registros ou permissões.
+                Auditor consulta, acompanha e exporta dados de todos os departamentos atuais e futuros, sem alterar registros ou permissões.
               </small>
             </label>
             <label className="environment-admin-check field-wide">
@@ -333,13 +333,20 @@ export function EnvironmentsView({
               </label>
             </fieldset>
             <fieldset className="environment-memberships field-wide">
-              <legend>Departamentos liberados</legend>
+              <legend>Departamentos</legend>
+              <small className="field-help">
+                Administradores e auditores têm alcance global. Selecione departamentos somente para operadores.
+              </small>
               {environment.departments.map((department) => (
                 <label key={department.slug}>
                   <input
                     type="checkbox"
-                    checked={accessForm.departmentSlugs.includes(department.slug)}
-                    disabled={accessForm.isAdmin || !accessForm.active}
+                    checked={
+                      accessForm.isAdmin
+                      || accessForm.isAuditor
+                      || accessForm.departmentSlugs.includes(department.slug)
+                    }
+                    disabled={accessForm.isAdmin || accessForm.isAuditor || !accessForm.active}
                     onChange={(event) => toggleDepartment(department.slug, event.target.checked)}
                   />
                   <span>{department.name}</span>
@@ -374,17 +381,20 @@ export function EnvironmentsView({
                   </span>
                   {user.isAdmin ? <span>Administrador</span> : null}
                   {user.isAuditor ? <span>Auditor</span> : null}
+                  {user.isAdmin || user.isAuditor ? <span>Todos os departamentos</span> : null}
                   {!user.isAdmin && !user.isAuditor && user.canWrite ? <span>Alteração</span> : null}
                   {!user.isAdmin && !user.isAuditor && user.canImport ? <span>Importação</span> : null}
                   {!user.isAdmin && user.canExport ? <span>Exportação controlada</span> : null}
                   {!user.isAdmin && !user.isAuditor && !user.canWrite && !user.canImport && !user.canExport
                     ? <span>Somente leitura</span>
                     : null}
-                  {user.departmentSlugs.map((slug) => (
-                    <span key={slug}>
-                      {environment.departments.find((department) => department.slug === slug)?.name ?? slug}
-                    </span>
-                  ))}
+                  {!user.isAdmin && !user.isAuditor
+                    ? user.departmentSlugs.map((slug) => (
+                      <span key={slug}>
+                        {environment.departments.find((department) => department.slug === slug)?.name ?? slug}
+                      </span>
+                    ))
+                    : null}
                 </div>
                 <small className="environment-last-login">
                   Último acesso: {user.lastLoginAt ? formatDateTime(user.lastLoginAt) : "não registrado"}

@@ -192,7 +192,7 @@ Deno.serve(async (request) => {
         const departmentSlugs = Array.isArray(body.user?.departmentSlugs)
           ? body.user.departmentSlugs.map(String)
           : [];
-        const data = await dataRequest("rpc/patrimonio_save_user_access_v3", {
+        const data = await dataRequest("rpc/patrimonio_save_user_access_v4", {
           method: "POST",
           body: JSON.stringify({
             p_admin_identifier: identifier,
@@ -428,7 +428,7 @@ async function resolveDepartmentAccess(identifier, requestedSlug) {
   const allDepartments = await dataRequest(
     "patrimonio_departments?active=eq.true&select=slug,name,owner_key&order=name.asc",
   );
-  const departments = user.is_admin
+  const departments = user.is_admin || user.is_auditor
     ? allDepartments
     : await allowedDepartments(identifier, allDepartments);
 
