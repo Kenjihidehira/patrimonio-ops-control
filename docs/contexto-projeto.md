@@ -136,7 +136,12 @@ O login usa exclusivamente Google OpenID Connect com Authorization Code, PKCE, `
 
 Supabase Auth não é usado para o login da aplicação. O cliente também não decide permissões: cada requisição é revalidada no servidor.
 
-As permissões financeiras são administrativas. Valores de aquisição, depreciação, custos contratuais e configuração técnica de integrações não devem ser projetados para perfis comuns.
+Dados financeiros usam a permissão explícita `can_view_financial_data`, obrigatória
+para administradores e concedida separadamente a auditores ou operadores. Ela
+autoriza somente a projeção de valores de aquisição, operação, depreciação e custos
+contratuais nos departamentos já acessíveis; não concede escrita, importação,
+administração nem exportação. A exportação financeira exige também `can_export`.
+Configuração técnica de integrações permanece exclusiva de administrador.
 
 ## 9. Persistência e concorrência
 

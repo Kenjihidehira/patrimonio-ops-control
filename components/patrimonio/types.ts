@@ -20,6 +20,7 @@ export type AssetStatus =
   | "discrepancy"
   | "retired";
 export type ViewId =
+  | "dashboard"
   | "inventory"
   | "operations"
   | "nuclei"
@@ -189,6 +190,7 @@ export type DepartmentUser = {
   canWrite: boolean;
   canImport: boolean;
   canExport: boolean;
+  canViewFinancialData: boolean;
   lastLoginAt: string | null;
   departmentSlugs: string[];
 };
@@ -229,6 +231,7 @@ export type DepartmentEnvironment = {
     canWrite: boolean;
     canImport: boolean;
     canExport: boolean;
+    canViewFinancialData: boolean;
   };
   users: DepartmentUser[];
   transfers: DepartmentTransfer[];
@@ -355,6 +358,7 @@ export type AssetDocument = {
   uploadedBy: string;
   uploadedAt: string;
   retentionUntil: string | null;
+  containsFinancialData: boolean;
 };
 
 export type AssetContract = {
@@ -484,6 +488,7 @@ export type CustomField = {
   fieldType: "text" | "number" | "date" | "boolean" | "select";
   options: string[];
   required: boolean;
+  containsFinancialData: boolean;
   active: boolean;
   createdBy: string;
   createdAt: string;
@@ -598,6 +603,88 @@ export type OperationsData = {
   assetInspections: AssetInspection[];
 };
 
+export type AnalyticsSnapshot = {
+  generatedAt: string;
+  assets: {
+    total: number;
+    allocated: number;
+    available: number;
+    maintenance: number;
+    discrepancies: number;
+    retired: number;
+    allocationRate: number;
+    discrepancyRate: number;
+  };
+  inventory: {
+    activeCampaigns: number;
+    campaign: {
+      id: string;
+      name: string;
+      status: string;
+      dueAt: string | null;
+      targetCount: number;
+      checkedCount: number;
+      issueCount: number;
+      completionRate: number;
+      overdue: boolean;
+      results: {
+        confirmed: number;
+        missing: number;
+        wrongLocation: number;
+        damaged: number;
+        pending: number;
+      };
+    } | null;
+  };
+  custody: {
+    formalizedAssets: number;
+    allocatedAssets: number;
+    coverageRate: number | null;
+    pendingTerms: number;
+  };
+  maintenance: {
+    open: number;
+    overdue: number;
+    critical: number;
+    preventive: number;
+    corrective: number;
+    inspections: number;
+    ageBuckets: {
+      upTo7: number;
+      from8To30: number;
+      from31To60: number;
+      over60: number;
+    };
+  };
+  dataQuality: {
+    identified: number;
+    identificationRate: number;
+    allocatedWithResponsible: number;
+    responsibleRate: number | null;
+    located: number;
+    locationRate: number;
+    tracked: number;
+    trackingRate: number;
+  };
+  nuclei: Array<{
+    id: string;
+    code: string;
+    name: string;
+    total: number;
+    allocated: number;
+    maintenance: number;
+    discrepancies: number;
+    untagged: number;
+    alerts: number;
+    allocationRate: number;
+  }>;
+  movementTrend: Array<{
+    key: string;
+    label: string;
+    count: number;
+  }>;
+};
+
 export type Dashboard = {
   revision: number;
   summary: {
@@ -618,6 +705,7 @@ export type Dashboard = {
   collaborators: Collaborator[];
   imports: ImportRun[];
   operations: OperationsData;
+  analytics: AnalyticsSnapshot | null;
   environment: DepartmentEnvironment;
   resultCount: number;
   options: {

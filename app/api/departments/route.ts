@@ -55,6 +55,7 @@ export async function POST(request: Request) {
         canWrite: requestedUser.canWrite === true,
         canImport: requestedUser.canImport === true,
         canExport: requestedUser.canExport === true,
+        canViewFinancialData: requestedUser.canViewFinancialData === true,
         departmentSlugs: Array.isArray(requestedUser.departmentSlugs)
           ? requestedUser.departmentSlugs.map(String)
           : [],
@@ -134,6 +135,7 @@ function departmentError(error: unknown, fallback: string) {
       cannot_remove_own_admin: "Você não pode remover seu próprio acesso administrativo.",
       no_department_access: "Libere ao menos um departamento para o usuário ativo.",
       operation_not_allowed: "Seu perfil não permite executar esta operação.",
+      financial_data_permission_required: "A transferência exige permissão para dados financeiros.",
       rate_limit_exceeded: "Muitas tentativas em pouco tempo. Aguarde e tente novamente.",
     };
     const message = messages[error.message] ?? fallback;

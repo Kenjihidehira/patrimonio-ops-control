@@ -80,7 +80,7 @@ export async function GET(request: Request) {
         nucleus: url.searchParams.get("nucleus"),
         sort: url.searchParams.get("sort"),
       },
-      { includeFinancials: workspace.environment?.isAdmin === true },
+      { includeFinancials: workspace.environment?.permissions.canViewFinancialData === true },
     );
 
     return Response.json(
@@ -88,6 +88,7 @@ export async function GET(request: Request) {
         ...dashboard,
         imports: workspace.imports,
         operations: workspace.operations,
+        analytics: workspace.analytics,
         environment: workspace.environment,
         session: {
           authenticated: true,
@@ -166,10 +167,11 @@ export async function POST(request: Request) {
         ...buildDashboard(
           updated.state,
           {},
-          { includeFinancials: updated.environment?.isAdmin === true },
+          { includeFinancials: updated.environment?.permissions.canViewFinancialData === true },
         ),
         imports: updated.imports,
         operations: updated.operations,
+        analytics: updated.analytics,
         environment: updated.environment,
         message: "Alteração registrada com sucesso.",
       },
@@ -247,6 +249,7 @@ function advancedErrorMessage(message: string): string {
     active_kit_not_found: "O kit ativo não foi localizado.",
     admin_required: "Esta ação exige perfil de administrador.",
     asset_document_not_found: "O documento não foi localizado.",
+    financial_data_permission_required: "Seu perfil não possui permissão para consultar ou alterar dados financeiros.",
     asset_not_found: "O patrimônio informado não foi localizado.",
     asset_unavailable_for_reservation: "Um dos ativos já está reservado nesse período ou não está disponível.",
     campaign_asset_not_found: "O patrimônio não pertence a esta campanha.",

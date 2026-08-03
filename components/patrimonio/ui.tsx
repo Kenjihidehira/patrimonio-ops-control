@@ -325,7 +325,7 @@ export function AssetDetails({
             <div><dt>Localização</dt><dd>{asset.location}</dd></div>
             <div><dt>Número de série</dt><dd>{asset.serial || "Não informado"}</dd></div>
             <div><dt>Aquisição</dt><dd>{formatDate(asset.acquiredAt)}</dd></div>
-            {dashboard.environment.isAdmin ? <div><dt>Valor de aquisição</dt><dd>{formatCurrency(asset.value)}</dd></div> : null}
+            {dashboard.environment.permissions.canViewFinancialData ? <div><dt>Valor de aquisição</dt><dd>{formatCurrency(asset.value)}</dd></div> : null}
             <div className="detail-wide"><dt>Marca e modelo</dt><dd>{asset.brandModel}</dd></div>
             {asset.sourceSystem === "sabium" ? (
               <>
@@ -336,7 +336,7 @@ export function AssetDetails({
                 <div><dt>Grupo</dt><dd>{asset.assetGroup || "Não informado"}</dd></div>
                 <div><dt>Filial</dt><dd>{asset.branchCode || "Não informada"}</dd></div>
                 <div><dt>Data de baixa</dt><dd>{formatDate(asset.disposedAt)}</dd></div>
-                {dashboard.environment.isAdmin ? (
+                {dashboard.environment.permissions.canViewFinancialData ? (
                   <>
                     <div><dt>Valor da operação</dt><dd>{formatCurrency(asset.operationValue)}</dd></div>
                     <div><dt>Número da nota</dt><dd>{asset.invoiceNumber || "Não informado"}</dd></div>

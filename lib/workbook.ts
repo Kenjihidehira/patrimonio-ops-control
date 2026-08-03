@@ -12,6 +12,7 @@ type ExportAsset = {
   serial: string;
   brandModel: string;
   acquiredAt: string | null;
+  value: number | null;
   status: string;
   notes: string;
   sourceSystem: "sabium" | null;
@@ -22,6 +23,8 @@ type ExportAsset = {
   assetGroup: string;
   branchCode: string;
   disposedAt: string | null;
+  operationValue: number | null;
+  invoiceNumber: string;
 };
 
 type ExportNucleus = {
@@ -54,6 +57,44 @@ type ExportDashboard = {
     assetTypes: Record<string, string>;
     statuses: Record<string, string>;
   };
+  operations: {
+    assetAccounting: Array<{
+      assetId: string;
+      acquisitionValue: number;
+      residualValue: number;
+      depreciationMethod: string;
+      usefulLifeMonths: number | null;
+      depreciationStartsOn: string | null;
+      costCenter: string;
+      ledgerAccount: string;
+      supplier: string;
+      purchaseOrder: string;
+      invoiceNumber: string;
+      updatedAt: string;
+    }>;
+    assetContracts: Array<{
+      assetId: string;
+      kind: string;
+      name: string;
+      provider: string;
+      contractNumber: string;
+      startsOn: string | null;
+      endsOn: string | null;
+      monthlyCost: number | null;
+      currency: string;
+      status: string;
+    }>;
+    lifecycleRequests: Array<{
+      requestType: string;
+      assetId: string | null;
+      title: string;
+      quantity: number;
+      estimatedCost: number | null;
+      status: string;
+      requestedBy: string;
+      requestedAt: string;
+    }>;
+  };
 };
 
 type ExportImportRun = {
@@ -80,7 +121,9 @@ export async function readWorkbookRows(file: Blob) {
 export async function createExportWorkbook(
   dashboard: ExportDashboard,
   imports: ExportImportRun[],
+  options: { includeFinancials?: boolean } = {},
 ) {
+  const includeFinancials = options.includeFinancials === true;
   const inventory = [
     headerRow([
       "Patrimônio",
@@ -91,6 +134,7 @@ export async function createExportWorkbook(
       "Número de série",
       "Marca e modelo",
       "Aquisição",
+      ...(includeFinancials ? ["Valor de aquisição", "Valor da operação", "Número da nota"] : []),
       "Status",
       "Observações",
       "Sistema de origem",
@@ -111,6 +155,9 @@ export async function createExportWorkbook(
       textCell(asset.serial),
       textCell(asset.brandModel),
       dateCell(asset.acquiredAt),
+      ...(includeFinancials
+        ? [moneyCell(asset.value), moneyCell(asset.operationValue), textCell(asset.invoiceNumber)]
+        : []),
       textCell(dashboard.options.statuses[asset.status]),
       textCell(asset.notes),
       textCell(asset.sourceSystem === "sabium" ? "Sabium" : ""),
@@ -164,16 +211,75 @@ export async function createExportWorkbook(
     ]),
   ];
 
+  const accounting = [
+    headerRow(["Patrimônio", "Valor de aquisição", "Valor residual", "Método", "Vida útil (meses)", "Início da depreciação", "Centro de custo", "Conta contábil", "Fornecedor", "Pedido de compra", "Nota fiscal", "Atualizado em"]),
+    ...dashboard.operations.assetAccounting.map((item) => [
+      textCell(item.assetId),
+      moneyCell(item.acquisitionValue),
+      moneyCell(item.residualValue),
+      textCell(item.depreciationMethod === "straight_line" ? "Linear" : "Sem depreciação"),
+      item.usefulLifeMonths === null ? textCell("") : numberCell(item.usefulLifeMonths),
+      dateCell(item.depreciationStartsOn),
+      textCell(item.costCenter),
+      textCell(item.ledgerAccount),
+      textCell(item.supplier),
+      textCell(item.purchaseOrder),
+      textCell(item.invoiceNumber),
+      dateTimeCell(item.updatedAt),
+    ]),
+  ];
+
+  const contractCosts = [
+    headerRow(["Patrimônio", "Tipo", "Contrato", "Fornecedor", "Número", "Início", "Vencimento", "Custo mensal", "Moeda", "Status"]),
+    ...dashboard.operations.assetContracts.map((item) => [
+      textCell(item.assetId),
+      textCell(item.kind),
+      textCell(item.name),
+      textCell(item.provider),
+      textCell(item.contractNumber),
+      dateCell(item.startsOn),
+      dateCell(item.endsOn),
+      moneyCell(item.monthlyCost),
+      textCell(item.currency),
+      textCell(item.status),
+    ]),
+  ];
+
+  const lifecycleCosts = [
+    headerRow(["Tipo", "Patrimônio", "Solicitação", "Quantidade", "Valor estimado", "Status", "Solicitante", "Data"]),
+    ...dashboard.operations.lifecycleRequests.map((item) => [
+      textCell(item.requestType),
+      textCell(item.assetId),
+      textCell(item.title),
+      numberCell(item.quantity),
+      moneyCell(item.estimatedCost),
+      textCell(item.status),
+      textCell(item.requestedBy),
+      dateTimeCell(item.requestedAt),
+    ]),
+  ];
+
+  const sheets: Sheet<Blob>[] = [
+    sheet("Inventário", inventory, [
+      14, 20, 28, 28, 28, 22, 30, 14,
+      ...(includeFinancials ? [18, 18, 20] : []),
+      16, 38,
+      18, 18, 14, 22, 42, 26, 14, 14,
+    ]),
+    sheet("Núcleos", nuclei, [14, 30, 28, 28, 12, 12, 12]),
+    sheet("Auditoria", audit, [20, 14, 20, 22, 34, 34, 28, 42]),
+    sheet("Importações", importHistory, [20, 34, 16, 14, 14, 14, 28]),
+  ];
+  if (includeFinancials) {
+    sheets.push(
+      sheet("Contábil", accounting, [16, 18, 18, 20, 18, 20, 22, 22, 28, 22, 20, 20]),
+      sheet("Custos contratuais", contractCosts, [16, 18, 28, 28, 20, 14, 14, 18, 10, 16]),
+      sheet("Solicitações financeiras", lifecycleCosts, [18, 16, 34, 14, 18, 16, 28, 20]),
+    );
+  }
+
   return writeExcelFile(
-    [
-      sheet("Inventário", inventory, [
-        14, 20, 28, 28, 28, 22, 30, 14, 16, 38,
-        18, 18, 14, 22, 42, 26, 14, 14,
-      ]),
-      sheet("Núcleos", nuclei, [14, 30, 28, 28, 12, 12, 12]),
-      sheet("Auditoria", audit, [20, 14, 20, 22, 34, 34, 28, 42]),
-      sheet("Importações", importHistory, [20, 34, 16, 14, 14, 14, 28]),
-    ],
+    sheets,
     { fontFamily: "Arial", fontSize: 10 },
   ).toBlob();
 }
@@ -198,6 +304,11 @@ function textCell(value: unknown): Cell {
 
 function numberCell(value: unknown): Cell {
   return { value: Number(value ?? 0), type: Number, format: "#,##0" };
+}
+
+function moneyCell(value: unknown): Cell {
+  if (value === null || value === undefined || value === "") return textCell("");
+  return { value: Number(value), type: Number, format: 'R$ #,##0.00' };
 }
 
 function dateCell(value: unknown): Cell {

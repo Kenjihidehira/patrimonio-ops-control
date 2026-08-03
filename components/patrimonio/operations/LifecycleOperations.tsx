@@ -105,7 +105,7 @@ function LifecycleRequests({ dashboard, onMutate }: OperationProps) {
           <label className="field"><span>Quantidade</span><input name="quantity" type="number" min="1" max="10000" defaultValue="1" required /></label>
           <label className="field field-wide"><span>Patrimônio relacionado</span><AssetSelect assets={dashboard.nucleusInventory} required={false} /></label>
           <label className="field field-wide"><span>Título</span><input name="title" minLength={3} maxLength={180} required placeholder="Aquisição de notebooks para expansão" /></label>
-          <label className="field"><span>Valor estimado (R$)</span><input name="estimatedCost" type="number" min="0" step="0.01" defaultValue="0" /></label>
+          {dashboard.environment.isAdmin ? <label className="field"><span>Valor estimado (R$)</span><input name="estimatedCost" type="number" min="0" step="0.01" defaultValue="0" /></label> : <input name="estimatedCost" type="hidden" value="0" />}
           <label className="field field-wide"><span>Justificativa</span><textarea name="reason" minLength={3} maxLength={500} rows={3} required /></label>
           <InlineError message={error} />
           <FormActions busy={busyKey === "create-request"} submitLabel="Enviar para aprovação" />
@@ -116,7 +116,7 @@ function LifecycleRequests({ dashboard, onMutate }: OperationProps) {
         {dashboard.operations.lifecycleRequests.length ? <div className="operation-record-list">
           {dashboard.operations.lifecycleRequests.map((request) => (
             <article className="operation-record" key={request.id}>
-              <div className="operation-record-main"><strong>{request.title}</strong><span>{requestTypeLabels[request.requestType]} · {request.assetId || `${request.quantity} item(ns)`}</span><small>{request.requestedBy} · {formatDateTime(request.requestedAt)}</small></div>
+              <div className="operation-record-main"><strong>{request.title}</strong><span>{requestTypeLabels[request.requestType]} · {request.assetId || `${request.quantity} item(ns)`}</span><small>{request.requestedBy} · {formatDateTime(request.requestedAt)}{request.estimatedCost !== null ? ` · ${new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(request.estimatedCost)}` : ""}</small></div>
               <StatusPill label={requestStatusLabels[request.status]} tone={request.status === "approved" || request.status === "completed" ? "success" : request.status === "rejected" ? "danger" : request.status === "pending_approval" ? "warning" : "neutral"} />
               {dashboard.environment.isAdmin && request.status === "pending_approval" ? <div className="operation-record-actions"><button className="button button-primary button-small" type="button" disabled={busyKey === request.id} onClick={() => decide(request, "approved")}>Aprovar</button><button className="button button-secondary button-small" type="button" disabled={busyKey === request.id} onClick={() => decide(request, "rejected")}>Rejeitar</button></div> : null}
               {dashboard.environment.isAdmin && request.status === "approved" ? <div className="operation-record-actions"><button className="button button-primary button-small" type="button" disabled={busyKey === request.id} onClick={() => decide(request, "completed")}>Concluir</button><button className="button button-secondary button-small" type="button" disabled={busyKey === request.id} onClick={() => decide(request, "cancelled")}>Cancelar</button></div> : null}

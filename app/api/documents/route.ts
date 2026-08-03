@@ -64,6 +64,7 @@ export async function POST(request: Request) {
         mimeType: file.type,
         note: String(body.get("note") ?? "").trim(),
         retentionUntil: String(body.get("retentionUntil") ?? "").trim(),
+        containsFinancialData: String(body.get("containsFinancialData") ?? "") === "true",
       },
       Buffer.from(await file.arrayBuffer()).toString("base64"),
     );

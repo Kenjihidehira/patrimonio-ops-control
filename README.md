@@ -32,7 +32,7 @@ Planilhas patrimoniais isoladas não registram bem responsabilidade, movimentaç
 - Solicitações de compra, transferência, baixa, reparo e substituição com decisão auditável.
 - Kits patrimoniais, reservas de equipamentos e recolhimento estruturado no desligamento de colaboradores.
 - Arquivo privado de notas, garantias, fotos, laudos e contratos com checksum e acesso temporário assinado.
-- Garantias, locações, seguros, licenças, depreciação, centro de custo e campos customizados; dados financeiros são restritos a administradores.
+- Garantias, locações, seguros, licenças, depreciação, centro de custo e campos customizados; dados financeiros exigem permissão explícita de leitura e continuam com escrita administrativa.
 - Inspeções fotográficas com fila de análise, resultado estruturado e revisão humana obrigatória.
 - Conectores de RH, ERP, MDM, chamados, IoT e diretório, com eventos idempotentes e fila de conciliação.
 - Indicadores de utilização, capacidade ociosa, risco, cobertura documental e alertas de vencimento.
@@ -48,10 +48,10 @@ Planilhas patrimoniais isoladas não registram bem responsabilidade, movimentaç
 - Baixa lógica, sem exclusão destrutiva do histórico.
 - Auditoria com ator, data, origem, destino e motivo.
 - Importação XLSX em duas etapas: pré-validação, comparação com o cadastro atual e confirmação explícita de alterações operacionais.
-- Exportação XLSX com inventário, núcleos, auditoria e histórico de importações.
-- Inventário e exportação operacional sem exposição de preço; dados contábeis ficam em área administrativa protegida.
+- Exportação XLSX operacional com inventário, núcleos, auditoria e histórico de importações, sempre sem exposição financeira.
+- Exportação financeira separada, cumulativa e auditável, disponível somente para quem possui simultaneamente permissões de exportação e leitura financeira.
 - Ambientes isolados por departamento, com acesso individual, auditoria segregada, administração global e transferência auditável.
-- Permissões independentes para consulta, alteração, importação e exportação.
+- Permissões independentes para consulta, alteração, importação, exportação e leitura financeira.
 - Desativação imediata, revogação de sessão e auditoria de login e administração.
 - Aviso de privacidade, retenção técnica e runbooks de incidente e restauração.
 

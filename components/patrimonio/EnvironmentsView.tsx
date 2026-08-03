@@ -33,6 +33,7 @@ const emptyUser: DepartmentUser = {
   canWrite: false,
   canImport: false,
   canExport: false,
+  canViewFinancialData: false,
   lastLoginAt: null,
   departmentSlugs: [],
 };
@@ -268,6 +269,11 @@ export function EnvironmentsView({
                     canWrite: role === "admin" ? true : role === "auditor" ? false : current.canWrite,
                     canImport: role === "admin" ? true : role === "auditor" ? false : current.canImport,
                     canExport: role === "admin" || role === "auditor" ? true : current.canExport,
+                    canViewFinancialData: role === "admin"
+                      ? true
+                      : current.isAdmin
+                        ? false
+                        : current.canViewFinancialData,
                   };
                 })}
               >
@@ -331,6 +337,21 @@ export function EnvironmentsView({
                 />
                 <span>Exportar dados pessoais e patrimoniais</span>
               </label>
+              <label>
+                <input
+                  type="checkbox"
+                  checked={accessForm.isAdmin || accessForm.canViewFinancialData}
+                  disabled={accessForm.isAdmin || !accessForm.active}
+                  onChange={(event) => setAccessForm((current) => ({
+                    ...current,
+                    canViewFinancialData: event.target.checked,
+                  }))}
+                />
+                <span>
+                  Visualizar valores e dados contábeis
+                  <small>Libera somente consulta. Escrita financeira continua administrativa e exportação exige permissão própria.</small>
+                </span>
+              </label>
             </fieldset>
             <fieldset className="environment-memberships field-wide">
               <legend>Departamentos</legend>
@@ -385,7 +406,8 @@ export function EnvironmentsView({
                   {!user.isAdmin && !user.isAuditor && user.canWrite ? <span>Alteração</span> : null}
                   {!user.isAdmin && !user.isAuditor && user.canImport ? <span>Importação</span> : null}
                   {!user.isAdmin && user.canExport ? <span>Exportação controlada</span> : null}
-                  {!user.isAdmin && !user.isAuditor && !user.canWrite && !user.canImport && !user.canExport
+                  {user.canViewFinancialData ? <span>Dados financeiros</span> : null}
+                  {!user.isAdmin && !user.isAuditor && !user.canWrite && !user.canImport && !user.canExport && !user.canViewFinancialData
                     ? <span>Somente leitura</span>
                     : null}
                   {!user.isAdmin && !user.isAuditor

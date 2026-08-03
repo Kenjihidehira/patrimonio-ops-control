@@ -163,7 +163,11 @@ export async function POST(request: Request) {
     if (error instanceof SupabaseError && error.code === "40001") return revisionConflict();
     if (error instanceof SupabaseError && error.status === 403) {
       return Response.json(
-        { error: "Seu perfil não possui permissão para importar neste departamento." },
+        {
+          error: error.message === "financial_data_permission_required"
+            ? "A planilha contém valores financeiros. Solicite essa permissão ou remova as colunas protegidas."
+            : "Seu perfil não possui permissão para importar neste departamento.",
+        },
         { status: 403, headers: responseHeaders },
       );
     }

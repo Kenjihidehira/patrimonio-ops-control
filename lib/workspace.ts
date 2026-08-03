@@ -8,6 +8,7 @@ type WorkspaceContext = {
   state: ReturnType<typeof normalizeState>;
   imports: ActiveWorkspace["imports"];
   operations: ActiveWorkspace["operations"];
+  analytics: ActiveWorkspace["analytics"];
   environment: ActiveWorkspace["environment"] | null;
   source: "locked" | "supabase";
   notModified: false;
@@ -60,6 +61,7 @@ export async function loadWorkspaceContext(
         reconciliationIssues: [],
         assetInspections: [],
       },
+      analytics: null,
       environment: null,
       source: "locked" as const,
       notModified: false as const,
@@ -82,6 +84,7 @@ export async function loadWorkspaceContext(
     state: normalizeState(workspace.state),
     imports: workspace.imports,
     operations: workspace.operations,
+    analytics: workspace.analytics,
     environment: workspace.environment,
     source: "supabase" as const,
     notModified: false as const,

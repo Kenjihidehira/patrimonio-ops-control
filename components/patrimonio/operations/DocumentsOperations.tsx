@@ -43,13 +43,15 @@ const inspectionStatusLabels = { pending: "Aguardando análise", processing: "Pr
 export function DocumentsOperations(props: OperationProps) {
   const [pane, setPane] = useState<DocumentsPane>("documents");
   const operations = props.dashboard.operations;
-  const panes: Array<{ id: DocumentsPane; label: string; count: number; admin?: boolean }> = [
+  const panes = ([
     { id: "documents", label: "Documentos", count: operations.assetDocuments.length },
     { id: "contracts", label: "Contratos", count: operations.assetContracts.filter((item) => item.status === "active").length },
-    { id: "accounting", label: "Contábil", count: operations.assetAccounting.length, admin: true },
+    { id: "accounting", label: "Contábil", count: operations.assetAccounting.length, financial: true },
     { id: "inspections", label: "Inspeções", count: operations.assetInspections.filter((item) => ["pending", "processing", "needs_review"].includes(item.status)).length },
     { id: "custom", label: "Campos", count: operations.customFields.length },
-  ].filter((item) => !item.admin || props.dashboard.environment.isAdmin) as Array<{ id: DocumentsPane; label: string; count: number; admin?: boolean }>;
+  ] satisfies Array<{ id: DocumentsPane; label: string; count: number; financial?: boolean }>).filter(
+    (item) => !item.financial || props.dashboard.environment.permissions.canViewFinancialData,
+  );
 
   return (
     <div className="operation-stack">
@@ -58,7 +60,7 @@ export function DocumentsOperations(props: OperationProps) {
       </nav>
       {pane === "documents" ? <AssetDocuments {...props} /> : null}
       {pane === "contracts" ? <AssetContracts {...props} /> : null}
-      {pane === "accounting" && props.dashboard.environment.isAdmin ? <AssetAccounting {...props} /> : null}
+      {pane === "accounting" && props.dashboard.environment.permissions.canViewFinancialData ? <AssetAccounting {...props} /> : null}
       {pane === "inspections" ? <AssetInspections {...props} /> : null}
       {pane === "custom" ? <CustomFields {...props} /> : null}
     </div>
@@ -89,6 +91,7 @@ function AssetDocuments({ dashboard, onMutate, onRefresh, onToast }: OperationPr
         category: formValue(form, "category"),
         note: formValue(form, "note"),
         retentionUntil: formValue(form, "retentionUntil"),
+        containsFinancialData: (form.elements.namedItem("containsFinancialData") as HTMLInputElement | null)?.checked === true,
       });
       await onRefresh();
       form.reset();
@@ -106,8 +109,9 @@ function AssetDocuments({ dashboard, onMutate, onRefresh, onToast }: OperationPr
         <div className="operational-panel-toolbar"><div><h2 id="document-upload-title">Anexar documento</h2><p>Arquivos privados com checksum, retenção e acesso temporário.</p></div></div>
         <form className="form-grid operation-form" onSubmit={submit}>
           <label className="field field-wide"><span>Patrimônio</span><AssetSelect assets={dashboard.nucleusInventory} /></label>
-          <label className="field"><span>Categoria</span><select name="category" defaultValue="invoice">{Object.entries(categoryLabels).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label>
+          <label className="field"><span>Categoria</span><select name="category" defaultValue={dashboard.environment.isAdmin ? "invoice" : "warranty"}>{Object.entries(categoryLabels).filter(([value]) => dashboard.environment.isAdmin || !["invoice", "contract", "disposal"].includes(value)).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label>
           <label className="field"><span>Retenção até</span><input name="retentionUntil" type="date" /></label>
+          {dashboard.environment.isAdmin ? <label className="operation-checkbox field-wide"><input name="containsFinancialData" type="checkbox" /><span><strong>Documento contém dados financeiros</strong><small>Marque para valores, condições comerciais, notas, comprovantes ou dados contábeis. Nota fiscal, contrato e baixa são protegidos automaticamente.</small></span></label> : null}
           <label className="field field-wide"><span>Arquivo</span><input name="file" type="file" required accept=".pdf,.jpg,.jpeg,.png,.webp,.txt,.docx,.xlsx" /></label>
           <label className="field field-wide"><span>Observação</span><textarea name="note" maxLength={500} rows={2} /></label>
           <InlineError message={uploadError ?? mutation.error} />
@@ -123,7 +127,7 @@ function AssetDocuments({ dashboard, onMutate, onRefresh, onToast }: OperationPr
 }
 
 function DocumentCard({ document, departmentSlug, busy, onDelete }: { document: AssetDocument; departmentSlug: string; busy: boolean; onDelete: () => void }) {
-  return <article className="document-card"><div className="document-card-icon" aria-hidden="true">{document.mimeType.startsWith("image/") ? "IMG" : document.mimeType === "application/pdf" ? "PDF" : "DOC"}</div><div className="document-card-main"><strong>{document.fileName}</strong><span>{document.assetId} · {categoryLabels[document.category]}</span><small>{formatBytes(document.byteSize)} · {formatDateTime(document.uploadedAt)}</small></div><div className="document-card-actions"><a className="button button-secondary button-small" href={assetDocumentUrl(document.id, departmentSlug)} target="_blank" rel="noreferrer">Abrir</a><button className="button button-secondary button-small" type="button" disabled={busy} onClick={onDelete}>Remover</button></div></article>;
+  return <article className="document-card"><div className="document-card-icon" aria-hidden="true">{document.mimeType.startsWith("image/") ? "IMG" : document.mimeType === "application/pdf" ? "PDF" : "DOC"}</div><div className="document-card-main"><strong>{document.fileName}</strong><span>{document.assetId} · {categoryLabels[document.category]}{document.containsFinancialData ? " · Financeiro" : ""}</span><small>{formatBytes(document.byteSize)} · {formatDateTime(document.uploadedAt)}</small></div><div className="document-card-actions"><a className="button button-secondary button-small" href={assetDocumentUrl(document.id, departmentSlug)} target="_blank" rel="noreferrer">Abrir</a><button className="button button-secondary button-small" type="button" disabled={busy} onClick={onDelete}>Remover</button></div></article>;
 }
 
 function AssetContracts({ dashboard, onMutate }: OperationProps) {
@@ -140,9 +144,65 @@ function AssetContracts({ dashboard, onMutate }: OperationProps) {
 
 function AssetAccounting({ dashboard, onMutate }: OperationProps) {
   const { busyKey, error, run } = useOperationMutation(onMutate);
-  function submit(event: FormEvent<HTMLFormElement>) { event.preventDefault(); const form = event.currentTarget; void run("save-accounting", { type: "upsert_asset_accounting", accounting: { assetId: formValue(form, "assetId"), acquisitionValue: formValue(form, "acquisitionValue"), residualValue: formValue(form, "residualValue"), depreciationMethod: formValue(form, "depreciationMethod"), usefulLifeMonths: formValue(form, "usefulLifeMonths"), depreciationStartsOn: formValue(form, "depreciationStartsOn"), costCenter: formValue(form, "costCenter"), ledgerAccount: formValue(form, "ledgerAccount"), supplier: formValue(form, "supplier"), purchaseOrder: formValue(form, "purchaseOrder"), invoiceNumber: formValue(form, "invoiceNumber") } }, () => form.reset()); }
-  const totalBookValue = dashboard.operations.assetAccounting.reduce((sum, item) => sum + accountingBookValue(item), 0);
-  return <div className="operation-module-layout"><section className="operational-panel operation-form-panel" aria-labelledby="accounting-create-title"><div className="operational-panel-toolbar"><div><h2 id="accounting-create-title">Dados contábeis</h2><p>Valor, depreciação, centro de custo e documentos de compra.</p></div></div><form className="form-grid operation-form" onSubmit={submit}><label className="field field-wide"><span>Patrimônio</span><AssetSelect assets={dashboard.nucleusInventory} /></label><label className="field"><span>Valor de aquisição</span><input name="acquisitionValue" type="number" min="0" step="0.01" required /></label><label className="field"><span>Valor residual</span><input name="residualValue" type="number" min="0" step="0.01" defaultValue="0" /></label><label className="field"><span>Depreciação</span><select name="depreciationMethod" defaultValue="straight_line"><option value="straight_line">Linear</option><option value="none">Não depreciar</option></select></label><label className="field"><span>Vida útil (meses)</span><input name="usefulLifeMonths" type="number" min="1" max="1200" /></label><label className="field"><span>Início da depreciação</span><input name="depreciationStartsOn" type="date" /></label><label className="field"><span>Centro de custo</span><input name="costCenter" maxLength={80} /></label><label className="field"><span>Conta contábil</span><input name="ledgerAccount" maxLength={80} /></label><label className="field"><span>Fornecedor</span><input name="supplier" maxLength={180} /></label><label className="field"><span>Pedido de compra</span><input name="purchaseOrder" maxLength={120} /></label><label className="field"><span>Nota fiscal</span><input name="invoiceNumber" maxLength={120} /></label><InlineError message={error} /><FormActions busy={busyKey === "save-accounting"} submitLabel="Salvar dados contábeis" /></form></section><section className="operational-panel operation-record-panel" aria-labelledby="accounting-list-title"><div className="operational-panel-toolbar"><div><h2 id="accounting-list-title">Valor líquido estimado</h2><p>Depreciação linear calculada a partir dos parâmetros cadastrados.</p></div><strong className="accounting-total">{formatCurrency(totalBookValue)}</strong></div>{dashboard.operations.assetAccounting.length ? <div className="operation-record-list">{dashboard.operations.assetAccounting.map((item) => { const asset = assetById(dashboard, item.assetId); return <article className="operation-record" key={item.assetId}><div className="operation-record-main"><strong>{asset ? assetLabel(asset) : item.assetId}</strong><span>{item.costCenter || "Centro de custo não informado"} · {item.supplier || "Fornecedor não informado"}</span><small>Aquisição {formatCurrency(item.acquisitionValue)} · residual {formatCurrency(item.residualValue)}</small></div><div className="accounting-value"><small>Valor líquido</small><strong>{formatCurrency(accountingBookValue(item))}</strong></div></article>; })}</div> : <EmptyState title="Nenhum dado contábil" description="Cadastre valor e vida útil para acompanhar a depreciação." />}</section></div>;
+  function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const form = event.currentTarget;
+    void run("save-accounting", {
+      type: "upsert_asset_accounting",
+      accounting: {
+        assetId: formValue(form, "assetId"),
+        acquisitionValue: formValue(form, "acquisitionValue"),
+        residualValue: formValue(form, "residualValue"),
+        depreciationMethod: formValue(form, "depreciationMethod"),
+        usefulLifeMonths: formValue(form, "usefulLifeMonths"),
+        depreciationStartsOn: formValue(form, "depreciationStartsOn"),
+        costCenter: formValue(form, "costCenter"),
+        ledgerAccount: formValue(form, "ledgerAccount"),
+        supplier: formValue(form, "supplier"),
+        purchaseOrder: formValue(form, "purchaseOrder"),
+        invoiceNumber: formValue(form, "invoiceNumber"),
+      },
+    }, () => form.reset());
+  }
+  const totalBookValue = dashboard.operations.assetAccounting.reduce(
+    (sum, item) => sum + accountingBookValue(item),
+    0,
+  );
+  return (
+    <div className="operation-module-layout">
+      <section className="operational-panel operation-form-panel" aria-labelledby="accounting-create-title">
+        <div className="operational-panel-toolbar">
+          <div><h2 id="accounting-create-title">Dados contábeis</h2><p>Valor, depreciação, centro de custo e documentos de compra.</p></div>
+        </div>
+        {dashboard.environment.isAdmin ? (
+          <form className="form-grid operation-form" onSubmit={submit}>
+            <label className="field field-wide"><span>Patrimônio</span><AssetSelect assets={dashboard.nucleusInventory} /></label>
+            <label className="field"><span>Valor de aquisição</span><input name="acquisitionValue" type="number" min="0" step="0.01" required /></label>
+            <label className="field"><span>Valor residual</span><input name="residualValue" type="number" min="0" step="0.01" defaultValue="0" /></label>
+            <label className="field"><span>Depreciação</span><select name="depreciationMethod" defaultValue="straight_line"><option value="straight_line">Linear</option><option value="none">Não depreciar</option></select></label>
+            <label className="field"><span>Vida útil (meses)</span><input name="usefulLifeMonths" type="number" min="1" max="1200" /></label>
+            <label className="field"><span>Início da depreciação</span><input name="depreciationStartsOn" type="date" /></label>
+            <label className="field"><span>Centro de custo</span><input name="costCenter" maxLength={80} /></label>
+            <label className="field"><span>Conta contábil</span><input name="ledgerAccount" maxLength={80} /></label>
+            <label className="field"><span>Fornecedor</span><input name="supplier" maxLength={180} /></label>
+            <label className="field"><span>Pedido de compra</span><input name="purchaseOrder" maxLength={120} /></label>
+            <label className="field"><span>Nota fiscal</span><input name="invoiceNumber" maxLength={120} /></label>
+            <InlineError message={error} />
+            <FormActions busy={busyKey === "save-accounting"} submitLabel="Salvar dados contábeis" />
+          </form>
+        ) : (
+          <div className="operations-clear-state compact">
+            <strong>Consulta financeira</strong>
+            <span>Seu perfil pode consultar valores, mas somente administradores alteram dados contábeis.</span>
+          </div>
+        )}
+      </section>
+      <section className="operational-panel operation-record-panel" aria-labelledby="accounting-list-title">
+        <div className="operational-panel-toolbar"><div><h2 id="accounting-list-title">Valor líquido estimado</h2><p>Depreciação linear calculada a partir dos parâmetros cadastrados.</p></div><strong className="accounting-total">{formatCurrency(totalBookValue)}</strong></div>
+        {dashboard.operations.assetAccounting.length ? <div className="operation-record-list">{dashboard.operations.assetAccounting.map((item) => { const asset = assetById(dashboard, item.assetId); return <article className="operation-record" key={item.assetId}><div className="operation-record-main"><strong>{asset ? assetLabel(asset) : item.assetId}</strong><span>{item.costCenter || "Centro de custo não informado"} · {item.supplier || "Fornecedor não informado"}</span><small>Aquisição {formatCurrency(item.acquisitionValue)} · residual {formatCurrency(item.residualValue)}</small></div><div className="accounting-value"><small>Valor líquido</small><strong>{formatCurrency(accountingBookValue(item))}</strong></div></article>; })}</div> : <EmptyState title="Nenhum dado contábil" description="Cadastre valor e vida útil para acompanhar a depreciação." />}
+      </section>
+    </div>
+  );
 }
 
 function AssetInspections({ dashboard, onMutate }: OperationProps) {
@@ -157,10 +217,11 @@ function AssetInspections({ dashboard, onMutate }: OperationProps) {
 function CustomFields({ dashboard, onMutate }: OperationProps) {
   const { busyKey, error, setError, run } = useOperationMutation(onMutate);
   const [selectedFieldId, setSelectedFieldId] = useState("");
-  const selectedField = dashboard.operations.customFields.find((field) => field.id === selectedFieldId);
-  function create(event: FormEvent<HTMLFormElement>) { event.preventDefault(); const form = event.currentTarget; const options = formValue(form, "options").split(",").map((item) => item.trim()).filter(Boolean); void run("create-field", { type: "create_custom_field", field: { id: crypto.randomUUID(), name: formValue(form, "name"), fieldType: formValue(form, "fieldType"), options, required: (form.elements.namedItem("required") as HTMLInputElement | null)?.checked === true } }, () => form.reset()); }
+  const editableFields = dashboard.operations.customFields.filter((field) => dashboard.environment.isAdmin || !field.containsFinancialData);
+  const selectedField = editableFields.find((field) => field.id === selectedFieldId);
+  function create(event: FormEvent<HTMLFormElement>) { event.preventDefault(); const form = event.currentTarget; const options = formValue(form, "options").split(",").map((item) => item.trim()).filter(Boolean); void run("create-field", { type: "create_custom_field", field: { id: crypto.randomUUID(), name: formValue(form, "name"), fieldType: formValue(form, "fieldType"), options, required: (form.elements.namedItem("required") as HTMLInputElement | null)?.checked === true, containsFinancialData: (form.elements.namedItem("containsFinancialData") as HTMLInputElement | null)?.checked === true } }, () => form.reset()); }
   function setValue(event: FormEvent<HTMLFormElement>) { event.preventDefault(); const form = event.currentTarget; if (!selectedField) { setError("Selecione um campo personalizado."); return; } const raw = formValue(form, "value"); const value = customValue(selectedField, raw); void run("set-field-value", { type: "set_asset_custom_value", assetId: formValue(form, "assetId"), fieldId: selectedField.id, value }, () => form.reset()); }
-  return <div className="tracking-layout"><section className="operational-panel operation-form-panel" aria-labelledby="custom-create-title"><div className="operational-panel-toolbar"><div><h2 id="custom-create-title">Definir campo</h2><p>Amplie o cadastro sem alterar o modelo principal.</p></div></div>{dashboard.environment.isAdmin ? <form className="form-grid operation-form" onSubmit={create}><label className="field field-wide"><span>Nome</span><input name="name" minLength={2} maxLength={80} required /></label><label className="field"><span>Tipo</span><select name="fieldType" defaultValue="text"><option value="text">Texto</option><option value="number">Número</option><option value="date">Data</option><option value="boolean">Sim/Não</option><option value="select">Lista</option></select></label><label className="field field-wide"><span>Opções da lista</span><input name="options" placeholder="Opção A, Opção B" /></label><label className="operation-checkbox field-wide"><input name="required" type="checkbox" /><span>Preenchimento obrigatório</span></label><InlineError message={error} /><FormActions busy={busyKey === "create-field"} submitLabel="Criar campo" /></form> : <div className="operations-clear-state compact"><strong>Configuração administrativa</strong><span>Somente administradores podem criar novos campos.</span></div>}</section><section className="operational-panel operation-form-panel" aria-labelledby="custom-value-title"><div className="operational-panel-toolbar"><div><h2 id="custom-value-title">Preencher valor</h2><p>Atribua o campo a qualquer patrimônio.</p></div></div><form className="form-grid operation-form" onSubmit={setValue}><label className="field field-wide"><span>Patrimônio</span><AssetSelect assets={dashboard.nucleusInventory} /></label><label className="field field-wide"><span>Campo</span><select value={selectedFieldId} onChange={(event) => setSelectedFieldId(event.target.value)} required><option value="">Selecione</option>{dashboard.operations.customFields.map((field) => <option key={field.id} value={field.id}>{field.name}</option>)}</select></label><CustomValueInput field={selectedField} /><InlineError message={error} /><FormActions busy={busyKey === "set-field-value"} submitLabel="Salvar valor" /></form></section><section className="operational-panel tracking-history-panel" aria-labelledby="custom-list-title"><div className="operational-panel-toolbar"><div><h2 id="custom-list-title">Campos ativos</h2><p>Definições e cobertura atual no inventário.</p></div><span className="record-count">{dashboard.operations.customFields.length} campos</span></div>{dashboard.operations.customFields.length ? <div className="tracking-tag-grid">{dashboard.operations.customFields.map((field) => { const count = dashboard.operations.assetCustomValues.filter((value) => value.fieldId === field.id).length; return <article className="tracking-tag-card" key={field.id}><StatusPill label={field.fieldType} tone="info" /><strong>{field.name}</strong><span>{count} patrimônios preenchidos</span><small>{field.required ? "Obrigatório" : "Opcional"}</small></article>; })}</div> : <EmptyState title="Nenhum campo personalizado" description="Crie campos para requisitos específicos do departamento." />}</section></div>;
+  return <div className="tracking-layout"><section className="operational-panel operation-form-panel" aria-labelledby="custom-create-title"><div className="operational-panel-toolbar"><div><h2 id="custom-create-title">Definir campo</h2><p>Amplie o cadastro sem alterar o modelo principal.</p></div></div>{dashboard.environment.isAdmin ? <form className="form-grid operation-form" onSubmit={create}><label className="field field-wide"><span>Nome</span><input name="name" minLength={2} maxLength={80} required /></label><label className="field"><span>Tipo</span><select name="fieldType" defaultValue="text"><option value="text">Texto</option><option value="number">Número</option><option value="date">Data</option><option value="boolean">Sim/Não</option><option value="select">Lista</option></select></label><label className="field field-wide"><span>Opções da lista</span><input name="options" placeholder="Opção A, Opção B" /></label><label className="operation-checkbox field-wide"><input name="required" type="checkbox" /><span>Preenchimento obrigatório</span></label><label className="operation-checkbox field-wide"><input name="containsFinancialData" type="checkbox" /><span><strong>Campo financeiro</strong><small>Valores deste campo serão visíveis somente para perfis com permissão financeira.</small></span></label><InlineError message={error} /><FormActions busy={busyKey === "create-field"} submitLabel="Criar campo" /></form> : <div className="operations-clear-state compact"><strong>Configuração administrativa</strong><span>Somente administradores podem criar novos campos.</span></div>}</section><section className="operational-panel operation-form-panel" aria-labelledby="custom-value-title"><div className="operational-panel-toolbar"><div><h2 id="custom-value-title">Preencher valor</h2><p>Atribua o campo a qualquer patrimônio.</p></div></div><form className="form-grid operation-form" onSubmit={setValue}><label className="field field-wide"><span>Patrimônio</span><AssetSelect assets={dashboard.nucleusInventory} /></label><label className="field field-wide"><span>Campo</span><select value={selectedFieldId} onChange={(event) => setSelectedFieldId(event.target.value)} required><option value="">Selecione</option>{editableFields.map((field) => <option key={field.id} value={field.id}>{field.name}</option>)}</select></label><CustomValueInput field={selectedField} /><InlineError message={error} /><FormActions busy={busyKey === "set-field-value"} submitLabel="Salvar valor" /></form></section><section className="operational-panel tracking-history-panel" aria-labelledby="custom-list-title"><div className="operational-panel-toolbar"><div><h2 id="custom-list-title">Campos ativos</h2><p>Definições e cobertura atual no inventário.</p></div><span className="record-count">{dashboard.operations.customFields.length} campos</span></div>{dashboard.operations.customFields.length ? <div className="tracking-tag-grid">{dashboard.operations.customFields.map((field) => { const count = dashboard.operations.assetCustomValues.filter((value) => value.fieldId === field.id).length; return <article className="tracking-tag-card" key={field.id}><StatusPill label={field.containsFinancialData ? "Financeiro" : field.fieldType} tone="info" /><strong>{field.name}</strong><span>{count} patrimônios preenchidos</span><small>{field.required ? "Obrigatório" : "Opcional"}</small></article>; })}</div> : <EmptyState title="Nenhum campo personalizado" description="Crie campos para requisitos específicos do departamento." />}</section></div>;
 }
 
 function CustomValueInput({ field }: { field: CustomField | undefined }) {

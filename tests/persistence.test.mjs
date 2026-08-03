@@ -80,6 +80,10 @@ const advancedFinancialMigration = await readFile(
   new URL("../supabase/migrations/20260731183814_harden_advanced_financial_writes.sql", import.meta.url),
   "utf8",
 );
+const financialAccessMigration = await readFile(
+  new URL("../supabase/migrations/20260803150312_protect_financial_data.sql", import.meta.url),
+  "utf8",
+);
 const trackingGeofenceMigration = await readFile(
   new URL("../supabase/migrations/20260731203708_add_tracking_geofences.sql", import.meta.url),
   "utf8",
@@ -202,6 +206,17 @@ test("gateway pagina todos os patrimônios acima do limite de 1000 linhas", () =
   assert.match(gateway, /if \(batch\.length < pageSize\) return rows/);
 });
 
+test("gateway calcula o dashboard sobre coleções operacionais completas", () => {
+  assert.match(gateway, /buildAnalyticsSnapshot/);
+  assert.match(gateway, /analytics,\s*\n/);
+  assert.match(gateway, /dataRequestAll\(\s*`patrimonio_movements\?/);
+  assert.match(gateway, /dataRequestAll\(\s*`patrimonio_inventory_campaigns\?/);
+  assert.match(gateway, /dataRequestAll\(\s*`patrimonio_custody_terms\?/);
+  assert.match(gateway, /dataRequestAll\(\s*`patrimonio_maintenance_orders\?/);
+  assert.doesNotMatch(gateway, /patrimonio_custody_terms\?[\s\S]{0,250}&limit=100/);
+  assert.doesNotMatch(gateway, /patrimonio_maintenance_orders\?[\s\S]{0,250}&limit=100/);
+});
+
 test("sincronização por revisão evita recarregar inventário sem alteração", () => {
   assert.match(gateway, /const knownRevision = normalizeRevision\(body\.knownRevision\)/);
   assert.match(gateway, /knownRevision === revision/);
@@ -266,12 +281,13 @@ test("documentos usam bucket privado, checksum e URLs assinadas", () => {
   assert.match(gateway, /"x-upsert": "false"/);
 });
 
-test("contexto avançado é agregado e oculta finanças de não administradores", () => {
+test("contexto avançado separa administração de visualização financeira", () => {
   assert.match(advancedContextMigration, /patrimonio_load_advanced_context/);
-  assert.match(advancedContextMigration, /case when coalesce\(p_is_admin, false\) then monthly_cost else null end/);
-  assert.match(advancedContextMigration, /'assetAccounting', case when coalesce\(p_is_admin, false\)/);
+  assert.match(financialAccessMigration, /p_can_view_financial_data boolean/);
+  assert.match(financialAccessMigration, /case when coalesce\(p_can_view_financial_data, false\) then monthly_cost else null end/);
+  assert.match(financialAccessMigration, /'assetAccounting', case when coalesce\(p_can_view_financial_data, false\)/);
   assert.match(advancedContextMigration, /'integrations', case when coalesce\(p_is_admin, false\)/);
-  assert.match(gateway, /loadAdvancedData\(ownerKey, identifier, access\.isAdmin\)/);
+  assert.match(gateway, /loadAdvancedData\(ownerKey, identifier, access\.isAdmin, canViewFinancialData\)/);
   assert.match(gateway, /rpc\/patrimonio_load_advanced_context/);
 });
 
