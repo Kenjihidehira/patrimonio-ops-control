@@ -32,13 +32,14 @@ Retorna revisão, resumo, inventário filtrado, colaboradores, núcleos, auditor
 
 Usuários anônimos recebem `401` com a URL local de login. Quando `revision`
 coincide com a revisão persistida, a API retorna `304 Not Modified` sem
-recarregar inventário e movimentações. Contas Google ativas recebem apenas os
-departamentos vinculados ao usuário; administradores globais podem acessar todos.
+recarregar inventário e movimentações. Operadores recebem apenas os departamentos
+vinculados; administradores e auditores podem acessar todos os departamentos
+ativos, preservadas as restrições de mutação do perfil de auditoria.
 
 ## `/api/departments`
 
 - `GET`: carrega os núcleos e a revisão do departamento de destino autorizado.
-- `POST save_user_access`: administrador ativa ou desativa usuário, libera departamentos e define permissões de alteração, importação e exportação.
+- `POST save_user_access`: administrador ativa ou desativa usuário, define a função global de administrador ou auditor, ou libera departamentos e permissões específicas para operadores.
 - `POST transfer_department_entity`: administrador transfere patrimônio ou colaborador com seus itens, preservando auditoria.
 
 ## `POST /api/state`

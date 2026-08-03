@@ -187,7 +187,7 @@ Documentação completa: [`docs/arquitetura.md`](docs/arquitetura.md).
 
 ### Modelo de autorização
 
-Administradores globais controlam departamentos, usuários e transferências. Auditores recebem departamentos específicos, consultam inventário, auditoria, históricos, termos, manutenções e documentos, e podem exportar de forma registrada; o banco impede escrita, importação e administração nesse perfil. Operadores recebem permissões independentes para alteração, importação e exportação. A autorização é novamente consultada no servidor a cada requisição e alterações de acesso incrementam a versão da sessão, invalidando cookies anteriores.
+Administradores globais controlam departamentos, usuários e transferências. Auditores consultam automaticamente todos os departamentos ativos, inclusive os criados no futuro, e podem acompanhar inventário, auditoria, históricos, termos, manutenções e documentos e exportar de forma registrada; o banco impede escrita, importação e administração nesse perfil. Operadores recebem departamentos explícitos e permissões independentes para alteração, importação e exportação. A autorização é novamente consultada no servidor a cada requisição e alterações de acesso incrementam a versão da sessão, invalidando cookies anteriores.
 
 Os controles técnicos e as pendências de governança estão em [`docs/lgpd.md`](docs/lgpd.md). Resposta a incidentes e recuperação estão em [`docs/incidentes.md`](docs/incidentes.md) e [`docs/backup-restauracao.md`](docs/backup-restauracao.md).
 

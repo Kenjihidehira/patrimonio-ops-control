@@ -23,7 +23,7 @@ Ambientes iniciais:
 - Atendimento ao Cliente;
 - Gazin LOG.
 
-Usuários comuns veem somente os departamentos explicitamente liberados. Administradores globais podem administrar todos os ambientes. As permissões de alteração, importação e exportação são independentes; a ausência dessas permissões resulta em consulta somente leitura.
+Operadores veem somente os departamentos explicitamente liberados. Administradores globais podem administrar todos os ambientes. Auditores consultam todos os departamentos atuais e futuros, mas não podem alterar, importar nem administrar. As permissões operacionais de alteração, importação e exportação permanecem independentes.
 
 A lista de usuários autorizados pertence ao banco e não ao código-fonte. A concessão ou revogação de acesso incrementa a versão de sessão, invalida cookies anteriores e gera auditoria administrativa.
 

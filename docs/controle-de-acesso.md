@@ -8,7 +8,7 @@ autorização; ocultar um botão não é considerado controle de segurança.
 
 | Capacidade | Administrador global | Auditor | Operador |
 | --- | --- | --- | --- |
-| Consultar departamentos | Todos | Somente os vinculados | Somente os vinculados |
+| Consultar departamentos | Todos | Todos | Somente os vinculados |
 | Consultar inventário, auditoria e histórico | Sim | Sim | Sim |
 | Acompanhar campanhas, termos e manutenções | Sim | Sim, sem alterar | Sim |
 | Abrir documentos e evidências | Sim | Sim | Sim |
@@ -28,9 +28,9 @@ autorização; ocultar um botão não é considerado controle de segurança.
 - `is_auditor` e `is_admin` não podem produzir privilégios cumulativos.
 - Auditor não pode receber `can_write` nem `can_import`; a restrição é verificada
   pelo Postgres, mesmo se um cliente enviar valores conflitantes.
-- O acesso do auditor depende de associação explícita em
-  `patrimonio_department_memberships`. Novos departamentos não são liberados
-  automaticamente.
+- O auditor tem alcance global de leitura em todos os departamentos ativos,
+  inclusive os criados depois da concessão. Apenas operadores dependem de
+  associação explícita em `patrimonio_department_memberships`.
 - A exportação exige `can_export`, passa pela autorização do departamento e cria
   evento de segurança com a função do usuário.
 - Toda mutação passa por autorização `write`; a API retorna `403` para o auditor.
@@ -40,21 +40,21 @@ autorização; ocultar um botão não é considerado controle de segurança.
 
 ## Provisionamento inicial
 
-O usuário `fabiano.audit@gmail.com` é provisionado como auditor, com exportação
-controlada e associação aos departamentos que estavam ativos na aplicação da
-migração. A migração remove seus privilégios administrativos, de escrita e de
-importação e incrementa a versão de sessão para exigir uma nova autenticação.
+O usuário `fabiano.audit@gmail.com` é provisionado como auditor global de leitura,
+com exportação controlada e acesso automático a todos os departamentos atuais e
+futuros. A migração remove seus vínculos individuais e mantém bloqueados os
+privilégios administrativos, de escrita e de importação.
 
-Departamentos criados depois dessa migração devem ser liberados manualmente por
-um administrador no módulo **Ambientes**.
+Alcance global não significa poder administrativo: somente um administrador pode
+alterar acessos, transferir departamentos ou consultar áreas administrativas
+restritas.
 
 ## Revisão de acesso
 
 Revisar trimestralmente:
 
 1. administradores globais ativos;
-2. auditores e departamentos vinculados;
+2. auditores globais ativos e necessidade de permanência desse alcance;
 3. operadores com exportação ou alteração;
 4. contas sem acesso recente;
 5. eventos negados, exportações e mudanças de função.
-
