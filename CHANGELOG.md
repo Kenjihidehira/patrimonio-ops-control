@@ -3,6 +3,27 @@
 Todas as alterações relevantes do Patrimônio Ops Control são registradas neste arquivo.
 O formato segue Keep a Changelog e as versões usam Semantic Versioning.
 
+## [0.3.0] - 2026-08-03
+
+### Adicionado
+
+- Função formal de auditor, separada do administrador global e vinculada explicitamente aos departamentos autorizados.
+- Matriz documentada de responsabilidades para administrador, auditor e operador.
+- Identificação visual do perfil de auditoria e modo de acompanhamento sem controles de mutação.
+
+### Alterado
+
+- `fabiano.audit@gmail.com` passou de administrador para auditor dos departamentos Atendimento ao Cliente e Gazin LOG.
+- A administração de usuários usa a RPC `patrimonio_save_user_access_v3`, com escolha exclusiva de função.
+- Exportações do auditor continuam autorizadas e registram a função na auditoria de segurança.
+
+### Segurança
+
+- Restrição no Postgres impede auditor de acumular administração, escrita ou importação.
+- Gateway aplica defesa adicional e registra operações negadas em transação separada antes de devolver `403`.
+- Dados financeiros, integrações, administração de acessos e transferências entre departamentos permanecem exclusivos de administradores.
+- Alterações patrimoniais, baixas e mudanças ou remoções de evidências permanecem bloqueadas para auditores.
+
 ## [0.2.0] - 2026-08-03
 
 ### Adicionado
@@ -41,3 +62,4 @@ O formato segue Keep a Changelog e as versões usam Semantic Versioning.
 - Release consolidada sobre os commits validados pela integração contínua da `main`.
 
 [0.2.0]: https://github.com/Kenjihidehira/patrimonio-ops-control/releases/tag/v0.2.0
+[0.3.0]: https://github.com/Kenjihidehira/patrimonio-ops-control/releases/tag/v0.3.0

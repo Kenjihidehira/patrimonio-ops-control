@@ -3829,3 +3829,27 @@ textarea {
     width: 100%;
   }
 }
+.operations-auditor-notice {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 16px;
+  border: 1px solid var(--line);
+  background: var(--surface-raised);
+  color: var(--muted);
+}
+
+.operations-auditor-notice strong {
+  color: var(--heading-text);
+}
+
+.operations-view.is-auditor-read-only .operation-form-panel,
+.operations-view.is-auditor-read-only .operation-record-actions,
+.operations-view.is-auditor-read-only .inventory-check-actions,
+.operations-view.is-auditor-read-only .offboarding-asset-actions,
+.operations-view.is-auditor-read-only .campaign-mini-metrics button,
+.operations-view.is-auditor-read-only .inventory-capture-actions button,
+.operations-view.is-auditor-read-only .document-card-actions button {
+  display: none;
+}

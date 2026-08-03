@@ -184,7 +184,7 @@ O GitHub é a fonte oficial do código. O Cloudflare Worker é o ambiente de exe
 - avaliar RIPD antes de rastreamento automático em escala;
 - definir responsáveis por incidente, restauração e atendimento a titulares;
 - adotar conta corporativa e domínio corporativo quando aprovados;
-- separar formalmente o papel de auditor do administrador global.
+- revisar trimestralmente a segregação entre administradores, auditores e operadores.
 
 ## 14. Regra de continuidade
 

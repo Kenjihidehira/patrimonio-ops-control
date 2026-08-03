@@ -163,6 +163,7 @@ Deno.serve(async (request) => {
               activeDepartment: publicDepartment(access.active),
               departments: access.departments.map(publicDepartment),
               isAdmin: access.isAdmin,
+              isAuditor: access.isAuditor,
               permissions: access.permissions,
               users,
             },
@@ -191,13 +192,14 @@ Deno.serve(async (request) => {
         const departmentSlugs = Array.isArray(body.user?.departmentSlugs)
           ? body.user.departmentSlugs.map(String)
           : [];
-        const data = await dataRequest("rpc/patrimonio_save_user_access_v2", {
+        const data = await dataRequest("rpc/patrimonio_save_user_access_v3", {
           method: "POST",
           body: JSON.stringify({
             p_admin_identifier: identifier,
             p_identifier: targetIdentifier,
             p_display_name: String(body.user?.displayName ?? ""),
             p_is_admin: body.user?.isAdmin === true,
+            p_is_auditor: body.user?.isAuditor === true,
             p_active: body.user?.active !== false,
             p_can_write: body.user?.canWrite !== false,
             p_can_import: body.user?.canImport !== false,
@@ -444,10 +446,11 @@ async function resolveDepartmentAccess(identifier, requestedSlug) {
     active,
     departments,
     isAdmin: user.is_admin === true,
+    isAuditor: user.is_auditor === true,
     user,
     permissions: {
-      canWrite: user.is_admin === true || user.can_write === true,
-      canImport: user.is_admin === true || user.can_import === true,
+      canWrite: user.is_admin === true || (user.is_auditor !== true && user.can_write === true),
+      canImport: user.is_admin === true || (user.is_auditor !== true && user.can_import === true),
       canExport: user.is_admin === true || user.can_export === true,
     },
   };
@@ -479,7 +482,7 @@ async function loadUser(identifier) {
   if (!identifier) return null;
   const filter = encodeURIComponent(`eq.${identifier}`);
   const users = await dataRequest(
-    `patrimonio_users?identifier=${filter}&select=identifier,display_name,is_admin,active,can_write,can_import,can_export,session_version&limit=1`,
+    `patrimonio_users?identifier=${filter}&select=identifier,display_name,is_admin,is_auditor,active,can_write,can_import,can_export,session_version&limit=1`,
   );
   return users[0] ?? null;
 }
@@ -487,7 +490,7 @@ async function loadUser(identifier) {
 async function loadUserDirectory() {
   const [users, memberships] = await Promise.all([
     dataRequest(
-      "patrimonio_users?select=identifier,display_name,is_admin,active,can_write,can_import,can_export,last_login_at&order=display_name.asc,identifier.asc",
+      "patrimonio_users?select=identifier,display_name,is_admin,is_auditor,active,can_write,can_import,can_export,last_login_at&order=display_name.asc,identifier.asc",
     ),
     dataRequest(
       "patrimonio_department_memberships?select=user_identifier,department_slug&order=department_slug.asc",
@@ -503,9 +506,10 @@ async function loadUserDirectory() {
     identifier: user.identifier,
     displayName: user.display_name,
     isAdmin: user.is_admin,
+    isAuditor: user.is_auditor,
     active: user.active,
-    canWrite: user.is_admin || user.can_write,
-    canImport: user.is_admin || user.can_import,
+    canWrite: user.is_admin || (!user.is_auditor && user.can_write),
+    canImport: user.is_admin || (!user.is_auditor && user.can_import),
     canExport: user.is_admin || user.can_export,
     lastLoginAt: user.last_login_at,
     departmentSlugs: departmentsByUser.get(user.identifier) ?? [],
@@ -653,14 +657,34 @@ function httpError(message, status, code) {
 
 async function authorizeOperation(identifier, departmentSlug, operation) {
   if (!identifier) throw httpError("invalid_user_identifier", 400, "22023");
-  return dataRequest("rpc/patrimonio_authorize_operation", {
-    method: "POST",
-    body: JSON.stringify({
-      p_identifier: identifier,
-      p_department_slug: String(departmentSlug ?? "").trim().toLowerCase(),
-      p_operation: String(operation ?? "").trim().toLowerCase(),
-    }),
-  });
+  const normalizedDepartment = String(departmentSlug ?? "").trim().toLowerCase();
+  const normalizedOperation = String(operation ?? "").trim().toLowerCase();
+  try {
+    return await dataRequest("rpc/patrimonio_authorize_operation", {
+      method: "POST",
+      body: JSON.stringify({
+        p_identifier: identifier,
+        p_department_slug: normalizedDepartment,
+        p_operation: normalizedOperation,
+      }),
+    });
+  } catch (error) {
+    if (error?.message === "operation_not_allowed") {
+      await dataRequest("rpc/patrimonio_record_security_event", {
+        method: "POST",
+        body: JSON.stringify({
+          p_event_type: "operation_denied",
+          p_outcome: "denied",
+          p_actor_identifier: identifier,
+          p_target_identifier: null,
+          p_department_slug: normalizedDepartment || null,
+          p_metadata: { operation: normalizedOperation },
+          p_retention_days: 730,
+        }),
+      }).catch(() => undefined);
+    }
+    throw error;
+  }
 }
 
 async function enforceRateLimit(identifier, operation) {

@@ -28,6 +28,7 @@ const emptyUser: DepartmentUser = {
   identifier: "",
   displayName: "",
   isAdmin: false,
+  isAuditor: false,
   active: true,
   canWrite: false,
   canImport: false,
@@ -254,16 +255,29 @@ export function EnvironmentsView({
                 }))}
               />
             </label>
-            <label className="environment-admin-check field-wide">
-              <input
-                type="checkbox"
-                checked={accessForm.isAdmin}
-                onChange={(event) => setAccessForm((current) => ({
-                  ...current,
-                  isAdmin: event.target.checked,
-                }))}
-              />
-              <span><strong>Administrador global</strong><small>Acesso a todos os departamentos e transferências.</small></span>
+            <label className="field field-wide">
+              <span>Função de acesso</span>
+              <select
+                value={accessForm.isAdmin ? "admin" : accessForm.isAuditor ? "auditor" : "operator"}
+                onChange={(event) => setAccessForm((current) => {
+                  const role = event.target.value;
+                  return {
+                    ...current,
+                    isAdmin: role === "admin",
+                    isAuditor: role === "auditor",
+                    canWrite: role === "admin" ? true : role === "auditor" ? false : current.canWrite,
+                    canImport: role === "admin" ? true : role === "auditor" ? false : current.canImport,
+                    canExport: role === "admin" || role === "auditor" ? true : current.canExport,
+                  };
+                })}
+              >
+                <option value="operator">Operador</option>
+                <option value="auditor">Auditor</option>
+                <option value="admin">Administrador global</option>
+              </select>
+              <small className="field-help">
+                Auditor consulta, acompanha e exporta dados dos departamentos liberados, sem alterar registros ou permissões.
+              </small>
             </label>
             <label className="environment-admin-check field-wide">
               <input
@@ -284,8 +298,8 @@ export function EnvironmentsView({
               <label>
                 <input
                   type="checkbox"
-                  checked={accessForm.isAdmin || accessForm.canWrite}
-                  disabled={accessForm.isAdmin || !accessForm.active}
+                  checked={accessForm.isAdmin || (!accessForm.isAuditor && accessForm.canWrite)}
+                  disabled={accessForm.isAdmin || accessForm.isAuditor || !accessForm.active}
                   onChange={(event) => setAccessForm((current) => ({
                     ...current,
                     canWrite: event.target.checked,
@@ -296,8 +310,8 @@ export function EnvironmentsView({
               <label>
                 <input
                   type="checkbox"
-                  checked={accessForm.isAdmin || accessForm.canImport}
-                  disabled={accessForm.isAdmin || !accessForm.active}
+                  checked={accessForm.isAdmin || (!accessForm.isAuditor && accessForm.canImport)}
+                  disabled={accessForm.isAdmin || accessForm.isAuditor || !accessForm.active}
                   onChange={(event) => setAccessForm((current) => ({
                     ...current,
                     canImport: event.target.checked,
@@ -308,8 +322,8 @@ export function EnvironmentsView({
               <label>
                 <input
                   type="checkbox"
-                  checked={accessForm.isAdmin || accessForm.canExport}
-                  disabled={accessForm.isAdmin || !accessForm.active}
+                  checked={accessForm.isAdmin || accessForm.isAuditor || accessForm.canExport}
+                  disabled={accessForm.isAdmin || accessForm.isAuditor || !accessForm.active}
                   onChange={(event) => setAccessForm((current) => ({
                     ...current,
                     canExport: event.target.checked,
@@ -359,10 +373,11 @@ export function EnvironmentsView({
                     {user.active ? "Ativo" : "Desativado"}
                   </span>
                   {user.isAdmin ? <span>Administrador</span> : null}
-                  {!user.isAdmin && user.canWrite ? <span>Alteração</span> : null}
-                  {!user.isAdmin && user.canImport ? <span>Importação</span> : null}
-                  {!user.isAdmin && user.canExport ? <span>Exportação</span> : null}
-                  {!user.isAdmin && !user.canWrite && !user.canImport && !user.canExport
+                  {user.isAuditor ? <span>Auditor</span> : null}
+                  {!user.isAdmin && !user.isAuditor && user.canWrite ? <span>Alteração</span> : null}
+                  {!user.isAdmin && !user.isAuditor && user.canImport ? <span>Importação</span> : null}
+                  {!user.isAdmin && user.canExport ? <span>Exportação controlada</span> : null}
+                  {!user.isAdmin && !user.isAuditor && !user.canWrite && !user.canImport && !user.canExport
                     ? <span>Somente leitura</span>
                     : null}
                   {user.departmentSlugs.map((slug) => (

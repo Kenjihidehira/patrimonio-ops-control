@@ -447,8 +447,12 @@ export default function PatrimonioApp() {
         {dashboard && authenticated && !permissions.canWrite ? (
           <div className="demo-notice read-only-notice">
             <div>
-              <strong>Acesso somente para consulta</strong>
-              <span>Alterações, importações e exportações dependem de autorização específica do administrador.</span>
+              <strong>{environment?.isAuditor ? "Perfil de auditoria" : "Acesso somente para consulta"}</strong>
+              <span>
+                {environment?.isAuditor
+                  ? "Consulta, histórico, auditoria e exportação controlada estão liberados. Alterações, importações e administração permanecem bloqueadas."
+                  : "Alterações, importações e exportações dependem de autorização específica do administrador."}
+              </span>
             </div>
           </div>
         ) : null}
