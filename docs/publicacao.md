@@ -74,9 +74,9 @@ curl -i -X POST https://patrimonio-ops-control.kenjihidehira999.workers.dev/api/
 
 Resultados esperados:
 
-- `/demo`: HTTP `200` e interface React operacional.
+- `/demo` sem sessão: HTTP `307` para `/login?return_to=%2Fdemo`; autenticado: interface React operacional.
 - `/login`: HTTP `200` e opção de acesso com Google.
-- `GET /api/state`: HTTP `200`, sessão anônima e projeção vazia (`source = locked`).
+- `GET /api/state` sem sessão: HTTP `401` e `Cache-Control: no-store`; autenticado: estado do departamento autorizado.
 - O login retorna HTTP `302` para o Google quando suas credenciais estão configuradas; uma configuração ausente retorna para `/login` com erro controlado.
 - `GET /api/export` sem login: HTTP `401`; autenticado: HTTP `200` e conteúdo XLSX da base empresarial.
 - `POST /api/state` sem login: HTTP `401`.
