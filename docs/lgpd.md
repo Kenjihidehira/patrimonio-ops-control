@@ -28,6 +28,7 @@ responsáveis corporativos.
 | Estrutura organizacional | departamento, núcleo, gestor, localização | organização e localização patrimonial | departamento liberado |
 | Vínculo patrimonial | ativo, modelo, série, responsável, status | gestão e segurança dos bens | departamento liberado |
 | Operação física | custódia, manutenção, localização observada e conferência | inventário, conservação e prevenção de perdas | departamento liberado |
+| Geocercas e alertas | coordenadas centrais, raio, posição observada, bateria e resposta ao alerta | segurança do bem e tratamento de exceções | infraestrutura ativa; interface administrativa ainda não exposta |
 | Documentos patrimoniais | nota, garantia, contrato, laudo e foto | prova de aquisição, vigência, inspeção e auditoria | departamento liberado; finanças apenas para administrador |
 | Integrações | referência externa, tipo de evento, estado e divergência | conciliação com sistemas corporativos | administrador global |
 | Auditoria operacional | movimentação, motivo, ator e data | rastreabilidade e exercício de direitos | operadores do departamento |

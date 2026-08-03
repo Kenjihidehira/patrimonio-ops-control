@@ -80,6 +80,7 @@ O Postgres organiza a persistência em grupos relacionais:
 | `patrimonio_inventory_campaigns`, `patrimonio_inventory_campaign_assets` | Campanhas de contagem e resultado por item |
 | `patrimonio_custody_terms`, `patrimonio_maintenance_orders` | Responsabilidade formal e ordens de serviço |
 | `patrimonio_tracking_tags`, `patrimonio_tracking_events` | Tags e telemetria recebida de dispositivos |
+| `patrimonio_tracking_geofences`, `patrimonio_tracking_alerts` | Regras geográficas e alertas automáticos de violação ou bateria baixa |
 | `patrimonio_asset_documents`, `patrimonio_asset_contracts`, `patrimonio_asset_accounting` | Arquivo privado, vigências e dados contábeis |
 | `patrimonio_asset_kits`, `patrimonio_reservations`, `patrimonio_offboarding_cases` | Kits, agenda de equipamentos e recolhimentos |
 | `patrimonio_lifecycle_requests`, `patrimonio_custom_fields` | Aprovações e extensão controlada do cadastro |
@@ -87,6 +88,8 @@ O Postgres organiza a persistência em grupos relacionais:
 | `patrimonio_asset_inspections` | Fila, resultado e revisão de inspeções fotográficas |
 
 Chaves estrangeiras preservam integridade e índices cobrem status, núcleo, tipo, responsável, datas e filas operacionais. As RPCs `patrimonio_apply_action`, `patrimonio_apply_operational_action`, `patrimonio_apply_advanced_action` e `patrimonio_import_workspace` executam autorização interna, revisão, escrita e auditoria na mesma transação. `patrimonio_load_advanced_context` agrega o contexto avançado e remove finanças e integrações da resposta de perfis não administrativos.
+
+A migração `20260731203708_add_tracking_geofences.sql` também instala o gatilho que avalia cada evento de rastreamento e a RPC administrativa `patrimonio_apply_tracking_action`. O gateway e a interface ainda não expõem essa RPC nem carregam os alertas; nesta versão, ela representa infraestrutura persistida e não um fluxo operacional disponível ao usuário.
 
 ## Fluxos de dados
 
