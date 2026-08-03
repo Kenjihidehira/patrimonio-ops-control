@@ -178,6 +178,20 @@ test("estado remoto usa requisições canceláveis e sincronização de atividad
   assert.match(collaborators, /responsáveis distintos/);
 });
 
+test("mutações reaproveitam o painel retornado sem uma recarga completa adicional", () => {
+  assert.match(clientApi, /Promise<\{ dashboard: Dashboard; message: string \}>/);
+  assert.match(clientApi, /fetch\(`\/api\/state\?\$\{query\}`/);
+  assert.match(api, /needsWorkspaceBeforeMutation/);
+  assert.match(api, /if \(!isOperationalAction\) applyAction/);
+  assert.match(api, /dashboard:\s*\{/);
+  assert.match(app, /applyDashboard\(result\.dashboard\)/);
+  assert.doesNotMatch(
+    app,
+    /const result = await mutateDashboard[\s\S]{0,500}await refresh\(\{ quiet: true \}\)/,
+  );
+  assert.match(hooks, /!options\.quiet \|\| !dashboardRef\.current/);
+});
+
 test("campos críticos possuem semântica e validação no cliente", () => {
   assert.match(layout, /lang="pt-BR"/);
   assert.match(dialogs, /pattern="\[0-9\]\{6\}"/);

@@ -52,8 +52,16 @@ export async function mutateDashboard(
   action: MutationAction,
   expectedRevision: number,
   departmentSlug: string,
-): Promise<{ message: string }> {
-  const response = await fetch("/api/state", {
+  filters: InventoryFilters,
+): Promise<{ dashboard: Dashboard; message: string }> {
+  const query = new URLSearchParams({
+    search: filters.search,
+    type: filters.type,
+    status: filters.status,
+    nucleus: filters.nucleus,
+    sort: filters.sort,
+  });
+  const response = await fetch(`/api/state?${query}`, {
     method: "POST",
     headers: {
       accept: "application/json",
@@ -61,7 +69,7 @@ export async function mutateDashboard(
     },
     body: JSON.stringify({ ...action, expectedRevision, departmentSlug }),
   });
-  return readJson<{ message: string }>(
+  return readJson<{ dashboard: Dashboard; message: string }>(
     response,
     "Não foi possível concluir a operação.",
   );

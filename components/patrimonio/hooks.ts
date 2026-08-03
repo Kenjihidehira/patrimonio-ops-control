@@ -52,7 +52,9 @@ export function useDashboard(
     activeRequest.current = controller;
 
     try {
-      if (!options.background) setLoading(true);
+      if (!options.background && (!options.quiet || !dashboardRef.current)) {
+        setLoading(true);
+      }
       const next = await fetchDashboard(
         options.filters ?? filters,
         departmentSlug,
@@ -66,6 +68,7 @@ export function useDashboard(
       }
       dashboardRef.current = next;
       setDashboard(next);
+      setError(null);
       setLastSyncAt(new Date());
       return next;
     } catch (cause) {
@@ -85,6 +88,17 @@ export function useDashboard(
       if (requestId === requestSequence.current) setLoading(false);
     }
   }, [departmentSlug, filters]);
+
+  const applyDashboard = useCallback((next: Dashboard) => {
+    requestSequence.current += 1;
+    activeRequest.current?.abort();
+    activeRequest.current = null;
+    dashboardRef.current = next;
+    setDashboard(next);
+    setError(null);
+    setLoading(false);
+    setLastSyncAt(new Date());
+  }, []);
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -119,7 +133,7 @@ export function useDashboard(
     };
   }, [refresh]);
 
-  return { dashboard, loading, error, lastSyncAt, refresh };
+  return { dashboard, loading, error, lastSyncAt, refresh, applyDashboard };
 }
 
 export function useTheme() {

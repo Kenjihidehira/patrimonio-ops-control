@@ -110,7 +110,7 @@ export default function PatrimonioApp() {
     () => ({ ...filterDraft, search: debouncedSearch }),
     [debouncedSearch, filterDraft],
   );
-  const { dashboard, loading, error, lastSyncAt, refresh } = useDashboard(
+  const { dashboard, loading, error, lastSyncAt, refresh, applyDashboard } = useDashboard(
     apiFilters,
     departmentSlug,
   );
@@ -255,11 +255,12 @@ export default function PatrimonioApp() {
       action,
       dashboard.revision,
       dashboard.environment.activeDepartment.slug,
+      apiFilters,
     );
     if (nextSelectedId) setSelectedAssetId(nextSelectedId);
-    await refresh({ quiet: true });
+    applyDashboard(result.dashboard);
     showToast(result.message || "Alteração registrada com sucesso.");
-  }, [dashboard, refresh, showToast]);
+  }, [apiFilters, applyDashboard, dashboard, showToast]);
 
   const handleStatusSubmit = async (
     event: FormEvent<HTMLFormElement>,

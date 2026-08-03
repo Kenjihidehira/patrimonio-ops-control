@@ -73,13 +73,7 @@ export async function GET(request: Request) {
     }
     const dashboard = buildDashboard(
       workspace.state,
-      {
-        search: url.searchParams.get("search"),
-        type: url.searchParams.get("type"),
-        status: url.searchParams.get("status"),
-        nucleus: url.searchParams.get("nucleus"),
-        sort: url.searchParams.get("sort"),
-      },
+      dashboardFilters(url),
       { includeFinancials: workspace.environment?.permissions.canViewFinancialData === true },
     );
 
@@ -117,6 +111,16 @@ function parseKnownRevision(value: string | null): number | null {
   return Number.isSafeInteger(revision) ? revision : null;
 }
 
+function dashboardFilters(url: URL) {
+  return {
+    search: url.searchParams.get("search"),
+    type: url.searchParams.get("type"),
+    status: url.searchParams.get("status"),
+    nucleus: url.searchParams.get("nucleus"),
+    sort: url.searchParams.get("sort"),
+  };
+}
+
 export async function POST(request: Request) {
   const user = await getAuthenticatedUser();
   if (!user) {
@@ -137,42 +141,56 @@ export async function POST(request: Request) {
         { status: 400, headers: responseHeaders },
       );
     }
-    const departmentSlug = String(
-      (action as Record<string, unknown>).departmentSlug ?? "",
-    ).trim();
-    const workspace = await loadWorkspaceContext(user, departmentSlug || null);
-    const expectedRevision = Number((action as Record<string, unknown>).expectedRevision);
-    if (!Number.isInteger(expectedRevision) || expectedRevision !== workspace.state.revision) {
+    const actionRecord = action as Record<string, unknown>;
+    const departmentSlug = String(actionRecord.departmentSlug ?? "").trim();
+    const expectedRevision = Number(actionRecord.expectedRevision);
+    if (!Number.isInteger(expectedRevision)) {
       return revisionConflict();
     }
 
-    const actionType = String((action as Record<string, unknown>).type ?? "");
-    if (!operationalActionTypes.has(actionType)) {
-      applyAction(workspace.state, action, user.actor);
+    const actionType = String(actionRecord.type ?? "");
+    const isOperationalAction = operationalActionTypes.has(actionType);
+    const needsWorkspaceBeforeMutation = !isOperationalAction || !departmentSlug;
+    let activeDepartmentSlug = departmentSlug;
+    if (needsWorkspaceBeforeMutation) {
+      const workspace = await loadWorkspaceContext(user, departmentSlug || null);
+      if (expectedRevision !== workspace.state.revision) return revisionConflict();
+      if (!isOperationalAction) applyAction(workspace.state, action, user.actor);
+      if (!workspace.environment) throw new Error("Authenticated workspace has no department.");
+      activeDepartmentSlug = workspace.environment.activeDepartment.slug;
     }
-    if (!workspace.environment) throw new Error("Authenticated workspace has no department.");
+
     await applyPersistedAction(
       user.identifier,
-      workspace.environment.activeDepartment.slug,
+      activeDepartmentSlug,
       expectedRevision,
       action,
     );
-    const updated = await loadWorkspaceContext(
-      user,
-      workspace.environment.activeDepartment.slug,
-    );
+    const updated = await loadWorkspaceContext(user, activeDepartmentSlug);
+    const url = new URL(request.url);
 
     return Response.json(
       {
-        ...buildDashboard(
-          updated.state,
-          {},
-          { includeFinancials: updated.environment?.permissions.canViewFinancialData === true },
-        ),
-        imports: updated.imports,
-        operations: updated.operations,
-        analytics: updated.analytics,
-        environment: updated.environment,
+        dashboard: {
+          ...buildDashboard(
+            updated.state,
+            dashboardFilters(url),
+            { includeFinancials: updated.environment?.permissions.canViewFinancialData === true },
+          ),
+          imports: updated.imports,
+          operations: updated.operations,
+          analytics: updated.analytics,
+          environment: updated.environment,
+          session: {
+            authenticated: true,
+            displayName: user.displayName,
+            identifier: user.identifier,
+            provider: user.provider,
+            source: updated.source,
+            signInUrl: loginPagePath(APP_PATH),
+            signOutUrl: signOutPath(),
+          },
+        },
         message: "Alteração registrada com sucesso.",
       },
       { headers: responseHeaders },
