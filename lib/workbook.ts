@@ -1,6 +1,6 @@
 import { readSheet } from "read-excel-file/universal";
-import writeExcelFile from "write-excel-file/universal";
-import type { Cell, Sheet, SheetData } from "write-excel-file/universal";
+import writeExcelFile from "write-excel-file/node";
+import type { Cell, Sheet, SheetData } from "write-excel-file/node";
 
 type ExportAsset = {
   id: string;
@@ -57,8 +57,8 @@ type ExportDashboard = {
     assetTypes: Record<string, string>;
     statuses: Record<string, string>;
   };
-  operations: {
-    assetAccounting: Array<{
+  operations?: {
+    assetAccounting?: Array<{
       assetId: string;
       acquisitionValue: number;
       residualValue: number;
@@ -72,7 +72,7 @@ type ExportDashboard = {
       invoiceNumber: string;
       updatedAt: string;
     }>;
-    assetContracts: Array<{
+    assetContracts?: Array<{
       assetId: string;
       kind: string;
       name: string;
@@ -84,7 +84,7 @@ type ExportDashboard = {
       currency: string;
       status: string;
     }>;
-    lifecycleRequests: Array<{
+    lifecycleRequests?: Array<{
       requestType: string;
       assetId: string | null;
       title: string;
@@ -211,55 +211,7 @@ export async function createExportWorkbook(
     ]),
   ];
 
-  const accounting = [
-    headerRow(["Patrimônio", "Valor de aquisição", "Valor residual", "Método", "Vida útil (meses)", "Início da depreciação", "Centro de custo", "Conta contábil", "Fornecedor", "Pedido de compra", "Nota fiscal", "Atualizado em"]),
-    ...dashboard.operations.assetAccounting.map((item) => [
-      textCell(item.assetId),
-      moneyCell(item.acquisitionValue),
-      moneyCell(item.residualValue),
-      textCell(item.depreciationMethod === "straight_line" ? "Linear" : "Sem depreciação"),
-      item.usefulLifeMonths === null ? textCell("") : numberCell(item.usefulLifeMonths),
-      dateCell(item.depreciationStartsOn),
-      textCell(item.costCenter),
-      textCell(item.ledgerAccount),
-      textCell(item.supplier),
-      textCell(item.purchaseOrder),
-      textCell(item.invoiceNumber),
-      dateTimeCell(item.updatedAt),
-    ]),
-  ];
-
-  const contractCosts = [
-    headerRow(["Patrimônio", "Tipo", "Contrato", "Fornecedor", "Número", "Início", "Vencimento", "Custo mensal", "Moeda", "Status"]),
-    ...dashboard.operations.assetContracts.map((item) => [
-      textCell(item.assetId),
-      textCell(item.kind),
-      textCell(item.name),
-      textCell(item.provider),
-      textCell(item.contractNumber),
-      dateCell(item.startsOn),
-      dateCell(item.endsOn),
-      moneyCell(item.monthlyCost),
-      textCell(item.currency),
-      textCell(item.status),
-    ]),
-  ];
-
-  const lifecycleCosts = [
-    headerRow(["Tipo", "Patrimônio", "Solicitação", "Quantidade", "Valor estimado", "Status", "Solicitante", "Data"]),
-    ...dashboard.operations.lifecycleRequests.map((item) => [
-      textCell(item.requestType),
-      textCell(item.assetId),
-      textCell(item.title),
-      numberCell(item.quantity),
-      moneyCell(item.estimatedCost),
-      textCell(item.status),
-      textCell(item.requestedBy),
-      dateTimeCell(item.requestedAt),
-    ]),
-  ];
-
-  const sheets: Sheet<Blob>[] = [
+  const sheets: Sheet<Buffer>[] = [
     sheet("Inventário", inventory, [
       14, 20, 28, 28, 28, 22, 30, 14,
       ...(includeFinancials ? [18, 18, 20] : []),
@@ -271,6 +223,60 @@ export async function createExportWorkbook(
     sheet("Importações", importHistory, [20, 34, 16, 14, 14, 14, 28]),
   ];
   if (includeFinancials) {
+    const assetAccounting = Array.isArray(dashboard.operations?.assetAccounting)
+      ? dashboard.operations.assetAccounting
+      : [];
+    const assetContracts = Array.isArray(dashboard.operations?.assetContracts)
+      ? dashboard.operations.assetContracts
+      : [];
+    const lifecycleRequests = Array.isArray(dashboard.operations?.lifecycleRequests)
+      ? dashboard.operations.lifecycleRequests
+      : [];
+    const accounting = [
+      headerRow(["Patrimônio", "Valor de aquisição", "Valor residual", "Método", "Vida útil (meses)", "Início da depreciação", "Centro de custo", "Conta contábil", "Fornecedor", "Pedido de compra", "Nota fiscal", "Atualizado em"]),
+      ...assetAccounting.map((item) => [
+        textCell(item.assetId),
+        moneyCell(item.acquisitionValue),
+        moneyCell(item.residualValue),
+        textCell(item.depreciationMethod === "straight_line" ? "Linear" : "Sem depreciação"),
+        item.usefulLifeMonths === null ? textCell("") : numberCell(item.usefulLifeMonths),
+        dateCell(item.depreciationStartsOn),
+        textCell(item.costCenter),
+        textCell(item.ledgerAccount),
+        textCell(item.supplier),
+        textCell(item.purchaseOrder),
+        textCell(item.invoiceNumber),
+        dateTimeCell(item.updatedAt),
+      ]),
+    ];
+    const contractCosts = [
+      headerRow(["Patrimônio", "Tipo", "Contrato", "Fornecedor", "Número", "Início", "Vencimento", "Custo mensal", "Moeda", "Status"]),
+      ...assetContracts.map((item) => [
+        textCell(item.assetId),
+        textCell(item.kind),
+        textCell(item.name),
+        textCell(item.provider),
+        textCell(item.contractNumber),
+        dateCell(item.startsOn),
+        dateCell(item.endsOn),
+        moneyCell(item.monthlyCost),
+        textCell(item.currency),
+        textCell(item.status),
+      ]),
+    ];
+    const lifecycleCosts = [
+      headerRow(["Tipo", "Patrimônio", "Solicitação", "Quantidade", "Valor estimado", "Status", "Solicitante", "Data"]),
+      ...lifecycleRequests.map((item) => [
+        textCell(item.requestType),
+        textCell(item.assetId),
+        textCell(item.title),
+        numberCell(item.quantity),
+        moneyCell(item.estimatedCost),
+        textCell(item.status),
+        textCell(item.requestedBy),
+        dateTimeCell(item.requestedAt),
+      ]),
+    ];
     sheets.push(
       sheet("Contábil", accounting, [16, 18, 18, 20, 18, 20, 22, 22, 28, 22, 20, 20]),
       sheet("Custos contratuais", contractCosts, [16, 18, 28, 28, 20, 14, 14, 18, 10, 16]),
@@ -278,13 +284,16 @@ export async function createExportWorkbook(
     );
   }
 
-  return writeExcelFile(
+  const buffer = await writeExcelFile(
     sheets,
     { fontFamily: "Arial", fontSize: 10 },
-  ).toBlob();
+  ).toBuffer();
+  return new Blob([new Uint8Array(buffer)], {
+    type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  });
 }
 
-function sheet(name: string, data: SheetData, widths: number[]): Sheet<Blob> {
+function sheet(name: string, data: SheetData, widths: number[]): Sheet<Buffer> {
   return {
     data,
     sheet: name,

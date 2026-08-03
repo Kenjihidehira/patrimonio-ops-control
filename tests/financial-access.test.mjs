@@ -89,6 +89,12 @@ test("exportação financeira é explícita, cumulativa e auditável", () => {
   assert.match(workbookSource, /sheet\("Solicitações financeiras"/);
 });
 
+test("XLSX usa compactação compatível com o runtime Cloudflare", () => {
+  assert.match(workbookSource, /from "write-excel-file\/node"/);
+  assert.match(workbookSource, /\.toBuffer\(\)/);
+  assert.doesNotMatch(workbookSource, /\.toBlob\(\)/);
+});
+
 test("interface administra a permissão sem transformá-la em escrita ou exportação", () => {
   assert.match(environments, /Visualizar valores e dados contábeis/);
   assert.match(environments, /Libera somente consulta/);
@@ -171,7 +177,8 @@ test("XLSX operacional omite valores e XLSX financeiro inclui as colunas", async
     options: { assetTypes: { cpu: "Computador" }, statuses: { available: "Disponível" } },
     operations: { assetAccounting: [], assetContracts: [], lifecycleRequests: [] },
   };
-  const operational = await createExportWorkbook(dashboard, []);
+  const operationalDashboard = { ...dashboard, operations: undefined };
+  const operational = await createExportWorkbook(operationalDashboard, []);
   const operationalRows = await readWorkbookRows(operational);
   assert.equal(operationalRows[0].includes("Valor de aquisição"), false);
   assert.equal(operationalRows[1].includes(2500), false);
@@ -180,4 +187,18 @@ test("XLSX operacional omite valores e XLSX financeiro inclui as colunas", async
   const financialRows = await readWorkbookRows(financial);
   assert.equal(financialRows[0].includes("Valor de aquisição"), true);
   assert.equal(financialRows[1].includes(2500), true);
+
+  const productionVolume = {
+    ...operationalDashboard,
+    inventory: Array.from({ length: 374 }, (_, index) => ({
+      ...dashboard.inventory[0],
+      id: String(200000 + index),
+      sourceIdentifier: String(200000 + index),
+    })),
+  };
+  const productionWorkbook = await createExportWorkbook(productionVolume, []);
+  const signature = new Uint8Array(await productionWorkbook.slice(0, 4).arrayBuffer());
+  assert.deepEqual(Array.from(signature), [0x50, 0x4b, 0x03, 0x04]);
+  const productionRows = await readWorkbookRows(productionWorkbook);
+  assert.equal(productionRows.length, 375);
 });
