@@ -124,6 +124,7 @@ Deno.serve(async (request) => {
         const [
           nuclei,
           assets,
+          assetAliases,
           collaborators,
           movements,
           imports,
@@ -136,6 +137,7 @@ Deno.serve(async (request) => {
           await Promise.all([
             loadNuclei(ownerKey),
             loadAssets(ownerKey),
+            loadAssetAliases(ownerKey),
             loadCollaborators(ownerKey),
             loadMovements(ownerKey),
             loadImports(ownerKey),
@@ -152,6 +154,7 @@ Deno.serve(async (request) => {
             notModified: false,
             nuclei,
             assets,
+            assetAliases,
             collaborators,
             movements,
             imports,
@@ -545,6 +548,13 @@ function loadAssets(ownerKey) {
   );
 }
 
+function loadAssetAliases(ownerKey) {
+  const ownerFilter = encodeURIComponent(`eq.${ownerKey}`);
+  return dataRequest(
+    `patrimonio_asset_aliases?owner_key=${ownerFilter}&select=source_code,asset_code`,
+  );
+}
+
 function loadCollaborators(ownerKey) {
   const ownerFilter = encodeURIComponent(`eq.${ownerKey}`);
   return dataRequest(
@@ -610,15 +620,25 @@ async function loadOperationalData(ownerKey) {
 }
 
 async function loadAdvancedData(ownerKey, actorIdentifier, isAdmin) {
-  const data = await dataRequest("rpc/patrimonio_load_advanced_context", {
-    method: "POST",
-    body: JSON.stringify({
-      p_owner_key: ownerKey,
-      p_actor_identifier: actorIdentifier,
-      p_is_admin: isAdmin === true,
+  const [data, dataSourcePolicies] = await Promise.all([
+    dataRequest("rpc/patrimonio_load_advanced_context", {
+      method: "POST",
+      body: JSON.stringify({
+        p_owner_key: ownerKey,
+        p_actor_identifier: actorIdentifier,
+        p_is_admin: isAdmin === true,
+      }),
     }),
-  });
-  return data && typeof data === "object" ? data : {};
+    isAdmin === true
+      ? dataRequest(
+          "patrimonio_data_source_policies?select=domain_key,domain_label,master_system,write_policy,activation_status,owned_fields,scope_note&order=sort_order.asc",
+        )
+      : Promise.resolve([]),
+  ]);
+  return {
+    ...(data && typeof data === "object" ? data : {}),
+    dataSourcePolicies,
+  };
 }
 
 function loadDepartmentTransfers(departmentSlug) {

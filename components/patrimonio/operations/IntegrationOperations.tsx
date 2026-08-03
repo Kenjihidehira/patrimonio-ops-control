@@ -1,6 +1,7 @@
 "use client";
 
 import { type FormEvent, useState } from "react";
+import type { DataSourcePolicy } from "../types";
 import { EmptyState, formValue, formatDateTime } from "../ui";
 import {
   FormActions,
@@ -10,7 +11,7 @@ import {
   useOperationMutation,
 } from "./shared";
 
-type IntegrationPane = "connectors" | "reconciliation";
+type IntegrationPane = "sources" | "connectors" | "reconciliation";
 
 const providerLabels = {
   hr: "Recursos Humanos",
@@ -23,18 +24,118 @@ const providerLabels = {
 } as const;
 const directionLabels = { inbound: "Entrada", outbound: "Saída", bidirectional: "Bidirecional" } as const;
 const severityLabels = { low: "Baixa", medium: "Média", high: "Alta", critical: "Crítica" } as const;
+const writePolicyLabels: Record<DataSourcePolicy["writePolicy"], string> = {
+  authoritative: "Atualiza campos próprios",
+  operational_protected: "Protegido de integrações",
+  append_only: "Somente acrescenta evidências",
+};
+const sourceFieldLabels: Record<string, string> = {
+  base_code: "Patrimônio-base",
+  incorporation: "Incorporação",
+  source_identifier: "Identificador Sabium",
+  source_description: "Descrição original",
+  asset_group: "Grupo patrimonial",
+  branch_code: "Filial de origem",
+  acquired_at: "Data de aquisição",
+  acquisition_value: "Valor de aquisição",
+  disposed_at: "Data de baixa fiscal",
+  operation_value: "Valor da operação",
+  invoice_number: "Número da nota",
+  source_row: "Linha de origem",
+  source_fingerprint: "Assinatura da origem",
+  nucleus_id: "Núcleo atual",
+  assignee: "Responsável atual",
+  location: "Localização atual",
+  status: "Status operacional",
+  serial: "Número de série",
+  type: "Tipo operacional",
+  brand_model: "Marca e modelo",
+  notes: "Observações",
+  collaborator_name: "Nome do colaborador",
+  collaborator_email: "E-mail corporativo",
+  department: "Departamento",
+  employment_status: "Vínculo empregatício",
+  maintenance_kind: "Tipo de manutenção",
+  priority: "Prioridade",
+  maintenance_status: "Status da manutenção",
+  due_at: "Prazo",
+  maintenance_notes: "Registro técnico",
+  latitude: "Latitude",
+  longitude: "Longitude",
+  accuracy_meters: "Precisão",
+  odometer: "Odômetro",
+  observed_at: "Data da leitura",
+  device_compliance: "Conformidade do dispositivo",
+  last_seen_at: "Último contato",
+  encryption_status: "Criptografia",
+  management_status: "Gerenciamento",
+  login_identifier: "Identificador de acesso",
+  display_name: "Nome de exibição",
+  department_access: "Ambientes liberados",
+  role_permissions: "Perfil e permissões",
+  session_version: "Versão da sessão",
+  actor: "Autor",
+  event_type: "Tipo do evento",
+  before_state: "Estado anterior",
+  after_state: "Estado posterior",
+  occurred_at: "Data do evento",
+};
 
 export function IntegrationOperations(props: OperationProps) {
-  const [pane, setPane] = useState<IntegrationPane>("connectors");
+  const [pane, setPane] = useState<IntegrationPane>("sources");
   const openIssues = props.dashboard.operations.reconciliationIssues.filter((issue) => issue.status === "open").length;
   return (
     <div className="operation-stack">
       <nav className="operation-subtabs" aria-label="Integrações e conciliação">
+        <button type="button" className={pane === "sources" ? "is-active" : ""} onClick={() => setPane("sources")}><span>Fontes oficiais</span><strong>{props.dashboard.operations.dataSourcePolicies.length}</strong></button>
         <button type="button" className={pane === "connectors" ? "is-active" : ""} onClick={() => setPane("connectors")}><span>Conectores</span><strong>{props.dashboard.operations.integrations.length}</strong></button>
         <button type="button" className={pane === "reconciliation" ? "is-active" : ""} onClick={() => setPane("reconciliation")}><span>Conciliação</span><strong>{openIssues}</strong></button>
       </nav>
-      {pane === "connectors" ? <Connectors {...props} /> : <Reconciliation {...props} />}
+      {pane === "sources" ? <DataSources {...props} /> : pane === "connectors" ? <Connectors {...props} /> : <Reconciliation {...props} />}
     </div>
+  );
+}
+
+function DataSources({ dashboard }: OperationProps) {
+  if (!dashboard.environment.isAdmin) {
+    return <section className="operational-panel"><div className="operations-clear-state"><strong>Acesso administrativo</strong><span>A matriz de propriedade dos dados é visível somente para administradores.</span></div></section>;
+  }
+
+  return (
+    <section className="operational-panel data-source-panel" aria-labelledby="data-source-title">
+      <div className="operational-panel-toolbar">
+        <div>
+          <h2 id="data-source-title">Matriz de fontes oficiais</h2>
+          <p>Cada sistema altera apenas os campos sob seu domínio. Diferenças em campos protegidos seguem para conciliação.</p>
+        </div>
+        <span className="record-count">Política 2026-08-03</span>
+      </div>
+      {dashboard.operations.dataSourcePolicies.length ? (
+        <div className="data-source-table" role="table" aria-label="Fontes oficiais por domínio de dados">
+          <div className="data-source-row data-source-header" role="row">
+            <span role="columnheader">Domínio</span>
+            <span role="columnheader">Fonte oficial</span>
+            <span role="columnheader">Regra de escrita</span>
+            <span role="columnheader">Situação</span>
+          </div>
+          {dashboard.operations.dataSourcePolicies.map((policy) => (
+            <article className="data-source-row" role="row" key={policy.domainKey}>
+              <div role="cell" className="data-source-domain">
+                <strong>{policy.domainLabel}</strong>
+                <small>{policy.scopeNote}</small>
+                <details>
+                  <summary>Campos sob domínio</summary>
+                  <span>{policy.ownedFields.map((field) => sourceFieldLabels[field] ?? field).join(" · ")}</span>
+                </details>
+              </div>
+              <strong role="cell" className="data-source-master">{policy.masterSystem}</strong>
+              <span role="cell">{writePolicyLabels[policy.writePolicy]}</span>
+              <div role="cell"><StatusPill label={policy.activationStatus === "active" ? "Vigente" : "Planejada"} tone={policy.activationStatus === "active" ? "success" : "neutral"} /></div>
+            </article>
+          ))}
+        </div>
+      ) : <EmptyState title="Matriz indisponível" description="A política de fontes oficiais não foi carregada pelo gateway." />}
+    </section>
   );
 }
 

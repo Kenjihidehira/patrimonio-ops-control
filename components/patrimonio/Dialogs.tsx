@@ -971,6 +971,7 @@ function ImportDialog({
 }) {
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<ImportPreview | null>(null);
+  const [operationalOverwriteConfirmed, setOperationalOverwriteConfirmed] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const handlePreview = async (event: FormEvent<HTMLFormElement>) => {
@@ -980,6 +981,7 @@ function ImportDialog({
     setError(null);
     try {
       setPreview(await previewSpreadsheet(file, departmentSlug));
+      setOperationalOverwriteConfirmed(false);
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "Não foi possível validar a planilha.");
     } finally {
@@ -987,11 +989,20 @@ function ImportDialog({
     }
   };
   const handleImport = async () => {
-    if (!file || !preview?.canCommit) return;
+    if (
+      !file
+      || !preview?.canCommit
+      || (preview.requiresOperationalConfirmation && !operationalOverwriteConfirmed)
+    ) return;
     setBusy(true);
     setError(null);
     try {
-      const result = await importSpreadsheet(file, revision, departmentSlug);
+      const result = await importSpreadsheet(
+        file,
+        revision,
+        departmentSlug,
+        operationalOverwriteConfirmed,
+      );
       await onImported();
       onClose();
       onToast(result.message || "Planilha importada com sucesso.");
@@ -1018,6 +1029,7 @@ function ImportDialog({
               onChange={(event) => {
                 setFile(event.target.files?.[0] ?? null);
                 setPreview(null);
+                setOperationalOverwriteConfirmed(false);
                 setError(null);
               }}
             />
@@ -1034,8 +1046,22 @@ function ImportDialog({
               </div>
               <div className="preview-issues">
                 {[...preview.errors, ...preview.warnings].slice(0, 12).map((issue, index) => (
-                  <p key={`${issue.row}-${issue.column}-${index}`}>Linha {issue.row} · {issue.column}: {issue.message}</p>
+                  <p key={`${issue.row}-${issue.column}-${index}`}>{issue.row > 0 ? `Linha ${issue.row} · ` : ""}{issue.column}: {issue.message}</p>
                 ))}
+              </div>
+              <div className="import-impact-summary">
+                <strong>Impacto sobre o cadastro atual</strong>
+                <span>{preview.newAssetCount} novos · {preview.updateAssetCount} com alterações · {preview.unchangedAssetCount} sem mudanças</span>
+                {preview.requiresOperationalConfirmation ? (
+                  <label>
+                    <input
+                      type="checkbox"
+                      checked={operationalOverwriteConfirmed}
+                      onChange={(event) => setOperationalOverwriteConfirmed(event.target.checked)}
+                    />
+                    <span>Confirmo a atualização de {preview.protectedFieldChangeCount} campo(s) operacional(is) listados na prévia. Esta ação ficará registrada na auditoria.</span>
+                  </label>
+                ) : <small>Nenhum campo operacional existente será alterado.</small>}
               </div>
             </section>
           ) : null}
@@ -1044,7 +1070,7 @@ function ImportDialog({
         <div className="modal-footer">
           <button className="button button-secondary" type="button" onClick={onClose}>Cancelar</button>
           <button className="button button-secondary" type="submit" disabled={busy || !file}>{busy ? "Validando..." : "Pré-validar"}</button>
-          <button className="button button-primary" type="button" disabled={busy || !preview?.canCommit} onClick={() => void handleImport()}>Importar válidos</button>
+          <button className="button button-primary" type="button" disabled={busy || !preview?.canCommit || Boolean(preview?.requiresOperationalConfirmation && !operationalOverwriteConfirmed)} onClick={() => void handleImport()}>Importar válidos</button>
         </div>
       </form>
     </Modal>

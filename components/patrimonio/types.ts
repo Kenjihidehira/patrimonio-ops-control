@@ -138,6 +138,11 @@ export type ImportIssue = {
 export type ImportPreview = {
   totalCandidates: number;
   acceptedCount: number;
+  newAssetCount: number;
+  updateAssetCount: number;
+  unchangedAssetCount: number;
+  protectedFieldChangeCount: number;
+  requiresOperationalConfirmation: boolean;
   untaggedCount: number;
   rejectedCount: number;
   adjustedCount: number;
@@ -538,6 +543,16 @@ export type ReconciliationIssue = {
   resolutionNote: string;
 };
 
+export type DataSourcePolicy = {
+  domainKey: string;
+  domainLabel: string;
+  masterSystem: string;
+  writePolicy: "authoritative" | "operational_protected" | "append_only";
+  activationStatus: "active" | "planned";
+  ownedFields: string[];
+  scopeNote: string;
+};
+
 export type AssetInspection = {
   id: string;
   assetId: string;
@@ -578,6 +593,7 @@ export type OperationsData = {
   assetCustomValues: AssetCustomValue[];
   integrations: AssetIntegration[];
   integrationEvents: IntegrationEvent[];
+  dataSourcePolicies: DataSourcePolicy[];
   reconciliationIssues: ReconciliationIssue[];
   assetInspections: AssetInspection[];
 };
