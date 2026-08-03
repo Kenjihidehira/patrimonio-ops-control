@@ -475,6 +475,7 @@ export default function PatrimonioApp() {
 
         {dashboard && view === "dashboard" ? (
           <DashboardView
+            key={dashboard.environment.activeDepartment.slug}
             dashboard={dashboard}
             lastSyncAt={lastSyncAt}
             onNavigate={setView}

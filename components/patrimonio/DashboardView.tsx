@@ -1,7 +1,19 @@
 "use client";
 
-import { useMemo } from "react";
-import type { AnalyticsSnapshot, Dashboard, ViewId } from "./types";
+import { useMemo, useState } from "react";
+import {
+  buildFilteredDashboardAnalytics,
+  defaultDashboardFilters,
+  hasDashboardFilters,
+} from "../../lib/dashboard-filters.js";
+import type { DashboardFilters } from "../../lib/dashboard-filters.js";
+import type {
+  AnalyticsSnapshot,
+  AssetStatus,
+  AssetType,
+  Dashboard,
+  ViewId,
+} from "./types";
 import { EmptyState, OperationalIcon } from "./ui";
 
 type DashboardViewProps = {
@@ -36,7 +48,20 @@ export function DashboardView({
   onNavigate,
   onRefresh,
 }: DashboardViewProps) {
-  const analytics = dashboard.analytics;
+  const baseAnalytics = dashboard.analytics;
+  const [filters, setFilters] = useState<DashboardFilters>({ ...defaultDashboardFilters });
+  const filtersActive = hasDashboardFilters(filters);
+  const filteredDashboard = useMemo(() => {
+    if (!baseAnalytics || !filtersActive) return null;
+    return buildFilteredDashboardAnalytics({
+      assets: dashboard.nucleusInventory,
+      nuclei: dashboard.nuclei,
+      operations: dashboard.operations,
+      filters,
+      now: new Date(baseAnalytics.generatedAt),
+    });
+  }, [baseAnalytics, dashboard.nuclei, dashboard.nucleusInventory, dashboard.operations, filters, filtersActive]);
+  const analytics = filteredDashboard?.analytics ?? baseAnalytics;
   const attentionItems = useMemo(
     () => analytics ? buildAttentionItems(analytics) : [],
     [analytics],
@@ -63,13 +88,85 @@ export function DashboardView({
           <span className="dashboard-context-label">Ambiente acompanhado</span>
           <strong>{dashboard.environment.activeDepartment.name}</strong>
           <small>
-            Base atualizada {formatSyncTime(lastSyncAt, analytics.generatedAt)} · indicadores calculados sobre registros completos
+            Base atualizada {formatSyncTime(lastSyncAt, analytics.generatedAt)} · {filtersActive ? "recorte aplicado sobre registros completos" : "indicadores calculados sobre registros completos"}
           </small>
         </div>
         <button className="button button-secondary button-small" type="button" onClick={onRefresh}>
           <OperationalIcon name="sync" /> Atualizar dados
         </button>
       </div>
+
+      <section className="dashboard-filters" aria-labelledby="dashboard-filters-title">
+        <header className="dashboard-filters-heading">
+          <h2 id="dashboard-filters-title">Filtros do dashboard</h2>
+          <span aria-live="polite">
+            {filteredDashboard
+              ? `${numberFormatter.format(filteredDashboard.selectedCount)} registros · ${numberFormatter.format(analytics.assets.total)} ativos`
+              : `${numberFormatter.format(analytics.assets.total)} ativos na base`}
+          </span>
+        </header>
+        <div className="dashboard-filter-grid">
+          <label className="dashboard-filter-field" htmlFor="dashboard-filter-nucleus">
+            <span>Núcleo</span>
+            <select
+              id="dashboard-filter-nucleus"
+              value={filters.nucleus}
+              onChange={(event) => setFilters((current) => ({ ...current, nucleus: event.target.value }))}
+            >
+              <option value="all">Todos os núcleos</option>
+              {dashboard.nuclei.map((nucleus) => (
+                <option key={nucleus.id} value={nucleus.id}>{nucleus.name}</option>
+              ))}
+            </select>
+          </label>
+          <label className="dashboard-filter-field" htmlFor="dashboard-filter-type">
+            <span>Tipo de patrimônio</span>
+            <select
+              id="dashboard-filter-type"
+              value={filters.type}
+              onChange={(event) => setFilters((current) => ({ ...current, type: event.target.value as AssetType | "all" }))}
+            >
+              <option value="all">Todos os tipos</option>
+              {(Object.entries(dashboard.options.assetTypes) as Array<[AssetType, string]>).map(([value, label]) => (
+                <option key={value} value={value}>{label}</option>
+              ))}
+            </select>
+          </label>
+          <label className="dashboard-filter-field" htmlFor="dashboard-filter-status">
+            <span>Situação</span>
+            <select
+              id="dashboard-filter-status"
+              value={filters.status}
+              onChange={(event) => setFilters((current) => ({ ...current, status: event.target.value as AssetStatus | "all" }))}
+            >
+              <option value="all">Todas as situações</option>
+              {(Object.entries(dashboard.options.statuses) as Array<[AssetStatus, string]>).map(([value, label]) => (
+                <option key={value} value={value}>{label}</option>
+              ))}
+            </select>
+          </label>
+          <label className="dashboard-filter-field" htmlFor="dashboard-filter-source">
+            <span>Origem</span>
+            <select
+              id="dashboard-filter-source"
+              value={filters.source}
+              onChange={(event) => setFilters((current) => ({ ...current, source: event.target.value as DashboardFilters["source"] }))}
+            >
+              <option value="all">Todas as origens</option>
+              <option value="sabium">Sabium</option>
+              <option value="local">Patrimônio Ops</option>
+            </select>
+          </label>
+          <button
+            className="button button-secondary button-small dashboard-filter-reset"
+            type="button"
+            disabled={!filtersActive}
+            onClick={() => setFilters({ ...defaultDashboardFilters })}
+          >
+            Limpar filtros
+          </button>
+        </div>
+      </section>
 
       <section className="dashboard-kpis" aria-label="Indicadores executivos">
         <KpiButton

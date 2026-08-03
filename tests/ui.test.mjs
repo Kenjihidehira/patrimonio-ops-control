@@ -124,6 +124,12 @@ test("dashboard executivo é a entrada padrão e usa somente indicadores sustent
   assert.match(dashboardView, /Inventário físico/);
   assert.match(dashboardView, /Idade do backlog/);
   assert.match(dashboardView, /Cobertura dos controles/);
+  assert.match(dashboardView, /Filtros do dashboard/);
+  assert.match(dashboardView, /dashboard-filter-nucleus/);
+  assert.match(dashboardView, /dashboard-filter-type/);
+  assert.match(dashboardView, /dashboard-filter-status/);
+  assert.match(dashboardView, /dashboard-filter-source/);
+  assert.match(dashboardView, /buildFilteredDashboardAnalytics/);
   assert.doesNotMatch(dashboardView, /style=\{\{/);
   assert.match(dashboardView, /<progress/);
   assert.doesNotMatch(dashboardView, /MTBF|MTTR|custo por km/i);
