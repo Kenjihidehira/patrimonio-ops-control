@@ -9,6 +9,7 @@ const [
   layout,
   themeInit,
   app,
+  dashboardView,
   inventory,
   nuclei,
   collaborators,
@@ -46,6 +47,7 @@ const [
   read("app/layout.tsx"),
   read("public/theme-init.js"),
   read("components/patrimonio/PatrimonioApp.tsx"),
+  read("components/patrimonio/DashboardView.tsx"),
   read("components/patrimonio/InventoryView.tsx"),
   read("components/patrimonio/NucleiView.tsx"),
   read("components/patrimonio/CollaboratorsView.tsx"),
@@ -82,6 +84,7 @@ const [
 const reactUi = [
   demoPage,
   app,
+  dashboardView,
   inventory,
   nuclei,
   collaborators,
@@ -110,6 +113,28 @@ test("interface operacional foi convertida para componentes React e TypeScript",
   assert.doesNotMatch(reactUi, /innerHTML|querySelector|document\.createElement\(["']table/);
 });
 
+test("dashboard executivo é a entrada padrão e usa somente indicadores sustentados pelos dados", () => {
+  assert.match(app, /useState<ViewId>\("dashboard"\)/);
+  assert.match(app, /dashboard: "Dashboard"/);
+  assert.match(app, /<DashboardView/);
+  assert.match(dashboardView, /Distribuição operacional/);
+  assert.match(dashboardView, /Movimentações registradas/);
+  assert.match(dashboardView, /Atenção da gestão/);
+  assert.match(dashboardView, /Pendências por núcleo/);
+  assert.match(dashboardView, /Inventário físico/);
+  assert.match(dashboardView, /Idade do backlog/);
+  assert.match(dashboardView, /Cobertura dos controles/);
+  assert.match(dashboardView, /Filtros do dashboard/);
+  assert.match(dashboardView, /dashboard-filter-nucleus/);
+  assert.match(dashboardView, /dashboard-filter-type/);
+  assert.match(dashboardView, /dashboard-filter-status/);
+  assert.match(dashboardView, /dashboard-filter-source/);
+  assert.match(dashboardView, /buildFilteredDashboardAnalytics/);
+  assert.doesNotMatch(dashboardView, /style=\{\{/);
+  assert.match(dashboardView, /<progress/);
+  assert.doesNotMatch(dashboardView, /MTBF|MTTR|custo por km/i);
+});
+
 test("interface contém os fluxos comerciais essenciais", () => {
   for (const marker of [
     "Controle de patrimônios",
@@ -132,7 +157,11 @@ test("interface contém os fluxos comerciais essenciais", () => {
   assert.match(dialogs, /"register_responsible"/);
   assert.doesNotMatch([inventory, dialogs, operational].join("\n"), /Valor de aquisição/);
   assert.match(documentsOperations, /Valor de aquisição/);
-  assert.doesNotMatch(workbook, /"Valor",|asset\.value/);
+  assert.match(workbook, /includeFinancials/);
+  assert.match(workbook, /Valor de aquisição/);
+  assert.match(workbook, /Custos contratuais/);
+  assert.match(workbook, /Solicitações financeiras/);
+  assert.match(exportApi, /scope === "financial" \? "export_financial" : "export"/);
 });
 
 test("estado remoto usa requisições canceláveis e sincronização de atividade", () => {
@@ -147,6 +176,20 @@ test("estado remoto usa requisições canceláveis e sincronização de atividad
   assert.match(clientApi, /response\.status === 304/);
   assert.match(collaborators, /dashboard\.collaborators\.length/);
   assert.match(collaborators, /responsáveis distintos/);
+});
+
+test("mutações reaproveitam o painel retornado sem uma recarga completa adicional", () => {
+  assert.match(clientApi, /Promise<\{ dashboard: Dashboard; message: string \}>/);
+  assert.match(clientApi, /fetch\(`\/api\/state\?\$\{query\}`/);
+  assert.match(api, /needsWorkspaceBeforeMutation/);
+  assert.match(api, /if \(!isOperationalAction\) applyAction/);
+  assert.match(api, /dashboard:\s*\{/);
+  assert.match(app, /applyDashboard\(result\.dashboard\)/);
+  assert.doesNotMatch(
+    app,
+    /const result = await mutateDashboard[\s\S]{0,500}await refresh\(\{ quiet: true \}\)/,
+  );
+  assert.match(hooks, /!options\.quiet \|\| !dashboardRef\.current/);
 });
 
 test("campos críticos possuem semântica e validação no cliente", () => {

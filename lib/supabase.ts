@@ -35,6 +35,7 @@ type DepartmentUser = {
   canWrite: boolean;
   canImport: boolean;
   canExport: boolean;
+  canViewFinancialData: boolean;
   lastLoginAt: string | null;
   departmentSlugs: string[];
 };
@@ -73,6 +74,7 @@ type GatewayWorkspaceContext = {
   dataSourcePolicies: Array<Record<string, unknown>>;
   reconciliationIssues: Array<Record<string, unknown>>;
   assetInspections: Array<Record<string, unknown>>;
+  analytics?: Record<string, unknown>;
   access: {
     activeDepartment: Department;
     departments: Department[];
@@ -82,6 +84,7 @@ type GatewayWorkspaceContext = {
       canWrite: boolean;
       canImport: boolean;
       canExport: boolean;
+      canViewFinancialData: boolean;
     };
     users: DepartmentUser[];
   };
@@ -159,6 +162,7 @@ export async function loadDepartmentWorkspace(
     state: mapWorkspaceState(result),
     imports: mapImportRuns(result.imports),
     operations: mapOperations(result),
+    analytics: result.analytics ?? null,
     environment: {
       ...result.access,
       transfers: result.transfers.map((row) => ({
@@ -263,6 +267,7 @@ export async function saveUserAccess(
     canWrite: boolean;
     canImport: boolean;
     canExport: boolean;
+    canViewFinancialData: boolean;
     departmentSlugs: string[];
   },
 ) {
@@ -275,13 +280,14 @@ export async function saveUserAccess(
 export async function authorizeDepartmentOperation(
   identifier: string,
   departmentSlug: string,
-  requestedOperation: "read" | "write" | "import" | "export" | "admin",
+  requestedOperation: "read" | "write" | "import" | "export" | "export_financial" | "admin" | "financial",
 ) {
   return gatewayRequest<{
     departmentSlug: string;
     canWrite: boolean;
     canImport: boolean;
     canExport: boolean;
+    canViewFinancialData: boolean;
     isAdmin: boolean;
     isAuditor: boolean;
     sessionVersion: number;
@@ -342,6 +348,7 @@ export async function uploadAssetDocument(
     mimeType: string;
     note: string;
     retentionUntil: string;
+    containsFinancialData: boolean;
   },
   contentBase64: string,
 ) {
@@ -542,6 +549,7 @@ function mapOperations(result: GatewayWorkspaceContext) {
       uploadedBy: String(row.uploaded_by),
       uploadedAt: String(row.uploaded_at),
       retentionUntil: row.retention_until ? String(row.retention_until) : null,
+      containsFinancialData: row.contains_financial_data === true,
     })),
     assetContracts: result.assetContracts.map((row) => ({
       id: String(row.id),
@@ -661,6 +669,7 @@ function mapOperations(result: GatewayWorkspaceContext) {
       fieldType: String(row.field_type),
       options: Array.isArray(row.options) ? row.options.map(String) : [],
       required: row.required === true,
+      containsFinancialData: row.contains_financial_data === true,
       active: row.active === true,
       createdBy: String(row.created_by),
       createdAt: String(row.created_at),

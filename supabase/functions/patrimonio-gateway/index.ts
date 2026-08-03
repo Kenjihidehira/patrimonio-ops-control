@@ -1,4 +1,5 @@
 import { verifyGatewayRequest } from "./auth.js";
+import { buildAnalyticsSnapshot } from "./analytics.js";
 
 const gatewayKey = Deno.env.get("PATRIMONIO_GATEWAY_KEY") ?? "";
 const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
@@ -120,6 +121,10 @@ Deno.serve(async (request) => {
             },
           });
         }
+        const canViewFinancialData = access.permissions.canViewFinancialData === true;
+        if (canViewFinancialData) {
+          await authorizeOperation(identifier, access.active.slug, "financial");
+        }
 
         const [
           nuclei,
@@ -136,7 +141,7 @@ Deno.serve(async (request) => {
         ] =
           await Promise.all([
             loadNuclei(ownerKey),
-            loadAssets(ownerKey),
+            loadAssets(ownerKey, canViewFinancialData),
             loadAssetAliases(ownerKey),
             loadCollaborators(ownerKey),
             loadMovements(ownerKey),
@@ -145,8 +150,14 @@ Deno.serve(async (request) => {
             access.isAdmin ? loadUserDirectory() : Promise.resolve([]),
             access.isAdmin ? loadSecurityEvents() : Promise.resolve([]),
             loadOperationalData(ownerKey),
-            loadAdvancedData(ownerKey, identifier, access.isAdmin),
+            loadAdvancedData(ownerKey, identifier, access.isAdmin, canViewFinancialData),
           ]);
+        const analytics = buildAnalyticsSnapshot({
+          assets,
+          nuclei,
+          movements,
+          operational,
+        });
 
         return json({
           data: {
@@ -160,6 +171,7 @@ Deno.serve(async (request) => {
             imports,
             transfers,
             securityEvents,
+            analytics,
             ...operational,
             ...advanced,
             access: {
@@ -195,7 +207,7 @@ Deno.serve(async (request) => {
         const departmentSlugs = Array.isArray(body.user?.departmentSlugs)
           ? body.user.departmentSlugs.map(String)
           : [];
-        const data = await dataRequest("rpc/patrimonio_save_user_access_v4", {
+        const data = await dataRequest("rpc/patrimonio_save_user_access_v5", {
           method: "POST",
           body: JSON.stringify({
             p_admin_identifier: identifier,
@@ -207,6 +219,7 @@ Deno.serve(async (request) => {
             p_can_write: body.user?.canWrite !== false,
             p_can_import: body.user?.canImport !== false,
             p_can_export: body.user?.canExport !== false,
+            p_can_view_financial_data: body.user?.canViewFinancialData === true,
             p_department_slugs: departmentSlugs,
           }),
         });
@@ -247,7 +260,7 @@ Deno.serve(async (request) => {
 
       case "transfer_department_entity": {
         await requireGlobalAdmin(identifier);
-        const data = await dataRequest("rpc/patrimonio_transfer_department_entity", {
+        const data = await dataRequest("rpc/patrimonio_transfer_department_entity_v2", {
           method: "POST",
           body: JSON.stringify({
             p_admin_identifier: identifier,
@@ -272,6 +285,11 @@ Deno.serve(async (request) => {
         const ownerKey = access.active.owner_key;
         const actor = actorLabel(access.user);
         const actionType = String(body.action?.type ?? "");
+        await enforceFinancialActionPermission(
+          ownerKey,
+          body.action,
+          access.isAdmin,
+        );
         const identityAwareAction = operationalActionTypes.has(actionType)
           || advancedActionTypes.has(actionType);
         const rpcName = advancedActionTypes.has(actionType)
@@ -310,6 +328,12 @@ Deno.serve(async (request) => {
         const documentId = String(document.id ?? "").trim();
         const assetCode = String(document.assetId ?? "").trim();
         const mimeType = String(document.mimeType ?? "").trim().toLowerCase();
+        const category = String(document.category ?? "").trim().toLowerCase();
+        const containsFinancialData = document.containsFinancialData === true
+          || ["invoice", "contract", "disposal"].includes(category);
+        if (containsFinancialData && !access.isAdmin) {
+          throw httpError("financial_data_permission_required", 403, "42501");
+        }
         const fileBytes = decodeBase64File(String(body.contentBase64 ?? ""));
         const extension = documentExtension(mimeType);
         if (!uuidPattern.test(documentId) || !assetCode || !extension || !fileBytes.length) {
@@ -348,6 +372,7 @@ Deno.serve(async (request) => {
                   byteSize: fileBytes.length,
                   storagePath,
                   checksumSha256,
+                  containsFinancialData,
                 },
               },
             }),
@@ -368,10 +393,29 @@ Deno.serve(async (request) => {
         const ownerFilter = encodeURIComponent(`eq.${access.active.owner_key}`);
         const idFilter = encodeURIComponent(`eq.${String(body.documentId ?? "").trim()}`);
         const documents = await dataRequest(
-          `patrimonio_asset_documents?owner_key=${ownerFilter}&id=${idFilter}&deleted_at=is.null&select=storage_path,file_name&limit=1`,
+          `patrimonio_asset_documents?owner_key=${ownerFilter}&id=${idFilter}&deleted_at=is.null&select=storage_path,file_name,contains_financial_data&limit=1`,
         );
         const document = documents[0];
         if (!document) throw httpError("asset_document_not_found", 404, "P0002");
+        if (document.contains_financial_data === true && !access.permissions.canViewFinancialData) {
+          await recordFinancialDocumentEvent(
+            "financial_document_access_denied",
+            "denied",
+            identifier,
+            access.active.slug,
+            String(body.documentId ?? ""),
+          );
+          throw httpError("financial_data_permission_required", 403, "42501");
+        }
+        if (document.contains_financial_data === true) {
+          await recordFinancialDocumentEvent(
+            "financial_document_opened",
+            "success",
+            identifier,
+            access.active.slug,
+            String(body.documentId ?? ""),
+          );
+        }
         const signed = await storageRequest(
           `object/sign/${DOCUMENT_BUCKET}/${encodeStoragePath(String(document.storage_path))}`,
           { method: "POST", body: JSON.stringify({ expiresIn: 60 }) },
@@ -392,6 +436,13 @@ Deno.serve(async (request) => {
         const ownerKey = access.active.owner_key;
         const actor = actorLabel(access.user);
         const payload = body.payload ?? {};
+        if (
+          !access.isAdmin
+          && Array.isArray(payload.assets)
+          && payload.assets.some(hasFinancialAssetPayload)
+        ) {
+          throw httpError("financial_data_permission_required", 403, "42501");
+        }
         const data = await dataRequest("rpc/patrimonio_import_workspace", {
           method: "POST",
           body: JSON.stringify({
@@ -455,6 +506,7 @@ async function resolveDepartmentAccess(identifier, requestedSlug) {
       canWrite: user.is_admin === true || (user.is_auditor !== true && user.can_write === true),
       canImport: user.is_admin === true || (user.is_auditor !== true && user.can_import === true),
       canExport: user.is_admin === true || user.can_export === true,
+      canViewFinancialData: user.is_admin === true || user.can_view_financial_data === true,
     },
   };
 }
@@ -485,7 +537,7 @@ async function loadUser(identifier) {
   if (!identifier) return null;
   const filter = encodeURIComponent(`eq.${identifier}`);
   const users = await dataRequest(
-    `patrimonio_users?identifier=${filter}&select=identifier,display_name,is_admin,is_auditor,active,can_write,can_import,can_export,session_version&limit=1`,
+    `patrimonio_users?identifier=${filter}&select=identifier,display_name,is_admin,is_auditor,active,can_write,can_import,can_export,can_view_financial_data,session_version&limit=1`,
   );
   return users[0] ?? null;
 }
@@ -493,7 +545,7 @@ async function loadUser(identifier) {
 async function loadUserDirectory() {
   const [users, memberships] = await Promise.all([
     dataRequest(
-      "patrimonio_users?select=identifier,display_name,is_admin,is_auditor,active,can_write,can_import,can_export,last_login_at&order=display_name.asc,identifier.asc",
+      "patrimonio_users?select=identifier,display_name,is_admin,is_auditor,active,can_write,can_import,can_export,can_view_financial_data,last_login_at&order=display_name.asc,identifier.asc",
     ),
     dataRequest(
       "patrimonio_department_memberships?select=user_identifier,department_slug&order=department_slug.asc",
@@ -514,6 +566,7 @@ async function loadUserDirectory() {
     canWrite: user.is_admin || (!user.is_auditor && user.can_write),
     canImport: user.is_admin || (!user.is_auditor && user.can_import),
     canExport: user.is_admin || user.can_export,
+    canViewFinancialData: user.is_admin === true || user.can_view_financial_data === true,
     lastLoginAt: user.last_login_at,
     departmentSlugs: departmentsByUser.get(user.identifier) ?? [],
   }));
@@ -541,10 +594,13 @@ function loadNuclei(ownerKey) {
   );
 }
 
-function loadAssets(ownerKey) {
+function loadAssets(ownerKey, canViewFinancialData) {
   const ownerFilter = encodeURIComponent(`eq.${ownerKey}`);
+  const financialFields = canViewFinancialData
+    ? ",acquisition_value,operation_value,invoice_number"
+    : "";
   return dataRequestAll(
-    `patrimonio_assets?owner_key=${ownerFilter}&select=code,type,nucleus_id,assignee,location,serial,brand_model,acquired_at,acquisition_value,status,notes,source_system,source_fingerprint,base_code,incorporation,source_identifier,source_description,asset_group,branch_code,disposed_at,operation_value,invoice_number,source_row,created_at&order=updated_at.desc,code.asc`,
+    `patrimonio_assets?owner_key=${ownerFilter}&select=code,type,nucleus_id,assignee,location,serial,brand_model,acquired_at,status,notes,source_system,source_fingerprint,base_code,incorporation,source_identifier,source_description,asset_group,branch_code,disposed_at,source_row,created_at${financialFields}&order=updated_at.desc,code.asc`,
   );
 }
 
@@ -564,7 +620,7 @@ function loadCollaborators(ownerKey) {
 
 function loadMovements(ownerKey) {
   const ownerFilter = encodeURIComponent(`eq.${ownerKey}`);
-  return dataRequest(
+  return dataRequestAll(
     `patrimonio_movements?owner_key=${ownerFilter}&select=id,asset_code,type,actor,from_label,to_label,note,occurred_at&order=occurred_at.desc`,
   );
 }
@@ -578,8 +634,8 @@ function loadImports(ownerKey) {
 
 async function loadOperationalData(ownerKey) {
   const ownerFilter = encodeURIComponent(`eq.${ownerKey}`);
-  const inventoryCampaigns = await dataRequest(
-    `patrimonio_inventory_campaigns?owner_key=${ownerFilter}&select=id,name,nucleus_id,status,due_at,target_count,checked_count,issue_count,created_by,created_at,completed_at,updated_at&order=created_at.desc&limit=20`,
+  const inventoryCampaigns = await dataRequestAll(
+    `patrimonio_inventory_campaigns?owner_key=${ownerFilter}&select=id,name,nucleus_id,status,due_at,target_count,checked_count,issue_count,created_by,created_at,completed_at,updated_at&order=created_at.desc`,
   );
   const activeCampaignIds = inventoryCampaigns
     .filter((campaign) => campaign.status === "active")
@@ -595,11 +651,11 @@ async function loadOperationalData(ownerKey) {
             `patrimonio_inventory_campaign_assets?owner_key=${ownerFilter}&campaign_id=${campaignFilter}&select=campaign_id,asset_code,result,observed_location,note,checked_by,checked_at&order=asset_code.asc`,
           )
         : Promise.resolve([]),
-      dataRequest(
-        `patrimonio_custody_terms?owner_key=${ownerFilter}&select=id,asset_code,assignee,assignee_identifier,status,note,issued_by,issued_at,responded_by,responded_at,response_note&order=issued_at.desc&limit=100`,
+      dataRequestAll(
+        `patrimonio_custody_terms?owner_key=${ownerFilter}&select=id,asset_code,assignee,assignee_identifier,status,note,issued_by,issued_at,responded_by,responded_at,response_note&order=issued_at.desc`,
       ),
-      dataRequest(
-        `patrimonio_maintenance_orders?owner_key=${ownerFilter}&select=id,asset_code,kind,priority,status,title,notes,due_at,created_by,created_at,updated_by,updated_at,completed_at&order=updated_at.desc&limit=100`,
+      dataRequestAll(
+        `patrimonio_maintenance_orders?owner_key=${ownerFilter}&select=id,asset_code,kind,priority,status,title,notes,due_at,created_by,created_at,updated_by,updated_at,completed_at&order=updated_at.desc`,
       ),
       dataRequestAll(
         `patrimonio_tracking_tags?owner_key=${ownerFilter}&active=eq.true&select=id,asset_code,technology,tag_id,active,installed_by,installed_at,updated_at&order=updated_at.desc`,
@@ -619,7 +675,7 @@ async function loadOperationalData(ownerKey) {
   };
 }
 
-async function loadAdvancedData(ownerKey, actorIdentifier, isAdmin) {
+async function loadAdvancedData(ownerKey, actorIdentifier, isAdmin, canViewFinancialData) {
   const [data, dataSourcePolicies] = await Promise.all([
     dataRequest("rpc/patrimonio_load_advanced_context", {
       method: "POST",
@@ -627,6 +683,7 @@ async function loadAdvancedData(ownerKey, actorIdentifier, isAdmin) {
         p_owner_key: ownerKey,
         p_actor_identifier: actorIdentifier,
         p_is_admin: isAdmin === true,
+        p_can_view_financial_data: canViewFinancialData === true,
       }),
     }),
     isAdmin === true
@@ -641,6 +698,82 @@ async function loadAdvancedData(ownerKey, actorIdentifier, isAdmin) {
   };
 }
 
+async function enforceFinancialActionPermission(ownerKey, action, canManageFinancialData) {
+  if (canManageFinancialData === true || !action || typeof action !== "object") return;
+  const actionType = String(action.type ?? "");
+  if (actionType === "upsert_asset_accounting") {
+    throw httpError("financial_data_permission_required", 403, "42501");
+  }
+  if (
+    actionType === "create_asset"
+    && hasProtectedFinancialValue(action.asset?.value)
+  ) {
+    throw httpError("financial_data_permission_required", 403, "42501");
+  }
+  if (
+    actionType === "create_asset_contract"
+    && hasProtectedFinancialValue(action.contract?.monthlyCost)
+  ) {
+    throw httpError("financial_data_permission_required", 403, "42501");
+  }
+  if (
+    actionType === "create_lifecycle_request"
+    && hasProtectedFinancialValue(action.request?.estimatedCost)
+  ) {
+    throw httpError("financial_data_permission_required", 403, "42501");
+  }
+  if (
+    actionType === "create_asset_document"
+    && (
+      action.document?.containsFinancialData === true
+      || ["invoice", "contract", "disposal"].includes(
+        String(action.document?.category ?? "").trim().toLowerCase(),
+      )
+    )
+  ) {
+    throw httpError("financial_data_permission_required", 403, "42501");
+  }
+  if (actionType === "delete_asset_document") {
+    const documentId = String(action.documentId ?? "").trim();
+    if (!uuidPattern.test(documentId)) return;
+    const ownerFilter = encodeURIComponent(`eq.${ownerKey}`);
+    const idFilter = encodeURIComponent(`eq.${documentId}`);
+    const documents = await dataRequest(
+      `patrimonio_asset_documents?owner_key=${ownerFilter}&id=${idFilter}&deleted_at=is.null&select=contains_financial_data&limit=1`,
+    );
+    if (documents[0]?.contains_financial_data === true) {
+      throw httpError("financial_data_permission_required", 403, "42501");
+    }
+  }
+  if (actionType === "set_asset_custom_value") {
+    const fieldId = String(action.fieldId ?? "").trim();
+    if (!uuidPattern.test(fieldId)) return;
+    const ownerFilter = encodeURIComponent(`eq.${ownerKey}`);
+    const idFilter = encodeURIComponent(`eq.${fieldId}`);
+    const fields = await dataRequest(
+      `patrimonio_custom_fields?owner_key=${ownerFilter}&id=${idFilter}&active=eq.true&select=contains_financial_data&limit=1`,
+    );
+    if (fields[0]?.contains_financial_data === true) {
+      throw httpError("financial_data_permission_required", 403, "42501");
+    }
+  }
+}
+
+function hasFinancialAssetPayload(asset) {
+  return asset && typeof asset === "object" && (
+    hasProtectedFinancialValue(asset.value)
+    || hasProtectedFinancialValue(asset.acquisitionValue)
+    || hasProtectedFinancialValue(asset.operationValue)
+    || String(asset.invoiceNumber ?? "").trim().length > 0
+  );
+}
+
+function hasProtectedFinancialValue(value) {
+  if (value === null || value === undefined || String(value).trim() === "") return false;
+  const parsed = Number(value);
+  return !Number.isFinite(parsed) || parsed !== 0;
+}
+
 function loadDepartmentTransfers(departmentSlug) {
   const filter = encodeURIComponent(
     `(source_department_slug.eq.${departmentSlug},target_department_slug.eq.${departmentSlug})`,
@@ -648,6 +781,21 @@ function loadDepartmentTransfers(departmentSlug) {
   return dataRequest(
     `patrimonio_department_transfers?or=${filter}&select=id,source_department_slug,target_department_slug,entity_type,entity_id,entity_label,asset_codes,actor,note,occurred_at&order=occurred_at.desc&limit=50`,
   );
+}
+
+function recordFinancialDocumentEvent(eventType, outcome, identifier, departmentSlug, documentId) {
+  return dataRequest("rpc/patrimonio_record_security_event", {
+    method: "POST",
+    body: JSON.stringify({
+      p_event_type: eventType,
+      p_outcome: outcome,
+      p_actor_identifier: identifier,
+      p_target_identifier: null,
+      p_department_slug: departmentSlug,
+      p_metadata: { documentId },
+      p_retention_days: 1825,
+    }),
+  });
 }
 
 function loadSecurityEvents() {
@@ -716,10 +864,12 @@ async function enforceRateLimit(identifier, operation) {
     import_assets: [10, 300],
     authorize_operation: [60, 60],
     authorize_export: [10, 300],
+    authorize_export_financial: [5, 300],
     authorize_import: [10, 300],
     authorize_read: [240, 60],
     authorize_write: [60, 60],
     authorize_admin: [30, 60],
+    authorize_financial: [60, 60],
     save_user_access: [30, 60],
     transfer_department_entity: [20, 60],
     record_auth_event: [30, 60],

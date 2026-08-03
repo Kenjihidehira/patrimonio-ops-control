@@ -52,8 +52,16 @@ export async function mutateDashboard(
   action: MutationAction,
   expectedRevision: number,
   departmentSlug: string,
-): Promise<{ message: string }> {
-  const response = await fetch("/api/state", {
+  filters: InventoryFilters,
+): Promise<{ dashboard: Dashboard; message: string }> {
+  const query = new URLSearchParams({
+    search: filters.search,
+    type: filters.type,
+    status: filters.status,
+    nucleus: filters.nucleus,
+    sort: filters.sort,
+  });
+  const response = await fetch(`/api/state?${query}`, {
     method: "POST",
     headers: {
       accept: "application/json",
@@ -61,7 +69,7 @@ export async function mutateDashboard(
     },
     body: JSON.stringify({ ...action, expectedRevision, departmentSlug }),
   });
-  return readJson<{ message: string }>(
+  return readJson<{ dashboard: Dashboard; message: string }>(
     response,
     "Não foi possível concluir a operação.",
   );
@@ -89,8 +97,11 @@ export async function importSpreadsheet(
   );
 }
 
-export async function downloadExport(departmentSlug: string): Promise<string> {
-  const query = new URLSearchParams({ department: departmentSlug });
+export async function downloadExport(
+  departmentSlug: string,
+  scope: "operational" | "financial" = "operational",
+): Promise<string> {
+  const query = new URLSearchParams({ department: departmentSlug, scope });
   const response = await fetch(`/api/export?${query}`, {
     headers: {
       accept: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
@@ -145,6 +156,7 @@ export async function saveDepartmentUser(user: {
   canWrite: boolean;
   canImport: boolean;
   canExport: boolean;
+  canViewFinancialData: boolean;
   departmentSlugs: string[];
 }): Promise<{ message: string }> {
   const response = await fetch("/api/departments", {
@@ -196,6 +208,7 @@ export async function uploadAssetDocument(
     category: string;
     note: string;
     retentionUntil: string;
+    containsFinancialData: boolean;
   },
 ): Promise<{ id: string; revision: number; message: string }> {
   const body = new FormData();
@@ -206,6 +219,7 @@ export async function uploadAssetDocument(
   body.set("category", input.category);
   body.set("note", input.note);
   body.set("retentionUntil", input.retentionUntil);
+  body.set("containsFinancialData", String(input.containsFinancialData));
   const response = await fetch("/api/documents", { method: "POST", body });
   return readJson(response, "Não foi possível armazenar o documento.");
 }

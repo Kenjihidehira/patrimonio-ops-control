@@ -21,7 +21,8 @@ autorização; ocultar um botão não é considerado controle de segurança.
 | Transferir entre departamentos | Sim | Não | Não |
 | Remover ou modificar documentos de evidência | Sim, com trilha | Não | Somente com permissão de alteração e trilha |
 | Consultar auditoria de segurança e integrações | Sim | Não | Não |
-| Consultar dados financeiros | Sim | Não | Não |
+| Consultar dados financeiros | Sim | Somente com permissão financeira | Somente com permissão financeira |
+| Exportar dados financeiros | Sim | Exige permissão financeira e de exportação | Exige permissão financeira e de exportação |
 
 ## Invariantes técnicas do auditor
 
@@ -31,19 +32,43 @@ autorização; ocultar um botão não é considerado controle de segurança.
 - O auditor tem alcance global de leitura em todos os departamentos ativos,
   inclusive os criados depois da concessão. Apenas operadores dependem de
   associação explícita em `patrimonio_department_memberships`.
-- A exportação exige `can_export`, passa pela autorização do departamento e cria
+- A exportação operacional exige `can_export`, omite valores financeiros e cria
   evento de segurança com a função do usuário.
+- A exportação financeira é uma ação separada e cumulativa: exige simultaneamente
+  `can_export` e `can_view_financial_data`, além de registrar o escopo financeiro.
 - Toda mutação passa por autorização `write`; a API retorna `403` para o auditor.
 - Administração de usuários e transferências exige `is_admin` no gateway e na RPC.
-- Dados contábeis, integrações e auditoria de segurança permanecem projetados
-  somente para administradores.
+- `can_view_financial_data` concede somente leitura. Custos, contabilidade,
+  documentos financeiros, transferências entre departamentos e alterações de
+  campos financeiros continuam restritos às operações administrativas definidas
+  no gateway e no Postgres.
+
+## Proteção de dados financeiros
+
+- Administradores recebem a permissão financeira obrigatoriamente. Auditores e
+  operadores só a recebem por concessão explícita de um administrador.
+- A permissão vale apenas nos departamentos que o usuário já pode consultar; ela
+  não amplia o alcance organizacional do perfil.
+- Valores de aquisição e operação, número de nota, depreciação, custos contratuais
+  e estimativas financeiras são removidos no gateway antes de o estado chegar ao
+  Worker ou ao navegador quando a permissão não existe.
+- Documentos e campos personalizados que contenham valores financeiros devem ser
+  classificados no cadastro. Notas fiscais, contratos e documentos de baixa são
+  classificados automaticamente como financeiros.
+- Campos livres não devem ser usados para armazenar valores contábeis ou fiscais:
+  texto sem classificação não pode ser protegido de forma confiável pelo sistema.
+- A abertura de documento financeiro, a exportação financeira, a concessão ou
+  remoção da permissão e a transferência entre departamentos geram eventos de
+  auditoria sem copiar os valores financeiros para o log.
 
 ## Provisionamento inicial
 
 O usuário `fabiano.audit@gmail.com` é provisionado como auditor global de leitura,
 com exportação controlada e acesso automático a todos os departamentos atuais e
 futuros. A migração remove seus vínculos individuais e mantém bloqueados os
-privilégios administrativos, de escrita e de importação.
+privilégios administrativos, de escrita, de importação e de leitura financeira.
+Caso exista necessidade formal, um administrador pode conceder apenas a leitura
+financeira sem transformar o auditor em administrador.
 
 Alcance global não significa poder administrativo: somente um administrador pode
 alterar acessos, transferir departamentos ou consultar áreas administrativas

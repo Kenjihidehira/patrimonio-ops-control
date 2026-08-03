@@ -23,24 +23,42 @@ export async function GET(request: Request) {
     }
     const url = new URL(request.url);
     const departmentSlug = url.searchParams.get("department") ?? "";
+    const scope = url.searchParams.get("scope") === "financial"
+      ? "financial"
+      : "operational";
     if (!departmentSlug) {
       return Response.json(
         { error: "Informe o departamento que será exportado." },
         { status: 400, headers: { "cache-control": "no-store" } },
       );
     }
-    await authorizeDepartmentOperation(user.identifier, departmentSlug, "export");
+    const authorization = await authorizeDepartmentOperation(
+      user.identifier,
+      departmentSlug,
+      scope === "financial" ? "export_financial" : "export",
+    );
     const workspace = await loadWorkspaceContext(
       user,
       departmentSlug,
     );
-    const dashboard = buildDashboard(workspace.state, { sort: "asset_asc" });
-    const workbook = await createExportWorkbook(dashboard, workspace.imports);
+    const includeFinancials = scope === "financial"
+      && authorization.canViewFinancialData === true
+      && workspace.environment?.permissions.canViewFinancialData === true;
+    const dashboard = buildDashboard(
+      workspace.state,
+      { sort: "asset_asc" },
+      { includeFinancials },
+    );
+    const workbook = await createExportWorkbook(
+      { ...dashboard, operations: workspace.operations },
+      workspace.imports,
+      { includeFinancials },
+    );
     const date = new Date().toISOString().slice(0, 10);
     return new Response(workbook, {
       headers: {
         "cache-control": "no-store",
-        "content-disposition": `attachment; filename="patrimonios-${workspace.environment?.activeDepartment.slug ?? "departamento"}-${date}.xlsx"`,
+        "content-disposition": `attachment; filename="patrimonios-${scope === "financial" ? "financeiro-" : ""}${workspace.environment?.activeDepartment.slug ?? "departamento"}-${date}.xlsx"`,
         "content-type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         "x-content-type-options": "nosniff",
       },

@@ -15,6 +15,7 @@ import {
 } from "@/lib/asset-identifiers";
 import { downloadExport, mutateDashboard } from "./api";
 import { CollaboratorsView } from "./CollaboratorsView";
+import { DashboardView } from "./DashboardView";
 import { Dialogs } from "./Dialogs";
 import { EnvironmentsView } from "./EnvironmentsView";
 import {
@@ -44,6 +45,10 @@ import {
 } from "./ui";
 
 const viewCopy: Record<ViewId, { title: string; description: string }> = {
+  dashboard: {
+    title: "Acompanhamento patrimonial",
+    description: "Indicadores executivos, pendências e cobertura dos controles do departamento.",
+  },
   inventory: {
     title: "Controle de patrimônios",
     description: "Localize ativos, acompanhe responsáveis e trate divergências por núcleo.",
@@ -75,7 +80,7 @@ const viewCopy: Record<ViewId, { title: string; description: string }> = {
 };
 
 export default function PatrimonioApp() {
-  const [view, setView] = useState<ViewId>("inventory");
+  const [view, setView] = useState<ViewId>("dashboard");
   const [mobileNavigationOpen, setMobileNavigationOpen] = useState(false);
   const [departmentSlug, setDepartmentSlug] = useState<string | null>(() => {
     if (typeof window === "undefined") return null;
@@ -105,7 +110,7 @@ export default function PatrimonioApp() {
     () => ({ ...filterDraft, search: debouncedSearch }),
     [debouncedSearch, filterDraft],
   );
-  const { dashboard, loading, error, lastSyncAt, refresh } = useDashboard(
+  const { dashboard, loading, error, lastSyncAt, refresh, applyDashboard } = useDashboard(
     apiFilters,
     departmentSlug,
   );
@@ -117,7 +122,7 @@ export default function PatrimonioApp() {
 
   const switchDepartment = useCallback((slug: string) => {
     setDepartmentSlug(slug);
-    setView("inventory");
+    setView("dashboard");
     setFilterDraft(defaultFilters);
     setSelectedAssetId(null);
     setModal({ kind: "closed" });
@@ -250,11 +255,12 @@ export default function PatrimonioApp() {
       action,
       dashboard.revision,
       dashboard.environment.activeDepartment.slug,
+      apiFilters,
     );
     if (nextSelectedId) setSelectedAssetId(nextSelectedId);
-    await refresh({ quiet: true });
+    applyDashboard(result.dashboard);
     showToast(result.message || "Alteração registrada com sucesso.");
-  }, [dashboard, refresh, showToast]);
+  }, [apiFilters, applyDashboard, dashboard, showToast]);
 
   const handleStatusSubmit = async (
     event: FormEvent<HTMLFormElement>,
@@ -279,11 +285,11 @@ export default function PatrimonioApp() {
     }
   };
 
-  const handleExport = async () => {
+  const handleExport = async (scope: "operational" | "financial" = "operational") => {
     try {
       if (!dashboard?.environment) throw new Error("A base ainda não foi carregada.");
-      await downloadExport(dashboard.environment.activeDepartment.slug);
-      showToast("Inventário exportado em XLSX.");
+      await downloadExport(dashboard.environment.activeDepartment.slug, scope);
+      showToast(scope === "financial" ? "Relatório financeiro exportado em XLSX." : "Inventário exportado em XLSX.");
     } catch (cause) {
       showToast(cause instanceof Error ? cause.message : "Não foi possível exportar o inventário.", true);
     }
@@ -296,6 +302,7 @@ export default function PatrimonioApp() {
     canWrite: false,
     canImport: false,
     canExport: false,
+    canViewFinancialData: false,
   };
   const visibleViews = (Object.keys(viewCopy) as ViewId[]).filter(
     (item) => item !== "environments" || environment?.isAdmin,
@@ -309,9 +316,9 @@ export default function PatrimonioApp() {
           <button
             className="app-brand"
             type="button"
-            aria-label={`${gazinLogBrand ? "Gazin" : "Dados CX"} Patrimônio Ops, abrir inventário`}
+            aria-label={`${gazinLogBrand ? "Gazin" : "Dados CX"} Patrimônio Ops, abrir dashboard`}
             onClick={() => {
-              setView("inventory");
+              setView("dashboard");
               setMobileNavigationOpen(false);
             }}
           >
@@ -354,6 +361,7 @@ export default function PatrimonioApp() {
               >
                 <span className="nav-item-icon"><NavigationIcon view={item} /></span>
                 <span>{{
+                  dashboard: "Dashboard",
                   inventory: "Inventário",
                   operations: "Operações",
                   nuclei: "Núcleos",
@@ -424,12 +432,21 @@ export default function PatrimonioApp() {
             </div>
           </div>
           <div className="data-actions">
-            <button className="button button-secondary" type="button" disabled={!permissions.canImport} onClick={() => setModal({ kind: "import" })}>
-              <CommandIcon type="import" /> Importar
-            </button>
-            <button className="button button-secondary" type="button" disabled={!permissions.canExport} onClick={() => void handleExport()}>
-              <CommandIcon type="export" /> Exportar
-            </button>
+            {view !== "dashboard" ? (
+              <>
+                <button className="button button-secondary" type="button" disabled={!permissions.canImport} onClick={() => setModal({ kind: "import" })}>
+                  <CommandIcon type="import" /> Importar
+                </button>
+                <button className="button button-secondary" type="button" disabled={!permissions.canExport} onClick={() => void handleExport("operational")}>
+                  <CommandIcon type="export" /> Exportar
+                </button>
+                {permissions.canViewFinancialData ? (
+                  <button className="button button-secondary" type="button" disabled={!permissions.canExport} onClick={() => void handleExport("financial")}>
+                    <CommandIcon type="export" /> Exportar financeiro
+                  </button>
+                ) : null}
+              </>
+            ) : null}
             {view === "inventory" ? (
               <button className="button button-primary" type="button" disabled={!permissions.canWrite} onClick={() => setModal({ kind: "create-asset" })}>
                 <CommandIcon type="create" /> Novo patrimônio
@@ -455,6 +472,16 @@ export default function PatrimonioApp() {
               </span>
             </div>
           </div>
+        ) : null}
+
+        {dashboard && view === "dashboard" ? (
+          <DashboardView
+            key={dashboard.environment.activeDepartment.slug}
+            dashboard={dashboard}
+            lastSyncAt={lastSyncAt}
+            onNavigate={setView}
+            onRefresh={() => { void refresh({ quiet: true, background: true }); }}
+          />
         ) : null}
 
         {view === "inventory" ? (
@@ -550,6 +577,15 @@ function NavigationIcon({ view }: { view: ViewId }) {
     viewBox: "0 0 24 24",
     fill: "none",
   } as const;
+
+  if (view === "dashboard") {
+    return (
+      <svg {...common}>
+        <path d="M4 19V9m5 10V5m6 14v-7m5 7V8" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+        <path d="M3 20h18" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+      </svg>
+    );
+  }
 
   if (view === "nuclei") {
     return (

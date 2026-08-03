@@ -64,7 +64,8 @@ test("banco concede alcance global de leitura a auditores e mantém vínculos so
 });
 
 test("gateway aplica defesa em profundidade e preserva administração exclusiva", () => {
-  assert.match(gateway, /rpc\/patrimonio_save_user_access_v4/);
+  assert.match(gateway, /rpc\/patrimonio_save_user_access_v5/);
+  assert.match(gateway, /p_can_view_financial_data: body\.user\?\.canViewFinancialData === true/);
   assert.match(gateway, /p_is_auditor: body\.user\?\.isAuditor === true/);
   assert.match(gateway, /const departments = user\.is_admin \|\| user\.is_auditor/);
   assert.match(gateway, /select=identifier,display_name,is_admin,is_auditor,active/);
