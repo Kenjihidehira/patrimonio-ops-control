@@ -161,6 +161,15 @@ A planilha corporativa original não faz parte do repositório. O arquivo [`data
 
 Filtros, payloads e códigos de resposta estão em [`docs/api.md`](docs/api.md).
 
+## Documentação do projeto
+
+- [`docs/contexto-projeto.md`](docs/contexto-projeto.md): objetivo, regras de negócio, arquitetura, segurança, fontes de dados, decisões e pendências.
+- [`docs/arquitetura.md`](docs/arquitetura.md): componentes, banco, integrações e decisões arquiteturais.
+- [`docs/api.md`](docs/api.md): contratos HTTP, comandos e códigos de resposta.
+- [`docs/lgpd.md`](docs/lgpd.md): controles técnicos, tratamento de dados e pendências de governança.
+- [`docs/publicacao.md`](docs/publicacao.md): preparação, validação, publicação e verificação de produção.
+- [`CHANGELOG.md`](CHANGELOG.md): histórico consolidado das versões.
+
 ## Arquitetura e segurança
 
 As telas ficam em [`app/demo`](app/demo) e os componentes funcionais em [`components/patrimonio`](components/patrimonio). O cliente React usa uma camada HTTP tipada e nunca acessa o Supabase diretamente. Leituras obsoletas são canceladas com `AbortController`; o painel sincroniza em segundo plano e também ao recuperar foco, conexão ou visibilidade. A sincronização informa a revisão já carregada e recebe `304 Not Modified` quando não houve mutação, evitando transferir novamente todo o inventário e o histórico.

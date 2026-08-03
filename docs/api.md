@@ -195,6 +195,8 @@ Os comandos abaixo usam o mesmo contrato autenticado de `POST /api/state`, sempr
 
 Dados contábeis, custos contratuais e configuração técnica de integrações são devolvidos somente para administradores. A projeção pública de um conector nunca inclui segredo, senha, token ou chave de API.
 
+Geocercas e alertas de rastreamento possuem estrutura persistida no banco, mas `create_tracking_geofence`, `set_tracking_geofence_status` e `update_tracking_alert` ainda não são aceitos pelo gateway HTTP. Eles não fazem parte do contrato público desta versão.
+
 ## `/api/documents`
 
 ### `POST /api/documents`

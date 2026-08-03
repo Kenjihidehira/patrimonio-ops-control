@@ -3,15 +3,15 @@ import { readFile } from "node:fs/promises";
 import test from "node:test";
 
 const nucleusMigration = await readFile(
-  new URL("../supabase/migrations/20260716144553_reconcile_import_nuclei_by_code.sql", import.meta.url),
+  new URL("../supabase/migrations/20260716144650_reconcile_import_nuclei_by_code.sql", import.meta.url),
   "utf8",
 );
 const collaboratorMigration = await readFile(
-  new URL("../supabase/migrations/20260716144718_reconcile_import_collaborators_by_code.sql", import.meta.url),
+  new URL("../supabase/migrations/20260716144744_reconcile_import_collaborators_by_code.sql", import.meta.url),
   "utf8",
 );
 const collaboratorProfileMigration = await readFile(
-  new URL("../supabase/migrations/20260716150928_add_collaborator_profile_editing.sql", import.meta.url),
+  new URL("../supabase/migrations/20260716151908_add_collaborator_profile_editing.sql", import.meta.url),
   "utf8",
 );
 const gateway = await readFile(
@@ -19,27 +19,27 @@ const gateway = await readFile(
   "utf8",
 );
 const untaggedAssetMigration = await readFile(
-  new URL("../supabase/migrations/20260717113000_support_untagged_assets.sql", import.meta.url),
+  new URL("../supabase/migrations/20260717112836_support_untagged_assets.sql", import.meta.url),
   "utf8",
 );
 const collaboratorPolicyMigration = await readFile(
-  new URL("../supabase/migrations/20260717113500_explicit_collaborator_rls_policy.sql", import.meta.url),
+  new URL("../supabase/migrations/20260717113051_explicit_collaborator_rls_policy.sql", import.meta.url),
   "utf8",
 );
 const identifierMigration = await readFile(
-  new URL("../supabase/migrations/20260717133000_allow_asset_identifier_updates.sql", import.meta.url),
+  new URL("../supabase/migrations/20260717115503_allow_asset_identifier_updates.sql", import.meta.url),
   "utf8",
 );
 const assetAliasMigration = await readFile(
-  new URL("../supabase/migrations/20260717143000_preserve_asset_aliases_on_import.sql", import.meta.url),
+  new URL("../supabase/migrations/20260717121045_preserve_asset_aliases_on_import.sql", import.meta.url),
   "utf8",
 );
 const nucleusInventoryEditMigration = await readFile(
-  new URL("../supabase/migrations/20260720143000_edit_nucleus_inventory_items.sql", import.meta.url),
+  new URL("../supabase/migrations/20260720124037_edit_nucleus_inventory_items.sql", import.meta.url),
   "utf8",
 );
 const responsibleRegistrationMigration = await readFile(
-  new URL("../supabase/migrations/20260723103000_register_responsibles_from_inventory.sql", import.meta.url),
+  new URL("../supabase/migrations/20260723134850_register_responsibles_from_inventory.sql", import.meta.url),
   "utf8",
 );
 const departmentMigration = await readFile(
@@ -78,6 +78,10 @@ const advancedIndexMigration = await readFile(
 );
 const advancedFinancialMigration = await readFile(
   new URL("../supabase/migrations/20260731183814_harden_advanced_financial_writes.sql", import.meta.url),
+  "utf8",
+);
+const trackingGeofenceMigration = await readFile(
+  new URL("../supabase/migrations/20260731203708_add_tracking_geofences.sql", import.meta.url),
   "utf8",
 );
 
@@ -284,4 +288,18 @@ test("escritas financeiras avançadas são protegidas no banco", () => {
   assert.match(advancedFinancialMigration, /create_asset_contract[\s\S]*jsonb_set\(v_action, '\{contract,monthlyCost\}', '0'::jsonb/);
   assert.match(advancedFinancialMigration, /from public, anon, authenticated/);
   assert.match(advancedFinancialMigration, /to service_role/);
+});
+
+test("geocercas e alertas remotos permanecem reproduzíveis e fechados para acesso direto", () => {
+  for (const table of ["patrimonio_tracking_geofences", "patrimonio_tracking_alerts"]) {
+    assert.match(trackingGeofenceMigration, new RegExp(`create table public\\.${table}`));
+    assert.match(trackingGeofenceMigration, new RegExp(`alter table public\\.${table} enable row level security`));
+    assert.match(trackingGeofenceMigration, new RegExp(`${table}_no_direct_access`));
+  }
+  assert.match(trackingGeofenceMigration, /security invoker/);
+  assert.match(trackingGeofenceMigration, /set search_path = public, pg_temp/);
+  assert.match(trackingGeofenceMigration, /patrimonio_tracking_event_alerts/);
+  assert.match(trackingGeofenceMigration, /patrimonio_apply_tracking_action/);
+  assert.match(trackingGeofenceMigration, /from public, anon, authenticated/);
+  assert.match(trackingGeofenceMigration, /to service_role/);
 });
