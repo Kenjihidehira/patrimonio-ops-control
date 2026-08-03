@@ -255,7 +255,7 @@ Gera um `.xlsx` sem preços de aquisição e com quatro abas:
 - `Auditoria`
 - `Importações`
 
-Exige autenticação e permissão explícita de exportação. A autorização e o departamento são registrados na auditoria de segurança; requisições anônimas recebem `401` e perfis sem permissão recebem `403`.
+Exige autenticação e permissão explícita de exportação. Auditores recebem essa permissão sem adquirir escrita, importação ou administração. A função do usuário, a autorização e o departamento são registrados na auditoria de segurança; requisições anônimas recebem `401` e perfis sem permissão recebem `403`.
 
 ## Códigos de resposta
 

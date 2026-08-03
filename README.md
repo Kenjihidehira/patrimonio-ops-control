@@ -49,7 +49,7 @@ Planilhas patrimoniais isoladas não registram bem responsabilidade, movimentaç
 - Importação XLSX em duas etapas: pré-validação e confirmação transacional.
 - Exportação XLSX com inventário, núcleos, auditoria e histórico de importações.
 - Inventário e exportação operacional sem exposição de preço; dados contábeis ficam em área administrativa protegida.
-- Ambientes isolados por departamento, com acesso individual, administração global e transferência auditável.
+- Ambientes isolados por departamento, com acesso individual, auditoria segregada, administração global e transferência auditável.
 - Permissões independentes para consulta, alteração, importação e exportação.
 - Desativação imediata, revogação de sessão e auditoria de login e administração.
 - Aviso de privacidade, retenção técnica e runbooks de incidente e restauração.
@@ -167,6 +167,7 @@ Filtros, payloads e códigos de resposta estão em [`docs/api.md`](docs/api.md).
 - [`docs/arquitetura.md`](docs/arquitetura.md): componentes, banco, integrações e decisões arquiteturais.
 - [`docs/api.md`](docs/api.md): contratos HTTP, comandos e códigos de resposta.
 - [`docs/lgpd.md`](docs/lgpd.md): controles técnicos, tratamento de dados e pendências de governança.
+- [`docs/controle-de-acesso.md`](docs/controle-de-acesso.md): matriz de responsabilidades e invariantes de administrador, auditor e operador.
 - [`docs/publicacao.md`](docs/publicacao.md): preparação, validação, publicação e verificação de produção.
 - [`CHANGELOG.md`](CHANGELOG.md): histórico consolidado das versões.
 
@@ -186,7 +187,7 @@ Documentação completa: [`docs/arquitetura.md`](docs/arquitetura.md).
 
 ### Modelo de autorização
 
-Administradores globais controlam departamentos, usuários e transferências. Usuários comuns recebem departamentos específicos e permissões independentes para alteração, importação e exportação; sem essas permissões, o acesso é somente leitura. A autorização é novamente consultada no servidor a cada requisição e alterações de acesso incrementam a versão da sessão, invalidando cookies anteriores.
+Administradores globais controlam departamentos, usuários e transferências. Auditores recebem departamentos específicos, consultam inventário, auditoria, históricos, termos, manutenções e documentos, e podem exportar de forma registrada; o banco impede escrita, importação e administração nesse perfil. Operadores recebem permissões independentes para alteração, importação e exportação. A autorização é novamente consultada no servidor a cada requisição e alterações de acesso incrementam a versão da sessão, invalidando cookies anteriores.
 
 Os controles técnicos e as pendências de governança estão em [`docs/lgpd.md`](docs/lgpd.md). Resposta a incidentes e recuperação estão em [`docs/incidentes.md`](docs/incidentes.md) e [`docs/backup-restauracao.md`](docs/backup-restauracao.md).
 
