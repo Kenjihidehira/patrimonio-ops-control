@@ -56,6 +56,7 @@ export async function loadWorkspaceContext(
         assetCustomValues: [],
         integrations: [],
         integrationEvents: [],
+        dataSourcePolicies: [],
         reconciliationIssues: [],
         assetInspections: [],
       },

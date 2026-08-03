@@ -3,6 +3,27 @@
 Todas as alterações relevantes do Patrimônio Ops Control são registradas neste arquivo.
 O formato segue Keep a Changelog e as versões usam Semantic Versioning.
 
+## [0.4.0] - 2026-08-03
+
+### Adicionado
+
+- Matriz executável de fontes oficiais por domínio, visível para administradores em **Operações > Integrações > Fontes oficiais**.
+- Governança documentada para Sabium, Patrimônio Ops, RH/diretório, ITSM, telemetria, MDM, identidade e auditoria.
+- Conciliação automática quando o Sabium diverge de campos operacionais protegidos.
+- Prévia de importação XLSX com contagem de ativos novos, alterados, inalterados e campos operacionais afetados.
+
+### Alterado
+
+- A carga Sabium reconhece o ativo pelo par patrimônio-base mais incorporação e atualiza somente campos fiscais e de origem.
+- Responsável, núcleo, localização, status, série, classificação, marca/modelo e observações não são mais sobrescritos pela carga Sabium.
+- A importação XLSX operacional exige confirmação explícita antes de atualizar campos já existentes.
+- Núcleos existentes não são mais substituídos pelos placeholders da planilha ou do Sabium.
+
+### Segurança
+
+- A matriz de fontes oficiais tem RLS habilitado e não aceita acesso direto de `anon` ou `authenticated`.
+- Alterações de origem Sabium geram movimento de importação; divergências abertas não são duplicadas por reprocessamento.
+
 ## [0.3.1] - 2026-08-03
 
 ### Alterado
@@ -77,3 +98,5 @@ O formato segue Keep a Changelog e as versões usam Semantic Versioning.
 
 [0.2.0]: https://github.com/Kenjihidehira/patrimonio-ops-control/releases/tag/v0.2.0
 [0.3.0]: https://github.com/Kenjihidehira/patrimonio-ops-control/releases/tag/v0.3.0
+[0.3.1]: https://github.com/Kenjihidehira/patrimonio-ops-control/releases/tag/v0.3.1
+[0.4.0]: https://github.com/Kenjihidehira/patrimonio-ops-control/releases/tag/v0.4.0

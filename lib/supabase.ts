@@ -8,6 +8,7 @@ type WorkspaceState = {
   revision: number;
   nuclei: Array<Record<string, unknown>>;
   assets: Array<Record<string, unknown>>;
+  assetAliases: Array<Record<string, unknown>>;
   collaborators: Array<Record<string, unknown>>;
 };
 
@@ -43,6 +44,7 @@ type GatewayWorkspaceContext = {
   workspace: Array<{ revision: number }>;
   nuclei: Array<Record<string, unknown>>;
   assets: Array<Record<string, unknown>>;
+  assetAliases: Array<Record<string, unknown>>;
   collaborators: Array<Record<string, unknown>>;
   movements: Array<Record<string, unknown>>;
   imports: Array<Record<string, unknown>>;
@@ -68,6 +70,7 @@ type GatewayWorkspaceContext = {
   assetCustomValues: Array<Record<string, unknown>>;
   integrations: Array<Record<string, unknown>>;
   integrationEvents: Array<Record<string, unknown>>;
+  dataSourcePolicies: Array<Record<string, unknown>>;
   reconciliationIssues: Array<Record<string, unknown>>;
   assetInspections: Array<Record<string, unknown>>;
   access: {
@@ -422,6 +425,10 @@ function mapWorkspaceState(result: GatewayWorkspaceContext): WorkspaceState {
       createdAt: row.created_at,
       movements: movementsByAsset.get(String(row.code)) ?? [],
     })),
+    assetAliases: result.assetAliases.map((row) => ({
+      sourceCode: String(row.source_code).trim(),
+      assetId: String(row.asset_code).trim(),
+    })),
     collaborators: result.collaborators.map((row) => ({
       id: row.id,
       name: row.name,
@@ -690,6 +697,15 @@ function mapOperations(result: GatewayWorkspaceContext) {
       errorMessage: String(row.error_message),
       receivedAt: String(row.received_at),
       processedAt: row.processed_at ? String(row.processed_at) : null,
+    })),
+    dataSourcePolicies: result.dataSourcePolicies.map((row) => ({
+      domainKey: String(row.domain_key),
+      domainLabel: String(row.domain_label),
+      masterSystem: String(row.master_system),
+      writePolicy: String(row.write_policy),
+      activationStatus: String(row.activation_status),
+      ownedFields: Array.isArray(row.owned_fields) ? row.owned_fields.map(String) : [],
+      scopeNote: String(row.scope_note),
     })),
     reconciliationIssues: result.reconciliationIssues.map((row) => ({
       id: String(row.id),

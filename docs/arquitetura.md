@@ -135,6 +135,16 @@ A migração `20260731203708_add_tracking_geofences.sql` também instala o gatil
 3. A RPC `patrimonio_import_sabium_assets` aceita somente `service_role`, resolve internamente o workspace `gazin-log` e rejeita metadados incompletos.
 4. A chave técnica e o fingerprint impedem colisões; código-base e incorporação distinguem registros que compartilham o mesmo identificador visível.
 5. Valores de aquisição, operação e nota fiscal são removidos da projeção de usuários não administradores.
+6. O par código-base mais incorporação é a identidade natural da carga; alterações no conteúdo da linha atualizam o mesmo ativo.
+7. O Sabium atualiza somente campos fiscais e de origem. Campos operacionais existentes são preservados e diferenças seguem para conciliação.
+
+### Propriedade dos dados
+
+1. A tabela `patrimonio_data_source_policies` registra a matriz de fonte oficial, política de escrita e situação de ativação.
+2. RLS bloqueia acesso direto público; somente o gateway com `service_role` lê a matriz.
+3. A projeção é enviada somente a administradores e aparece em **Operações > Integrações > Fontes oficiais**.
+4. Conectores planejados de RH, frota e MDM não recebem autoridade de escrita antes da implantação do contrato correspondente.
+5. A definição completa está em [`governanca-dados.md`](governanca-dados.md).
 
 ### Exportação XLSX
 

@@ -78,8 +78,15 @@ export async function importSpreadsheet(
   file: File,
   expectedRevision: number,
   departmentSlug: string,
+  confirmOperationalOverwrite: boolean,
 ): Promise<{ message: string }> {
-  return sendSpreadsheet(file, "commit", expectedRevision, departmentSlug);
+  return sendSpreadsheet(
+    file,
+    "commit",
+    expectedRevision,
+    departmentSlug,
+    confirmOperationalOverwrite,
+  );
 }
 
 export async function downloadExport(departmentSlug: string): Promise<string> {
@@ -213,11 +220,13 @@ async function sendSpreadsheet<T>(
   mode: "preview" | "commit",
   expectedRevision: number | null,
   departmentSlug: string,
+  confirmOperationalOverwrite = false,
 ): Promise<T> {
   const body = new FormData();
   body.set("file", file);
   body.set("mode", mode);
   body.set("department", departmentSlug);
+  body.set("confirmOperationalOverwrite", String(confirmOperationalOverwrite));
   if (expectedRevision !== null) body.set("revision", String(expectedRevision));
 
   const response = await fetch("/api/import", { method: "POST", body });

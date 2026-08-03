@@ -219,6 +219,7 @@ Exige autenticação, permissão de importação e recebe `multipart/form-data`.
 | `file` | Arquivo `.xlsx` de até 2 MB | sim |
 | `mode` | `preview` ou `commit` | sim |
 | `revision` | Revisão inteira conhecida pelo cliente | apenas em `commit` |
+| `confirmOperationalOverwrite` | `true` para confirmar alterações em campos operacionais existentes | apenas quando a prévia exigir |
 
 Prévia:
 
@@ -234,6 +235,11 @@ Resposta resumida:
 {
   "totalCandidates": 373,
   "acceptedCount": 361,
+  "newAssetCount": 12,
+  "updateAssetCount": 40,
+  "unchangedAssetCount": 309,
+  "protectedFieldChangeCount": 58,
+  "requiresOperationalConfirmation": true,
   "untaggedCount": 42,
   "rejectedCount": 12,
   "adjustedCount": 9,
@@ -245,7 +251,7 @@ Resposta resumida:
 }
 ```
 
-Na confirmação, o arquivo é reprocessado e a revisão é comparada dentro da transação. A resposta informa `revision`, `inserted`, `updated`, `rejected` e `collaborators`.
+Na confirmação, o arquivo é reprocessado e a revisão é comparada dentro da transação. Quando a prévia identificar alteração em responsável, núcleo, localização, status, série, classificação, modelo ou observações, a API exige `confirmOperationalOverwrite=true`; sem isso, responde `409`. Campos fiscais de aquisição não são atualizados por esse canal. A resposta concluída informa `revision`, `inserted`, `updated`, `rejected` e `collaborators`.
 
 ## `GET /api/export`
 

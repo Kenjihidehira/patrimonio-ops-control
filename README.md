@@ -16,6 +16,7 @@ Planilhas patrimoniais isoladas não registram bem responsabilidade, movimentaç
 
 - Patrimônios convencionais com 6 números, frotas no formato `número-da-frota.0` e referências internas distintas para itens ainda não etiquetados.
 - Integração com a base Sabium do Gazin LOG, preservando código-base, incorporação, identificador de origem, grupo, filial e situação de baixa.
+- Matriz de fontes oficiais por campo, com dados operacionais protegidos contra sobrescrita externa e divergências encaminhadas para conciliação.
 - Tipos controlados: CPU, monitores, cadeira, notebook, frota, automóvel, implemento rodoviário, componente de frota, equipamento, móvel, extintor, software e outros bens.
 - Organização por núcleo, gestor, responsável e localização física.
 - Diretório de colaboradores importados, inclusive quando não há patrimônio associado.
@@ -46,7 +47,7 @@ Planilhas patrimoniais isoladas não registram bem responsabilidade, movimentaç
 - Status: disponível, em uso, manutenção, divergência e baixado.
 - Baixa lógica, sem exclusão destrutiva do histórico.
 - Auditoria com ator, data, origem, destino e motivo.
-- Importação XLSX em duas etapas: pré-validação e confirmação transacional.
+- Importação XLSX em duas etapas: pré-validação, comparação com o cadastro atual e confirmação explícita de alterações operacionais.
 - Exportação XLSX com inventário, núcleos, auditoria e histórico de importações.
 - Inventário e exportação operacional sem exposição de preço; dados contábeis ficam em área administrativa protegida.
 - Ambientes isolados por departamento, com acesso individual, auditoria segregada, administração global e transferência auditável.
@@ -140,7 +141,7 @@ A carga patrimonial do Gazin LOG usa um utilitário administrativo separado do i
 pnpm prepare:sabium -- caminho/arquivo.xlsx work/sabium-normalizado.json 500 1
 ```
 
-O quarto argumento é o tamanho opcional do lote e o quinto identifica a aba por número ou nome. O campo `rows` do JSON resultante é destinado à RPC protegida `patrimonio_import_sabium_assets`; essa função aceita somente `service_role`, grava exclusivamente no ambiente `gazin-log` e mantém os identificadores de origem imutáveis na interface.
+O quarto argumento é o tamanho opcional do lote e o quinto identifica a aba por número ou nome. O campo `rows` do JSON resultante é destinado à RPC protegida `patrimonio_import_sabium_assets`; essa função aceita somente `service_role`, grava exclusivamente no ambiente `gazin-log`, reconhece o mesmo ativo pelo código-base mais incorporação e mantém os identificadores de origem imutáveis na interface. Reprocessar a carga atualiza somente campos fiscais e de origem; responsável, núcleo, localização, status e apresentação operacional permanecem sob domínio do Patrimônio Ops.
 
 Antes de gravar, a API reabre o XLSX no servidor, normaliza IDs de cinco dígitos com zero à esquerda, rejeita códigos fora do padrão e exclui todas as ocorrências duplicadas. A prévia retorna apenas contagens e posições dos problemas; nomes da planilha não são enviados ao navegador nessa etapa.
 
@@ -168,6 +169,7 @@ Filtros, payloads e códigos de resposta estão em [`docs/api.md`](docs/api.md).
 - [`docs/api.md`](docs/api.md): contratos HTTP, comandos e códigos de resposta.
 - [`docs/lgpd.md`](docs/lgpd.md): controles técnicos, tratamento de dados e pendências de governança.
 - [`docs/controle-de-acesso.md`](docs/controle-de-acesso.md): matriz de responsabilidades e invariantes de administrador, auditor e operador.
+- [`docs/governanca-dados.md`](docs/governanca-dados.md): fonte oficial de cada campo, regras de sobrescrita, conciliação e mudança de sistema mestre.
 - [`docs/publicacao.md`](docs/publicacao.md): preparação, validação, publicação e verificação de produção.
 - [`CHANGELOG.md`](CHANGELOG.md): histórico consolidado das versões.
 

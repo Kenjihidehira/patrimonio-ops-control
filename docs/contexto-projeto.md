@@ -66,15 +66,20 @@ Tipos controlados:
 
 ## 5. Fontes de dados
 
-O projeto trabalha com três responsabilidades de dados:
+O projeto trabalha com responsabilidades de dados explícitas e aplicadas por campo:
 
 | Informação | Fonte atual ou prevista |
 | --- | --- |
 | Cadastro patrimonial, incorporação e dados fiscais de origem | Sabium/importação corporativa |
 | Responsável, localização, status e conferência física | Patrimônio Ops Control |
+| Nome, e-mail, departamento e vínculo do colaborador | RH/diretório corporativo, integração planejada |
+| Manutenção e registro técnico | Patrimônio Ops Control até escolha formal de ITSM |
+| Telemetria de frota | Provedor de frota, integração planejada |
+| Conformidade de dispositivos | MDM corporativo, integração planejada |
 | Identidade e autorização de acesso | Google OIDC mais cadastro administrativo interno |
+| Auditoria de alteração | Patrimônio Ops Control, somente acréscimo |
 
-Antes de criar sincronização bidirecional, a área proprietária deve aprovar qual sistema é mestre para cada campo. Importações não podem sobrescrever silenciosamente correções operacionais auditadas.
+A matriz executável e o procedimento para alterar uma fonte oficial estão em [`governanca-dados.md`](governanca-dados.md). O Sabium atualiza apenas os campos fiscais e de origem; conflitos em responsável, núcleo, localização, status ou apresentação operacional preservam o valor vigente e entram na fila de conciliação. A planilha XLSX comum é um canal operacional em lote e exige confirmação explícita quando modifica campos existentes.
 
 ## 6. Capacidades funcionais
 
