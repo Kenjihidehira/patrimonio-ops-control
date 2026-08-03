@@ -59,7 +59,16 @@ export function OperationsCenterView({
   const operationProps = { dashboard, onMutate, onToast, onRefresh };
 
   return (
-    <section className="view-section operations-view" id="operations-view">
+    <section
+      className={`view-section operations-view ${dashboard.environment.isAuditor ? "is-auditor-read-only" : ""}`.trim()}
+      id="operations-view"
+    >
+      {dashboard.environment.isAuditor ? (
+        <div className="operations-auditor-notice" role="status">
+          <strong>Acompanhamento de auditoria</strong>
+          <span>Dados operacionais disponíveis para consulta. Controles de alteração foram removidos deste perfil.</span>
+        </div>
+      ) : null}
       <div className="operational-summary operations-summary" aria-label="Resumo operacional">
         <OperationalMetric icon="rows" label="Campanhas ativas" value={activeCampaigns.length} description="contagens em andamento" tone="blue" />
         <OperationalMetric icon="user" label="Aceites pendentes" value={pendingTerms.length} description="termos de responsabilidade" tone={pendingTerms.length ? "warning" : "success"} />

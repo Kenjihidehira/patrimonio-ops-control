@@ -50,6 +50,7 @@ export async function POST(request: Request) {
         identifier: String(requestedUser.identifier ?? ""),
         displayName: String(requestedUser.displayName ?? ""),
         isAdmin: requestedUser.isAdmin === true,
+        isAuditor: requestedUser.isAuditor === true,
         active: requestedUser.active !== false,
         canWrite: requestedUser.canWrite === true,
         canImport: requestedUser.canImport === true,

@@ -29,6 +29,7 @@ type DepartmentUser = {
   identifier: string;
   displayName: string;
   isAdmin: boolean;
+  isAuditor: boolean;
   active: boolean;
   canWrite: boolean;
   canImport: boolean;
@@ -73,6 +74,7 @@ type GatewayWorkspaceContext = {
     activeDepartment: Department;
     departments: Department[];
     isAdmin: boolean;
+    isAuditor: boolean;
     permissions: {
       canWrite: boolean;
       canImport: boolean;
@@ -253,6 +255,7 @@ export async function saveUserAccess(
     identifier: string;
     displayName: string;
     isAdmin: boolean;
+    isAuditor: boolean;
     active: boolean;
     canWrite: boolean;
     canImport: boolean;
@@ -277,6 +280,7 @@ export async function authorizeDepartmentOperation(
     canImport: boolean;
     canExport: boolean;
     isAdmin: boolean;
+    isAuditor: boolean;
     sessionVersion: number;
   }>("authorize_operation", {
     identifier,

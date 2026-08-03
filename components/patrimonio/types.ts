@@ -179,6 +179,7 @@ export type DepartmentUser = {
   identifier: string;
   displayName: string;
   isAdmin: boolean;
+  isAuditor: boolean;
   active: boolean;
   canWrite: boolean;
   canImport: boolean;
@@ -218,6 +219,7 @@ export type DepartmentEnvironment = {
   activeDepartment: Department;
   departments: Department[];
   isAdmin: boolean;
+  isAuditor: boolean;
   permissions: {
     canWrite: boolean;
     canImport: boolean;

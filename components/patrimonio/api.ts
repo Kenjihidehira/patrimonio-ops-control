@@ -133,6 +133,7 @@ export async function saveDepartmentUser(user: {
   identifier: string;
   displayName: string;
   isAdmin: boolean;
+  isAuditor: boolean;
   active: boolean;
   canWrite: boolean;
   canImport: boolean;
