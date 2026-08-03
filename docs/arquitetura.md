@@ -182,7 +182,7 @@ A migração `20260731203708_add_tracking_geofences.sql` também instala o gatil
 
 ## Limitações e evolução produtiva
 
-Cada departamento possui workspace e chave próprios. Administradores globais acessam todos. Auditores e operadores recebem associações explícitas; o auditor possui leitura e exportação controlada, com escrita, importação e administração negadas por restrição do banco. Operadores recebem permissões independentes para alteração, importação e exportação. Mudanças de acesso revogam sessões anteriores e são registradas na auditoria administrativa.
+Cada departamento possui workspace e chave próprios. Administradores globais acessam todos e administram o sistema. Auditores também alcançam automaticamente todos os departamentos ativos, mas somente para leitura e exportação controlada; escrita, importação e administração continuam negadas por restrição do banco. Apenas operadores recebem associações explícitas e permissões independentes para alteração, importação e exportação. Mudanças de acesso revogam sessões anteriores e são registradas na auditoria administrativa.
 
 Eventos técnicos vencidos possuem eliminação automática, mas o prazo dos registros patrimoniais depende da política corporativa e de obrigações legais. Backup gerenciado, RPO, RTO e teste de restauração ainda precisam ser confirmados no plano do Supabase. A exportação XLSX não substitui uma cópia de segurança gerenciada do Postgres.
 

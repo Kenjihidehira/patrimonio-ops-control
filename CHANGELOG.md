@@ -3,6 +3,20 @@
 Todas as alterações relevantes do Patrimônio Ops Control são registradas neste arquivo.
 O formato segue Keep a Changelog e as versões usam Semantic Versioning.
 
+## [0.3.1] - 2026-08-03
+
+### Alterado
+
+- Auditores passam a consultar automaticamente todos os departamentos ativos, inclusive os criados no futuro.
+- A administração de usuários usa a RPC `patrimonio_save_user_access_v4`; vínculos explícitos de departamento permanecem somente para operadores.
+- O formulário de acesso identifica administradores e auditores como perfis de alcance global.
+
+### Segurança
+
+- O alcance global do auditor não concede escrita, importação, transferência entre departamentos nem administração de acessos.
+- A autorização global do auditor é validada no gateway e no Postgres; a interface não é a fonte da permissão.
+- Vínculos individuais antigos de contas de auditoria são removidos para evitar dois modelos de autorização concorrentes.
+
 ## [0.3.0] - 2026-08-03
 
 ### Adicionado

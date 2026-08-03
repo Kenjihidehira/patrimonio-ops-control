@@ -31,7 +31,7 @@ responsáveis corporativos.
 | Geocercas e alertas | coordenadas centrais, raio, posição observada, bateria e resposta ao alerta | segurança do bem e tratamento de exceções | infraestrutura ativa; interface administrativa ainda não exposta |
 | Documentos patrimoniais | nota, garantia, contrato, laudo e foto | prova de aquisição, vigência, inspeção e auditoria | departamento liberado; finanças apenas para administrador |
 | Integrações | referência externa, tipo de evento, estado e divergência | conciliação com sistemas corporativos | administrador global |
-| Auditoria operacional | movimentação, motivo, ator e data | rastreabilidade e exercício de direitos | operadores e auditores do departamento |
+| Auditoria operacional | movimentação, motivo, ator e data | rastreabilidade e exercício de direitos | operadores vinculados e auditores globais |
 | Auditoria de segurança | login, bloqueio, permissão, importação e exportação | prevenção, investigação e prestação de contas | administrador global |
 
 Não devem ser inseridos dados de saúde, biometria, religião, filiação sindical,
@@ -101,7 +101,7 @@ Fluxo interno mínimo:
 
 ## Revisão obrigatória
 
-- Trimestral: usuários ativos, segregação de administradores e auditores, departamentos vinculados e permissões de exportação.
+- Trimestral: usuários ativos, segregação de administradores e auditores, alcance global dos auditores, vínculos dos operadores e permissões de exportação.
 - Semestral: operadores, transferências internacionais e tabela de retenção.
 - Anual: aviso de privacidade, inventário de tratamento e teste de resposta a incidente.
 - Imediata: desligamento, mudança de função ou suspeita de comprometimento.
