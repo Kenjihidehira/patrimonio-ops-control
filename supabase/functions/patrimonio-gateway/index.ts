@@ -7,6 +7,19 @@ const supabaseSecretKey = secretKeys.default ?? Deno.env.get("SUPABASE_SERVICE_R
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const slugPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const MAX_REQUEST_BYTES = 5 * 1024 * 1024;
+const DATA_PAGE_SIZE = 1_000;
+const MAX_DATA_PAGES = 100;
+const operationalActionTypes = new Set([
+  "create_inventory_campaign",
+  "record_inventory_check",
+  "complete_inventory_campaign",
+  "create_custody_term",
+  "respond_custody_term",
+  "create_maintenance_order",
+  "update_maintenance_order",
+  "assign_tracking_tag",
+  "record_tracking_event",
+]);
 
 Deno.serve(async (request) => {
   if (request.method !== "POST") return json({ error: "method_not_allowed" }, 405);
@@ -88,6 +101,7 @@ Deno.serve(async (request) => {
           transfers,
           users,
           securityEvents,
+          operational,
         ] =
           await Promise.all([
             loadNuclei(ownerKey),
@@ -98,6 +112,7 @@ Deno.serve(async (request) => {
             loadDepartmentTransfers(access.active.slug),
             access.isAdmin ? loadUserDirectory() : Promise.resolve([]),
             access.isAdmin ? loadSecurityEvents() : Promise.resolve([]),
+            loadOperationalData(ownerKey),
           ]);
 
         return json({
@@ -111,6 +126,7 @@ Deno.serve(async (request) => {
             imports,
             transfers,
             securityEvents,
+            ...operational,
             access: {
               activeDepartment: publicDepartment(access.active),
               departments: access.departments.map(publicDepartment),
@@ -218,14 +234,28 @@ Deno.serve(async (request) => {
         await authorizeOperation(identifier, access.active.slug, "write");
         const ownerKey = access.active.owner_key;
         const actor = actorLabel(access.user);
-        const data = await dataRequest("rpc/patrimonio_apply_action", {
+        const actionType = String(body.action?.type ?? "");
+        const rpcName = operationalActionTypes.has(actionType)
+          ? "rpc/patrimonio_apply_operational_action"
+          : "rpc/patrimonio_apply_action";
+        const rpcBody = operationalActionTypes.has(actionType)
+          ? {
+              p_owner_key: ownerKey,
+              p_actor: actor,
+              p_actor_identifier: identifier,
+              p_is_admin: access.isAdmin,
+              p_expected_revision: body.expectedRevision,
+              p_action: body.action,
+            }
+          : {
+              p_owner_key: ownerKey,
+              p_actor: actor,
+              p_expected_revision: body.expectedRevision,
+              p_action: body.action,
+            };
+        const data = await dataRequest(rpcName, {
           method: "POST",
-          body: JSON.stringify({
-            p_owner_key: ownerKey,
-            p_actor: actor,
-            p_expected_revision: body.expectedRevision,
-            p_action: body.action,
-          }),
+          body: JSON.stringify(rpcBody),
         });
         return json({ data });
       }
@@ -385,8 +415,8 @@ function loadNuclei(ownerKey) {
 
 function loadAssets(ownerKey) {
   const ownerFilter = encodeURIComponent(`eq.${ownerKey}`);
-  return dataRequest(
-    `patrimonio_assets?owner_key=${ownerFilter}&select=code,type,nucleus_id,assignee,location,serial,brand_model,acquired_at,acquisition_value,status,notes,created_at&order=updated_at.desc`,
+  return dataRequestAll(
+    `patrimonio_assets?owner_key=${ownerFilter}&select=code,type,nucleus_id,assignee,location,serial,brand_model,acquired_at,acquisition_value,status,notes,source_system,source_fingerprint,base_code,incorporation,source_identifier,source_description,asset_group,branch_code,disposed_at,operation_value,invoice_number,source_row,created_at&order=updated_at.desc,code.asc`,
   );
 }
 
@@ -409,6 +439,49 @@ function loadImports(ownerKey) {
   return dataRequest(
     `patrimonio_import_runs?owner_key=${ownerFilter}&select=id,file_name,row_count,inserted_count,updated_count,rejected_count,warnings,imported_by,created_at&order=created_at.desc&limit=30`,
   );
+}
+
+async function loadOperationalData(ownerKey) {
+  const ownerFilter = encodeURIComponent(`eq.${ownerKey}`);
+  const inventoryCampaigns = await dataRequest(
+    `patrimonio_inventory_campaigns?owner_key=${ownerFilter}&select=id,name,nucleus_id,status,due_at,target_count,checked_count,issue_count,created_by,created_at,completed_at,updated_at&order=created_at.desc&limit=20`,
+  );
+  const activeCampaignIds = inventoryCampaigns
+    .filter((campaign) => campaign.status === "active")
+    .map((campaign) => String(campaign.id));
+  const campaignFilter = activeCampaignIds.length
+    ? encodeURIComponent(`in.(${activeCampaignIds.join(",")})`)
+    : null;
+
+  const [inventoryCampaignAssets, custodyTerms, maintenanceOrders, trackingTags, trackingEvents] =
+    await Promise.all([
+      campaignFilter
+        ? dataRequestAll(
+            `patrimonio_inventory_campaign_assets?owner_key=${ownerFilter}&campaign_id=${campaignFilter}&select=campaign_id,asset_code,result,observed_location,note,checked_by,checked_at&order=asset_code.asc`,
+          )
+        : Promise.resolve([]),
+      dataRequest(
+        `patrimonio_custody_terms?owner_key=${ownerFilter}&select=id,asset_code,assignee,assignee_identifier,status,note,issued_by,issued_at,responded_by,responded_at,response_note&order=issued_at.desc&limit=100`,
+      ),
+      dataRequest(
+        `patrimonio_maintenance_orders?owner_key=${ownerFilter}&select=id,asset_code,kind,priority,status,title,notes,due_at,created_by,created_at,updated_by,updated_at,completed_at&order=updated_at.desc&limit=100`,
+      ),
+      dataRequestAll(
+        `patrimonio_tracking_tags?owner_key=${ownerFilter}&active=eq.true&select=id,asset_code,technology,tag_id,active,installed_by,installed_at,updated_at&order=updated_at.desc`,
+      ),
+      dataRequest(
+        `patrimonio_tracking_events?owner_key=${ownerFilter}&select=id,asset_code,technology,tag_id,reader_id,location,latitude,longitude,accuracy_meters,confidence,battery_percent,note,observed_by,observed_at&order=observed_at.desc&limit=100`,
+      ),
+    ]);
+
+  return {
+    inventoryCampaigns,
+    inventoryCampaignAssets,
+    custodyTerms,
+    maintenanceOrders,
+    trackingTags,
+    trackingEvents,
+  };
 }
 
 function loadDepartmentTransfers(departmentSlug) {
@@ -549,6 +622,25 @@ async function dataRequest(path, init = {}) {
     });
   }
   return body;
+}
+
+async function dataRequestAll(path, pageSize = DATA_PAGE_SIZE) {
+  const rows = [];
+  for (let page = 0; page < MAX_DATA_PAGES; page += 1) {
+    const from = page * pageSize;
+    const batch = await dataRequest(path, {
+      headers: {
+        "Range-Unit": "items",
+        Range: `${from}-${from + pageSize - 1}`,
+      },
+    });
+    if (!Array.isArray(batch)) {
+      throw httpError("invalid_paginated_response", 500, "PGRST102");
+    }
+    rows.push(...batch);
+    if (batch.length < pageSize) return rows;
+  }
+  throw httpError("data_page_limit_exceeded", 500, "54000");
 }
 
 function json(body, status = 200) {

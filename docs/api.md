@@ -16,7 +16,7 @@ Respostas dinâmicas usam `cache-control: no-store`. A identidade vem de uma ses
 
 ## `GET /api/state`
 
-Retorna revisão, resumo, inventário filtrado, colaboradores, núcleos, auditoria, histórico de importações, catálogos e contexto da sessão.
+Retorna revisão, resumo, inventário filtrado, colaboradores, núcleos, auditoria, histórico de importações, campanhas, termos de responsabilidade, ordens de manutenção, etiquetas, eventos de rastreamento, catálogos e contexto da sessão.
 
 ### Parâmetros de consulta
 
@@ -175,6 +175,24 @@ A operação exige uma alteração real e um motivo. Patrimônio, núcleo e stat
 ```
 
 Uma alteração de nome atualiza as atribuições existentes na mesma transação. Alterar o núcleo do perfil não transfere patrimônios automaticamente; transferências continuam exigindo a ação auditável específica.
+
+### Controles operacionais
+
+As ações abaixo usam a mesma rota, sessão, permissão de escrita e controle por `expectedRevision`:
+
+| Ação | Finalidade | Campos principais |
+| --- | --- | --- |
+| `create_inventory_campaign` | Criar campanha e congelar seus itens | `campaign.id`, `name`, `nucleusId`, `dueAt` |
+| `record_inventory_check` | Conferir item da campanha | `campaignId`, `assetId`, `result`, `observedLocation`, `note` |
+| `complete_inventory_campaign` | Concluir campanha totalmente conferida | `campaignId` |
+| `create_custody_term` | Emitir termo para um colaborador | `term.id`, `assetId`, `assigneeName`, `assigneeEmail`, `dueAt`, `note` |
+| `respond_custody_term` | Aceitar, recusar ou cancelar termo | `termId`, `decision`, `note` |
+| `create_maintenance_order` | Abrir manutenção e indisponibilizar o item | `order.id`, `assetId`, `kind`, `priority`, `description`, `vendor`, `scheduledAt` |
+| `update_maintenance_order` | Alterar andamento, fornecedor, custo e conclusão | `orderId`, `status`, `vendor`, `cost`, `scheduledAt`, `note` |
+| `assign_tracking_tag` | Vincular etiqueta ou dispositivo | `tag.id`, `assetId`, `technology`, `tagId` |
+| `record_tracking_event` | Registrar leitura ou posição | `event.id`, `assetId`, `technology`, `tagId`, `location`, `latitude`, `longitude`, `batteryPercent`, `source`, `recordedAt` |
+
+Resultados de inventário aceitos são `confirmed`, `missing`, `wrong_location` e `damaged`. Tecnologias automáticas (`rfid_uhf`, `ble`, `uwb`, `gps` e `mdm`) exigem etiqueta ou dispositivo ativo previamente cadastrado; a API não inventa leituras de hardware.
 
 ## `POST /api/import`
 

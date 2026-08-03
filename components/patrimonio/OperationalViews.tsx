@@ -100,7 +100,16 @@ export function AuditView({ dashboard }: { dashboard: Dashboard }) {
                 </div>
                 <div className="audit-item-asset">
                   <span className="audit-event-label">{record.typeLabel}</span>
-                  <strong className="audit-asset"><AssetIdentifier asset={record} /></strong>
+                  <strong className="audit-asset">
+                    <AssetIdentifier asset={{
+                      id: record.assetId,
+                      hasPatrimony: record.hasPatrimony,
+                      sourceSystem: record.sourceSystem,
+                      sourceIdentifier: record.sourceIdentifier,
+                      baseCode: record.baseCode,
+                      incorporation: record.incorporation,
+                    }} />
+                  </strong>
                   <small>{record.assetType}</small>
                 </div>
                 <div className="audit-item-time">

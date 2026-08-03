@@ -1,4 +1,18 @@
-export type AssetType = "cpu" | "monitor_1" | "monitor_2" | "chair" | "notebook";
+export type AssetType =
+  | "cpu"
+  | "monitor_1"
+  | "monitor_2"
+  | "chair"
+  | "notebook"
+  | "fleet"
+  | "car"
+  | "trailer"
+  | "vehicle_component"
+  | "equipment"
+  | "furniture"
+  | "extinguisher"
+  | "software"
+  | "other";
 export type AssetStatus =
   | "available"
   | "allocated"
@@ -9,6 +23,7 @@ export type ViewId =
   | "inventory"
   | "nuclei"
   | "audit"
+  | "operations"
   | "imports"
   | "collaborators"
   | "environments";
@@ -55,8 +70,21 @@ export type Asset = {
   serial: string;
   brandModel: string;
   acquiredAt: string | null;
+  value: number;
   status: AssetStatus;
   notes: string;
+  sourceSystem: "sabium" | null;
+  sourceFingerprint: string;
+  baseCode: string;
+  incorporation: number | null;
+  sourceIdentifier: string;
+  sourceDescription: string;
+  assetGroup: string;
+  branchCode: string;
+  disposedAt: string | null;
+  operationValue: number | null;
+  invoiceNumber: string;
+  sourceRow: number | null;
   createdAt: string;
   movements: Movement[];
   hasPatrimony: boolean;
@@ -67,6 +95,10 @@ export type Asset = {
 type AuditRecord = Movement & {
   assetId: string;
   hasPatrimony: boolean;
+  sourceSystem: "sabium" | null;
+  sourceIdentifier: string;
+  baseCode: string;
+  incorporation: number | null;
   assetType: string;
   nucleusName: string;
   typeLabel: string;
@@ -79,6 +111,10 @@ type CollaboratorAsset = {
   brandModel: string;
   location: string;
   status: AssetStatus;
+  sourceSystem: "sabium" | null;
+  sourceIdentifier: string;
+  baseCode: string;
+  incorporation: number | null;
 };
 
 export type Collaborator = {
@@ -112,6 +148,91 @@ export type ImportPreview = {
   canCommit: boolean;
   errors: ImportIssue[];
   warnings: ImportIssue[];
+};
+
+export type InventoryCampaign = {
+  id: string;
+  name: string;
+  nucleusId: string | null;
+  status: "active" | "completed" | "cancelled";
+  dueAt: string | null;
+  targetCount: number;
+  checkedCount: number;
+  issueCount: number;
+  createdBy: string;
+  createdAt: string;
+  completedAt: string | null;
+  updatedAt: string;
+};
+
+export type InventoryCampaignAsset = {
+  campaignId: string;
+  assetId: string;
+  result: "pending" | "confirmed" | "missing" | "wrong_location" | "damaged";
+  observedLocation: string;
+  note: string;
+  checkedBy: string | null;
+  checkedAt: string | null;
+};
+
+export type CustodyTerm = {
+  id: string;
+  assetId: string;
+  assignee: string;
+  assigneeIdentifier: string;
+  status: "pending" | "accepted" | "rejected" | "cancelled";
+  note: string;
+  issuedBy: string;
+  issuedAt: string;
+  respondedBy: string | null;
+  respondedAt: string | null;
+  responseNote: string;
+};
+
+export type MaintenanceOrder = {
+  id: string;
+  assetId: string;
+  kind: "preventive" | "corrective" | "inspection";
+  priority: "low" | "normal" | "high" | "critical";
+  status: "open" | "in_progress" | "completed" | "cancelled";
+  title: string;
+  notes: string;
+  dueAt: string | null;
+  createdBy: string;
+  createdAt: string;
+  updatedBy: string;
+  updatedAt: string;
+  completedAt: string | null;
+};
+
+export type TrackingTechnology = "qr" | "barcode" | "rfid_uhf" | "ble" | "uwb" | "gps" | "mdm";
+
+export type TrackingTag = {
+  id: string;
+  assetId: string;
+  technology: TrackingTechnology;
+  tagId: string;
+  active: boolean;
+  installedBy: string;
+  installedAt: string;
+  updatedAt: string;
+};
+
+export type TrackingEvent = {
+  id: string;
+  assetId: string;
+  technology: TrackingTechnology | "manual";
+  tagId: string;
+  readerId: string;
+  location: string;
+  latitude: number | null;
+  longitude: number | null;
+  accuracyMeters: number | null;
+  confidence: number | null;
+  batteryPercent: number | null;
+  note: string;
+  observedBy: string;
+  observedAt: string;
 };
 
 type ImportRun = {
@@ -213,6 +334,12 @@ export type Dashboard = {
   audit: AuditRecord[];
   collaborators: Collaborator[];
   imports: ImportRun[];
+  inventoryCampaigns: InventoryCampaign[];
+  inventoryCampaignAssets: InventoryCampaignAsset[];
+  custodyTerms: CustodyTerm[];
+  maintenanceOrders: MaintenanceOrder[];
+  trackingTags: TrackingTag[];
+  trackingEvents: TrackingEvent[];
   environment: DepartmentEnvironment;
   resultCount: number;
   options: {

@@ -62,6 +62,10 @@
   --shadow: 0 14px 34px rgba(6, 49, 95, 0.12);
   --shadow-soft: 0 5px 16px rgba(6, 49, 95, 0.07);
   --shadow-panel: 0 12px 28px rgba(6, 49, 95, 0.09);
+  --theme-cover-duration: 100ms;
+  --theme-color-duration: 90ms;
+  --theme-reveal-duration: 120ms;
+  --theme-transition-easing: cubic-bezier(0.22, 1, 0.36, 1);
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
     "Segoe UI", sans-serif;
   font-synthesis: none;
@@ -261,7 +265,7 @@ textarea:disabled {
   width: 112px;
   height: 58px;
   object-fit: contain;
-  filter: drop-shadow(0 6px 12px rgba(1, 24, 50, 0.32));
+  filter: none;
   transition: transform 160ms ease, filter 160ms ease;
 }
 
@@ -272,7 +276,7 @@ textarea:disabled {
 
 .app-brand:hover .app-brand-logo {
   transform: translateY(-1px);
-  filter: drop-shadow(0 8px 14px rgba(1, 24, 50, 0.38));
+  filter: none;
 }
 
 .app-brand-copy {
@@ -485,7 +489,10 @@ textarea:disabled {
   height: 14px;
   border-radius: 50%;
   background: var(--icon-muted);
-  transition: transform 160ms ease, background-color 160ms ease;
+  transform: translateX(0);
+  transition:
+    transform 240ms cubic-bezier(0.22, 1, 0.36, 1),
+    background-color 180ms ease;
 }
 
 .theme-toggle[aria-checked="true"] .theme-toggle-track {
@@ -496,6 +503,35 @@ textarea:disabled {
 .theme-toggle[aria-checked="true"] .theme-toggle-track > span {
   background: var(--on-action);
   transform: translateX(14px);
+}
+
+.theme-transition-overlay {
+  position: fixed;
+  z-index: 2147483647;
+  inset: 0;
+  display: block;
+  visibility: hidden;
+  background-color: var(--canvas);
+  opacity: 0;
+  pointer-events: none;
+  will-change: opacity, background-color;
+}
+
+:root.theme-transition-active .theme-transition-overlay {
+  visibility: visible;
+  pointer-events: auto;
+  transition:
+    opacity var(--theme-cover-duration) var(--theme-transition-easing),
+    background-color var(--theme-color-duration) linear;
+}
+
+:root.theme-transition-active.theme-transition-covered .theme-transition-overlay {
+  opacity: 1;
+}
+
+:root.theme-transition-active.theme-transition-revealing .theme-transition-overlay {
+  opacity: 0;
+  transition-duration: var(--theme-reveal-duration), var(--theme-color-duration);
 }
 
 .data-actions {
@@ -1583,6 +1619,21 @@ tbody tr:last-child td {
 
 .inventory-asset-detail .detail-grid .detail-wide {
   min-height: 54px;
+}
+
+.inventory-asset-detail .detail-grid .detail-section-title {
+  grid-column: 1 / -1;
+  min-height: auto;
+  padding: 18px 0 7px;
+  border-bottom: 1px solid var(--line-strong);
+}
+
+.inventory-asset-detail .detail-grid .detail-section-title span {
+  color: var(--muted);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 .inventory-asset-detail .detail-grid dt {
@@ -3703,9 +3754,7 @@ tbody tr:last-child td {
   overflow: hidden;
   border: 1px solid var(--line);
   border-radius: 12px;
-  background:
-    radial-gradient(circle at 96% 0%, color-mix(in srgb, var(--brand-700) 12%, transparent), transparent 42%),
-    var(--surface);
+  background: var(--surface);
   box-shadow: var(--shadow-soft);
 }
 

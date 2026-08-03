@@ -156,8 +156,14 @@ export async function POST(request: Request) {
     }
     if (error instanceof SupabaseError && error.status === 403) {
       return Response.json(
-        { error: "Você não possui acesso ao departamento solicitado." },
+        { error: operationalErrorMessage(error.message, "Você não possui acesso ao departamento solicitado.") },
         { status: 403, headers: responseHeaders },
+      );
+    }
+    if (error instanceof SupabaseError && error.status >= 400 && error.status < 500) {
+      return Response.json(
+        { error: operationalErrorMessage(error.message, "A alteração operacional foi rejeitada.") },
+        { status: 422, headers: responseHeaders },
       );
     }
 
@@ -181,4 +187,25 @@ function infrastructureMessage(error: unknown, fallback: string) {
     return error.message;
   }
   return fallback;
+}
+
+function operationalErrorMessage(message: string, fallback: string): string {
+  const messages: Record<string, string> = {
+    invalid_campaign_name: "Informe um nome válido para a campanha.",
+    campaign_without_assets: "O escopo selecionado não possui patrimônios ativos.",
+    inactive_inventory_campaign: "A campanha selecionada não está ativa.",
+    campaign_asset_not_found: "O patrimônio não pertence ao escopo desta campanha.",
+    campaign_has_pending_assets: "Confira todos os patrimônios antes de concluir a campanha.",
+    invalid_assignee_identifier: "Informe um e-mail válido para o responsável.",
+    asset_without_eligible_assignee: "O patrimônio precisa ter um responsável diferente de Reserva.",
+    pending_custody_term_not_found: "O termo não está pendente.",
+    custody_term_identity_mismatch: "Somente o responsável identificado no termo pode aceitar ou recusar.",
+    custody_term_cancel_denied: "Você não possui permissão para cancelar este termo.",
+    invalid_maintenance_order: "Revise o tipo, a prioridade e o título da ordem.",
+    maintenance_order_not_changeable: "A ordem de manutenção não pode mais ser alterada.",
+    invalid_tracking_tag: "Revise o patrimônio, a tecnologia e o identificador da etiqueta.",
+    invalid_tracking_event: "Revise os dados da leitura de rastreamento.",
+    tracking_tag_not_configured: "Cadastre a etiqueta ou integração antes de registrar esta leitura.",
+  };
+  return messages[message] ?? fallback;
 }

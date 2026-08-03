@@ -14,6 +14,7 @@ const [
   collaborators,
   environments,
   operational,
+  operations,
   dialogs,
   hooks,
   ui,
@@ -21,6 +22,7 @@ const [
   css,
   enterpriseCss,
   loginCss,
+  privacyCss,
   api,
   clientApi,
   importApi,
@@ -42,6 +44,7 @@ const [
   read("components/patrimonio/CollaboratorsView.tsx"),
   read("components/patrimonio/EnvironmentsView.tsx"),
   read("components/patrimonio/OperationalViews.tsx"),
+  read("components/patrimonio/OperationsView.tsx"),
   read("components/patrimonio/Dialogs.tsx"),
   read("components/patrimonio/hooks.ts"),
   read("components/patrimonio/ui.tsx"),
@@ -49,6 +52,7 @@ const [
   read("app/demo/patrimonio.css"),
   read("app/demo/enterprise.css"),
   read("app/login/login.css"),
+  read("app/privacidade/privacy.css"),
   read("app/api/state/route.ts"),
   read("components/patrimonio/api.ts"),
   read("app/api/import/route.ts"),
@@ -69,6 +73,7 @@ const reactUi = [
   collaborators,
   environments,
   operational,
+  operations,
   dialogs,
   hooks,
   ui,
@@ -106,8 +111,22 @@ test("interface contém os fluxos comerciais essenciais", () => {
   assert.match(dialogs, /type: "update_asset_details"/);
   assert.match(dialogs, /"update_collaborator"/);
   assert.match(dialogs, /"register_responsible"/);
-  assert.doesNotMatch(reactUi, /Valor de aquisição/);
-  assert.doesNotMatch(workbook, /"Valor",|asset\.value/);
+  assert.match(reactUi, /Valor de aquisição/);
+  assert.match(reactUi, /Dados de origem · Sabium/);
+  assert.match(workbook, /"Valor de aquisição"/);
+  assert.match(workbook, /"Identificador de origem"/);
+});
+
+test("operações patrimoniais cobrem inventário, custódia, manutenção e rastreamento", () => {
+  assert.match(app, /<OperationsView dashboard=\{dashboard\}/);
+  assert.match(operations, /Nova campanha/);
+  assert.match(operations, /Emitir termo/);
+  assert.match(operations, /Abrir ordem de manutenção/);
+  assert.match(operations, /Ler QR pela câmera/);
+  assert.match(operations, /QRCode\.toDataURL/);
+  assert.match(operations, /tracking_tag_not_configured|Cadastre a etiqueta/);
+  assert.match(enterpriseCss, /\.operations-workspace/);
+  assert.match(enterpriseCss, /@media \(max-width: 640px\)[\s\S]*\.operations-summary/);
 });
 
 test("estado remoto usa requisições canceláveis e sincronização de atividade", () => {
@@ -136,6 +155,12 @@ test("campos críticos possuem semântica e validação no cliente", () => {
 test("layout contém breakpoints de tablet, celular e redução de movimento", () => {
   assert.match(app, /<header className=\{`app-header \$\{mobileNavigationOpen \? "is-open" : ""\}`\}>/);
   assert.match(app, /className="app-brand"/);
+  assert.match(app, /className="app-brand-logo app-brand-logo--gazin"/);
+  assert.match(app, /src="\/brand\/gazin-logo\.png"/);
+  assert.match(
+    enterpriseCss,
+    /\.app-brand-logo\.app-brand-logo--gazin\s*\{[\s\S]*border:\s*0;[\s\S]*background:\s*transparent/,
+  );
   assert.match(app, /className="primary-nav"/);
   assert.match(app, /className="mobile-menu-toggle"/);
   assert.doesNotMatch(app, /className="navigation-scrim"/);
@@ -156,6 +181,23 @@ test("layout contém breakpoints de tablet, celular e redução de movimento", (
   assert.match(enterpriseCss, /\.header-actions\s*\{[\s\S]*align-items:\s*flex-end/);
   assert.match(enterpriseCss, /\.app-header\.is-open/);
   assert.match(enterpriseCss, /@media \(max-width: 820px\)/);
+  assert.match(enterpriseCss, /Responsive hardening: a single final cascade/);
+  assert.match(enterpriseCss, /@media \(max-width: 1180px\)/);
+  assert.match(enterpriseCss, /@media \(max-width: 900px\)/);
+  assert.match(enterpriseCss, /@media \(max-width: 360px\)/);
+  assert.match(
+    enterpriseCss,
+    /@media \(max-width: 900px\)[\s\S]*\.table-scroll table\s*\{[\s\S]*display:\s*none[\s\S]*\.mobile-inventory-list\s*\{[\s\S]*display:\s*grid/,
+  );
+  assert.match(
+    enterpriseCss,
+    /@media \(max-width: 900px\)[\s\S]*\.detail-panel\s*\{[\s\S]*position:\s*fixed[\s\S]*\.detail-panel\.is-open/,
+  );
+  assert.match(
+    enterpriseCss,
+    /@media \(max-width: 720px\)[\s\S]*\.app-header \.session-control form\s*\{[\s\S]*display:\s*block/,
+  );
+  assert.match(app, /window\.matchMedia\("\(min-width: 1181px\)"\)/);
   assert.match(enterpriseCss, /prefers-reduced-motion/);
 });
 
@@ -176,13 +218,15 @@ test("inventário oferece filtros, paginação e experiência móvel dedicada", 
   assert.match(css, /th\s*\{[\s\S]*position:\s*sticky/);
   assert.match(css, /\.inventory-layout\s*\{[\s\S]*minmax\(410px, 440px\)/);
   assert.match(css, /\.table-scroll\s*\{[\s\S]*min-height:\s*0/);
+  assert.match(enterpriseCss, /\.table-panel\s*\{[\s\S]*display:\s*flex[\s\S]*flex-direction:\s*column[\s\S]*align-self:\s*stretch/);
+  assert.match(enterpriseCss, /\.table-scroll\s*\{[\s\S]*flex:\s*1 1 auto[\s\S]*max-height:\s*none/);
   assert.match(css, /\.inventory-asset-detail \.status-editor-heading/);
   assert.match(inventory, /className="inventory-search-control"/);
   assert.match(inventory, /className=\{`table-item-icon table-item-icon-\$\{asset\.type\}`\}/);
   assert.match(inventory, /<SummaryIcon type="discrepancy" \/>/);
   assert.match(css, /\.mobile-asset-card/);
   assert.match(css, /\.detail-panel\.is-open/);
-  for (const image of ["cpu.png", "monitor.png", "chair.png", "notebook.png"]) {
+  for (const image of ["cpu.png", "monitor.png", "chair.png", "notebook.png", "fleet.png"]) {
     assert.match(ui, new RegExp(`/assets/item-types/${image.replace(".", "\\.")}`));
   }
   assert.match(ui, /className=\{`asset-type-image \$\{className\}`\.trim\(\)\}/);
@@ -191,13 +235,14 @@ test("inventário oferece filtros, paginação e experiência móvel dedicada", 
 
 test("leitor LS2208 em modo HID localiza patrimônio sem API de hardware", () => {
   assert.match(hooks, /SCANNER_CHARACTER_TIMEOUT_MS = 100/);
-  assert.match(hooks, /SCANNABLE_IDENTIFIER_PATTERN = \/\^\(\?:\\d\{6\}\|S\[A-Z0-9\]\{5\}\)\$\//);
+  assert.match(hooks, /SCANNABLE_IDENTIFIER_PATTERN = \/\^\(\?:\\d\{1,10\}\(\?:\\\.\\d\{1,6\}\)\?\|S\[A-Z0-9\]\{5\}\)\$\//);
   assert.match(hooks, /export function normalizeScannedIdentifier/);
   assert.match(hooks, /document\.addEventListener\("keydown", handleKeydown, true\)/);
   assert.match(hooks, /event\.key === "Enter" \|\| event\.key === "Tab"/);
   assert.match(app, /normalizeScannedIdentifier\(debouncedSearch\)/);
   assert.match(app, /lastProcessedScanRef\.current === identifier/);
-  assert.match(app, /dashboard\.inventory\.find\(\(item\) => item\.id === identifier\)/);
+  assert.match(app, /const matchingAssets = next\.inventory\.filter\(\(item\) =>[\s\S]*item\.sourceIdentifier === identifier[\s\S]*item\.baseCode === identifier/);
+  assert.match(app, /if \(matchingAssets\.length > 1\)[\s\S]*setFilterDraft\(scanFilters\)/);
   assert.match(app, /const next = await refresh\([\s\S]*setFilterDraft\(scanFilters\);[\s\S]*openScannedAsset\(asset, identifier\)/);
   assert.match(app, /openScannedAsset\(asset, identifier\)/);
   assert.match(app, /setModal\(\{ kind: "scanner", assetId: asset\.id, scanToken: scanSequenceRef\.current \}\)/);
@@ -231,7 +276,7 @@ test("leitor LS2208 em modo HID localiza patrimônio sem API de hardware", () =>
 test("leitura sem correspondência oferece cadastro auditável com o identificador lido", () => {
   assert.match(app, /kind: "scanner-missing"/);
   assert.match(app, /openMissingScannedAsset\(identifier\)/);
-  assert.match(app, /OFFICIAL_PATRIMONY_PATTERN\.test\(identifier\)/);
+  assert.match(app, /isOfficialPatrimonyId\(identifier\)/);
   assert.match(dialogs, /function ScannerMissingDialog/);
   assert.match(dialogs, /Deseja adicionar este item ao inventário\?/);
   assert.match(dialogs, /Adicionar ao inventário/);
@@ -244,13 +289,30 @@ test("leitura sem correspondência oferece cadastro auditável com o identificad
   assert.match(css, /\.scanner-create-modal/);
 });
 
-test("visão de núcleos oferece resumo, busca e edição auditável", () => {
+test("cadastro de frota deriva o patrimônio e só aparece no Gazin LOG", () => {
+  assert.match(dialogs, /activeDepartmentSlug === "gazin-log"/);
+  assert.match(dialogs, /value !== "fleet" \|\| isFleetEnvironment/);
+  assert.match(dialogs, /<span>Número da frota<\/span>/);
+  assert.match(dialogs, /Patrimônio gerado:/);
+  assert.match(dialogs, /toFleetPatrimonyId\(formValue\(form, "fleetNumber"\)\)/);
+  assert.match(app, /next\.environment\.activeDepartment\.slug !== "gazin-log"/);
+  assert.match(importApi, /Itens do tipo Frota só podem ser importados no ambiente Gazin LOG/);
+  assert.match(ui, /Frota \{fleetNumber\} · #\{asset\.id\}/);
+});
+
+test("visão de núcleos oferece diretório SaaS responsivo, busca e edição auditável", () => {
   assert.match(nuclei, /className="nuclei-overview"/);
   assert.match(nuclei, /<OperationalMetric/);
   assert.match(nuclei, /className="search-control"/);
-  assert.match(nuclei, /Buscar núcleo/);
+  assert.match(nuclei, /Filtrar núcleos por situação/);
+  assert.match(nuclei, /aria-pressed=/);
+  assert.match(nuclei, /className="nuclei-table"/);
+  assert.match(nuclei, /className="nuclei-mobile-list"/);
+  assert.match(nuclei, /Gestor responsável/);
   assert.match(nuclei, /Taxa de alocação/);
   assert.match(nuclei, /Ver inventário/);
+  assert.match(enterpriseCss, /\.nuclei-table-shell/);
+  assert.match(enterpriseCss, /\.nucleus-mobile-card/);
   assert.match(dialogs, /type: "update_nucleus"/);
   assert.match(dialogs, /type: "update_asset_details"/);
   assert.match(dialogs, /className="nucleus-inventory-dialog"/);
@@ -311,7 +373,38 @@ test("tema escuro é acessível, usa cookie e não armazena dados localmente", (
   assert.match(css, /:root\[data-theme="dark"\]/);
   assert.match(css, /--heading-text:\s*#FFFFFF/i);
   assert.match(css, /--icon-accent:\s*#8EC9FF/i);
+  assert.match(
+    css,
+    /\.theme-toggle-track > span\s*\{[\s\S]*transform:\s*translateX\(0\);[\s\S]*transform 240ms cubic-bezier\(0\.22, 1, 0\.36, 1\)/,
+  );
+  assert.match(app, /className="theme-transition-overlay" aria-hidden="true"/);
+  assert.match(
+    css,
+    /\.theme-transition-overlay\s*\{[\s\S]*position:\s*fixed;[\s\S]*z-index:\s*2147483647;[\s\S]*background-color:\s*var\(--canvas\);[\s\S]*opacity:\s*0/,
+  );
+  assert.match(css, /--theme-cover-duration:\s*100ms/);
+  assert.match(css, /--theme-color-duration:\s*90ms/);
+  assert.match(css, /--theme-reveal-duration:\s*120ms/);
+  assert.match(css, /--theme-transition-easing:\s*cubic-bezier\(0\.22, 1, 0\.36, 1\)/);
+  assert.match(css, /theme-transition-active\.theme-transition-covered \.theme-transition-overlay[\s\S]*opacity:\s*1/);
+  assert.match(css, /theme-transition-active\.theme-transition-revealing \.theme-transition-overlay[\s\S]*opacity:\s*0/);
+  assert.doesNotMatch(css, /:root::after\s*\{[\s\S]*z-index:\s*2147483647/);
+  assert.match(hooks, /THEME_COVER_DURATION_MS = 100/);
+  assert.match(hooks, /THEME_COLOR_SETTLE_MS = 90/);
+  assert.match(hooks, /THEME_REVEAL_DURATION_MS = 120/);
+  assert.match(hooks, /classList\.add\("theme-transition-covered"\)/);
+  assert.match(hooks, /classList\.add\("theme-transition-revealing"\)/);
+  assert.match(hooks, /prefers-reduced-motion: reduce/);
+  assert.doesNotMatch(hooks, /startViewTransition/);
   assert.doesNotMatch(reactUi, /localStorage|sessionStorage/);
+});
+
+test("visual empresarial permanece plano e sem efeitos neon", () => {
+  const applicationStyles = [css, enterpriseCss, loginCss, privacyCss].join("\n");
+  assert.doesNotMatch(applicationStyles, /(?:linear|radial|conic)-gradient|drop-shadow/);
+  assert.match(enterpriseCss, /--canvas: #111d29/);
+  assert.match(loginCss, /--login-canvas: #18232D/);
+  assert.match(loginCss, /\.provider-button[\s\S]*background: var\(--login-button-start\)/);
 });
 
 test("persistência permanece no servidor e escrita exige autenticação", () => {
@@ -343,7 +436,7 @@ test("tela React de login oferece somente Google com navegação responsiva", ()
   assert.match(loginCss, /\.login-shell\s*\{[\s\S]*place-items:\s*center/);
   assert.match(loginCss, /\.login-shell::before\s*\{/);
   assert.match(loginCss, /\.login-card\s*\{[\s\S]*width:\s*min\(100%, 600px\)/);
-  assert.match(loginCss, /\.login-card\s*\{[\s\S]*backdrop-filter:\s*blur\(22px\)/);
+  assert.match(loginCss, /\.login-card\s*\{[\s\S]*background:\s*var\(--login-card\)/);
   assert.match(loginCss, /\.login-card::before\s*\{/);
   assert.match(loginCss, /:root\[data-theme="dark"\]/);
   assert.match(loginCss, /@media \(max-width: 760px\)/);

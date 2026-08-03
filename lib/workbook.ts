@@ -12,8 +12,19 @@ type ExportAsset = {
   serial: string;
   brandModel: string;
   acquiredAt: string | null;
+  value: number;
   status: string;
   notes: string;
+  sourceSystem: "sabium" | null;
+  baseCode: string;
+  incorporation: number | null;
+  sourceIdentifier: string;
+  sourceDescription: string;
+  assetGroup: string;
+  branchCode: string;
+  disposedAt: string | null;
+  operationValue: number | null;
+  invoiceNumber: string;
 };
 
 type ExportNucleus = {
@@ -85,9 +96,20 @@ export async function createExportWorkbook(
       "Aquisição",
       "Status",
       "Observações",
+      "Sistema de origem",
+      "Patrimônio-base",
+      "Incorporação",
+      "Identificador de origem",
+      "Descrição original",
+      "Grupo",
+      "Filial",
+      "Data de baixa",
+      "Valor de aquisição",
+      "Valor da operação",
+      "Número da nota",
     ]),
     ...dashboard.inventory.map((asset) => [
-      textCell(asset.hasPatrimony ? asset.id : "Sem patrimônio"),
+      textCell(asset.hasPatrimony ? asset.sourceIdentifier || asset.id : "Sem patrimônio"),
       textCell(dashboard.options.assetTypes[asset.type]),
       textCell(asset.nucleus.name),
       textCell(asset.assignee),
@@ -97,6 +119,17 @@ export async function createExportWorkbook(
       dateCell(asset.acquiredAt),
       textCell(dashboard.options.statuses[asset.status]),
       textCell(asset.notes),
+      textCell(asset.sourceSystem === "sabium" ? "Sabium" : ""),
+      textCell(asset.baseCode),
+      asset.incorporation === null ? textCell("") : numberCell(asset.incorporation),
+      textCell(asset.sourceIdentifier),
+      textCell(asset.sourceDescription),
+      textCell(asset.assetGroup),
+      textCell(asset.branchCode),
+      dateCell(asset.disposedAt),
+      numberCell(asset.value),
+      asset.operationValue === null ? textCell("") : numberCell(asset.operationValue),
+      textCell(asset.invoiceNumber),
     ]),
   ];
 
@@ -142,7 +175,10 @@ export async function createExportWorkbook(
 
   return writeExcelFile(
     [
-      sheet("Inventário", inventory, [14, 20, 28, 28, 28, 22, 30, 14, 16, 38]),
+      sheet("Inventário", inventory, [
+        14, 20, 28, 28, 28, 22, 30, 14, 16, 38,
+        18, 18, 14, 22, 42, 26, 14, 14, 18, 18, 18,
+      ]),
       sheet("Núcleos", nuclei, [14, 30, 28, 28, 12, 12, 12]),
       sheet("Auditoria", audit, [20, 14, 20, 22, 34, 34, 28, 42]),
       sheet("Importações", importHistory, [20, 34, 16, 14, 14, 14, 28]),

@@ -1,0 +1,2 @@
+-- Aplicada em produção de forma incremental.
+-- O estado final reproduzível está consolidado na migration 20260730185027.

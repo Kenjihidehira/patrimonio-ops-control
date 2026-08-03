@@ -13,7 +13,11 @@ const DASHBOARD_REFRESH_INTERVAL_MS = 30_000;
 const ACTIVITY_REFRESH_COOLDOWN_MS = 1_500;
 const SCANNER_CHARACTER_TIMEOUT_MS = 100;
 const SCANNER_BUFFER_TIMEOUT_MS = 250;
-const SCANNABLE_IDENTIFIER_PATTERN = /^(?:\d{6}|S[A-Z0-9]{5})$/;
+const SCANNABLE_IDENTIFIER_PATTERN = /^(?:\d{1,10}(?:\.\d{1,6})?|S[A-Z0-9]{5})$/;
+const THEME_COVER_DURATION_MS = 100;
+const THEME_COLOR_SETTLE_MS = 90;
+const THEME_REVEAL_DURATION_MS = 120;
+const THEME_CLEANUP_BUFFER_MS = 24;
 
 export function useDebouncedValue<T>(value: T, delay: number): T {
   const [debounced, setDebounced] = useState(value);
@@ -123,6 +127,8 @@ export function useDashboard(
 }
 
 export function useTheme() {
+  const themeTransitionActive = useRef(false);
+  const themeTransitionTimers = useRef<number[]>([]);
   const [theme, setThemeState] = useState<"light" | "dark">(() => {
     if (typeof document === "undefined") return "light";
     return document.documentElement.dataset.theme === "dark" ? "dark" : "light";
@@ -133,11 +139,57 @@ export function useTheme() {
     document.documentElement.style.colorScheme = theme;
   }, [theme]);
 
+  useEffect(() => () => {
+    for (const timer of themeTransitionTimers.current) window.clearTimeout(timer);
+    const root = document.documentElement;
+    root.classList.remove(
+      "theme-transition-active",
+      "theme-transition-covered",
+      "theme-transition-revealing",
+    );
+  }, []);
+
   const setTheme = useCallback((next: "light" | "dark") => {
-    document.documentElement.dataset.theme = next;
-    document.documentElement.style.colorScheme = next;
-    document.cookie = `patrimonio_theme=${next}; Path=/; Max-Age=31536000; SameSite=Lax`;
-    setThemeState(next);
+    const root = document.documentElement;
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const applyTheme = () => {
+      root.dataset.theme = next;
+      root.style.colorScheme = next;
+      document.cookie = `patrimonio_theme=${next}; Path=/; Max-Age=31536000; SameSite=Lax`;
+      setThemeState(next);
+    };
+
+    if (reduceMotion) {
+      applyTheme();
+      return;
+    }
+
+    if (themeTransitionActive.current) return;
+    themeTransitionActive.current = true;
+    root.classList.add("theme-transition-active");
+    void root.offsetWidth;
+    root.classList.add("theme-transition-covered");
+
+    const coverTimer = window.setTimeout(() => {
+      applyTheme();
+
+      const colorTimer = window.setTimeout(() => {
+        root.classList.add("theme-transition-revealing");
+        root.classList.remove("theme-transition-covered");
+
+        const revealTimer = window.setTimeout(() => {
+          root.classList.remove("theme-transition-active", "theme-transition-revealing");
+          themeTransitionActive.current = false;
+          themeTransitionTimers.current = [];
+        }, THEME_REVEAL_DURATION_MS + THEME_CLEANUP_BUFFER_MS);
+
+        themeTransitionTimers.current.push(revealTimer);
+      }, THEME_COLOR_SETTLE_MS);
+
+      themeTransitionTimers.current.push(colorTimer);
+    }, THEME_COVER_DURATION_MS);
+
+    themeTransitionTimers.current = [coverTimer];
   }, []);
 
   return { theme, setTheme };

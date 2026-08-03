@@ -57,6 +57,35 @@ test("reimporta o formato tabular gerado pela exportação", () => {
   assert.equal(preview.collaborators[0].name, "Pessoa B");
 });
 
+test("importa frotas usando o número da frota como patrimônio com sufixo .0", () => {
+  const preview = parsePatrimonioRows([
+    ["Patrimônio", "Tipo", "Núcleo", "Responsável", "Localização", "Status"],
+    [10775, "Frota", "Operações", "Motorista A", "Filial 01", "Em uso"],
+    ["10776.0", "Veículo", "Operações", "", "Pátio", "Disponível"],
+  ]);
+
+  assert.equal(preview.canCommit, true);
+  assert.equal(preview.acceptedCount, 2);
+  assert.deepEqual(
+    preview.assets.map(({ code, type }) => ({ code, type })),
+    [
+      { code: "10775.0", type: "fleet" },
+      { code: "10776.0", type: "fleet" },
+    ],
+  );
+});
+
+test("não aceita frota sem número patrimonial", () => {
+  const preview = parsePatrimonioRows([
+    ["Patrimônio", "Tipo", "Núcleo", "Responsável", "Localização", "Status"],
+    ["Sem patrimônio", "Frota", "Operações", "", "Pátio", "Divergência"],
+  ]);
+
+  assert.equal(preview.canCommit, false);
+  assert.equal(preview.rejectedCount, 1);
+  assert.match(preview.errors[0].message, /Toda frota precisa ter número/);
+});
+
 test("rejeita arquivo sem cabeçalho reconhecido", () => {
   const preview = parsePatrimonioRows([["coluna desconhecida"], ["valor"]]);
   assert.equal(preview.canCommit, false);

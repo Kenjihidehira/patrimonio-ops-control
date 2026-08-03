@@ -9,6 +9,10 @@ import {
   useState,
 } from "react";
 import Image from "next/image";
+import {
+  isFleetPatrimonyId,
+  isOfficialPatrimonyId,
+} from "@/lib/asset-identifiers";
 import { downloadExport, mutateDashboard } from "./api";
 import { CollaboratorsView } from "./CollaboratorsView";
 import { Dialogs } from "./Dialogs";
@@ -22,6 +26,7 @@ import {
 } from "./hooks";
 import { InventoryView } from "./InventoryView";
 import { NucleiView } from "./NucleiView";
+import { OperationsView } from "./OperationsView";
 import { AuditView, ImportsView } from "./OperationalViews";
 import type {
   Asset,
@@ -38,7 +43,6 @@ import {
   formValue,
 } from "./ui";
 
-const OFFICIAL_PATRIMONY_PATTERN = /^\d{6}$/;
 
 const viewCopy: Record<ViewId, { title: string; description: string }> = {
   inventory: {
@@ -52,6 +56,10 @@ const viewCopy: Record<ViewId, { title: string; description: string }> = {
   audit: {
     title: "Histórico de movimentações",
     description: "Consulte alterações de posse, status e cadastro registradas pela operação.",
+  },
+  operations: {
+    title: "Operações patrimoniais",
+    description: "Execute inventários, formalize custódias, controle manutenção e registre evidências de localização.",
   },
   imports: {
     title: "Carga e conciliação de planilhas",
@@ -74,6 +82,18 @@ export default function PatrimonioApp() {
     if (typeof window === "undefined") return null;
     return new URLSearchParams(window.location.search).get("department");
   });
+
+  useEffect(() => {
+    const desktopNavigation = window.matchMedia("(min-width: 1181px)");
+    const closeMobileNavigation = () => {
+      if (desktopNavigation.matches) setMobileNavigationOpen(false);
+    };
+
+    closeMobileNavigation();
+    desktopNavigation.addEventListener("change", closeMobileNavigation);
+    return () => desktopNavigation.removeEventListener("change", closeMobileNavigation);
+  }, []);
+
   const [filterDraft, setFilterDraft] = useState<InventoryFilters>(defaultFilters);
   const [selectedAssetId, setSelectedAssetId] = useState<string | null>(null);
   const [modal, setModal] = useState<ModalState>({ kind: "closed" });
@@ -147,11 +167,32 @@ export default function PatrimonioApp() {
       }
       return;
     }
-    const asset = next.inventory.find((item) => item.id === identifier);
+    const matchingAssets = next.inventory.filter((item) =>
+      item.id === identifier
+      || item.sourceIdentifier === identifier
+      || item.baseCode === identifier,
+    );
+    if (matchingAssets.length > 1) {
+      setFilterDraft(scanFilters);
+      scannerUpdateRef.current("success", `${matchingAssets.length} itens localizados`);
+      showToast(
+        `${matchingAssets.length} registros usam a referência ${identifier}. Selecione a incorporação correta.`,
+      );
+      return;
+    }
+    const asset = matchingAssets[0];
     if (!asset) {
-      if (!OFFICIAL_PATRIMONY_PATTERN.test(identifier)) {
+      if (!isOfficialPatrimonyId(identifier)) {
         scannerUpdateRef.current("error", "Referência não encontrada");
         showToast(`A referência interna ${identifier} não está cadastrada.`, true);
+        return;
+      }
+      if (
+        isFleetPatrimonyId(identifier)
+        && next.environment.activeDepartment.slug !== "gazin-log"
+      ) {
+        scannerUpdateRef.current("error", "Frota restrita ao Gazin LOG");
+        showToast("Identificadores de frota só podem ser cadastrados no ambiente Gazin LOG.", true);
         return;
       }
       setFilterDraft(scanFilters);
@@ -184,8 +225,13 @@ export default function PatrimonioApp() {
       || lastProcessedScanRef.current === identifier
     ) return;
 
-    const asset = dashboard.inventory.find((item) => item.id === identifier);
-    if (!asset) return;
+    const matchingAssets = dashboard.inventory.filter((item) =>
+      item.id === identifier
+      || item.sourceIdentifier === identifier
+      || item.baseCode === identifier,
+    );
+    if (matchingAssets.length !== 1) return;
+    const asset = matchingAssets[0];
     const timer = window.setTimeout(() => openScannedAsset(asset, identifier), 0);
     return () => window.clearTimeout(timer);
   }, [
@@ -260,18 +306,26 @@ export default function PatrimonioApp() {
 
   return (
     <div className="app-shell">
+      <div className="theme-transition-overlay" aria-hidden="true" />
       <header className={`app-header ${mobileNavigationOpen ? "is-open" : ""}`}>
         <div className="app-header-inner">
           <button
             className="app-brand"
             type="button"
-            aria-label="Patrimônio Ops, abrir inventário"
+            aria-label="Gazin Patrimônio Ops, abrir inventário"
             onClick={() => {
               setView("inventory");
               setMobileNavigationOpen(false);
             }}
           >
-            <Image className="app-brand-logo" src="/brand/cx-mark-header.png" alt="" width={440} height={230} priority />
+            <Image
+              className="app-brand-logo app-brand-logo--gazin"
+              src="/brand/gazin-logo.png"
+              alt=""
+              width={800}
+              height={200}
+              priority
+            />
             <span className="app-brand-copy"><strong>Patrimônio Ops</strong><small>Gestão empresarial</small></span>
           </button>
           <button
@@ -306,6 +360,7 @@ export default function PatrimonioApp() {
                   inventory: "Inventário",
                   nuclei: "Núcleos",
                   audit: "Auditoria",
+                  operations: "Operações",
                   imports: "Importações",
                   collaborators: "Colaboradores",
                   environments: "Ambientes",
@@ -436,6 +491,9 @@ export default function PatrimonioApp() {
           />
         ) : null}
         {dashboard && view === "audit" ? <AuditView dashboard={dashboard} /> : null}
+        {dashboard && view === "operations" ? (
+          <OperationsView dashboard={dashboard} onMutate={handleMutation} />
+        ) : null}
         {dashboard && view === "imports" ? (
           <ImportsView dashboard={dashboard} onImport={() => setModal({ kind: "import" })} />
         ) : null}
@@ -503,6 +561,16 @@ function NavigationIcon({ view }: { view: ViewId }) {
       <svg {...common}>
         <path d="M6 4h12v16H6z" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" />
         <path d="M9 8h6M9 12h6M9 16h4" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+      </svg>
+    );
+  }
+
+  if (view === "operations") {
+    return (
+      <svg {...common}>
+        <path d="M5 5h14v14H5z" stroke="currentColor" strokeWidth="1.7" />
+        <path d="M8 9h8M8 13h5M8 17h3" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+        <path d="m15 16 1.4 1.4L19 14.8" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
     );
   }

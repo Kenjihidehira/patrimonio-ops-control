@@ -32,7 +32,7 @@ O navegador nunca recebe a URL privilegiada nem o segredo do serviço intermedi�
 ## Arquitetura React
 
 - `PatrimonioApp.tsx` compõe navegação, sincronização, comandos e janelas operacionais.
-- `InventoryView.tsx`, `NucleiView.tsx`, `CollaboratorsView.tsx` e `OperationalViews.tsx` isolam cada fluxo de negócio.
+- `InventoryView.tsx`, `NucleiView.tsx`, `CollaboratorsView.tsx`, `OperationalViews.tsx` e `OperationsView.tsx` isolam cada fluxo de negócio.
 - `Dialogs.tsx` concentra formulários e janelas modais reutilizando validações e contratos de comando.
 - `hooks.ts` controla leitura abortável, sincronização periódica, tema e captura do leitor HID.
 - `api.ts` é a única fronteira HTTP do navegador; componentes não conhecem credenciais nem detalhes do Supabase.
@@ -58,10 +58,14 @@ O estado operacional permanece no servidor. O navegador mantém apenas estado ef
 14. `x` representa ausência de item; `Sem patrimônio` representa um item físico existente que deve permanecer no inventário como divergência.
 15. Alterar o número patrimonial exige seis dígitos, unicidade e motivo; a identidade relacional dos movimentos existentes é preservada por cascata.
 16. A leitura por bipador aceita apenas identificadores válidos recebidos como teclado HID; ela consulta a API autenticada e abre uma janela de conferência. Mudanças de status continuam exigindo motivo e passam pelo comando auditável `update_status`.
+17. Campanhas congelam seu escopo no momento da criação e só podem ser concluídas quando todos os itens foram conferidos.
+18. O aceite ou a recusa de um termo de responsabilidade é restrito ao e-mail indicado; administrador ou emissor pode cancelar, mas não aceitar em nome do colaborador.
+19. Uma ordem de manutenção aberta coloca o item em manutenção; após a última ordem ser concluída ou cancelada, o estado volta a disponível ou em uso conforme a responsabilidade atual.
+20. Leituras automáticas RFID, BLE, UWB, GPS e MDM exigem identificação previamente vinculada ao patrimônio; QR, código de barras e registro manual podem ser informados diretamente.
 
 ## Modelo de persistência
 
-O Postgres usa sete tabelas relacionais:
+O Postgres usa tabelas relacionais de cadastro, auditoria e controle operacional:
 
 | Tabela | Finalidade |
 | --- | --- |
@@ -72,8 +76,14 @@ O Postgres usa sete tabelas relacionais:
 | `patrimonio_collaborators` | Perfis complementares dos responsáveis e vínculo atual com o núcleo |
 | `patrimonio_movements` | Histórico imutável de cadastro, transferência, status e importação |
 | `patrimonio_import_runs` | Resultado e avisos de cada importação |
+| `patrimonio_inventory_campaigns` | Campanhas de inventário, escopo, prazo, progresso e conclusão |
+| `patrimonio_inventory_campaign_assets` | Fotografia dos ativos incluídos e resultado de cada conferência |
+| `patrimonio_custody_terms` | Termos de responsabilidade, destinatário e resposta identificada |
+| `patrimonio_maintenance_orders` | Ordens preventivas, corretivas ou de inspeção e seus custos |
+| `patrimonio_tracking_tags` | Identificadores QR, RFID, BLE, UWB, GPS e MDM vinculados aos ativos |
+| `patrimonio_tracking_events` | Leituras e posições recebidas, com origem, bateria e data |
 
-Chaves estrangeiras preservam integridade e índices cobrem status, núcleo, tipo, responsável, atualização, movimentos e histórico de importações. As RPCs `patrimonio_apply_action` e `patrimonio_import_workspace` executam validação de revisão, escrita e auditoria na mesma transação.
+Chaves estrangeiras preservam integridade e índices cobrem status, núcleo, tipo, responsável, atualização, movimentos e histórico de importações. As RPCs `patrimonio_apply_action`, `patrimonio_apply_operational_action` e `patrimonio_import_workspace` executam validação de revisão, escrita e auditoria na mesma transação.
 
 ## Fluxos de dados
 

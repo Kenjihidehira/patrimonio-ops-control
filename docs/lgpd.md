@@ -27,11 +27,18 @@ responsáveis corporativos.
 | Identificação profissional | nome, código, e-mail autorizado | autenticação e identificação do responsável | departamento liberado |
 | Estrutura organizacional | departamento, núcleo, gestor, localização | organização e localização patrimonial | departamento liberado |
 | Vínculo patrimonial | ativo, modelo, série, responsável, status | gestão e segurança dos bens | departamento liberado |
+| Responsabilidade e manutenção | aceite, recusa, assinatura técnica, fornecedor, custo e observação | custódia, conservação e prestação de contas | operadores do departamento |
+| Rastreamento patrimonial | etiqueta, tecnologia, localização, coordenadas, bateria, origem e data | localização e segurança do bem | operadores do departamento |
 | Auditoria operacional | movimentação, motivo, ator e data | rastreabilidade e exercício de direitos | operadores do departamento |
 | Auditoria de segurança | login, bloqueio, permissão, importação e exportação | prevenção, investigação e prestação de contas | administrador global |
 
 Não devem ser inseridos dados de saúde, biometria, religião, filiação sindical,
 opinião política ou vida sexual em nomes, observações ou planilhas.
+
+Coordenadas registradas para GPS, UWB ou leitura móvel devem representar o bem,
+não monitorar continuamente o colaborador. A área controladora deve documentar
+necessidade, proporcionalidade, frequência, retenção e informação aos titulares
+antes de ativar integrações automáticas de localização.
 
 ## Bases e finalidades
 
@@ -60,6 +67,8 @@ contratuais padrão ou outro mecanismo válido e manter a evidência junto ao co
 - Limites técnicos e nonces: no máximo 2 dias e 10 minutos, respectivamente.
 - Registros patrimoniais: prazo definido pela área proprietária junto ao
   encarregado, conforme a política corporativa e obrigações aplicáveis.
+- Eventos de rastreamento, termos de responsabilidade e ordens de manutenção:
+  prazo ainda pendente de aprovação pela área proprietária e pelo encarregado.
 
 A rotina `patrimonio_apply_retention` elimina somente registros técnicos cujo
 prazo já venceu. Ela não apaga automaticamente inventário, colaboradores,
@@ -99,3 +108,4 @@ Fluxo interno mínimo:
 - aprovar os prazos dos registros patrimoniais;
 - confirmar RTO, RPO e plano contratado de backup/PITR;
 - avaliar a necessidade de RIPD com o encarregado.
+- aprovar finalidade, frequência e retenção antes de integrar GPS, UWB, BLE, RFID ou MDM.

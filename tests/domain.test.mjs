@@ -7,6 +7,10 @@ import {
   DomainError,
   normalizeState,
 } from "../lib/domain.js";
+import {
+  fleetNumberFromPatrimonyId,
+  toFleetPatrimonyId,
+} from "../lib/asset-identifiers.js";
 
 const seed = JSON.parse(
   await readFile(new URL("../data/seed.json", import.meta.url), "utf8"),
@@ -25,6 +29,145 @@ test("normaliza o seed e calcula o resumo operacional", () => {
   assert.equal(dashboard.nuclei.length, 5);
   assert.equal(dashboard.collaborators.length, 6);
   assert.equal(dashboard.summary.collaborators, 6);
+});
+
+test("campanha de inventário registra divergência e preserva o escopo", () => {
+  const campaignId = "11111111-1111-4111-8111-111111111111";
+  const created = applyAction(seed, {
+    type: "create_inventory_campaign",
+    at: "2026-07-31T12:00:00.000Z",
+    campaign: {
+      id: campaignId,
+      name: "Inventário controlado",
+      nucleusId: "nuc-ti",
+      dueAt: "2026-08-05",
+    },
+  }, "google:auditor@gazin.com.br");
+
+  const campaign = created.inventoryCampaigns[0];
+  assert.equal(campaign.status, "active");
+  assert.ok(campaign.targetCount > 0);
+  assert.equal(
+    created.inventoryCampaignAssets.filter((item) => item.campaignId === campaignId).length,
+    campaign.targetCount,
+  );
+
+  const checked = applyAction(created, {
+    type: "record_inventory_check",
+    at: "2026-07-31T12:05:00.000Z",
+    campaignId,
+    assetId: "104281",
+    result: "missing",
+    observedLocation: "",
+    note: "Não localizado durante a conferência.",
+  }, "google:auditor@gazin.com.br");
+
+  assert.equal(checked.inventoryCampaigns[0].checkedCount, 1);
+  assert.equal(checked.inventoryCampaigns[0].issueCount, 1);
+  assert.equal(checked.assets.find((item) => item.id === "104281").status, "discrepancy");
+});
+
+test("termo de responsabilidade só pode ser aceito pela identidade indicada", () => {
+  const termId = "22222222-2222-4222-8222-222222222222";
+  const issued = applyAction(seed, {
+    type: "create_custody_term",
+    at: "2026-07-31T13:00:00.000Z",
+    term: {
+      id: termId,
+      assetId: "104281",
+      assigneeIdentifier: "joao.martins@gazin.com.br",
+      note: "Uso corporativo.",
+    },
+  }, "google:auditor@gazin.com.br");
+
+  assert.throws(
+    () => applyAction(issued, {
+      type: "respond_custody_term",
+      termId,
+      response: "accepted",
+    }, "google:outra.pessoa@gazin.com.br"),
+    /Somente o responsável/,
+  );
+
+  const accepted = applyAction(issued, {
+    type: "respond_custody_term",
+    at: "2026-07-31T13:10:00.000Z",
+    termId,
+    response: "accepted",
+    note: "Aceite eletrônico.",
+  }, "google:joao.martins@gazin.com.br");
+  assert.equal(accepted.custodyTerms[0].status, "accepted");
+});
+
+test("ordem de manutenção controla a indisponibilidade do patrimônio", () => {
+  const orderId = "33333333-3333-4333-8333-333333333333";
+  const opened = applyAction(seed, {
+    type: "create_maintenance_order",
+    at: "2026-07-31T14:00:00.000Z",
+    order: {
+      id: orderId,
+      assetId: "104285",
+      kind: "preventive",
+      priority: "normal",
+      title: "Revisão preventiva",
+      dueAt: "2026-08-10",
+      notes: "Conferir estrutura e fixações.",
+    },
+  }, "google:manutencao@gazin.com.br");
+  assert.equal(opened.assets.find((item) => item.id === "104285").status, "maintenance");
+
+  const completed = applyAction(opened, {
+    type: "update_maintenance_order",
+    at: "2026-07-31T15:00:00.000Z",
+    orderId,
+    status: "completed",
+    note: "Revisão concluída.",
+  }, "google:manutencao@gazin.com.br");
+  assert.equal(completed.maintenanceOrders[0].status, "completed");
+  assert.equal(completed.assets.find((item) => item.id === "104285").status, "available");
+});
+
+test("rastreamento ativo exige etiqueta configurada para tecnologias automáticas", () => {
+  const tagId = "44444444-4444-4444-8444-444444444444";
+  const linked = applyAction(seed, {
+    type: "assign_tracking_tag",
+    at: "2026-07-31T16:00:00.000Z",
+    tag: {
+      id: tagId,
+      assetId: "104281",
+      technology: "ble",
+      tagId: "BLE-GAZIN-0001",
+    },
+  }, "google:auditor@gazin.com.br");
+
+  const recorded = applyAction(linked, {
+    type: "record_tracking_event",
+    at: "2026-07-31T16:05:00.000Z",
+    event: {
+      id: "55555555-5555-4555-8555-555555555555",
+      assetId: "104281",
+      technology: "ble",
+      tagId: "BLE-GAZIN-0001",
+      readerId: "gateway-ti-01",
+      location: "Sala de infraestrutura",
+      batteryPercent: 93,
+    },
+  }, "google:auditor@gazin.com.br");
+  assert.equal(recorded.trackingEvents[0].technology, "ble");
+
+  assert.throws(
+    () => applyAction(seed, {
+      type: "record_tracking_event",
+      event: {
+        id: "66666666-6666-4666-8666-666666666666",
+        assetId: "104281",
+        technology: "uwb",
+        tagId: "UWB-SEM-VINCULO",
+        location: "Sala de infraestrutura",
+      },
+    }, "google:auditor@gazin.com.br"),
+    /Cadastre a etiqueta/,
+  );
 });
 
 test("rejeita identificador que não contenha exatamente seis números", () => {
@@ -76,6 +219,55 @@ test("cadastra patrimônio válido e registra o ator na auditoria", () => {
   assert.equal(asset.movements[0].actor, "auditor@empresa.com");
   assert.equal(asset.movements[0].type, "registration");
   assert.equal(seed.assets.length, 15, "a ação não deve mutar o estado original");
+});
+
+test("mapeia frota para patrimônio com sufixo .0 e mantém a identificação oficial", () => {
+  assert.equal(toFleetPatrimonyId("10775"), "10775.0");
+  assert.equal(fleetNumberFromPatrimonyId("10775.0"), "10775");
+
+  const nextState = applyAction(
+    seed,
+    {
+      type: "create_asset",
+      at: "2026-07-30T12:00:00.000Z",
+      movementId: "movement-fleet",
+      asset: validAsset({
+        id: "10775.0",
+        type: "fleet",
+        brandModel: "Caminhão de teste",
+      }),
+    },
+    "logistica@empresa.com",
+  );
+  const dashboard = buildDashboard(nextState, { type: "fleet" });
+
+  assert.equal(dashboard.inventory.length, 1);
+  assert.equal(dashboard.inventory[0].id, "10775.0");
+  assert.equal(dashboard.inventory[0].hasPatrimony, true);
+  assert.equal(dashboard.options.assetTypes.fleet, "Frota");
+
+  assert.throws(
+    () => applyAction(
+      seed,
+      {
+        type: "create_asset",
+        asset: validAsset({ id: "10775", type: "fleet" }),
+      },
+      "logistica@empresa.com",
+    ),
+    /número-da-frota\.0/,
+  );
+  assert.throws(
+    () => applyAction(
+      seed,
+      {
+        type: "create_asset",
+        asset: validAsset({ id: "10775.0", type: "notebook" }),
+      },
+      "logistica@empresa.com",
+    ),
+    /6 números/,
+  );
 });
 
 test("transfere ativo de forma auditável e aloca item disponível", () => {

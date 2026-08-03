@@ -14,8 +14,8 @@ Planilhas patrimoniais isoladas não registram bem responsabilidade, movimentaç
 
 ## Escopo funcional
 
-- Patrimônios oficiais com exatamente 6 números e referências internas distintas para itens ainda não etiquetados.
-- Tipos controlados: CPU (Computador), Monitor 1, Monitor 2, Cadeira e Notebook.
+- Patrimônios oficiais com exatamente 6 números, patrimônios de frota no formato `número-da-frota.0` e referências internas distintas para itens ainda não etiquetados.
+- Tipos controlados: CPU (Computador), Monitor 1, Monitor 2, Cadeira, Notebook e Frota; o tipo Frota é restrito ao ambiente Gazin LOG.
 - Organização por núcleo, gestor, responsável e localização física.
 - Diretório de colaboradores importados, inclusive quando não há patrimônio associado.
 - Perfil editável do colaborador com nome, núcleo e relação de patrimônios vinculados.
@@ -27,6 +27,11 @@ Planilhas patrimoniais isoladas não registram bem responsabilidade, movimentaç
 - Lista móvel dedicada e painel inferior de detalhes com abas de resumo e histórico.
 - Cadastro de patrimônio e núcleo, além de edição de sigla, nome, localização e gestor do núcleo.
 - Inventário dedicado por núcleo, com resumo, busca local e edição cadastral auditável de cada item.
+- Campanhas de inventário físico por núcleo ou departamento, com escopo congelado, progresso, conferência e tratamento de divergências.
+- Termos digitais de responsabilidade com aceite ou recusa restritos ao e-mail do colaborador indicado.
+- Ordens de manutenção preventiva, corretiva e de inspeção, com prioridade, fornecedor, custo e retorno automático ao estado operacional.
+- Etiquetas QR Code geradas no sistema e leitura por câmera quando o navegador oferece `BarcodeDetector`.
+- Cadastro de identificadores RFID UHF, BLE, UWB, GPS e MDM, com registro auditável de leituras, coordenadas, origem e bateria; a captura automática depende do hardware ou serviço externo correspondente.
 - Transferência entre núcleos, locais e responsáveis.
 - Alteração auditável do número patrimonial, inclusive para converter itens `Sem patrimônio` em identificadores oficiais.
 - Status: disponível, em uso, manutenção, divergência e baixado.
@@ -72,14 +77,14 @@ O sistema aceita leitores USB ou Bluetooth no modo **HID Keyboard**, também cha
 1. Conecte o leitor ao computador por USB ou faça o pareamento Bluetooth.
 2. No manual do equipamento, selecione o modo `HID Keyboard`.
 3. Configure o sufixo de leitura como `Enter` ou `Tab`.
-4. Teste no Bloco de Notas: ao bipar, o leitor deve escrever os seis números da etiqueta e avançar o cursor.
+4. Teste no Bloco de Notas: ao bipar, o leitor deve escrever o identificador da etiqueta e avançar o cursor.
 5. Entre no sistema e bipe a etiqueta em qualquer tela. O inventário será aberto, os filtros serão limpos e uma janela exibirá o patrimônio, responsável, núcleo, localização, modelo, série, histórico e status.
 
-O sufixo `Enter` ou `Tab` continua recomendado para confirmar a leitura imediatamente. Como contingência, quando o leitor apenas preenche os seis números no campo de busca, o sistema abre a mesma janela assim que a API confirma uma correspondência patrimonial exata.
+O sufixo `Enter` ou `Tab` continua recomendado para confirmar a leitura imediatamente. Como contingência, quando o leitor apenas preenche o identificador no campo de busca, o sistema abre a mesma janela assim que a API confirma uma correspondência patrimonial exata.
 
 Na janela de conferência, um operador autenticado pode selecionar outro status e informar o motivo obrigatório. A alteração usa a mesma API transacional do painel, incrementa a revisão da base e registra o usuário na auditoria.
 
-Somente identificadores oficiais com seis dígitos e referências internas no formato `Sxxxxx` são aceitos. A busca exige autenticação e não grava nem altera o patrimônio. Leitores configurados exclusivamente como porta `COM` ou serial não funcionam neste fluxo; nesses casos, é necessário identificar o fabricante e o modelo para integrar o protocolo específico.
+São aceitos identificadores oficiais com seis dígitos, patrimônios de frota no formato `número-da-frota.0` e referências internas no formato `Sxxxxx`. A busca exige autenticação e não grava nem altera o patrimônio. Leitores configurados exclusivamente como porta `COM` ou serial não funcionam neste fluxo; nesses casos, é necessário identificar o fabricante e o modelo para integrar o protocolo específico.
 
 ### Validação completa
 
@@ -162,7 +167,7 @@ A interface segue o padrão de relatório em lista com detalhe do objeto, comum 
 
 A identidade visual usa azul cobalto e amarelo como referências da presença digital da Gazin, mantendo superfícies neutras e cores semânticas independentes para garantir leitura operacional e contraste.
 
-Foram adotados padrões operacionais recorrentes nessas soluções: visibilidade imediata de status, busca por posse e localização, filtros rápidos de exceção, paginação para inventários extensos e acesso contextual ao histórico. O leitor HID de código de barras é suportado sem acesso privilegiado ao hardware. Recursos financeiros, contratos, garantias, leitura de QR Code por câmera e campos customizados não foram reproduzidos porque não existem na planilha-base atual.
+Foram adotados padrões operacionais recorrentes nessas soluções: visibilidade imediata de status, busca por posse e localização, filtros rápidos de exceção, paginação para inventários extensos, campanhas de conferência, responsabilidade digital, manutenção e acesso contextual ao histórico. O leitor HID de código de barras funciona sem acesso privilegiado ao hardware; etiquetas QR podem ser geradas e lidas pela câmera em navegadores compatíveis. Tecnologias RFID, BLE, UWB, GPS e MDM possuem cadastro e trilha de eventos, mas não simulam captura: leituras automáticas exigem equipamento, gateway ou serviço externo real.
 
 O painel oferece temas claro e escuro, respeita a preferência do sistema na primeira visita e persiste a escolha explícita sem armazenar dados operacionais no navegador.
 
@@ -186,11 +191,10 @@ GitHub Pages não hospeda este ambiente de execução: ele publica apenas arquiv
 ## Evoluções possíveis
 
 - Papéis adicionais por núcleo quando houver necessidade operacional comprovada.
-- Etiquetas QR Code e leitura por câmera.
-- Termo digital de responsabilidade e aceite do colaborador.
 - Anexos de nota fiscal, laudo e foto do ativo em Supabase Storage.
-- Inventário cíclico com conferência offline e reconciliação.
-- Integrações com RH, chamados de manutenção e diretório corporativo.
+- Conferência offline de inventários com sincronização posterior.
+- Integrações automáticas com portais RFID, telemetria GPS, MDM, RH, chamados de manutenção e diretório corporativo.
+- Regras configuráveis de geocerca, garantia, depreciação e contratos.
 
 ## Licença
 

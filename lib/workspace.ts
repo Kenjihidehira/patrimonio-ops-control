@@ -32,7 +32,18 @@ export async function loadWorkspaceContext(
 ): Promise<WorkspaceContext | UnchangedWorkspaceContext> {
   if (!user) {
     return {
-      state: normalizeState({ revision: 0, nuclei: [], assets: [], collaborators: [] }),
+      state: normalizeState({
+        revision: 0,
+        nuclei: [],
+        assets: [],
+        collaborators: [],
+        inventoryCampaigns: [],
+        inventoryCampaignAssets: [],
+        custodyTerms: [],
+        maintenanceOrders: [],
+        trackingTags: [],
+        trackingEvents: [],
+      }),
       imports: [],
       environment: null,
       source: "locked" as const,

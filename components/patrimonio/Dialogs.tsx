@@ -6,11 +6,17 @@ import {
   useState,
 } from "react";
 import {
+  fleetNumberFromPatrimonyId,
+  isAssetIdentifierValidForType,
+  toFleetPatrimonyId,
+} from "@/lib/asset-identifiers";
+import {
   importSpreadsheet,
   previewSpreadsheet,
 } from "./api";
 import type {
   Asset,
+  AssetType,
   Dashboard,
   ImportPreview,
   ModalState,
@@ -222,17 +228,34 @@ function CreateAssetDialog({
   onClose: () => void;
   onSubmit: (action: MutationAction, id: string) => void;
 }) {
+  const activeDepartmentSlug = dashboard.environment.activeDepartment.slug;
+  const isFleetEnvironment = activeDepartmentSlug === "gazin-log";
+  const initialFleetNumber = isFleetEnvironment && initialId
+    ? fleetNumberFromPatrimonyId(initialId)
+    : null;
+  const [selectedType, setSelectedType] = useState<AssetType>(
+    initialFleetNumber ? "fleet" : "cpu",
+  );
+  const [fleetNumber, setFleetNumber] = useState(initialFleetNumber ?? "");
+
+  const assetTypes = typedEntries(dashboard.options.assetTypes).filter(
+    ([value]) => value !== "fleet" || isFleetEnvironment,
+  );
+
   const submit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const form = event.currentTarget;
     if (!form.reportValidity()) return;
-    const id = formValue(form, "id");
-    if (!/^\d{6}$/.test(id)) return;
+    const type = formValue(form, "type") as AssetType;
+    const id = type === "fleet"
+      ? toFleetPatrimonyId(formValue(form, "fleetNumber"))
+      : formValue(form, "id");
+    if (!id || !isAssetIdentifierValidForType(id, type)) return;
     onSubmit({
       type: "create_asset",
       asset: {
         id,
-        type: formValue(form, "type"),
+        type,
         nucleusId: formValue(form, "nucleusId"),
         status: formValue(form, "status"),
         brandModel: formValue(form, "brandModel"),
@@ -263,27 +286,54 @@ function CreateAssetDialog({
         />
         <div className="modal-body form-grid">
           <label className="field">
-            <span>{initialId ? "Identificador lido" : "Identificador de 6 números"}</span>
-            <input
-              name="id"
-              inputMode="numeric"
-              pattern="[0-9]{6}"
-              maxLength={6}
-              required
-              readOnly={Boolean(initialId)}
-              defaultValue={initialId}
-              placeholder="104296"
-            />
-            {initialId ? <small className="field-help">Para cadastrar outro número, feche e realize uma nova leitura.</small> : null}
-          </label>
-          <label className="field">
             <span>Tipo de item</span>
-            <select name="type" required>
-              {typedEntries(dashboard.options.assetTypes).map(([value, label]) => (
+            <select
+              name="type"
+              value={selectedType}
+              required
+              onChange={(event) => setSelectedType(event.target.value as AssetType)}
+            >
+              {assetTypes.map(([value, label]) => (
                 <option key={value} value={value}>{label}</option>
               ))}
             </select>
           </label>
+          {selectedType === "fleet" ? (
+            <label className="field">
+              <span>Número da frota</span>
+              <input
+                name="fleetNumber"
+                inputMode="numeric"
+                pattern="[0-9]{1,10}"
+                maxLength={10}
+                required
+                readOnly={Boolean(initialId)}
+                value={fleetNumber}
+                placeholder="10775"
+                onChange={(event) => setFleetNumber(
+                  event.target.value.replace(/\D/g, "").slice(0, 10),
+                )}
+              />
+              <small className="field-help">
+                Patrimônio gerado: #{toFleetPatrimonyId(fleetNumber) ?? "número-da-frota.0"}
+              </small>
+            </label>
+          ) : (
+            <label className="field">
+              <span>{initialId ? "Identificador lido" : "Identificador de 6 números"}</span>
+              <input
+                name="id"
+                inputMode="numeric"
+                pattern="[0-9]{6}"
+                maxLength={6}
+                required
+                readOnly={Boolean(initialId)}
+                defaultValue={initialId}
+                placeholder="104296"
+              />
+              {initialId ? <small className="field-help">Para cadastrar outro número, feche e realize uma nova leitura.</small> : null}
+            </label>
+          )}
           <label className="field">
             <span>Núcleo</span>
             <select name="nucleusId" required>
@@ -462,12 +512,19 @@ function IdentifierDialog({
   onClose: () => void;
   onSubmit: (action: MutationAction, id: string) => void;
 }) {
+  const isFleet = asset?.type === "fleet";
+  const [fleetNumber, setFleetNumber] = useState(
+    asset ? fleetNumberFromPatrimonyId(asset.id) ?? "" : "",
+  );
+
   const submit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!asset) return;
     const form = event.currentTarget;
-    const id = formValue(form, "newAssetId");
-    if (!/^\d{6}$/.test(id)) return;
+    const id = isFleet
+      ? toFleetPatrimonyId(formValue(form, "newFleetNumber"))
+      : formValue(form, "newAssetId");
+    if (!id || !isAssetIdentifierValidForType(id, asset.type)) return;
     onSubmit({
       type: "update_asset_identifier",
       assetId: asset.id,
@@ -485,10 +542,30 @@ function IdentifierDialog({
             <span>Identificação atual</span>
             <input value={asset ? (asset.hasPatrimony ? asset.id : `Sem patrimônio · ${asset.id}`) : ""} readOnly />
           </label>
-          <label className="field field-wide">
-            <span>Novo patrimônio de 6 números</span>
-            <input name="newAssetId" inputMode="numeric" pattern="[0-9]{6}" maxLength={6} required />
-          </label>
+          {isFleet ? (
+            <label className="field field-wide">
+              <span>Novo número da frota</span>
+              <input
+                name="newFleetNumber"
+                inputMode="numeric"
+                pattern="[0-9]{1,10}"
+                maxLength={10}
+                required
+                value={fleetNumber}
+                onChange={(event) => setFleetNumber(
+                  event.target.value.replace(/\D/g, "").slice(0, 10),
+                )}
+              />
+              <small className="field-help">
+                Novo patrimônio: #{toFleetPatrimonyId(fleetNumber) ?? "número-da-frota.0"}
+              </small>
+            </label>
+          ) : (
+            <label className="field field-wide">
+              <span>Novo patrimônio de 6 números</span>
+              <input name="newAssetId" inputMode="numeric" pattern="[0-9]{6}" maxLength={6} required />
+            </label>
+          )}
           <p className="field-help field-wide">
             Núcleo, responsável, localização e histórico serão preservados.
           </p>

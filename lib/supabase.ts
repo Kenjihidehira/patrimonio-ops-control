@@ -9,6 +9,12 @@ type WorkspaceState = {
   nuclei: Array<Record<string, unknown>>;
   assets: Array<Record<string, unknown>>;
   collaborators: Array<Record<string, unknown>>;
+  inventoryCampaigns: Array<Record<string, unknown>>;
+  inventoryCampaignAssets: Array<Record<string, unknown>>;
+  custodyTerms: Array<Record<string, unknown>>;
+  maintenanceOrders: Array<Record<string, unknown>>;
+  trackingTags: Array<Record<string, unknown>>;
+  trackingEvents: Array<Record<string, unknown>>;
 };
 
 type ImportPayload = {
@@ -47,6 +53,12 @@ type GatewayWorkspaceContext = {
   imports: Array<Record<string, unknown>>;
   transfers: Array<Record<string, unknown>>;
   securityEvents: Array<Record<string, unknown>>;
+  inventoryCampaigns: Array<Record<string, unknown>>;
+  inventoryCampaignAssets: Array<Record<string, unknown>>;
+  custodyTerms: Array<Record<string, unknown>>;
+  maintenanceOrders: Array<Record<string, unknown>>;
+  trackingTags: Array<Record<string, unknown>>;
+  trackingEvents: Array<Record<string, unknown>>;
   access: {
     activeDepartment: Department;
     departments: Department[];
@@ -338,6 +350,24 @@ function mapWorkspaceState(result: GatewayWorkspaceContext): WorkspaceState {
       value: Number(row.acquisition_value ?? 0),
       status: row.status,
       notes: row.notes,
+      sourceSystem: row.source_system === "sabium" ? "sabium" : null,
+      sourceFingerprint: row.source_fingerprint ?? "",
+      baseCode: row.base_code ?? "",
+      incorporation: row.incorporation === null || row.incorporation === undefined
+        ? null
+        : Number(row.incorporation),
+      sourceIdentifier: row.source_identifier ?? "",
+      sourceDescription: row.source_description ?? "",
+      assetGroup: row.asset_group ?? "",
+      branchCode: row.branch_code ?? "",
+      disposedAt: row.disposed_at ?? null,
+      operationValue: row.operation_value === null || row.operation_value === undefined
+        ? null
+        : Number(row.operation_value),
+      invoiceNumber: row.invoice_number ?? "",
+      sourceRow: row.source_row === null || row.source_row === undefined
+        ? null
+        : Number(row.source_row),
       createdAt: row.created_at,
       movements: movementsByAsset.get(String(row.code)) ?? [],
     })),
@@ -345,6 +375,89 @@ function mapWorkspaceState(result: GatewayWorkspaceContext): WorkspaceState {
       id: row.id,
       name: row.name,
       nucleusId: row.nucleus_id,
+    })),
+    inventoryCampaigns: result.inventoryCampaigns.map((row) => ({
+      id: row.id,
+      name: row.name,
+      nucleusId: row.nucleus_id ?? null,
+      status: row.status,
+      dueAt: row.due_at ?? null,
+      targetCount: Number(row.target_count ?? 0),
+      checkedCount: Number(row.checked_count ?? 0),
+      issueCount: Number(row.issue_count ?? 0),
+      createdBy: row.created_by,
+      createdAt: row.created_at,
+      completedAt: row.completed_at ?? null,
+      updatedAt: row.updated_at,
+    })),
+    inventoryCampaignAssets: result.inventoryCampaignAssets.map((row) => ({
+      campaignId: row.campaign_id,
+      assetId: row.asset_code,
+      result: row.result,
+      observedLocation: row.observed_location,
+      note: row.note,
+      checkedBy: row.checked_by ?? null,
+      checkedAt: row.checked_at ?? null,
+    })),
+    custodyTerms: result.custodyTerms.map((row) => ({
+      id: row.id,
+      assetId: row.asset_code,
+      assignee: row.assignee,
+      assigneeIdentifier: row.assignee_identifier,
+      status: row.status,
+      note: row.note,
+      issuedBy: row.issued_by,
+      issuedAt: row.issued_at,
+      respondedBy: row.responded_by ?? null,
+      respondedAt: row.responded_at ?? null,
+      responseNote: row.response_note,
+    })),
+    maintenanceOrders: result.maintenanceOrders.map((row) => ({
+      id: row.id,
+      assetId: row.asset_code,
+      kind: row.kind,
+      priority: row.priority,
+      status: row.status,
+      title: row.title,
+      notes: row.notes,
+      dueAt: row.due_at ?? null,
+      createdBy: row.created_by,
+      createdAt: row.created_at,
+      updatedBy: row.updated_by,
+      updatedAt: row.updated_at,
+      completedAt: row.completed_at ?? null,
+    })),
+    trackingTags: result.trackingTags.map((row) => ({
+      id: row.id,
+      assetId: row.asset_code,
+      technology: row.technology,
+      tagId: row.tag_id,
+      active: row.active === true,
+      installedBy: row.installed_by,
+      installedAt: row.installed_at,
+      updatedAt: row.updated_at,
+    })),
+    trackingEvents: result.trackingEvents.map((row) => ({
+      id: row.id,
+      assetId: row.asset_code,
+      technology: row.technology,
+      tagId: row.tag_id,
+      readerId: row.reader_id,
+      location: row.location,
+      latitude: row.latitude === null || row.latitude === undefined ? null : Number(row.latitude),
+      longitude: row.longitude === null || row.longitude === undefined ? null : Number(row.longitude),
+      accuracyMeters: row.accuracy_meters === null || row.accuracy_meters === undefined
+        ? null
+        : Number(row.accuracy_meters),
+      confidence: row.confidence === null || row.confidence === undefined
+        ? null
+        : Number(row.confidence),
+      batteryPercent: row.battery_percent === null || row.battery_percent === undefined
+        ? null
+        : Number(row.battery_percent),
+      note: row.note,
+      observedBy: row.observed_by,
+      observedAt: row.observed_at,
     })),
   };
 }
