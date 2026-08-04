@@ -26,6 +26,8 @@ type TargetDepartment = Awaited<ReturnType<typeof fetchDepartmentNuclei>>;
 
 const emptyUser: DepartmentUser = {
   identifier: "",
+  username: "",
+  hasCredentials: false,
   displayName: "",
   isAdmin: false,
   isAuditor: false,
@@ -53,6 +55,9 @@ export function EnvironmentsView({
   const [accessForm, setAccessForm] = useState<DepartmentUser>(emptyUser);
   const [accessBusy, setAccessBusy] = useState(false);
   const [accessError, setAccessError] = useState<string | null>(null);
+  const [passwordLoginEnabled, setPasswordLoginEnabled] = useState(false);
+  const [credentialPassword, setCredentialPassword] = useState("");
+  const [originalUsername, setOriginalUsername] = useState("");
   const targetOptions = useMemo(
     () => environment.departments.filter(
       (department) => department.slug !== environment.activeDepartment.slug,
@@ -115,10 +120,21 @@ export function EnvironmentsView({
 
   const editUser = (user: DepartmentUser) => {
     setAccessError(null);
+    setPasswordLoginEnabled(user.hasCredentials);
+    setCredentialPassword("");
+    setOriginalUsername(user.username);
     setAccessForm({
       ...user,
       departmentSlugs: [...user.departmentSlugs],
     });
+  };
+
+  const clearAccessForm = () => {
+    setAccessForm(emptyUser);
+    setPasswordLoginEnabled(false);
+    setCredentialPassword("");
+    setOriginalUsername("");
+    setAccessError(null);
   };
 
   const toggleDepartment = (slug: string, checked: boolean) => {
@@ -135,9 +151,22 @@ export function EnvironmentsView({
     setAccessBusy(true);
     setAccessError(null);
     try {
-      const result = await saveDepartmentUser(accessForm);
+      const credentialMode = accessForm.hasCredentials && !passwordLoginEnabled
+        ? "disable"
+        : passwordLoginEnabled && (
+          !accessForm.hasCredentials
+          || Boolean(credentialPassword)
+          || accessForm.username !== originalUsername
+        )
+          ? "configure"
+          : "keep";
+      const result = await saveDepartmentUser({
+        ...accessForm,
+        credentialMode,
+        credentialPassword,
+      });
       await onRefresh();
-      setAccessForm(emptyUser);
+      clearAccessForm();
       onToast(result.message);
     } catch (cause) {
       setAccessError(
@@ -231,7 +260,7 @@ export function EnvironmentsView({
 
           <form className="environment-access-form form-grid" onSubmit={submitAccess}>
             <label className="field">
-              <span>E-mail Google</span>
+              <span>E-mail autorizado</span>
               <input
                 type="email"
                 value={accessForm.identifier}
@@ -245,6 +274,58 @@ export function EnvironmentsView({
                 required
               />
             </label>
+            <label className="environment-admin-check field-wide">
+              <input
+                type="checkbox"
+                checked={passwordLoginEnabled}
+                onChange={(event) => {
+                  setPasswordLoginEnabled(event.target.checked);
+                  if (!event.target.checked) setCredentialPassword("");
+                }}
+              />
+              <span>
+                <strong>Permitir login por usuário ou e-mail e senha</strong>
+                <small>A senha é processada pelo Supabase Auth e não aparece novamente no sistema.</small>
+              </span>
+            </label>
+            {passwordLoginEnabled ? (
+              <>
+                <label className="field">
+                  <span>Nome de usuário</span>
+                  <input
+                    value={accessForm.username}
+                    autoComplete="off"
+                    autoCapitalize="none"
+                    spellCheck={false}
+                    minLength={3}
+                    maxLength={32}
+                    pattern="[a-z0-9](?:[a-z0-9._-]{1,30}[a-z0-9])"
+                    placeholder="nome.sobrenome"
+                    onChange={(event) => setAccessForm((current) => ({
+                      ...current,
+                      username: event.target.value.toLowerCase(),
+                    }))}
+                  />
+                </label>
+                <label className="field">
+                  <span>{accessForm.hasCredentials ? "Nova senha" : "Senha inicial"}</span>
+                  <input
+                    type="password"
+                    value={credentialPassword}
+                    autoComplete="new-password"
+                    minLength={12}
+                    maxLength={72}
+                    required={!accessForm.hasCredentials}
+                    onChange={(event) => setCredentialPassword(event.target.value)}
+                  />
+                  <small className="field-help">
+                    {accessForm.hasCredentials
+                      ? "Deixe em branco para manter a senha atual."
+                      : "Use ao menos 12 caracteres e envie a senha por um canal seguro."}
+                  </small>
+                </label>
+              </>
+            ) : null}
             <label className="field">
               <span>Nome de exibição</span>
               <input
@@ -379,7 +460,7 @@ export function EnvironmentsView({
               <button
                 className="button button-secondary"
                 type="button"
-                onClick={() => setAccessForm(emptyUser)}
+                onClick={clearAccessForm}
               >
                 Limpar
               </button>
@@ -407,6 +488,8 @@ export function EnvironmentsView({
                   {!user.isAdmin && !user.isAuditor && user.canImport ? <span>Importação</span> : null}
                   {!user.isAdmin && user.canExport ? <span>Exportação controlada</span> : null}
                   {user.canViewFinancialData ? <span>Dados financeiros</span> : null}
+                  {user.hasCredentials ? <span>Login por senha</span> : null}
+                  {user.username ? <span>@{user.username}</span> : null}
                   {!user.isAdmin && !user.isAuditor && !user.canWrite && !user.canImport && !user.canExport && !user.canViewFinancialData
                     ? <span>Somente leitura</span>
                     : null}

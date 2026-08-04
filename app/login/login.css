@@ -240,6 +240,82 @@ a {
   font-size: 12px;
 }
 
+.credential-form {
+  display: grid;
+  gap: 16px;
+}
+
+.login-field {
+  display: grid;
+  gap: 7px;
+}
+
+.login-field span {
+  color: var(--login-text);
+  font-size: 12px;
+  font-weight: 750;
+}
+
+.login-field input {
+  width: 100%;
+  min-height: 48px;
+  padding: 11px 13px;
+  border: 1px solid var(--login-card-border);
+  border-radius: 8px;
+  background: var(--login-card-deep);
+  color: var(--login-text);
+  font: inherit;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.login-field input:focus {
+  border-color: var(--brand-700);
+  outline: 0;
+  box-shadow: 0 0 0 3px rgba(49, 95, 135, 0.16);
+}
+
+.credential-submit {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 20px;
+  align-items: center;
+  gap: 12px;
+  min-height: 52px;
+  padding: 12px 18px;
+  border: 1px solid var(--login-button-start);
+  border-radius: 8px;
+  background: var(--login-button-start);
+  color: var(--login-button-text);
+  cursor: pointer;
+  font: inherit;
+  font-weight: 800;
+  text-align: left;
+  transition: background-color 150ms ease, border-color 150ms ease;
+}
+
+.credential-submit:hover,
+.credential-submit:active {
+  border-color: var(--login-button-end);
+  background: var(--login-button-end);
+}
+
+.provider-divider {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+  margin: 22px 0;
+  color: var(--login-muted);
+  font-size: 11px;
+  text-transform: uppercase;
+}
+
+.provider-divider::before,
+.provider-divider::after {
+  height: 1px;
+  background: var(--login-divider);
+  content: "";
+}
+
 .provider-button {
   position: relative;
   display: grid;
@@ -275,6 +351,16 @@ a {
 
 .provider-button:active {
   background: var(--login-button-end);
+}
+
+.provider-button-google {
+  background: var(--login-card-deep);
+  color: var(--login-text);
+}
+
+.provider-button-google:hover,
+.provider-button-google:active {
+  background: var(--login-card);
 }
 
 .google-mark {

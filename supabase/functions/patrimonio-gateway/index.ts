@@ -6,7 +6,10 @@ const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
 const secretKeys = JSON.parse(Deno.env.get("SUPABASE_SECRET_KEYS") ?? "{}");
 const supabaseSecretKey = secretKeys.default ?? Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const usernamePattern = /^[a-z0-9](?:[a-z0-9._-]{1,30}[a-z0-9])$/;
 const slugPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+const MIN_PASSWORD_LENGTH = 12;
+const MAX_PASSWORD_BYTES = 72;
 const MAX_REQUEST_BYTES = 5 * 1024 * 1024;
 const DATA_PAGE_SIZE = 1_000;
 const MAX_DATA_PAGES = 100;
@@ -92,6 +95,15 @@ Deno.serve(async (request) => {
     if (identifier) await enforceRateLimit(identifier, operation);
 
     switch (operation) {
+      case "authenticate_credentials": {
+        const data = await authenticateCredentials(
+          body.login,
+          body.password,
+          body.clientAddress,
+        );
+        return json({ data });
+      }
+
       case "check_user_access": {
         if (!identifier) return json({ data: { authorized: false } });
         const user = await loadUser(identifier);
@@ -204,6 +216,10 @@ Deno.serve(async (request) => {
       case "save_user_access": {
         await requireGlobalAdmin(identifier);
         const targetIdentifier = normalizeIdentifier(body.user?.identifier);
+        const credentialMode = String(body.user?.credentialMode ?? "keep");
+        if (!["keep", "configure", "disable"].includes(credentialMode)) {
+          return json({ error: "invalid_credential_mode" }, 400);
+        }
         const departmentSlugs = Array.isArray(body.user?.departmentSlugs)
           ? body.user.departmentSlugs.map(String)
           : [];
@@ -223,6 +239,16 @@ Deno.serve(async (request) => {
             p_department_slugs: departmentSlugs,
           }),
         });
+        if (credentialMode === "configure") {
+          await configureUserCredentials(
+            identifier,
+            targetIdentifier,
+            body.user?.username,
+            body.user?.credentialPassword,
+          );
+        } else if (credentialMode === "disable") {
+          await disableUserCredentials(identifier, targetIdentifier);
+        }
         return json({ data });
       }
 
@@ -537,7 +563,7 @@ async function loadUser(identifier) {
   if (!identifier) return null;
   const filter = encodeURIComponent(`eq.${identifier}`);
   const users = await dataRequest(
-    `patrimonio_users?identifier=${filter}&select=identifier,display_name,is_admin,is_auditor,active,can_write,can_import,can_export,can_view_financial_data,session_version&limit=1`,
+    `patrimonio_users?identifier=${filter}&select=identifier,username,auth_user_id,display_name,is_admin,is_auditor,active,can_write,can_import,can_export,can_view_financial_data,session_version&limit=1`,
   );
   return users[0] ?? null;
 }
@@ -545,7 +571,7 @@ async function loadUser(identifier) {
 async function loadUserDirectory() {
   const [users, memberships] = await Promise.all([
     dataRequest(
-      "patrimonio_users?select=identifier,display_name,is_admin,is_auditor,active,can_write,can_import,can_export,can_view_financial_data,last_login_at&order=display_name.asc,identifier.asc",
+      "patrimonio_users?select=identifier,username,auth_user_id,display_name,is_admin,is_auditor,active,can_write,can_import,can_export,can_view_financial_data,last_login_at&order=display_name.asc,identifier.asc",
     ),
     dataRequest(
       "patrimonio_department_memberships?select=user_identifier,department_slug&order=department_slug.asc",
@@ -559,6 +585,8 @@ async function loadUserDirectory() {
   }
   return users.map((user) => ({
     identifier: user.identifier,
+    username: user.username ?? "",
+    hasCredentials: Boolean(user.auth_user_id),
     displayName: user.display_name,
     isAdmin: user.is_admin,
     isAuditor: user.is_auditor,
@@ -813,6 +841,21 @@ function normalizeIdentifier(value) {
   return emailPattern.test(identifier) ? identifier : "";
 }
 
+function normalizeCredentialLogin(value) {
+  const login = String(value ?? "").trim().toLowerCase();
+  if (login.length < 3 || login.length > 254 || /\s/.test(login)) return "";
+  return emailPattern.test(login) || usernamePattern.test(login) ? login : "";
+}
+
+function normalizeUsername(value) {
+  const username = String(value ?? "").trim().toLowerCase();
+  if (!username) return "";
+  if (!usernamePattern.test(username)) {
+    throw httpError("invalid_credential_username", 400, "22023");
+  }
+  return username;
+}
+
 function normalizeRevision(value) {
   if (value === null || value === undefined || value === "") return null;
   const revision = Number(value);
@@ -857,6 +900,8 @@ async function authorizeOperation(identifier, departmentSlug, operation) {
 
 async function enforceRateLimit(identifier, operation) {
   const limits = {
+    authenticate_credentials_login: [8, 900],
+    authenticate_credentials_network: [30, 900],
     check_user_access: [300, 60],
     load_workspace_context: [240, 60],
     load_department_nuclei: [120, 60],
@@ -887,6 +932,228 @@ async function enforceRateLimit(identifier, operation) {
     }),
   });
   if (allowed !== true) throw httpError("rate_limit_exceeded", 429, "42900");
+}
+
+async function authenticateCredentials(loginValue, passwordValue, clientAddressValue) {
+  const rawLogin = String(loginValue ?? "").trim().toLowerCase().slice(0, 254);
+  const login = normalizeCredentialLogin(rawLogin);
+  const password = String(passwordValue ?? "");
+  await enforceCredentialRateLimits(rawLogin || "invalid-login", clientAddressValue);
+
+  if (!login || !password || new TextEncoder().encode(password).length > MAX_PASSWORD_BYTES) {
+    throw httpError("invalid_credentials", 401, "invalid_credentials");
+  }
+
+  const credential = await dataRequest("rpc/patrimonio_resolve_credential_login", {
+    method: "POST",
+    body: JSON.stringify({ p_login: login }),
+  });
+  const targetEmail = normalizeIdentifier(credential?.identifier);
+  const authUserId = String(credential?.authUserId ?? "");
+  const fallbackEmail = `${(await credentialRateIdentifier(login)).split("@")[0]}@invalid.local`;
+  const authResponse = await passwordGrant(targetEmail || fallbackEmail, password);
+  const authenticatedUser = authResponse.body?.user;
+  const authenticatedId = String(authenticatedUser?.id ?? "");
+  const authenticatedEmail = normalizeIdentifier(authenticatedUser?.email);
+  const valid = authResponse.ok
+    && credential?.active === true
+    && uuidPattern.test(authUserId)
+    && authenticatedId === authUserId
+    && authenticatedEmail === targetEmail;
+
+  if (!valid) {
+    if (targetEmail) await recordCredentialLoginEvent(targetEmail, "denied");
+    if (authResponse.status === 429) {
+      throw httpError("rate_limit_exceeded", 429, "42900");
+    }
+    throw httpError("invalid_credentials", 401, "invalid_credentials");
+  }
+
+  await recordCredentialLoginEvent(targetEmail, "success");
+  return {
+    identifier: targetEmail,
+    displayName: String(credential.displayName ?? "").trim() || targetEmail,
+    subject: authenticatedId,
+    sessionVersion: Number(credential.sessionVersion ?? 0),
+  };
+}
+
+async function configureUserCredentials(
+  adminIdentifier,
+  targetIdentifier,
+  usernameValue,
+  passwordValue,
+) {
+  const username = normalizeUsername(usernameValue);
+  const password = String(passwordValue ?? "");
+  const targetUser = await loadUser(targetIdentifier);
+  if (!targetUser) throw httpError("credential_user_not_found", 404, "P0002");
+
+  let authUserId = String(targetUser.auth_user_id ?? "");
+  if (!authUserId) {
+    const existingAuthUser = await findAuthUserByEmail(targetIdentifier);
+    if (existingAuthUser) {
+      if (existingAuthUser.app_metadata?.patrimonio_managed !== true) {
+        throw httpError("credential_identity_unmanaged", 409, "23505");
+      }
+      authUserId = String(existingAuthUser.id ?? "");
+    }
+  }
+  if (!password && !authUserId) {
+    throw httpError("credential_password_required", 400, "22023");
+  }
+  if (password) validateNewPassword(password);
+
+  if (authUserId && password) {
+    try {
+      const updated = await authAdminRequest(`users/${encodeURIComponent(authUserId)}`, {
+        method: "PUT",
+        body: JSON.stringify({ password, email_confirm: true }),
+      });
+      authUserId = authUserIdFromResponse(updated);
+    } catch (error) {
+      if (Number(error?.status) !== 404) throw error;
+      authUserId = "";
+    }
+  }
+
+  if (!authUserId) {
+    const created = await authAdminRequest("users", {
+      method: "POST",
+      body: JSON.stringify({
+        email: targetIdentifier,
+        password,
+        email_confirm: true,
+        app_metadata: { patrimonio_managed: true },
+      }),
+    });
+    authUserId = authUserIdFromResponse(created);
+  }
+  if (!uuidPattern.test(authUserId)) throw new Error("credential_identity_not_created");
+
+  return dataRequest("rpc/patrimonio_set_user_credentials", {
+    method: "POST",
+    body: JSON.stringify({
+      p_admin_identifier: adminIdentifier,
+      p_target_identifier: targetIdentifier,
+      p_username: username,
+      p_auth_user_id: authUserId,
+      p_enabled: true,
+    }),
+  });
+}
+
+async function disableUserCredentials(adminIdentifier, targetIdentifier) {
+  const targetUser = await loadUser(targetIdentifier);
+  if (!targetUser) throw httpError("credential_user_not_found", 404, "P0002");
+  const authUserId = String(targetUser.auth_user_id ?? "");
+  if (uuidPattern.test(authUserId)) {
+    await authAdminRequest(`users/${encodeURIComponent(authUserId)}`, {
+      method: "PUT",
+      body: JSON.stringify({ password: randomCredentialPassword() }),
+    });
+  }
+  return dataRequest("rpc/patrimonio_set_user_credentials", {
+    method: "POST",
+    body: JSON.stringify({
+      p_admin_identifier: adminIdentifier,
+      p_target_identifier: targetIdentifier,
+      p_username: null,
+      p_auth_user_id: null,
+      p_enabled: false,
+    }),
+  });
+}
+
+function validateNewPassword(password) {
+  const byteLength = new TextEncoder().encode(password).length;
+  if (password.length < MIN_PASSWORD_LENGTH || byteLength > MAX_PASSWORD_BYTES) {
+    throw httpError("invalid_credential_password", 400, "22023");
+  }
+}
+
+async function enforceCredentialRateLimits(login, clientAddressValue) {
+  const loginKey = await credentialRateIdentifier(`login:${login}`);
+  const networkKey = await credentialRateIdentifier(
+    `network:${String(clientAddressValue ?? "unknown").trim().slice(0, 128)}`,
+  );
+  await enforceRateLimit(loginKey, "authenticate_credentials_login");
+  await enforceRateLimit(networkKey, "authenticate_credentials_network");
+}
+
+async function credentialRateIdentifier(value) {
+  const key = await crypto.subtle.importKey(
+    "raw",
+    new TextEncoder().encode(gatewayKey),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"],
+  );
+  const digest = await crypto.subtle.sign(
+    "HMAC",
+    key,
+    new TextEncoder().encode(value),
+  );
+  const hex = [...new Uint8Array(digest)]
+    .map((byte) => byte.toString(16).padStart(2, "0"))
+    .join("");
+  return `${hex.slice(0, 48)}@credentials.invalid`;
+}
+
+async function passwordGrant(email, password) {
+  const response = await fetch(`${supabaseUrl}/auth/v1/token?grant_type=password`, {
+    method: "POST",
+    headers: {
+      accept: "application/json",
+      apikey: supabaseSecretKey,
+      authorization: `Bearer ${supabaseSecretKey}`,
+      "content-type": "application/json",
+    },
+    body: JSON.stringify({ email, password }),
+  });
+  const text = await response.text();
+  return {
+    ok: response.ok,
+    status: response.status,
+    body: parseJson(text),
+  };
+}
+
+async function findAuthUserByEmail(email) {
+  for (let page = 1; page <= 10; page += 1) {
+    const result = await authAdminRequest(`users?page=${page}&per_page=1000`);
+    const users = Array.isArray(result?.users) ? result.users : [];
+    const match = users.find((user) => normalizeIdentifier(user?.email) === email);
+    if (match?.id) return match;
+    if (users.length < 1000) return null;
+  }
+  throw new Error("credential_user_lookup_limit_exceeded");
+}
+
+function authUserIdFromResponse(body) {
+  return String(body?.id ?? body?.user?.id ?? "");
+}
+
+async function recordCredentialLoginEvent(identifier, outcome) {
+  await dataRequest("rpc/patrimonio_record_security_event", {
+    method: "POST",
+    body: JSON.stringify({
+      p_event_type: outcome === "success" ? "login_succeeded" : "login_denied",
+      p_outcome: outcome,
+      p_actor_identifier: identifier,
+      p_target_identifier: null,
+      p_department_slug: null,
+      p_metadata: { provider: "credentials" },
+      p_retention_days: 180,
+    }),
+  }).catch(() => undefined);
+}
+
+function randomCredentialPassword() {
+  const bytes = crypto.getRandomValues(new Uint8Array(48));
+  let binary = "";
+  for (const byte of bytes) binary += String.fromCharCode(byte);
+  return btoa(binary).replaceAll("+", "-").replaceAll("/", "_").replace(/=+$/, "");
 }
 
 function actorLabel(user) {
@@ -951,6 +1218,40 @@ async function dataRequest(path, init = {}) {
     });
   }
   return body;
+}
+
+async function authAdminRequest(path, init = {}) {
+  const response = await fetch(`${supabaseUrl}/auth/v1/admin/${path}`, {
+    ...init,
+    headers: {
+      accept: "application/json",
+      apikey: supabaseSecretKey,
+      authorization: `Bearer ${supabaseSecretKey}`,
+      ...(init.body ? { "content-type": "application/json" } : {}),
+      ...init.headers,
+    },
+  });
+  const text = await response.text();
+  const body = parseJson(text);
+  if (!response.ok) {
+    throw Object.assign(
+      new Error(body?.msg ?? body?.message ?? body?.error ?? "auth_admin_error"),
+      {
+        status: response.status,
+        code: body?.error_code ?? body?.code ?? "auth_admin_error",
+      },
+    );
+  }
+  return body;
+}
+
+function parseJson(value) {
+  if (!value) return null;
+  try {
+    return JSON.parse(value);
+  } catch {
+    return null;
+  }
 }
 
 async function storageRequest(path, init = {}) {

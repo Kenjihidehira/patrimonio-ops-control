@@ -64,7 +64,7 @@ Planilhas patrimoniais isoladas não registram bem responsabilidade, movimentaç
 - **Integração:** Função Edge do Supabase com requisições HMAC, janela curta e nonce de uso único.
 - **Documentos:** bucket privado no Supabase Storage, limite de 2,5 MB, checksum SHA-256 e URLs assinadas de curta duração.
 - **Leitura móvel:** ZXing para câmera e imagem; IndexedDB somente para a fila mínima de conferências offline.
-- **Autenticação:** Google OpenID Connect, PKCE, autorização por departamento e sessão `HttpOnly`.
+- **Autenticação:** usuário ou e-mail com senha no Supabase Auth, Google OpenID Connect como alternativa, autorização por departamento e sessão `HttpOnly`.
 - **Planilhas:** `read-excel-file` e `write-excel-file`.
 - **Qualidade:** Node Test Runner, ESLint, TypeScript e GitHub Actions.
 
@@ -80,7 +80,7 @@ pnpm dev
 
 Use [`configuracao.exemplo`](configuracao.exemplo) somente como modelo para criar `.env.local`. Preencha as variáveis Supabase, do provedor de identidade e os segredos de sessão apenas no arquivo local, que é ignorado pelo Git. Acesse `http://localhost:5173/login`.
 
-A rota `/demo` redireciona visitantes sem sessão diretamente para `/login`. O servidor valida `state`, PKCE e assinatura da identidade antes de consultar no Supabase se o usuário está ativo e quais departamentos pode acessar. A sessão local dura oito horas.
+A rota `/demo` redireciona visitantes sem sessão diretamente para `/login`. No acesso por senha, o gateway resolve o nome de usuário para o e-mail autorizado e pede ao Supabase Auth para verificar a credencial. No acesso Google, o servidor valida `state`, PKCE e assinatura da identidade. Os dois fluxos consultam o cadastro interno antes de criar a mesma sessão local de oito horas.
 
 ## Conectar um leitor de código de barras
 
@@ -114,6 +114,12 @@ pnpm build
 pnpm audit --prod
 ```
 
+## Configurar o login por senha
+
+O administrador gerencia esse acesso em **Ambientes > Usuários e acessos**. Para habilitar uma conta, informe o e-mail autorizado, marque **Permitir login por usuário ou e-mail e senha**, defina opcionalmente um nome de usuário e crie uma senha inicial com pelo menos 12 caracteres. O mesmo formulário permite redefinir a senha ou desabilitar a modalidade.
+
+O nome de usuário é apenas um alias do e-mail interno. A senha é enviada por canal servidor-servidor, recebe hash no Supabase Auth e nunca é salva nas tabelas do Patrimônio Ops, retornada pela API ou exibida novamente. O administrador deve entregar a senha inicial por um canal seguro.
+
 ## Configurar o login Google
 
 No Google Cloud Console, crie um cliente OAuth do tipo Aplicativo da Web com a URL de retorno:
@@ -124,7 +130,7 @@ https://patrimonio-ops-control.kenjihidehira999.workers.dev/api/auth/google/call
 
 Cadastre `GOOGLE_CLIENT_ID` e `GOOGLE_CLIENT_SECRET` como segredos. Usuários e departamentos autorizados são administrados no módulo **Ambientes**; cadastrar um usuário não autoriza automaticamente outras contas Gmail nem todo um domínio Google Workspace.
 
-Depois de validar a identidade e o acesso persistido, o servidor cria uma sessão local assinada. Tokens de acesso e atualização do Google não são gravados no navegador nem no banco.
+Depois de validar a identidade e o acesso persistido, o servidor cria uma sessão local assinada. Tokens de acesso e atualização do Google ou do Supabase Auth não são gravados no navegador nem nas tabelas da aplicação.
 
 ## Planilha-base
 

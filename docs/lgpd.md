@@ -24,7 +24,7 @@ responsáveis corporativos.
 
 | Categoria | Exemplos | Finalidade | Acesso |
 | --- | --- | --- | --- |
-| Identificação profissional | nome, código, e-mail autorizado | autenticação e identificação do responsável | departamento liberado |
+| Identificação profissional | nome, código, e-mail autorizado e username | autenticação e identificação do responsável | departamento liberado |
 | Estrutura organizacional | departamento, núcleo, gestor, localização | organização e localização patrimonial | departamento liberado |
 | Vínculo patrimonial | ativo, modelo, série, responsável, status | gestão e segurança dos bens | departamento liberado |
 | Operação física | custódia, manutenção, localização observada e conferência | inventário, conservação e prevenção de perdas | departamento liberado |
@@ -51,7 +51,7 @@ uso do sistema.
 | --- | --- | --- |
 | Google | OpenID Connect | contrato, política corporativa e configuração da organização |
 | Cloudflare | Worker, entrega e proteção da aplicação | DPA, suboperadores e mecanismo de transferência |
-| Supabase | Postgres e Função Edge nos EUA | DPA, suboperadores e mecanismo da Resolução ANPD nº 19/2024 |
+| Supabase | Auth, Postgres e Função Edge nos EUA | DPA, suboperadores e mecanismo da Resolução ANPD nº 19/2024 |
 
 A localização do Supabase em `us-east-2` caracteriza tratamento internacional.
 Antes da homologação corporativa, Jurídico/Privacidade deve confirmar cláusulas
@@ -60,6 +60,7 @@ contratuais padrão ou outro mecanismo válido e manter a evidência junto ao co
 ## Retenção
 
 - Eventos de login e logout: até 180 dias.
+- Vínculo de username e identidade no Supabase Auth: enquanto a conta estiver ativa; removido do cadastro interno quando a modalidade é desabilitada.
 - Eventos de acesso, importação, exportação e bloqueio: até 5 anos.
 - Limites técnicos e nonces: no máximo 2 dias e 10 minutos, respectivamente.
 - Registros patrimoniais: prazo definido pela área proprietária junto ao

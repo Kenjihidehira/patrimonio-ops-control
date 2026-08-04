@@ -3,6 +3,21 @@
 Todas as alterações relevantes do Patrimônio Ops Control são registradas neste arquivo.
 O formato segue Keep a Changelog e as versões usam Semantic Versioning.
 
+## [0.5.0] - 2026-08-04
+
+### Adicionado
+
+- Login por nome de usuário ou e-mail e senha, com verificação exclusiva pelo Supabase Auth e Google mantido como alternativa.
+- Administração de username, senha inicial, redefinição e desativação de credenciais no módulo **Ambientes**.
+
+### Segurança
+
+- Senhas e tokens do Supabase Auth não são persistidos nas tabelas da aplicação nem enviados ao navegador.
+- Tentativas são limitadas por identificador e rede usando chaves HMAC, com resposta genérica contra enumeração de contas.
+- Alterações de credencial revogam sessões da aplicação e geram eventos de auditoria.
+- Contas Auth externas ao Patrimônio Ops não podem ser redefinidas pelo gateway.
+- `postcss` transitivo atualizado para `8.5.23`, corrigindo o alerta moderado `GHSA-fxqj-rqcc-2cmp`.
+
 ## [0.4.0] - 2026-08-03
 
 ### Adicionado

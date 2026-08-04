@@ -149,6 +149,7 @@ export async function fetchDepartmentNuclei(departmentSlug: string): Promise<{
 
 export async function saveDepartmentUser(user: {
   identifier: string;
+  username: string;
   displayName: string;
   isAdmin: boolean;
   isAuditor: boolean;
@@ -158,6 +159,8 @@ export async function saveDepartmentUser(user: {
   canExport: boolean;
   canViewFinancialData: boolean;
   departmentSlugs: string[];
+  credentialMode: "keep" | "configure" | "disable";
+  credentialPassword: string;
 }): Promise<{ message: string }> {
   const response = await fetch("/api/departments", {
     method: "POST",

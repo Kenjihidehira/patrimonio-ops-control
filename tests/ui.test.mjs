@@ -418,7 +418,12 @@ test("rota operacional redireciona visitantes sem sessão para o login", () => {
   assert.match(demoPage, /if \(!user\) redirect\(loginPagePath\("\/demo"\)\)/);
 });
 
-test("tela React de login oferece somente Google com navegação responsiva", () => {
+test("tela React de login oferece credenciais e Google com navegação responsiva", () => {
+  assert.match(loginPage, /action="\/api\/auth\/credentials\/login"/);
+  assert.match(loginPage, /name="login"/);
+  assert.match(loginPage, /autoComplete="username"/);
+  assert.match(loginPage, /name="password"/);
+  assert.match(loginPage, /autoComplete="current-password"/);
   assert.match(loginPage, /Continuar com Google/);
   assert.match(loginPage, /\/api\/auth\/google\/login/);
   assert.match(loginPage, /\/brand\/cx-mark-header\.png/);

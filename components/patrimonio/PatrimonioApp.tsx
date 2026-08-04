@@ -680,6 +680,8 @@ function CommandIcon({ type }: { type: "import" | "export" | "create" }) {
   );
 }
 
-function providerLabel(provider: "google" | null | undefined): string {
-  return provider === "google" ? "Conta Google" : "Sessão";
+function providerLabel(provider: "google" | "credentials" | null | undefined): string {
+  if (provider === "google") return "Conta Google";
+  if (provider === "credentials") return "Usuário e senha";
+  return "Sessão";
 }

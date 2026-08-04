@@ -101,10 +101,10 @@ A migração `20260731203708_add_tracking_geofences.sql` também instala o gatil
 
 ### Leitura autenticada
 
-1. A API inicia Authorization Code com `state`, PKCE e `nonce` OIDC.
-2. O Google autentica a conta e devolve o código para a URL de retorno registrada.
-3. O ID token é validado por JWKS, emissor, audiência e `nonce`.
-4. O gateway confirma que o e-mail está ativo na tabela de usuários.
+1. No fluxo por senha, a API aceita somente formulário da mesma origem e envia usuário ou e-mail, senha e endereço de rede ao gateway assinado.
+2. O gateway aplica limites por login e rede, resolve o alias interno e solicita a verificação da senha ao Supabase Auth; nenhum token de acesso ou atualização retorna ao navegador.
+3. Como alternativa, a API inicia Authorization Code com `state`, PKCE e `nonce`; o Google autentica a conta e o ID token é validado por JWKS, emissor, audiência e `nonce`.
+4. Nos dois fluxos, o gateway confirma que o e-mail está ativo na tabela de usuários.
 5. Uma sessão local assinada, `HttpOnly`, `Secure` e `SameSite=Lax` mantém apenas provedor, nome e identificador do usuário por oito horas.
 6. A API envia identidade e departamento solicitado; o gateway valida a associação e resolve a chave interna do ambiente.
 7. Sincronizações em segundo plano enviam a revisão conhecida. Se não houve
@@ -224,11 +224,11 @@ Os conectores, chips e inspeções possuem contratos de ingestão e revisão imp
 
 **Motivo:** a integração de publicação não deve colocar uma chave privilegiada no navegador nem depender de identidade forjada pelo cliente.
 
-### ADR-005: provedor externo com sessão local mínima
+### ADR-005: provedores de identidade com sessão local mínima
 
-**Decisão:** usar OAuth/OIDC Authorization Code com PKCE, validar a identidade no provedor e converter somente contas autorizadas em uma sessão curta comum assinada pela aplicação.
+**Decisão:** verificar senhas exclusivamente no Supabase Auth ou usar OAuth/OIDC Authorization Code com PKCE no Google, convertendo somente contas autorizadas em uma sessão curta comum assinada pela aplicação.
 
-**Motivo:** aceitar identidades Google autorizadas sem criar senhas locais, sem persistir tokens do provedor e sem duplicar a autorização nas rotas de negócio.
+**Motivo:** oferecer acesso por usuário ou e-mail enquanto a identidade corporativa definitiva não está disponível, sem armazenar senha ou token de provedor nas tabelas da aplicação e sem duplicar a autorização nas rotas de negócio.
 
 ### ADR-006: ambiente empresarial compartilhado
 

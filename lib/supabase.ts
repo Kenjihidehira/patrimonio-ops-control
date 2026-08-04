@@ -28,6 +28,8 @@ type Department = {
 
 type DepartmentUser = {
   identifier: string;
+  username: string;
+  hasCredentials: boolean;
   displayName: string;
   isAdmin: boolean;
   isAuditor: boolean;
@@ -137,6 +139,30 @@ export async function getSystemAccess(identifier: string): Promise<{
 
 export async function hasSystemAccess(identifier: string): Promise<boolean> {
   return (await getSystemAccess(identifier)).authorized;
+}
+
+export async function authenticateCredentials(
+  login: string,
+  password: string,
+  clientAddress: string,
+): Promise<{
+  identifier: string;
+  displayName: string;
+  subject: string;
+  sessionVersion: number;
+}> {
+  const result = await gatewayRequest<{
+    identifier: string;
+    displayName: string;
+    subject: string;
+    sessionVersion: number;
+  }>("authenticate_credentials", { login, password, clientAddress });
+  return {
+    identifier: String(result.identifier ?? "").trim().toLowerCase(),
+    displayName: String(result.displayName ?? "").trim(),
+    subject: String(result.subject ?? ""),
+    sessionVersion: Number(result.sessionVersion ?? 0),
+  };
 }
 
 export async function loadDepartmentWorkspace(
@@ -260,6 +286,7 @@ export async function saveUserAccess(
   adminIdentifier: string,
   user: {
     identifier: string;
+    username: string;
     displayName: string;
     isAdmin: boolean;
     isAuditor: boolean;
@@ -269,6 +296,8 @@ export async function saveUserAccess(
     canExport: boolean;
     canViewFinancialData: boolean;
     departmentSlugs: string[];
+    credentialMode: "keep" | "configure" | "disable";
+    credentialPassword: string;
   },
 ) {
   return gatewayRequest("save_user_access", {

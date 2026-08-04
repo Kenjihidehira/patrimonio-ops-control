@@ -170,7 +170,7 @@ type Session = {
   authenticated: boolean;
   displayName: string;
   identifier: string | null;
-  provider: "google" | null;
+  provider: "google" | "credentials" | null;
   source: "locked" | "supabase";
   signInUrl: string;
   signOutUrl: string;
@@ -183,6 +183,8 @@ export type Department = {
 
 export type DepartmentUser = {
   identifier: string;
+  username: string;
+  hasCredentials: boolean;
   displayName: string;
   isAdmin: boolean;
   isAuditor: boolean;

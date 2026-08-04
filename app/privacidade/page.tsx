@@ -53,7 +53,7 @@ export default function PrivacyPage() {
             <h2>2. Dados tratados</h2>
             <ul>
               <li>nome, código interno, departamento, núcleo e localização de trabalho;</li>
-              <li>e-mail corporativo ou autorizado e nome exibido no login Google;</li>
+              <li>e-mail autorizado, nome de usuário e nome exibido no acesso;</li>
               <li>vínculo entre colaborador, patrimônio, série, modelo, status e observações;</li>
               <li>custódia, manutenção, conferências, localizações observadas e processos de desligamento;</li>
               <li>documentos, garantias, contratos, fotos e laudos vinculados ao patrimônio;</li>
@@ -88,8 +88,8 @@ export default function PrivacyPage() {
             <h2>4. Compartilhamento e transferência internacional</h2>
             <p>
               O acesso é limitado a usuários e administradores autorizados. A operação utiliza
-              Google para autenticação, Cloudflare para execução e entrega da aplicação e
-              Supabase para banco de dados e funções de servidor.
+              Google e Supabase Auth para autenticação, Cloudflare para execução e entrega
+              da aplicação e Supabase para banco de dados e funções de servidor.
             </p>
             <p>
               Esses fornecedores podem tratar ou armazenar dados fora do Brasil. O Grupo Gazin
@@ -139,7 +139,7 @@ export default function PrivacyPage() {
               <li>alteração, importação e exportação exigem permissões independentes;</li>
               <li>mudanças administrativas, logins e exportações são auditados;</li>
               <li>documentos usam armazenamento privado e acesso temporário autorizado;</li>
-              <li>senhas Google não são recebidas ou armazenadas pelo Patrimônio Ops.</li>
+              <li>senhas Google não são recebidas; senhas internas são verificadas e armazenadas com hash exclusivamente pelo Supabase Auth.</li>
             </ul>
             <p>
               Não compartilhe exportações, não inclua dados sensíveis em campos livres e comunique

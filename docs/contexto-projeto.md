@@ -76,7 +76,7 @@ O projeto trabalha com responsabilidades de dados explícitas e aplicadas por ca
 | Manutenção e registro técnico | Patrimônio Ops Control até escolha formal de ITSM |
 | Telemetria de frota | Provedor de frota, integração planejada |
 | Conformidade de dispositivos | MDM corporativo, integração planejada |
-| Identidade e autorização de acesso | Google OIDC mais cadastro administrativo interno |
+| Identidade e autorização de acesso | Supabase Auth ou Google OIDC mais cadastro administrativo interno |
 | Auditoria de alteração | Patrimônio Ops Control, somente acréscimo |
 
 A matriz executável e o procedimento para alterar uma fonte oficial estão em [`governanca-dados.md`](governanca-dados.md). O Sabium atualiza apenas os campos fiscais e de origem; conflitos em responsável, núcleo, localização, status ou apresentação operacional preservam o valor vigente e entram na fila de conciliação. A planilha XLSX comum é um canal operacional em lote e exige confirmação explícita quando modifica campos existentes.
@@ -132,9 +132,9 @@ O estado autoritativo permanece no servidor. A única persistência operacional 
 
 ## 8. Autenticação e autorização
 
-O login usa exclusivamente Google OpenID Connect com Authorization Code, PKCE, `state` e `nonce`. Depois de validar a identidade, o servidor consulta a autorização interna e emite uma sessão própria assinada em cookie `HttpOnly`, `Secure` e `SameSite`.
+O login aceita usuário ou e-mail com senha verificada pelo Supabase Auth e, como alternativa, Google OpenID Connect com Authorization Code, PKCE, `state` e `nonce`. Depois de validar a identidade, o servidor consulta a autorização interna e emite uma sessão própria assinada em cookie `HttpOnly`, `Secure` e `SameSite`.
 
-Supabase Auth não é usado para o login da aplicação. O cliente também não decide permissões: cada requisição é revalidada no servidor.
+O nome de usuário é um alias opcional do e-mail autorizado. Senhas recebem hash exclusivamente no Supabase Auth; não existem colunas de senha nas tabelas da aplicação, e tokens do Supabase Auth não chegam ao navegador. O cliente também não decide permissões: cada requisição é revalidada no servidor.
 
 Dados financeiros usam a permissão explícita `can_view_financial_data`, obrigatória
 para administradores e concedida separadamente a auditores ou operadores. Ela

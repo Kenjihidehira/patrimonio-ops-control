@@ -18,7 +18,7 @@ Não existe sincronização bidirecional genérica. Cada nova integração preci
 | Manutenção | Patrimônio Ops Control | tipo, prioridade, status, prazo e registro técnico | protegido até escolha formal de ITSM | vigente |
 | Telemetria de frota | Provedor de frota | coordenadas, precisão, odômetro e data da leitura | eventos acrescentados sem alterar cadastro ou custódia | planejada |
 | Conformidade de dispositivos | MDM corporativo | conformidade, último contato, criptografia e gerenciamento | mestre somente para postura técnica | planejada |
-| Identidade e autorização | Google OIDC e administração interna | identidade autenticada, ambientes, perfil, permissões e versão de sessão | identidade vem do Google; autorização vem do cadastro interno | vigente |
+| Identidade e autorização | Supabase Auth, Google OIDC e administração interna | identidade autenticada, username, verificação de senha, ambientes, perfil, permissões e versão de sessão | identidade vem do Supabase Auth ou Google; autorização vem do cadastro interno | vigente |
 | Trilha de auditoria | Patrimônio Ops Control | ator, evento, estado anterior, estado posterior e data | somente acréscimo; evidências anteriores não são regravadas | vigente |
 
 ## Comportamento das importações

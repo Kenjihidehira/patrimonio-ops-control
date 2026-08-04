@@ -6,7 +6,8 @@ import {
 } from "@/lib/auth-utils";
 import { getSystemAccess, recordAuthEvent } from "@/lib/supabase";
 
-export type AuthProvider = "google";
+export type OAuthProvider = "google";
+export type AuthProvider = OAuthProvider | "credentials";
 
 export type AuthenticatedUser = {
   provider: AuthProvider;
@@ -18,7 +19,7 @@ export type AuthenticatedUser = {
 };
 
 export type OAuthTransaction = {
-  provider: AuthProvider;
+  provider: OAuthProvider;
   state: string;
   nonce: string | null;
   verifier: string;
@@ -88,7 +89,7 @@ export function signOutPath(returnTo = LOGIN_PATH): string {
 }
 
 export async function createOAuthTransaction(
-  provider: AuthProvider,
+  provider: OAuthProvider,
   request: Request,
   includeNonce: boolean,
 ): Promise<OAuthTransaction & { challenge: string; token: string }> {
@@ -117,7 +118,7 @@ export async function createOAuthTransaction(
 }
 
 export async function readOAuthTransaction(
-  provider: AuthProvider,
+  provider: OAuthProvider,
   request: Request,
   state: string,
 ): Promise<OAuthTransaction> {
@@ -174,7 +175,10 @@ export async function createSessionResponse(
     .setExpirationTime(`${SESSION_SECONDS}s`)
     .sign(sessionSecret());
 
-  const response = redirectResponse(new URL(safeRelativeReturnPath(returnTo), request.url).toString());
+  const response = redirectResponse(
+    new URL(safeRelativeReturnPath(returnTo), request.url).toString(),
+    identity.provider === "credentials" ? 303 : 302,
+  );
   response.headers.append(
     "set-cookie",
     serializeCookie(cookieName(SESSION_COOKIE, request), session, SESSION_SECONDS, request),
@@ -214,20 +218,20 @@ export async function logout(request: Request): Promise<Response> {
 export function authFailureResponse(
   request: Request,
   provider: AuthProvider,
-  reason: "not_configured" | "login_failed" | "not_authorized",
+  reason: "not_configured" | "login_failed" | "not_authorized" | "invalid_credentials" | "rate_limited",
   returnTo = APP_PATH,
 ): Response {
   const url = new URL(LOGIN_PATH, request.url);
   url.searchParams.set("auth_error", `${provider}_${reason}`);
   url.searchParams.set("return_to", safeRelativeReturnPath(returnTo));
-  const response = redirectResponse(url.toString());
+  const response = redirectResponse(url.toString(), provider === "credentials" ? 303 : 302);
   appendClearedOAuthCookies(response, request);
   return response;
 }
 
-export function redirectResponse(location: string): Response {
+export function redirectResponse(location: string, status: 302 | 303 = 302): Response {
   return new Response(null, {
-    status: 302,
+    status,
     headers: {
       "cache-control": "no-store",
       location,
@@ -252,7 +256,7 @@ function sessionSecret(): Uint8Array {
 }
 
 function isAuthProvider(value: unknown): value is AuthProvider {
-  return value === "google";
+  return value === "google" || value === "credentials";
 }
 
 function randomBase64Url(byteLength: number): string {

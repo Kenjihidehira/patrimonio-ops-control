@@ -2,17 +2,18 @@
 
 Base local: `http://localhost:5173/api`
 
-Respostas dinâmicas usam `cache-control: no-store`. A identidade vem de uma sessão local assinada após o servidor concluir o fluxo OpenID Connect do Google e validar a conta.
+Respostas dinâmicas usam `cache-control: no-store`. A identidade vem de uma sessão local assinada após o servidor validar uma conta por senha no Supabase Auth ou concluir o fluxo OpenID Connect do Google.
 
 ## Autenticação
 
 | Método | Rota | Finalidade |
 | --- | --- | --- |
+| `POST` | `/api/auth/credentials/login` | Verificar usuário ou e-mail e senha no Supabase Auth; criar sessão `HttpOnly` sem expor tokens do provedor |
 | `GET` | `/api/auth/google/login` | Iniciar o código de autorização do Google com `state`, PKCE e `nonce` |
 | `GET` | `/api/auth/google/callback` | Validar retorno OpenID Connect, identidade e lista de autorizados; criar sessão `HttpOnly` |
 | `POST` | `/api/auth/logout` | Encerrar a sessão local |
 
-`return_to` aceita apenas caminhos relativos locais e nunca pode apontar para as próprias rotas de autenticação.
+O login por senha aceita somente formulário `application/x-www-form-urlencoded` enviado pela mesma origem, limita o corpo a 8 KiB e aplica limites por identificador e rede. Erros de conta inexistente, usuário incorreto ou senha incorreta usam a mesma resposta. `return_to` aceita apenas caminhos relativos locais e nunca pode apontar para as próprias rotas de autenticação.
 
 ## `GET /api/state`
 
@@ -39,7 +40,7 @@ ativos, preservadas as restrições de mutação do perfil de auditoria.
 ## `/api/departments`
 
 - `GET`: carrega os núcleos e a revisão do departamento de destino autorizado.
-- `POST save_user_access`: administrador ativa ou desativa usuário, define a função global de administrador ou auditor, ou libera departamentos e permissões específicas para operadores.
+- `POST save_user_access`: administrador ativa ou desativa usuário, define função e permissões, e pode configurar, redefinir ou desabilitar o login por senha. A API aceita a senha somente nessa requisição e nunca a devolve.
 - `POST transfer_department_entity`: administrador transfere patrimônio ou colaborador com seus itens, preservando auditoria.
 
 ## `POST /api/state`
