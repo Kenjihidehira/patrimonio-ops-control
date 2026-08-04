@@ -14,7 +14,7 @@ const [
   environments,
   privacyPage,
 ] = await Promise.all([
-  read("supabase/migrations/20260804134900_add_credential_login.sql"),
+  read("supabase/migrations/20260804142509_add_credential_login.sql"),
   read("supabase/functions/patrimonio-gateway/index.ts"),
   read("app/credential-auth.ts"),
   read("app/api/auth/credentials/login/route.ts"),
