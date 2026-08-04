@@ -3,6 +3,22 @@
 Todas as alterações relevantes do Patrimônio Ops Control são registradas neste arquivo.
 O formato segue Keep a Changelog e as versões usam Semantic Versioning.
 
+## [0.6.0] - 2026-08-04
+
+### Adicionado
+
+- Aba **Criar cadastro** na tela de login, com nome, e-mail, nome de usuário, senha e descrição da área.
+- Painel **Cadastros aguardando aprovação** no módulo **Ambientes**, onde o administrador define função, permissões e departamentos ao aprovar, ou recusa com parecer.
+- Rota pública `POST /api/auth/register` e operações `register_access_request` e `review_access_request` no gateway.
+
+### Segurança
+
+- O autocadastro não concede acesso: grava apenas uma solicitação pendente, e a identidade criada no Supabase Auth permanece inerte até a aprovação.
+- Senhas continuam fora das tabelas da aplicação; a rota pública repete as proteções do login por senha e limita a 3 solicitações por identificador e 10 por rede a cada hora.
+- A distinção entre cadastro pendente e credencial inválida só aparece depois que a senha informada é verificada.
+- Cada solicitação é analisada uma única vez, sob trava de linha, e a recusa apaga a identidade criada no Supabase Auth.
+- O formulário público não expõe a lista de departamentos.
+
 ## [0.5.0] - 2026-08-04
 
 ### Adicionado

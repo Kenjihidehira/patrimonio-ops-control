@@ -7,7 +7,7 @@ import {
 import { getSystemAccess, recordAuthEvent } from "@/lib/supabase";
 
 export type OAuthProvider = "google";
-export type AuthProvider = OAuthProvider | "credentials";
+export type AuthProvider = OAuthProvider | "credentials" | "registration";
 
 export type AuthenticatedUser = {
   provider: AuthProvider;
@@ -218,15 +218,34 @@ export async function logout(request: Request): Promise<Response> {
 export function authFailureResponse(
   request: Request,
   provider: AuthProvider,
-  reason: "not_configured" | "login_failed" | "not_authorized" | "invalid_credentials" | "rate_limited",
+  reason:
+    | "not_configured"
+    | "login_failed"
+    | "not_authorized"
+    | "invalid_credentials"
+    | "rate_limited"
+    | "pending_approval"
+    | "invalid_data"
+    | "duplicate"
+    | "failed",
   returnTo = APP_PATH,
 ): Response {
   const url = new URL(LOGIN_PATH, request.url);
   url.searchParams.set("auth_error", `${provider}_${reason}`);
   url.searchParams.set("return_to", safeRelativeReturnPath(returnTo));
-  const response = redirectResponse(url.toString(), provider === "credentials" ? 303 : 302);
+  const response = redirectResponse(url.toString(), provider === "google" ? 302 : 303);
   appendClearedOAuthCookies(response, request);
   return response;
+}
+
+export function registrationSuccessResponse(
+  request: Request,
+  returnTo = APP_PATH,
+): Response {
+  const url = new URL(LOGIN_PATH, request.url);
+  url.searchParams.set("registered", "1");
+  url.searchParams.set("return_to", safeRelativeReturnPath(returnTo));
+  return redirectResponse(url.toString(), 303);
 }
 
 export function redirectResponse(location: string, status: 302 | 303 = 302): Response {

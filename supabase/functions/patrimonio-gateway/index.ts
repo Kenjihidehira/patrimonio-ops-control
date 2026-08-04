@@ -104,6 +104,17 @@ Deno.serve(async (request) => {
         return json({ data });
       }
 
+      case "register_access_request": {
+        const data = await registerAccessRequest(body.request, body.clientAddress);
+        return json({ data });
+      }
+
+      case "review_access_request": {
+        await requireGlobalAdmin(identifier);
+        const data = await reviewAccessRequest(identifier, body.review);
+        return json({ data });
+      }
+
       case "check_user_access": {
         if (!identifier) return json({ data: { authorized: false } });
         const user = await loadUser(identifier);
@@ -148,6 +159,7 @@ Deno.serve(async (request) => {
           transfers,
           users,
           securityEvents,
+          accessRequests,
           operational,
           advanced,
         ] =
@@ -161,6 +173,7 @@ Deno.serve(async (request) => {
             loadDepartmentTransfers(access.active.slug),
             access.isAdmin ? loadUserDirectory() : Promise.resolve([]),
             access.isAdmin ? loadSecurityEvents() : Promise.resolve([]),
+            access.isAdmin ? loadAccessRequests() : Promise.resolve([]),
             loadOperationalData(ownerKey),
             loadAdvancedData(ownerKey, identifier, access.isAdmin, canViewFinancialData),
           ]);
@@ -193,6 +206,7 @@ Deno.serve(async (request) => {
               isAuditor: access.isAuditor,
               permissions: access.permissions,
               users,
+              accessRequests,
             },
           },
         });
@@ -600,6 +614,24 @@ async function loadUserDirectory() {
   }));
 }
 
+async function loadAccessRequests() {
+  const requests = await dataRequest(
+    "patrimonio_access_requests?select=id,identifier,username,display_name,justification,status,review_note,reviewed_by,reviewed_at,created_at&order=created_at.desc&limit=200",
+  );
+  return requests.map((request) => ({
+    id: String(request.id),
+    identifier: request.identifier,
+    username: request.username ?? "",
+    displayName: request.display_name ?? "",
+    justification: request.justification ?? "",
+    status: request.status,
+    reviewNote: request.review_note ?? "",
+    reviewedBy: request.reviewed_by ?? null,
+    reviewedAt: request.reviewed_at ?? null,
+    createdAt: request.created_at,
+  }));
+}
+
 async function ensureWorkspace(ownerKey) {
   await dataRequest("patrimonio_workspaces", {
     method: "POST",
@@ -902,6 +934,9 @@ async function enforceRateLimit(identifier, operation) {
   const limits = {
     authenticate_credentials_login: [8, 900],
     authenticate_credentials_network: [30, 900],
+    register_access_request_identifier: [3, 3600],
+    register_access_request_network: [10, 3600],
+    review_access_request: [60, 60],
     check_user_access: [300, 60],
     load_workspace_context: [240, 60],
     load_department_nuclei: [120, 60],
@@ -966,6 +1001,25 @@ async function authenticateCredentials(loginValue, passwordValue, clientAddressV
     if (authResponse.status === 429) {
       throw httpError("rate_limit_exceeded", 429, "42900");
     }
+    // Sem usuario autorizado, a senha correta de uma solicitacao pendente merece
+    // um aviso especifico. So e revelado depois que a propria senha e conferida.
+    if (!credential) {
+      const pending = await dataRequest("rpc/patrimonio_resolve_pending_access_request", {
+        method: "POST",
+        body: JSON.stringify({ p_login: login }),
+      });
+      const pendingEmail = normalizeIdentifier(pending?.identifier);
+      const pendingAuthUserId = String(pending?.authUserId ?? "");
+      if (pendingEmail && uuidPattern.test(pendingAuthUserId)) {
+        const pendingResponse = await passwordGrant(pendingEmail, password);
+        if (
+          pendingResponse.ok
+          && String(pendingResponse.body?.user?.id ?? "") === pendingAuthUserId
+        ) {
+          throw httpError("access_request_pending", 403, "access_request_pending");
+        }
+      }
+    }
     throw httpError("invalid_credentials", 401, "invalid_credentials");
   }
 
@@ -976,6 +1030,137 @@ async function authenticateCredentials(loginValue, passwordValue, clientAddressV
     subject: authenticatedId,
     sessionVersion: Number(credential.sessionVersion ?? 0),
   };
+}
+
+// Autocadastro feito na tela de login. A senha vai direto para o Supabase Auth e a
+// identidade criada nao concede acesso algum: ela so passa a valer quando um
+// administrador aprova a solicitacao correspondente.
+async function registerAccessRequest(requestValue, clientAddressValue) {
+  const request = requestValue ?? {};
+  const identifier = normalizeIdentifier(request.identifier);
+  const password = String(request.password ?? "");
+  await enforceRegistrationRateLimits(identifier || "invalid-identifier", clientAddressValue);
+
+  if (!identifier) throw httpError("invalid_user_identifier", 400, "22023");
+  const username = normalizeUsername(request.username);
+  if (!username) throw httpError("invalid_credential_username", 400, "22023");
+  validateNewPassword(password);
+
+  const existingUser = await dataRequest("rpc/patrimonio_resolve_credential_login", {
+    method: "POST",
+    body: JSON.stringify({ p_login: identifier }),
+  });
+  const existingByUsername = await dataRequest("rpc/patrimonio_resolve_credential_login", {
+    method: "POST",
+    body: JSON.stringify({ p_login: username }),
+  });
+  if (existingUser || existingByUsername) {
+    throw httpError("access_request_duplicate", 409, "23505");
+  }
+
+  let authUserId = "";
+  let createdAuthUser = false;
+  const existingAuthUser = await findAuthUserByEmail(identifier);
+  if (existingAuthUser) {
+    if (existingAuthUser.app_metadata?.patrimonio_managed !== true) {
+      throw httpError("credential_identity_unmanaged", 409, "23505");
+    }
+    authUserId = String(existingAuthUser.id ?? "");
+    await authAdminRequest(`users/${encodeURIComponent(authUserId)}`, {
+      method: "PUT",
+      body: JSON.stringify({ password, email_confirm: true }),
+    });
+  } else {
+    const created = await authAdminRequest("users", {
+      method: "POST",
+      body: JSON.stringify({
+        email: identifier,
+        password,
+        email_confirm: true,
+        app_metadata: { patrimonio_managed: true, patrimonio_access_request: true },
+      }),
+    });
+    authUserId = authUserIdFromResponse(created);
+    createdAuthUser = true;
+  }
+  if (!uuidPattern.test(authUserId)) throw new Error("credential_identity_not_created");
+
+  try {
+    return await dataRequest("rpc/patrimonio_register_access_request", {
+      method: "POST",
+      body: JSON.stringify({
+        p_identifier: identifier,
+        p_username: username,
+        p_display_name: String(request.displayName ?? ""),
+        p_justification: String(request.justification ?? ""),
+        p_auth_user_id: authUserId,
+      }),
+    });
+  } catch (error) {
+    if (createdAuthUser) {
+      await authAdminRequest(`users/${encodeURIComponent(authUserId)}`, {
+        method: "DELETE",
+      }).catch(() => undefined);
+    }
+    throw error;
+  }
+}
+
+async function reviewAccessRequest(adminIdentifier, reviewValue) {
+  const review = reviewValue ?? {};
+  const requestId = String(review.requestId ?? "");
+  if (!uuidPattern.test(requestId)) {
+    throw httpError("access_request_not_found", 404, "P0002");
+  }
+  const decision = String(review.decision ?? "");
+  if (!["approve", "reject"].includes(decision)) {
+    throw httpError("invalid_review_decision", 400, "22023");
+  }
+
+  const pending = await dataRequest(
+    `patrimonio_access_requests?select=id,identifier,auth_user_id,status&id=eq.${encodeURIComponent(requestId)}`,
+  );
+  const target = pending[0];
+  if (!target) throw httpError("access_request_not_found", 404, "P0002");
+
+  const data = await dataRequest("rpc/patrimonio_review_access_request", {
+    method: "POST",
+    body: JSON.stringify({
+      p_admin_identifier: adminIdentifier,
+      p_request_id: requestId,
+      p_decision: decision,
+      p_review_note: String(review.reviewNote ?? ""),
+      p_is_admin: review.isAdmin === true,
+      p_is_auditor: review.isAuditor === true,
+      p_can_write: review.canWrite === true,
+      p_can_import: review.canImport === true,
+      p_can_export: review.canExport === true,
+      p_can_view_financial_data: review.canViewFinancialData === true,
+      p_department_slugs: Array.isArray(review.departmentSlugs)
+        ? review.departmentSlugs.map(String)
+        : [],
+    }),
+  });
+
+  // A identidade criada no autocadastro nao sobrevive a uma recusa.
+  if (decision === "reject") {
+    const authUserId = String(target.auth_user_id ?? "");
+    if (uuidPattern.test(authUserId)) {
+      await authAdminRequest(`users/${encodeURIComponent(authUserId)}`, {
+        method: "DELETE",
+      }).catch(() => undefined);
+    }
+  }
+  return data;
+}
+
+async function enforceRegistrationRateLimits(identifier, clientAddressValue) {
+  const identifierKey = await credentialRateIdentifier(`register:${identifier}`);
+  const networkKey = await credentialRateIdentifier(
+    `register-network:${String(clientAddressValue ?? "unknown").trim().slice(0, 128)}`,
+  );
+  await enforceRateLimit(identifierKey, "register_access_request_identifier");
+  await enforceRateLimit(networkKey, "register_access_request_network");
 }
 
 async function configureUserCredentials(

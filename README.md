@@ -51,6 +51,7 @@ Planilhas patrimoniais isoladas não registram bem responsabilidade, movimentaç
 - Exportação XLSX operacional com inventário, núcleos, auditoria e histórico de importações, sempre sem exposição financeira.
 - Exportação financeira separada, cumulativa e auditável, disponível somente para quem possui simultaneamente permissões de exportação e leitura financeira.
 - Ambientes isolados por departamento, com acesso individual, auditoria segregada, administração global e transferência auditável.
+- Autocadastro na tela de login que gera apenas uma solicitação pendente, liberada somente após aprovação administrativa.
 - Permissões independentes para consulta, alteração, importação, exportação e leitura financeira.
 - Desativação imediata, revogação de sessão e auditoria de login e administração.
 - Aviso de privacidade, retenção técnica e runbooks de incidente e restauração.
@@ -165,6 +166,7 @@ A planilha corporativa original não faz parte do repositório. O arquivo [`data
 | `GET` | `/api/documents` | Obrigatória | Autorizar e redirecionar para uma URL assinada temporária |
 | `POST` | `/api/import` | Obrigatória | Pré-validar ou confirmar importação XLSX |
 | `GET` | `/api/export` | Obrigatória | Gerar cópia de segurança XLSX do ambiente empresarial |
+| `POST` | `/api/auth/register` | Pública | Registrar solicitação de acesso pendente de aprovação administrativa |
 
 Filtros, payloads e códigos de resposta estão em [`docs/api.md`](docs/api.md).
 
@@ -196,6 +198,14 @@ Documentação completa: [`docs/arquitetura.md`](docs/arquitetura.md).
 ### Modelo de autorização
 
 Administradores globais controlam departamentos, usuários e transferências. Auditores consultam automaticamente todos os departamentos ativos, inclusive os criados no futuro, e podem acompanhar inventário, auditoria, históricos, termos, manutenções e documentos e exportar de forma registrada; o banco impede escrita, importação e administração nesse perfil. Operadores recebem departamentos explícitos e permissões independentes para alteração, importação e exportação. A autorização é novamente consultada no servidor a cada requisição e alterações de acesso incrementam a versão da sessão, invalidando cookies anteriores.
+
+### Autocadastro com aprovação
+
+A tela de login oferece a aba **Criar cadastro**, onde a pessoa informa nome, e-mail corporativo, nome de usuário, senha e a área em que atua. O envio não cria acesso: grava apenas uma solicitação pendente. A senha vai direto para o Supabase Auth e a identidade criada ali permanece inerte, porque não existe usuário autorizado correspondente — tentar entrar antes da aprovação continua sendo recusado, com aviso específico de cadastro pendente quando a senha confere.
+
+O administrador vê as solicitações em **Ambientes**, no painel *Cadastros aguardando aprovação*, e decide caso a caso. Ao aprovar, define função, permissões e departamentos na mesma tela; o nome de usuário e a senha escolhidos no cadastro passam a valer nesse momento. Ao recusar, a identidade criada no Supabase Auth é apagada. As duas decisões aceitam parecer, ficam na auditoria e não podem ser refeitas para a mesma solicitação.
+
+O formulário público não lista departamentos: a estrutura interna não é exposta a visitantes anônimos. O autocadastro é limitado a 3 solicitações por identificador e 10 por rede a cada hora.
 
 Os controles técnicos e as pendências de governança estão em [`docs/lgpd.md`](docs/lgpd.md). Resposta a incidentes e recuperação estão em [`docs/incidentes.md`](docs/incidentes.md) e [`docs/backup-restauracao.md`](docs/backup-restauracao.md).
 
