@@ -18,6 +18,7 @@ autorização; ocultar um botão não é considerado controle de segurança.
 | Importar planilhas | Sim | Não | Somente com permissão explícita |
 | Excluir ou baixar ativos | Sim, com trilha | Não | Somente com permissão de alteração e trilha |
 | Criar administradores ou alterar acessos | Sim | Não | Não |
+| Configurar ou redefinir login por senha | Sim | Não | Não |
 | Transferir entre departamentos | Sim | Não | Não |
 | Remover ou modificar documentos de evidência | Sim, com trilha | Não | Somente com permissão de alteração e trilha |
 | Consultar auditoria de segurança e integrações | Sim | Não | Não |
@@ -74,6 +75,14 @@ Alcance global não significa poder administrativo: somente um administrador pod
 alterar acessos, transferir departamentos ou consultar áreas administrativas
 restritas.
 
+## Credenciais de acesso
+
+- O administrador pode habilitar o acesso por e-mail e senha e, opcionalmente, cadastrar um nome de usuário de 3 a 32 caracteres.
+- A senha inicial ou redefinida deve ter no mínimo 12 caracteres e no máximo 72 bytes. Ela é processada exclusivamente pelo Supabase Auth e nunca pode ser copiada para observações, planilhas ou chamados.
+- Desabilitar as credenciais randomiza a senha no provedor, remove o vínculo interno e incrementa a versão da sessão para revogar sessões da aplicação.
+- Contas Supabase Auth que não foram marcadas como gerenciadas pelo Patrimônio Ops não podem ser apropriadas nem redefinidas pelo gateway.
+- O acesso Google permanece independente; desativar o usuário interno bloqueia os dois provedores.
+
 ## Revisão de acesso
 
 Revisar trimestralmente:
@@ -82,4 +91,5 @@ Revisar trimestralmente:
 2. auditores globais ativos e necessidade de permanência desse alcance;
 3. operadores com exportação ou alteração;
 4. contas sem acesso recente;
-5. eventos negados, exportações e mudanças de função.
+5. contas com login por senha e necessidade de redefinição ou desativação;
+6. eventos negados, exportações e mudanças de função.

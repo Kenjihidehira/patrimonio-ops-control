@@ -68,7 +68,7 @@ test("gateway aplica defesa em profundidade e preserva administração exclusiva
   assert.match(gateway, /p_can_view_financial_data: body\.user\?\.canViewFinancialData === true/);
   assert.match(gateway, /p_is_auditor: body\.user\?\.isAuditor === true/);
   assert.match(gateway, /const departments = user\.is_admin \|\| user\.is_auditor/);
-  assert.match(gateway, /select=identifier,display_name,is_admin,is_auditor,active/);
+  assert.match(gateway, /select=identifier,[^"`]*display_name,is_admin,is_auditor,active/);
   assert.match(gateway, /isAuditor: user\.is_auditor === true/);
   assert.match(gateway, /canWrite: user\.is_admin === true \|\| \(user\.is_auditor !== true && user\.can_write === true\)/);
   assert.match(gateway, /if \(user\.is_admin !== true\) throw httpError\("admin_required"/);

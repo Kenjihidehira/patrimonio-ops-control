@@ -48,6 +48,7 @@ export async function POST(request: Request) {
       }
       await saveUserAccess(user.identifier, {
         identifier: String(requestedUser.identifier ?? ""),
+        username: String(requestedUser.username ?? ""),
         displayName: String(requestedUser.displayName ?? ""),
         isAdmin: requestedUser.isAdmin === true,
         isAuditor: requestedUser.isAuditor === true,
@@ -59,6 +60,12 @@ export async function POST(request: Request) {
         departmentSlugs: Array.isArray(requestedUser.departmentSlugs)
           ? requestedUser.departmentSlugs.map(String)
           : [],
+        credentialMode: requestedUser.credentialMode === "configure"
+          ? "configure"
+          : requestedUser.credentialMode === "disable"
+            ? "disable"
+            : "keep",
+        credentialPassword: String(requestedUser.credentialPassword ?? ""),
       });
       return Response.json(
         { message: "Acesso do usuário atualizado." },
@@ -131,6 +138,13 @@ function departmentError(error: unknown, fallback: string) {
       target_collaborator_exists: "O colaborador já existe no departamento de destino.",
       same_department: "Selecione um departamento de destino diferente.",
       invalid_user_identifier: "Informe um e-mail válido.",
+      invalid_credential_username: "Use de 3 a 32 caracteres: letras minúsculas, números, ponto, traço ou sublinhado.",
+      invalid_credential_password: "A senha deve ter ao menos 12 caracteres e no máximo 72 bytes.",
+      credential_password_required: "Defina uma senha para habilitar esse tipo de acesso.",
+      credential_username_exists: "Este nome de usuário já está em uso.",
+      credential_identity_exists: "Esta identidade de acesso já está vinculada a outro usuário.",
+      credential_identity_unmanaged: "Este e-mail já pertence a outra conta do Supabase Auth e não pode ser redefinido por este sistema.",
+      credential_user_not_found: "O usuário autorizado não foi localizado.",
       invalid_transfer_note: "Informe o motivo da transferência.",
       cannot_remove_own_admin: "Você não pode remover seu próprio acesso administrativo.",
       no_department_access: "Libere ao menos um departamento para o usuário ativo.",

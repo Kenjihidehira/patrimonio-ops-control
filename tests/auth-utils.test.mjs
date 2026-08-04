@@ -8,5 +8,6 @@ test("mantém somente retornos locais e bloqueia loops de autenticação", () =>
   assert.equal(safeRelativeReturnPath("https://example.com/roubo"), "/demo");
   assert.equal(safeRelativeReturnPath("//example.com/roubo"), "/demo");
   assert.equal(safeRelativeReturnPath("/api/auth/google/callback"), "/demo");
+  assert.equal(safeRelativeReturnPath("/api/auth/credentials/login"), "/demo");
   assert.equal(safeRelativeReturnPath("/login/index.html"), "/demo");
 });

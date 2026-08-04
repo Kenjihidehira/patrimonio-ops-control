@@ -7,6 +7,9 @@ export const metadata: Metadata = {
 };
 
 const messages: Record<string, string> = {
+  credentials_invalid_credentials: "Usuário, e-mail ou senha inválidos.",
+  credentials_login_failed: "Não foi possível concluir o acesso com senha.",
+  credentials_rate_limited: "Muitas tentativas em pouco tempo. Aguarde alguns minutos.",
   google_not_configured: "O acesso com Google ainda não foi configurado pelo administrador.",
   google_login_failed: "Não foi possível concluir o acesso com Google.",
   google_not_authorized: "Este e-mail Google não possui permissão para acessar a base.",
@@ -47,12 +50,45 @@ export default async function LoginPage({
           <p className="eyebrow">Acesso seguro</p>
           <h1 id="login-title">Entrar no Patrimônio Ops</h1>
           <p className="login-description">
-            Use uma conta Google autorizada para acessar o controle de patrimônios.
+            Entre com seu usuário ou e-mail autorizado. O acesso Google continua disponível.
           </p>
 
           {message ? <div className="error-message" role="alert">{message}</div> : null}
 
-          <a className="provider-button" href={`/api/auth/google/login${query}`}>
+          <form className="credential-form" action="/api/auth/credentials/login" method="post">
+            <input type="hidden" name="return_to" value={returnTo} />
+            <label className="login-field">
+              <span>Usuário ou e-mail</span>
+              <input
+                name="login"
+                type="text"
+                autoComplete="username"
+                autoCapitalize="none"
+                spellCheck={false}
+                minLength={3}
+                maxLength={254}
+                required
+              />
+            </label>
+            <label className="login-field">
+              <span>Senha</span>
+              <input
+                name="password"
+                type="password"
+                autoComplete="current-password"
+                maxLength={72}
+                required
+              />
+            </label>
+            <button className="credential-submit" type="submit">
+              <span>Entrar</span>
+              <ArrowRightIcon />
+            </button>
+          </form>
+
+          <div className="provider-divider"><span>ou</span></div>
+
+          <a className="provider-button provider-button-google" href={`/api/auth/google/login${query}`}>
             <GoogleIcon />
             <span>Continuar com Google</span>
             <ArrowRightIcon />
@@ -63,8 +99,8 @@ export default async function LoginPage({
               <LockIcon />
             </span>
             <p>
-              O acesso é limitado às contas liberadas pelo administrador. Sua senha não é
-              compartilhada com o Patrimônio Ops.
+              O acesso é limitado às contas liberadas pelo administrador. Senhas são
+              verificadas pelo Supabase Auth e não ficam armazenadas no Patrimônio Ops.
             </p>
           </div>
           <nav className="login-legal" aria-label="Privacidade">

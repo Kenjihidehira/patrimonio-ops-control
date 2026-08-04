@@ -18,6 +18,7 @@ test("documentação usa nomes e links internos em PT-BR", () => {
 
 test("documentação de autenticação acompanha as rotas implementadas", () => {
   for (const route of [
+    "/api/auth/credentials/login",
     "/api/auth/google/login",
     "/api/auth/google/callback",
     "/api/auth/logout",
@@ -39,7 +40,8 @@ test("contexto e runbook acompanham a release autenticada", () => {
   assert.match(readme, /docs\/contexto-projeto\.md/);
   assert.match(readme, /CHANGELOG\.md/);
   assert.match(projectContext, /Gazin LOG/);
-  assert.match(projectContext, /Supabase Auth não é usado/);
+  assert.match(projectContext, /Supabase Auth/);
+  assert.match(projectContext, /usuário ou e-mail/);
   assert.match(changelog, /## \[0\.2\.0\] - 2026-08-03/);
   assert.match(publication, /HTTP `307`/);
   assert.match(publication, /HTTP `401`/);

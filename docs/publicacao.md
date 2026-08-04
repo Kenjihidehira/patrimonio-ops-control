@@ -7,6 +7,7 @@
 3. Gere um segredo aleatório com pelo menos 64 caracteres.
 4. Cadastre o segredo como `PATRIMONIO_GATEWAY_KEY` no ambiente das Edge Functions.
 5. Publique `supabase/functions/patrimonio-gateway` com verificação JWT desativada somente porque a função valida assinatura HMAC, timestamp e nonce de uso único.
+6. Mantenha o provedor de e-mail do Supabase Auth habilitado. As contas de senha são criadas confirmadas pelo gateway administrativo; cadastro público continua desnecessário.
 
 O esquema habilita RLS e nega acesso direto aos papéis `anon` e `authenticated`. Não substitua essa configuração por políticas abertas: a aplicação acessa os dados exclusivamente pelo serviço intermediário servidor-servidor.
 
@@ -21,6 +22,8 @@ https://patrimonio-ops-control.kenjihidehira999.workers.dev/api/auth/google/call
 Mantenha a tabela de usuários e associações por departamento como lista fechada. Não autorize automaticamente todo o domínio `gmail.com`.
 
 Defina `GOOGLE_WORKSPACE_DOMAIN` somente depois de confirmar que todas as contas autorizadas pertencem ao Google Workspace corporativo. A validação do claim `hd` bloqueará contas Gmail externas.
+
+O login por senha não exige segredos adicionais no Worker. Depois da publicação, um administrador autenticado configura ou redefine a credencial em **Ambientes > Usuários e acessos**. Entregue a senha inicial por canal seguro; ela não pode ser recuperada ou exibida pelo Patrimônio Ops.
 
 ## 3. Configurar o Cloudflare Worker
 
@@ -66,6 +69,11 @@ curl -I https://patrimonio-ops-control.kenjihidehira999.workers.dev/demo
 curl -I https://patrimonio-ops-control.kenjihidehira999.workers.dev/login
 curl https://patrimonio-ops-control.kenjihidehira999.workers.dev/api/state
 curl -I "https://patrimonio-ops-control.kenjihidehira999.workers.dev/api/auth/google/login?return_to=%2Fdemo"
+curl -i -X POST https://patrimonio-ops-control.kenjihidehira999.workers.dev/api/auth/credentials/login \
+  -H "origin: https://patrimonio-ops-control.kenjihidehira999.workers.dev" \
+  -H "content-type: application/x-www-form-urlencoded" \
+  --data-urlencode "login=conta-inexistente" \
+  --data-urlencode "password=senha-invalida"
 curl -I https://patrimonio-ops-control.kenjihidehira999.workers.dev/api/export
 curl -i -X POST https://patrimonio-ops-control.kenjihidehira999.workers.dev/api/state \
   -H "content-type: application/json" \
@@ -75,7 +83,8 @@ curl -i -X POST https://patrimonio-ops-control.kenjihidehira999.workers.dev/api/
 Resultados esperados:
 
 - `/demo` sem sessão: HTTP `307` para `/login?return_to=%2Fdemo`; autenticado: interface React operacional.
-- `/login`: HTTP `200` e opção de acesso com Google.
+- `/login`: HTTP `200` e opções de acesso por usuário ou e-mail e por Google.
+- Credenciais inválidas: HTTP `303` para `/login` com erro genérico; nenhuma informação confirma se a conta existe.
 - `GET /api/state` sem sessão: HTTP `401` e `Cache-Control: no-store`; autenticado: estado do departamento autorizado.
 - O login retorna HTTP `302` para o Google quando suas credenciais estão configuradas; uma configuração ausente retorna para `/login` com erro controlado.
 - `GET /api/export` sem login: HTTP `401`; autenticado: HTTP `200` e conteúdo XLSX da base empresarial.
@@ -102,7 +111,8 @@ GitHub Pages não substitui o Worker neste projeto. O serviço `github.io` publi
 
 ## Checklist de produção
 
-- [x] Restrição por lista de e-mails Google autorizados.
+- [x] Restrição por lista interna de usuários autorizados nos dois provedores.
+- [x] Senhas com hash exclusivo no Supabase Auth, rate limit e resposta sem enumeração de conta.
 - [x] Separação entre administrador global, alteração, importação, exportação e leitura.
 - [x] Desativação de usuário e revogação de sessão.
 - [x] Auditoria de login, bloqueios, administração, importação e exportação.
