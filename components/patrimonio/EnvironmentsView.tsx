@@ -8,10 +8,12 @@ import {
 } from "react";
 import {
   fetchDepartmentNuclei,
+  reviewAccessRequest,
   saveDepartmentUser,
   transferDepartment,
 } from "./api";
 import type {
+  AccessRequest,
   Dashboard,
   DepartmentUser,
 } from "./types";
@@ -23,6 +25,26 @@ import {
 } from "./ui";
 
 type TargetDepartment = Awaited<ReturnType<typeof fetchDepartmentNuclei>>;
+
+type AccessGrant = {
+  isAdmin: boolean;
+  isAuditor: boolean;
+  canWrite: boolean;
+  canImport: boolean;
+  canExport: boolean;
+  canViewFinancialData: boolean;
+  departmentSlugs: string[];
+};
+
+const emptyGrant: AccessGrant = {
+  isAdmin: false,
+  isAuditor: false,
+  canWrite: false,
+  canImport: false,
+  canExport: false,
+  canViewFinancialData: false,
+  departmentSlugs: [],
+};
 
 const emptyUser: DepartmentUser = {
   identifier: "",
@@ -75,6 +97,21 @@ export function EnvironmentsView({
   const [transferBusy, setTransferBusy] = useState(false);
   const [transferError, setTransferError] = useState<string | null>(null);
   const [entityType, setEntityType] = useState<"asset" | "collaborator">("asset");
+  const [reviewTarget, setReviewTarget] = useState<AccessRequest | null>(null);
+  const [reviewGrant, setReviewGrant] = useState<AccessGrant>(emptyGrant);
+  const [reviewNote, setReviewNote] = useState("");
+  const [reviewBusy, setReviewBusy] = useState(false);
+  const [reviewError, setReviewError] = useState<string | null>(null);
+  const pendingRequests = useMemo(
+    () => environment.accessRequests.filter((request) => request.status === "pending"),
+    [environment.accessRequests],
+  );
+  const reviewedRequests = useMemo(
+    () => environment.accessRequests
+      .filter((request) => request.status !== "pending")
+      .slice(0, 12),
+    [environment.accessRequests],
+  );
 
   useEffect(() => {
     if (!effectiveTargetSlug) return;
@@ -174,6 +211,49 @@ export function EnvironmentsView({
       );
     } finally {
       setAccessBusy(false);
+    }
+  };
+
+  const startReview = (request: AccessRequest) => {
+    setReviewError(null);
+    setReviewNote("");
+    setReviewGrant(emptyGrant);
+    setReviewTarget(request);
+  };
+
+  const toggleReviewDepartment = (slug: string, checked: boolean) => {
+    setReviewGrant((current) => ({
+      ...current,
+      departmentSlugs: checked
+        ? [...new Set([...current.departmentSlugs, slug])]
+        : current.departmentSlugs.filter((departmentSlug) => departmentSlug !== slug),
+    }));
+  };
+
+  const submitReview = async (decision: "approve" | "reject") => {
+    if (!reviewTarget) return;
+    setReviewBusy(true);
+    setReviewError(null);
+    try {
+      const result = await reviewAccessRequest({
+        requestId: reviewTarget.id,
+        decision,
+        reviewNote,
+        ...reviewGrant,
+      });
+      await onRefresh();
+      setReviewTarget(null);
+      setReviewGrant(emptyGrant);
+      setReviewNote("");
+      onToast(result.message);
+    } catch (cause) {
+      setReviewError(
+        cause instanceof Error
+          ? cause.message
+          : "Não foi possível concluir a análise da solicitação.",
+      );
+    } finally {
+      setReviewBusy(false);
     }
   };
 
@@ -514,6 +594,216 @@ export function EnvironmentsView({
               </article>
             ))}
           </div>
+        </section>
+
+        <section className="operational-panel environment-requests-panel" aria-labelledby="access-requests-title">
+          <div className="operational-panel-toolbar">
+            <div>
+              <h2 id="access-requests-title">Cadastros aguardando aprovação</h2>
+              <p>
+                Solicitações criadas na tela de login. Nenhum acesso existe antes da aprovação:
+                a senha já fica no Supabase Auth, mas não vale enquanto o cadastro estiver pendente.
+              </p>
+            </div>
+            <span className="record-count">{pendingRequests.length} pendentes</span>
+          </div>
+
+          {pendingRequests.length === 0 ? (
+            <EmptyState
+              title="Nenhum cadastro pendente"
+              description="Novas solicitações feitas na tela de login aparecem aqui para aprovação."
+            />
+          ) : (
+            <div className="environment-request-list">
+              {pendingRequests.map((request) => (
+                <article key={request.id}>
+                  <div>
+                    <strong>{request.displayName || request.identifier}</strong>
+                    <span>{request.identifier}</span>
+                  </div>
+                  <div className="environment-user-tags">
+                    <span>@{request.username}</span>
+                    <span>Solicitado em {formatDateTime(request.createdAt)}</span>
+                  </div>
+                  {request.justification ? (
+                    <p className="environment-request-note">{request.justification}</p>
+                  ) : null}
+                  <button
+                    className="button button-secondary button-small"
+                    type="button"
+                    onClick={() => startReview(request)}
+                  >
+                    {reviewTarget?.id === request.id ? "Analisando" : "Analisar"}
+                  </button>
+                </article>
+              ))}
+            </div>
+          )}
+
+          {reviewTarget ? (
+            <form
+              className="environment-access-form form-grid"
+              onSubmit={(event) => {
+                event.preventDefault();
+                void submitReview("approve");
+              }}
+            >
+              <p className="field-wide environment-request-target">
+                Definindo o acesso de <strong>{reviewTarget.displayName || reviewTarget.identifier}</strong>
+                {" "}({reviewTarget.identifier}). O nome de usuário <strong>@{reviewTarget.username}</strong>
+                {" "}e a senha escolhida no cadastro passam a valer na aprovação.
+              </p>
+              <label className="field field-wide">
+                <span>Função de acesso</span>
+                <select
+                  value={reviewGrant.isAdmin ? "admin" : reviewGrant.isAuditor ? "auditor" : "operator"}
+                  onChange={(event) => setReviewGrant((current) => {
+                    const role = event.target.value;
+                    return {
+                      ...current,
+                      isAdmin: role === "admin",
+                      isAuditor: role === "auditor",
+                      canWrite: role === "admin" ? true : role === "auditor" ? false : current.canWrite,
+                      canImport: role === "admin" ? true : role === "auditor" ? false : current.canImport,
+                      canExport: role === "admin" || role === "auditor" ? true : current.canExport,
+                      canViewFinancialData: role === "admin" ? true : false,
+                    };
+                  })}
+                >
+                  <option value="operator">Operador</option>
+                  <option value="auditor">Auditor</option>
+                  <option value="admin">Administrador</option>
+                </select>
+              </label>
+              <fieldset className="environment-permissions field-wide">
+                <legend>Permissões</legend>
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={reviewGrant.isAdmin || (!reviewGrant.isAuditor && reviewGrant.canWrite)}
+                    disabled={reviewGrant.isAdmin || reviewGrant.isAuditor}
+                    onChange={(event) => setReviewGrant((current) => ({
+                      ...current,
+                      canWrite: event.target.checked,
+                    }))}
+                  />
+                  <span>Alterar patrimônios</span>
+                </label>
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={reviewGrant.isAdmin || (!reviewGrant.isAuditor && reviewGrant.canImport)}
+                    disabled={reviewGrant.isAdmin || reviewGrant.isAuditor}
+                    onChange={(event) => setReviewGrant((current) => ({
+                      ...current,
+                      canImport: event.target.checked,
+                    }))}
+                  />
+                  <span>Importar planilhas</span>
+                </label>
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={reviewGrant.isAdmin || reviewGrant.isAuditor || reviewGrant.canExport}
+                    disabled={reviewGrant.isAdmin || reviewGrant.isAuditor}
+                    onChange={(event) => setReviewGrant((current) => ({
+                      ...current,
+                      canExport: event.target.checked,
+                    }))}
+                  />
+                  <span>Exportar dados pessoais e patrimoniais</span>
+                </label>
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={reviewGrant.isAdmin || reviewGrant.canViewFinancialData}
+                    disabled={reviewGrant.isAdmin}
+                    onChange={(event) => setReviewGrant((current) => ({
+                      ...current,
+                      canViewFinancialData: event.target.checked,
+                    }))}
+                  />
+                  <span>Visualizar valores e dados contábeis</span>
+                </label>
+              </fieldset>
+              <fieldset className="environment-memberships field-wide">
+                <legend>Departamentos</legend>
+                <small className="field-help">
+                  Administradores e auditores têm alcance global. Operadores precisam de ao menos um departamento.
+                </small>
+                {environment.departments.map((department) => (
+                  <label key={department.slug}>
+                    <input
+                      type="checkbox"
+                      checked={
+                        reviewGrant.isAdmin
+                        || reviewGrant.isAuditor
+                        || reviewGrant.departmentSlugs.includes(department.slug)
+                      }
+                      disabled={reviewGrant.isAdmin || reviewGrant.isAuditor}
+                      onChange={(event) => toggleReviewDepartment(department.slug, event.target.checked)}
+                    />
+                    <span>{department.name}</span>
+                  </label>
+                ))}
+              </fieldset>
+              <label className="field field-wide">
+                <span>Parecer</span>
+                <input
+                  value={reviewNote}
+                  maxLength={400}
+                  placeholder="Registrado na auditoria junto da decisão."
+                  onChange={(event) => setReviewNote(event.target.value)}
+                />
+              </label>
+              {reviewError ? <FormError message={reviewError} /> : null}
+              <div className="environment-form-actions field-wide">
+                <button
+                  className="button button-secondary"
+                  type="button"
+                  disabled={reviewBusy}
+                  onClick={() => setReviewTarget(null)}
+                >
+                  Cancelar
+                </button>
+                <button
+                  className="button button-secondary"
+                  type="button"
+                  disabled={reviewBusy}
+                  onClick={() => void submitReview("reject")}
+                >
+                  Recusar
+                </button>
+                <button className="button button-primary" type="submit" disabled={reviewBusy}>
+                  {reviewBusy ? "Processando..." : "Aprovar e liberar acesso"}
+                </button>
+              </div>
+            </form>
+          ) : null}
+
+          {reviewedRequests.length > 0 ? (
+            <div className="environment-request-history">
+              <h3>Analisados recentemente</h3>
+              {reviewedRequests.map((request) => (
+                <article key={request.id}>
+                  <div>
+                    <strong>{request.displayName || request.identifier}</strong>
+                    <span>{request.identifier}</span>
+                  </div>
+                  <div className="environment-user-tags">
+                    <span className={request.status === "approved" ? "is-active" : "is-inactive"}>
+                      {request.status === "approved" ? "Aprovado" : "Recusado"}
+                    </span>
+                    {request.reviewedBy ? <span>por {request.reviewedBy}</span> : null}
+                    {request.reviewedAt ? <span>{formatDateTime(request.reviewedAt)}</span> : null}
+                  </div>
+                  {request.reviewNote ? (
+                    <p className="environment-request-note">{request.reviewNote}</p>
+                  ) : null}
+                </article>
+              ))}
+            </div>
+          ) : null}
         </section>
 
         <section className="operational-panel environment-transfer-panel" aria-labelledby="department-transfer-title">

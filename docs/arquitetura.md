@@ -111,6 +111,14 @@ A migração `20260731203708_add_tracking_geofences.sql` também instala o gatil
    mutação, o gateway devolve apenas `notModified` e a API responde `304`,
    evitando reler todo o inventário e o histórico.
 
+### Autocadastro pendente
+
+1. A rota pública `/api/auth/register` aceita somente formulário da mesma origem, com o mesmo limite de 8 KiB do login, e aplica limites próprios por identificador e por rede antes de qualquer escrita.
+2. O gateway recusa e-mail ou nome de usuário já existentes, cria a identidade no Supabase Auth com a senha escolhida e grava uma solicitação com estado `pending`. Se a gravação falhar, a identidade recém-criada é apagada.
+3. Nenhum acesso nasce daí: sem linha correspondente na tabela de usuários, o login continua recusado. Quando a senha confere com uma solicitação pendente, e só então, a resposta distingue cadastro pendente de credencial inválida.
+4. A aprovação administrativa reaproveita as funções já auditadas de concessão de acesso e de vínculo de credencial, sob trava de linha e com estado verificado, de modo que cada solicitação é analisada uma única vez.
+5. A recusa apaga a identidade criada no Supabase Auth e preserva o registro da decisão.
+
 ### Mutação
 
 1. A API bloqueia requisições sem identidade com `401`.

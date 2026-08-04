@@ -42,6 +42,19 @@ type DepartmentUser = {
   departmentSlugs: string[];
 };
 
+type AccessRequest = {
+  id: string;
+  identifier: string;
+  username: string;
+  displayName: string;
+  justification: string;
+  status: "pending" | "approved" | "rejected";
+  reviewNote: string;
+  reviewedBy: string | null;
+  reviewedAt: string | null;
+  createdAt: string;
+};
+
 type GatewayWorkspaceContext = {
   notModified?: false;
   workspace: Array<{ revision: number }>;
@@ -89,6 +102,7 @@ type GatewayWorkspaceContext = {
       canViewFinancialData: boolean;
     };
     users: DepartmentUser[];
+    accessRequests: AccessRequest[];
   };
 };
 
@@ -304,6 +318,43 @@ export async function saveUserAccess(
     identifier: adminIdentifier,
     user,
   });
+}
+
+export async function registerAccessRequest(
+  request: {
+    identifier: string;
+    username: string;
+    displayName: string;
+    justification: string;
+    password: string;
+  },
+  clientAddress: string,
+) {
+  return gatewayRequest<{ id: string; identifier: string; status: string }>(
+    "register_access_request",
+    { request, clientAddress },
+  );
+}
+
+export async function reviewAccessRequest(
+  adminIdentifier: string,
+  review: {
+    requestId: string;
+    decision: "approve" | "reject";
+    reviewNote: string;
+    isAdmin: boolean;
+    isAuditor: boolean;
+    canWrite: boolean;
+    canImport: boolean;
+    canExport: boolean;
+    canViewFinancialData: boolean;
+    departmentSlugs: string[];
+  },
+) {
+  return gatewayRequest<{ id: string; identifier: string; status: string }>(
+    "review_access_request",
+    { identifier: adminIdentifier, review },
+  );
 }
 
 export async function authorizeDepartmentOperation(

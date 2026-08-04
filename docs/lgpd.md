@@ -33,6 +33,7 @@ responsáveis corporativos.
 | Integrações | referência externa, tipo de evento, estado e divergência | conciliação com sistemas corporativos | administrador global |
 | Auditoria operacional | movimentação, motivo, ator e data | rastreabilidade e exercício de direitos | operadores vinculados e auditores globais |
 | Auditoria de segurança | login, bloqueio, permissão, importação e exportação | prevenção, investigação e prestação de contas | administrador global |
+| Solicitação de acesso | nome, e-mail, nome de usuário, área e motivo informados no autocadastro | avaliação e concessão de acesso pelo administrador | administrador global |
 
 Não devem ser inseridos dados de saúde, biometria, religião, filiação sindical,
 opinião política ou vida sexual em nomes, observações ou planilhas.
@@ -61,6 +62,7 @@ contratuais padrão ou outro mecanismo válido e manter a evidência junto ao co
 
 - Eventos de login e logout: até 180 dias.
 - Vínculo de username e identidade no Supabase Auth: enquanto a conta estiver ativa; removido do cadastro interno quando a modalidade é desabilitada.
+- Solicitações de acesso: a decisão e o parecer permanecem para prestação de contas; a identidade criada no Supabase Auth é apagada na recusa. A expurgação das solicitações analisadas ainda não é automática e depende de rotina corporativa a definir.
 - Eventos de acesso, importação, exportação e bloqueio: até 5 anos.
 - Limites técnicos e nonces: no máximo 2 dias e 10 minutos, respectivamente.
 - Registros patrimoniais: prazo definido pela área proprietária junto ao

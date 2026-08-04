@@ -1,6 +1,7 @@
 import { getAuthenticatedUser, loginPagePath } from "@/app/auth";
 import {
   loadDepartmentNuclei,
+  reviewAccessRequest,
   saveUserAccess,
   SupabaseError,
   transferDepartmentEntity,
@@ -69,6 +70,39 @@ export async function POST(request: Request) {
       });
       return Response.json(
         { message: "Acesso do usuário atualizado." },
+        { headers: responseHeaders },
+      );
+    }
+
+    if (body.type === "review_access_request") {
+      const review = body.review as Record<string, unknown> | undefined;
+      if (!review) {
+        return Response.json(
+          { error: "Informe a solicitação analisada." },
+          { status: 400, headers: responseHeaders },
+        );
+      }
+      const decision = review.decision === "approve" ? "approve" : "reject";
+      await reviewAccessRequest(user.identifier, {
+        requestId: String(review.requestId ?? ""),
+        decision,
+        reviewNote: String(review.reviewNote ?? ""),
+        isAdmin: review.isAdmin === true,
+        isAuditor: review.isAuditor === true,
+        canWrite: review.canWrite === true,
+        canImport: review.canImport === true,
+        canExport: review.canExport === true,
+        canViewFinancialData: review.canViewFinancialData === true,
+        departmentSlugs: Array.isArray(review.departmentSlugs)
+          ? review.departmentSlugs.map(String)
+          : [],
+      });
+      return Response.json(
+        {
+          message: decision === "approve"
+            ? "Cadastro aprovado e acesso liberado."
+            : "Cadastro recusado.",
+        },
         { headers: responseHeaders },
       );
     }
@@ -145,6 +179,13 @@ function departmentError(error: unknown, fallback: string) {
       credential_identity_exists: "Esta identidade de acesso já está vinculada a outro usuário.",
       credential_identity_unmanaged: "Este e-mail já pertence a outra conta do Supabase Auth e não pode ser redefinido por este sistema.",
       credential_user_not_found: "O usuário autorizado não foi localizado.",
+      access_request_not_found: "A solicitação de cadastro não foi localizada.",
+      access_request_already_reviewed: "Esta solicitação já foi analisada por outro administrador.",
+      access_request_duplicate: "Já existe acesso ou solicitação para este e-mail ou nome de usuário.",
+      invalid_review_decision: "Escolha aprovar ou recusar a solicitação.",
+      invalid_review_note: "O parecer deve ter no máximo 400 caracteres.",
+      invalid_display_name: "Informe o nome do solicitante.",
+      invalid_justification: "A justificativa deve ter no máximo 400 caracteres.",
       invalid_transfer_note: "Informe o motivo da transferência.",
       cannot_remove_own_admin: "Você não pode remover seu próprio acesso administrativo.",
       no_department_access: "Libere ao menos um departamento para o usuário ativo.",

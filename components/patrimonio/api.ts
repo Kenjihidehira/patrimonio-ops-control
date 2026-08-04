@@ -173,6 +173,29 @@ export async function saveDepartmentUser(user: {
   return readJson(response, "Não foi possível atualizar o acesso do usuário.");
 }
 
+export async function reviewAccessRequest(review: {
+  requestId: string;
+  decision: "approve" | "reject";
+  reviewNote: string;
+  isAdmin: boolean;
+  isAuditor: boolean;
+  canWrite: boolean;
+  canImport: boolean;
+  canExport: boolean;
+  canViewFinancialData: boolean;
+  departmentSlugs: string[];
+}): Promise<{ message: string }> {
+  const response = await fetch("/api/departments", {
+    method: "POST",
+    headers: {
+      accept: "application/json",
+      "content-type": "application/json",
+    },
+    body: JSON.stringify({ type: "review_access_request", review }),
+  });
+  return readJson(response, "Não foi possível concluir a análise da solicitação.");
+}
+
 export async function transferDepartment(input: {
   sourceDepartmentSlug: string;
   targetDepartmentSlug: string;

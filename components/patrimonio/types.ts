@@ -197,6 +197,19 @@ export type DepartmentUser = {
   departmentSlugs: string[];
 };
 
+export type AccessRequest = {
+  id: string;
+  identifier: string;
+  username: string;
+  displayName: string;
+  justification: string;
+  status: "pending" | "approved" | "rejected";
+  reviewNote: string;
+  reviewedBy: string | null;
+  reviewedAt: string | null;
+  createdAt: string;
+};
+
 export type DepartmentTransfer = {
   id: string;
   sourceDepartmentSlug: string;
@@ -236,6 +249,7 @@ export type DepartmentEnvironment = {
     canViewFinancialData: boolean;
   };
   users: DepartmentUser[];
+  accessRequests: AccessRequest[];
   transfers: DepartmentTransfer[];
   securityEvents: SecurityEvent[];
 };

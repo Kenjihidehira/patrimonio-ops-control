@@ -11,9 +11,18 @@ Respostas dinâmicas usam `cache-control: no-store`. A identidade vem de uma ses
 | `POST` | `/api/auth/credentials/login` | Verificar usuário ou e-mail e senha no Supabase Auth; criar sessão `HttpOnly` sem expor tokens do provedor |
 | `GET` | `/api/auth/google/login` | Iniciar o código de autorização do Google com `state`, PKCE e `nonce` |
 | `GET` | `/api/auth/google/callback` | Validar retorno OpenID Connect, identidade e lista de autorizados; criar sessão `HttpOnly` |
+| `POST` | `/api/auth/register` | Registrar solicitação de acesso feita na tela de login; cria identidade inerte no Supabase Auth e não concede acesso |
 | `POST` | `/api/auth/logout` | Encerrar a sessão local |
 
 O login por senha aceita somente formulário `application/x-www-form-urlencoded` enviado pela mesma origem, limita o corpo a 8 KiB e aplica limites por identificador e rede. Erros de conta inexistente, usuário incorreto ou senha incorreta usam a mesma resposta. `return_to` aceita apenas caminhos relativos locais e nunca pode apontar para as próprias rotas de autenticação.
+
+### Autocadastro com aprovação
+
+`POST /api/auth/register` recebe `display_name`, `identifier`, `username`, `password`, `password_confirmation` e `justification` no mesmo formato e com as mesmas proteções do login por senha, mais limites próprios de 3 solicitações por identificador e 10 por rede a cada hora.
+
+A rota grava apenas uma solicitação pendente. A senha vai direto para o Supabase Auth e a identidade criada ali fica inerte: como não existe usuário autorizado correspondente, o login continua recusado. Quando a senha informada confere com uma solicitação ainda pendente, o login responde `credentials_pending_approval` em vez da mensagem genérica — a distinção só aparece depois que a própria senha é verificada.
+
+O formulário público não expõe a lista de departamentos. O solicitante descreve a área em texto livre e o administrador atribui função, permissões e departamentos no momento da aprovação.
 
 ## `GET /api/state`
 
@@ -41,6 +50,7 @@ ativos, preservadas as restrições de mutação do perfil de auditoria.
 
 - `GET`: carrega os núcleos e a revisão do departamento de destino autorizado.
 - `POST save_user_access`: administrador ativa ou desativa usuário, define função e permissões, e pode configurar, redefinir ou desabilitar o login por senha. A API aceita a senha somente nessa requisição e nunca a devolve.
+- `POST review_access_request`: administrador aprova ou recusa um cadastro pendente. A aprovação define função, permissões e departamentos, ativa o usuário e vincula o nome de usuário à identidade criada no autocadastro; a recusa apaga essa identidade no Supabase Auth. Ambas registram parecer e evento de auditoria, e cada solicitação só pode ser analisada uma vez.
 - `POST transfer_department_entity`: administrador transfere patrimônio ou colaborador com seus itens, preservando auditoria.
 
 ## `POST /api/state`

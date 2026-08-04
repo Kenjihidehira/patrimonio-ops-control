@@ -71,11 +71,13 @@ export async function completeCredentialLogin(request: Request): Promise<Respons
     );
   } catch (error) {
     if (error instanceof SupabaseError) {
-      const reason = error.status === 429
-        ? "rate_limited"
-        : error.status >= 500 || error.code === "missing_configuration"
-          ? "login_failed"
-          : "invalid_credentials";
+      const reason = error.message === "access_request_pending"
+        ? "pending_approval"
+        : error.status === 429
+          ? "rate_limited"
+          : error.status >= 500 || error.code === "missing_configuration"
+            ? "login_failed"
+            : "invalid_credentials";
       return authFailureResponse(request, "credentials", reason, returnTo);
     }
     console.error("Credential login failed", safeCredentialError(error));
