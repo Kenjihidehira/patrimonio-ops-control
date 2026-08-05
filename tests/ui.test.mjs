@@ -201,6 +201,19 @@ test("campos críticos possuem semântica e validação no cliente", () => {
   assert.match(ui, /role=\{error \? "alert" : "status"\}/);
 });
 
+test("cabeçalho mantém a saída acessível no celular", () => {
+  // Uma regra anterior oculta `.session-control form`; sem reexibi-lo no bloco
+  // móvel, o botão Sair fica com tamanho zero e o usuário não consegue sair.
+  assert.match(
+    enterpriseCss,
+    /\.app-header \.session-control form \{\s*display: block;/,
+  );
+  assert.match(
+    enterpriseCss,
+    /\.app-header \.session-sign-out \{[\s\S]*?min-height: 36px;/,
+  );
+});
+
 test("layout contém breakpoints de tablet, celular e redução de movimento", () => {
   assert.match(app, /<header className=\{`app-header \$\{mobileNavigationOpen \? "is-open" : ""\}`\}>/);
   assert.match(app, /className="app-brand"/);

@@ -4718,11 +4718,20 @@ textarea {
     display: none;
   }
 
+  /* Uma regra anterior oculta o formulario de saida; reexibi-lo aqui e o que
+     faz o botao existir no celular, ja que o avatar e o nome ficam ocultos. */
+  .app-header .session-control form {
+    display: block;
+    width: 100%;
+  }
+
   .app-header .session-sign-out {
-    display: inline-flex;
-    min-height: 32px;
+    display: flex;
+    width: 100%;
+    min-height: 36px;
     align-items: center;
-    padding-inline: 6px;
+    justify-content: center;
+    padding-inline: 4px;
     font-size: 10px;
   }
 
