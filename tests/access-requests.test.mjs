@@ -100,6 +100,7 @@ test("login distingue cadastro pendente de credencial inválida após conferir a
 test("rota pública de cadastro repete as proteções do login por senha", () => {
   assert.match(registerRoute, /export async function POST/);
   assert.doesNotMatch(registerRoute, /export const GET/);
+  assert.match(registerAuth, /fetchSite === "same-origin"/);
   assert.match(registerAuth, /new URL\(origin\)\.host === host/);
   assert.match(registerAuth, /application\/x-www-form-urlencoded/);
   assert.match(registerAuth, /new TextEncoder\(\)\.encode\(body\)\.length > MAX_FORM_BYTES/);

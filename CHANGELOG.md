@@ -7,7 +7,7 @@ O formato segue Keep a Changelog e as versões usam Semantic Versioning.
 
 ### Corrigido
 
-- Verificação de mesma origem no login por senha e no autocadastro passa a comparar o host encaminhado, e não `request.url`. Atrás do proxy da Vercel a URL interna não corresponde ao domínio público, e toda requisição legítima era recusada com "Origem da solicitação inválida".
+- Verificação de mesma origem no login por senha e no autocadastro passa a usar `Sec-Fetch-Site`, com `Origin` e host encaminhado como alternativa. Duas causas se somavam: atrás do proxy da Vercel a URL interna não corresponde ao domínio público, e o próprio `Referrer-Policy: no-referrer` faz o navegador omitir `Origin` no envio de formulário. O resultado era recusar toda requisição legítima com "Origem da solicitação inválida". Envios de outro site continuam recusados.
 
 ### Alterado
 

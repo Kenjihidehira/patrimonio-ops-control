@@ -89,6 +89,14 @@ export async function completeCredentialLogin(request: Request): Promise<Respons
 // público e toda requisição legítima seria recusada.
 function isSameOriginPost(request: Request): boolean {
   if (request.method !== "POST") return false;
+
+  // Sob `Referrer-Policy: no-referrer` o navegador omite o cabecalho `Origin`
+  // no envio de formulario, entao `Sec-Fetch-Site` e a fonte confiavel: uma
+  // submissao de outro site chega como `cross-site` e continua recusada.
+  const fetchSite = request.headers.get("sec-fetch-site");
+  if (fetchSite) return fetchSite === "same-origin";
+
+  // Navegadores sem `Sec-Fetch-Site` ainda enviam `Origin`.
   const origin = request.headers.get("origin");
   const host = request.headers.get("x-forwarded-host") ?? request.headers.get("host");
   if (!origin || !host) return false;
