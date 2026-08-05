@@ -1,4 +1,3 @@
-import { env } from "cloudflare:workers";
 import { cookies } from "next/headers";
 import { jwtVerify, SignJWT } from "jose";
 import {
@@ -259,8 +258,8 @@ export function redirectResponse(location: string, status: 302 | 303 = 302): Res
   });
 }
 
-export function runtimeValue(name: keyof Cloudflare.Env): string {
-  return String(env[name] ?? process.env[name] ?? "").trim();
+export function runtimeValue(name: keyof NodeJS.ProcessEnv): string {
+  return String(process.env[name] ?? "").trim();
 }
 
 async function isIdentityStillAuthorized(identity: SessionIdentity): Promise<boolean> {

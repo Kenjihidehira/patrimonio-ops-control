@@ -1,4 +1,3 @@
-import { env } from "cloudflare:workers";
 import {
   createGatewayNonce,
   createGatewaySignature,
@@ -890,10 +889,10 @@ async function gatewayRequest<T = unknown>(
 
 function getGatewayConfig(): GatewayConfig {
   const url = String(
-    env.SUPABASE_GATEWAY_URL ?? process.env.SUPABASE_GATEWAY_URL ?? "",
+    process.env.SUPABASE_GATEWAY_URL ?? "",
   ).replace(/\/$/, "");
   const key = String(
-    env.SUPABASE_GATEWAY_KEY ?? process.env.SUPABASE_GATEWAY_KEY ?? "",
+    process.env.SUPABASE_GATEWAY_KEY ?? "",
   );
   if (!url || !key) {
     throw new SupabaseError(

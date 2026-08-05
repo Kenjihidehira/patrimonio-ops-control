@@ -3,10 +3,10 @@
 Sistema web de controle patrimonial para empresas que precisam saber **qual ativo existe, onde está, a qual núcleo pertence e quem responde por ele**. O projeto cobre importação de planilhas, cadastro, alocação, transferências, manutenção, divergências, baixa lógica, exportação e trilha de auditoria.
 
 [![CI](https://github.com/Kenjihidehira/patrimonio-ops-control/actions/workflows/ci.yml/badge.svg)](https://github.com/Kenjihidehira/patrimonio-ops-control/actions/workflows/ci.yml)
-[![Publicação](https://img.shields.io/badge/demonstra%C3%A7%C3%A3o-online-126044)](https://patrimonio-ops-control.kenjihidehira999.workers.dev/demo/)
+[![Publicação](https://img.shields.io/badge/demonstra%C3%A7%C3%A3o-online-126044)](https://patrimonio-ops-control.vercel.app/demo/)
 [![Licença: MIT](https://img.shields.io/badge/licen%C3%A7a-MIT-3978c3.svg)](LICENSE)
 
-**Demonstração pública:** [patrimonio-ops-control.kenjihidehira999.workers.dev/demo](https://patrimonio-ops-control.kenjihidehira999.workers.dev/demo/)
+**Demonstração pública:** [patrimonio-ops-control.vercel.app/demo](https://patrimonio-ops-control.vercel.app/demo/)
 
 ## Problema comercial resolvido
 
@@ -59,8 +59,8 @@ Planilhas patrimoniais isoladas não registram bem responsabilidade, movimentaç
 ## Tecnologias
 
 - **Interface:** React 19, TypeScript e CSS responsivo organizado por domínio.
-- **Aplicação:** Vinext/Vite com App Router e componentes funcionais.
-- **API:** Node.js com manipuladores de rota TypeScript executados no Cloudflare Worker.
+- **Aplicação:** Next.js 16 com App Router e componentes funcionais.
+- **API:** Node.js com manipuladores de rota TypeScript executados na Vercel.
 - **Banco:** Supabase Postgres 17, funções RPC transacionais e índices operacionais.
 - **Integração:** Função Edge do Supabase com requisições HMAC, janela curta e nonce de uso único.
 - **Documentos:** bucket privado no Supabase Storage, limite de 2,5 MB, checksum SHA-256 e URLs assinadas de curta duração.
@@ -79,7 +79,7 @@ cp configuracao.exemplo .env.local
 pnpm dev
 ```
 
-Use [`configuracao.exemplo`](configuracao.exemplo) somente como modelo para criar `.env.local`. Preencha as variáveis Supabase, do provedor de identidade e os segredos de sessão apenas no arquivo local, que é ignorado pelo Git. Acesse `http://localhost:5173/login`.
+Use [`configuracao.exemplo`](configuracao.exemplo) somente como modelo para criar `.env.local`. Preencha as variáveis Supabase, do provedor de identidade e os segredos de sessão apenas no arquivo local, que é ignorado pelo Git. Acesse `http://localhost:3000/login`.
 
 A rota `/demo` redireciona visitantes sem sessão diretamente para `/login`. No acesso por senha, o gateway resolve o nome de usuário para o e-mail autorizado e pede ao Supabase Auth para verificar a credencial. No acesso Google, o servidor valida `state`, PKCE e assinatura da identidade. Os dois fluxos consultam o cadastro interno antes de criar a mesma sessão local de oito horas.
 
@@ -126,7 +126,7 @@ O nome de usuário é apenas um alias do e-mail interno. A senha é enviada por 
 No Google Cloud Console, crie um cliente OAuth do tipo Aplicativo da Web com a URL de retorno:
 
 ```text
-https://patrimonio-ops-control.kenjihidehira999.workers.dev/api/auth/google/callback
+https://patrimonio-ops-control.vercel.app/api/auth/google/callback
 ```
 
 Cadastre `GOOGLE_CLIENT_ID` e `GOOGLE_CLIENT_SECRET` como segredos. Usuários e departamentos autorizados são administrados no módulo **Ambientes**; cadastrar um usuário não autoriza automaticamente outras contas Gmail nem todo um domínio Google Workspace.
@@ -230,9 +230,11 @@ O painel oferece temas claro e escuro, respeita a preferência do sistema na pri
 
 ## Publicação
 
-O projeto está configurado para Cloudflare Workers em [`wrangler.jsonc`](wrangler.jsonc). Use `pnpm deploy:cloudflare` após autenticar o Wrangler e cadastrar os segredos do ambiente de execução. O comando grava o SHA do commit como mensagem e tag da versão do Worker, permitindo rastrear o código publicado. O procedimento reproduzível, as migrações e os controles de pré-publicação estão em [`docs/publicacao.md`](docs/publicacao.md).
+O projeto é Next.js padrão e a Vercel o reconhece sem configuração adicional: o build é o `next build` e não há `vercel.json`. Cadastre as variáveis de ambiente no projeto antes da primeira publicação. O procedimento reproduzível, as migrações e os controles de pré-publicação estão em [`docs/publicacao.md`](docs/publicacao.md).
 
-GitHub Pages não hospeda este ambiente de execução: ele publica apenas arquivos estáticos e não executa manipuladores de rota, cookies `HttpOnly` ou integrações servidor-servidor. O código e a integração contínua (CI) ficam no GitHub; a API permanece no Worker para não expor os segredos do Supabase.
+Os cabeçalhos de segurança e o Content Security Policy com nonce por requisição ficam em [`proxy.ts`](proxy.ts). Como o nonce muda a cada requisição, as páginas são renderizadas sob demanda de propósito: HTML pré-renderizado carregaria um nonce vencido.
+
+GitHub Pages não hospeda este ambiente de execução: ele publica apenas arquivos estáticos e não executa manipuladores de rota, cookies `HttpOnly` ou integrações servidor-servidor. O código e a integração contínua (CI) ficam no GitHub; a API permanece na Vercel para não expor os segredos do Supabase.
 
 ## Diferenciais comerciais
 

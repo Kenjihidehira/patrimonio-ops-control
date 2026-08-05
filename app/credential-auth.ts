@@ -91,8 +91,8 @@ function isSameOriginPost(request: Request, requestUrl: URL): boolean {
 }
 
 function clientAddress(request: Request): string {
-  const cloudflareAddress = request.headers.get("cf-connecting-ip")?.trim();
-  if (cloudflareAddress) return cloudflareAddress;
+  const realAddress = request.headers.get("x-real-ip")?.trim();
+  if (realAddress) return realAddress;
   return request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
 }
 

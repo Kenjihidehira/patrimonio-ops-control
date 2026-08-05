@@ -4,8 +4,8 @@ import test from "node:test";
 
 const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
 
-test("worker aplica cabeçalhos de segurança e CSP com nonce", () => {
-  const worker = read("worker/index.ts");
+test("middleware aplica cabeçalhos de segurança e CSP com nonce", () => {
+  const middleware = read("proxy.ts");
   for (const header of [
     "content-security-policy",
     "strict-transport-security",
@@ -14,15 +14,43 @@ test("worker aplica cabeçalhos de segurança e CSP com nonce", () => {
     "referrer-policy",
     "permissions-policy",
   ]) {
-    assert.match(worker, new RegExp(header));
+    assert.match(middleware, new RegExp(header));
   }
-  assert.match(worker, /HTMLRewriter/);
-  assert.match(worker, /new NonceElementHandler\(nonce, true\)/);
-  assert.match(worker, /this\.inlineOnly && element\.getAttribute\("src"\)/);
-  assert.match(worker, /camera=\(self\)/);
-  assert.match(worker, /geolocation=\(self\)/);
-  assert.match(worker, /microphone=\(\)/);
+  // O nonce viaja no cabeçalho da requisição para que o Next.js o aplique aos
+  // scripts que injeta, no lugar da reescrita de HTML feita pelo Worker.
+  assert.match(middleware, /requestHeaders\.set\("x-nonce", nonce\)/);
+  assert.match(middleware, /requestHeaders\.set\("content-security-policy", contentSecurityPolicy\)/);
+  assert.match(middleware, /script-src 'self' 'nonce-\$\{nonce\}'/);
+  assert.match(middleware, /style-src 'self' 'nonce-\$\{nonce\}'/);
+  assert.match(middleware, /frame-ancestors 'none'/);
+  assert.match(middleware, /object-src 'none'/);
+  assert.match(middleware, /camera=\(self\)/);
+  assert.match(middleware, /geolocation=\(self\)/);
+  assert.match(middleware, /microphone=\(\)/);
   assert.doesNotMatch(read("app/layout.tsx"), /dangerouslySetInnerHTML/);
+});
+
+test("permissão de eval fica restrita ao desenvolvimento", () => {
+  const middleware = read("proxy.ts");
+  assert.match(middleware, /process\.env\.NODE_ENV === "development" \? " 'unsafe-eval'" : ""/);
+  // A política de produção nunca recebe a permissão literalmente.
+  assert.doesNotMatch(middleware, /script-src 'self' 'nonce-\$\{nonce\}' 'unsafe-eval'/);
+});
+
+test("aplicação não depende mais de APIs exclusivas da Cloudflare", () => {
+  for (const file of [
+    "app/auth.ts",
+    "lib/supabase.ts",
+    "app/credential-auth.ts",
+    "app/register-auth.ts",
+  ]) {
+    const source = read(file);
+    assert.doesNotMatch(source, /cloudflare:workers/);
+    assert.doesNotMatch(source, /cf-connecting-ip/);
+  }
+  assert.match(read("app/auth.ts"), /process\.env\[name\]/);
+  assert.match(read("package.json"), /"build": "next build"/);
+  assert.doesNotMatch(read("package.json"), /wrangler|vinext|@cloudflare/);
 });
 
 test("migração LGPD mantém tabelas protegidas e funções restritas ao service role", () => {

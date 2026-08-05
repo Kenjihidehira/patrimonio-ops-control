@@ -1,8 +1,6 @@
 node_modules/
-dist/
 .next/
-.vinext/
-.wrangler/
+.vercel/
 coverage/
 .env
 .env.*

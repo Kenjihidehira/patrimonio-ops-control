@@ -3,6 +3,25 @@
 Todas as alterações relevantes do Patrimônio Ops Control são registradas neste arquivo.
 O formato segue Keep a Changelog e as versões usam Semantic Versioning.
 
+## [0.7.0] - 2026-08-05
+
+### Alterado
+
+- Ambiente de execução migrado do Cloudflare Workers para a Vercel, trocando o runtime vinext pelo Next.js 16 que o código-fonte já usava.
+- Cabeçalhos de segurança e CSP com nonce migrados do Worker para `proxy.ts`; o nonce agora viaja no cabeçalho da requisição e dispensa a reescrita de HTML por `HTMLRewriter`.
+- Otimização de imagem e entrega de estáticos passam a usar os recursos nativos do Next.js, no lugar dos bindings `IMAGES` e `ASSETS`.
+- Endereço de rede do cliente lido de `x-real-ip` e `x-forwarded-for`, no lugar de `cf-connecting-ip`.
+
+### Removido
+
+- `worker/index.ts`, `wrangler.jsonc`, `vite.config.ts`, `cloudflare-env.d.ts` e o script de publicação da Cloudflare.
+- Dependências `wrangler`, `vinext`, `vite`, `@cloudflare/*`, `@vitejs/*` e `react-server-dom-webpack`.
+
+### Segurança
+
+- A permissão `unsafe-eval`, exigida pelo React apenas em desenvolvimento, nunca entra na política de produção.
+- As páginas passam a ser renderizadas sob demanda porque o nonce é gerado por requisição; HTML pré-renderizado carregaria um nonce vencido.
+
 ## [0.6.0] - 2026-08-04
 
 ### Adicionado

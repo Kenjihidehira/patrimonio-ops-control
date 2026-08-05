@@ -89,7 +89,7 @@ test("exportação financeira é explícita, cumulativa e auditável", () => {
   assert.match(workbookSource, /sheet\("Solicitações financeiras"/);
 });
 
-test("XLSX usa compactação compatível com o runtime Cloudflare", () => {
+test("XLSX usa compactação compatível com o runtime Node", () => {
   assert.match(workbookSource, /from "write-excel-file\/node"/);
   assert.match(workbookSource, /\.toBuffer\(\)/);
   assert.doesNotMatch(workbookSource, /\.toBlob\(\)/);
