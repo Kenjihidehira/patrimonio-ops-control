@@ -214,6 +214,20 @@ test("cabeçalho mantém a saída acessível no celular", () => {
   );
 });
 
+test("no celular as ações do cabeçalho ficam dentro do menu", () => {
+  // Fechado, o cabeçalho guarda apenas marca e botão de menu; a faixa de
+  // departamento, tema e saída só aparece com a navegação aberta.
+  assert.match(
+    enterpriseCss,
+    /\.header-actions \{\s*display: none;\s*grid-column: 1 \/ -1;\s*grid-row: 3;/,
+  );
+  assert.match(
+    enterpriseCss,
+    /\.app-header\.is-open \.header-actions \{\s*display: grid;\s*\}/,
+  );
+  assert.match(enterpriseCss, /\.primary-nav \{\s*grid-row: 2;/);
+});
+
 test("layout contém breakpoints de tablet, celular e redução de movimento", () => {
   assert.match(app, /<header className=\{`app-header \$\{mobileNavigationOpen \? "is-open" : ""\}`\}>/);
   assert.match(app, /className="app-brand"/);

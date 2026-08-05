@@ -3912,18 +3912,25 @@ body {
     grid-column: 2;
   }
 
+  /* No celular as acoes acompanham a navegacao dentro do menu, em vez de
+     ocuparem uma faixa permanente: o cabecalho fechado devolve essa altura
+     ao conteudo, que e escasso nessa largura. */
   .header-actions {
-    display: grid;
+    display: none;
     grid-column: 1 / -1;
-    grid-row: 2;
+    grid-row: 3;
     grid-template-columns: minmax(0, 1fr) auto auto;
     width: 100%;
     padding-top: 8px;
     border-top: 1px solid rgba(255, 255, 255, 0.1);
   }
 
+  .app-header.is-open .header-actions {
+    display: grid;
+  }
+
   .primary-nav {
-    grid-row: 3;
+    grid-row: 2;
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
