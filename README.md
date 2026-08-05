@@ -201,7 +201,7 @@ Administradores globais controlam departamentos, usuários e transferências. Au
 
 ### Autocadastro com aprovação
 
-A tela de login oferece a aba **Criar cadastro**, onde a pessoa informa nome, e-mail corporativo, nome de usuário, senha e a área em que atua. O envio não cria acesso: grava apenas uma solicitação pendente. A senha vai direto para o Supabase Auth e a identidade criada ali permanece inerte, porque não existe usuário autorizado correspondente — tentar entrar antes da aprovação continua sendo recusado, com aviso específico de cadastro pendente quando a senha confere.
+A tela de login oferece a aba **Criar cadastro**, que pede apenas nome, e-mail corporativo, senha e confirmação. O nome de usuário é derivado do e-mail pelo servidor, com sufixo numérico em caso de homônimo. O envio não cria acesso: grava apenas uma solicitação pendente. A senha vai direto para o Supabase Auth e a identidade criada ali permanece inerte, porque não existe usuário autorizado correspondente — tentar entrar antes da aprovação continua sendo recusado, com aviso específico de cadastro pendente quando a senha confere.
 
 O administrador vê as solicitações em **Ambientes**, no painel *Cadastros aguardando aprovação*, e decide caso a caso. Ao aprovar, define função, permissões e departamentos na mesma tela; o nome de usuário e a senha escolhidos no cadastro passam a valer nesse momento. Ao recusar, a identidade criada no Supabase Auth é apagada. As duas decisões aceitam parecer, ficam na auditoria e não podem ser refeitas para a mesma solicitação.
 

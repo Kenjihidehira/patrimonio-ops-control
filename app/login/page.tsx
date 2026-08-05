@@ -121,24 +121,6 @@ export default async function LoginPage({
                 />
               </label>
               <label className="login-field">
-                <span>Nome de usuário</span>
-                <input
-                  name="username"
-                  type="text"
-                  autoComplete="username"
-                  autoCapitalize="none"
-                  spellCheck={false}
-                  minLength={3}
-                  maxLength={32}
-                  pattern="[a-z0-9](?:[a-z0-9._\-]{1,30}[a-z0-9])"
-                  placeholder="nome.sobrenome"
-                  required
-                />
-                <small className="login-field-help">
-                  De 3 a 32 caracteres: letras minúsculas, números, ponto, traço ou sublinhado.
-                </small>
-              </label>
-              <label className="login-field">
                 <span>Senha</span>
                 <input
                   name="password"
@@ -159,15 +141,6 @@ export default async function LoginPage({
                   minLength={12}
                   maxLength={72}
                   required
-                />
-              </label>
-              <label className="login-field">
-                <span>Área e motivo do acesso</span>
-                <textarea
-                  name="justification"
-                  rows={3}
-                  maxLength={400}
-                  placeholder="Ex.: Núcleo de Suporte, preciso conferir inventário do meu time."
                 />
               </label>
               <button className="credential-submit" type="submit">

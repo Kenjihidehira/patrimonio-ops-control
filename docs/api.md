@@ -18,7 +18,9 @@ O login por senha aceita somente formulário `application/x-www-form-urlencoded`
 
 ### Autocadastro com aprovação
 
-`POST /api/auth/register` recebe `display_name`, `identifier`, `username`, `password`, `password_confirmation` e `justification` no mesmo formato e com as mesmas proteções do login por senha, mais limites próprios de 3 solicitações por identificador e 10 por rede a cada hora.
+`POST /api/auth/register` recebe apenas `display_name`, `identifier`, `password` e `password_confirmation`, no mesmo formato e com as mesmas proteções do login por senha, mais limites próprios de 3 solicitações por identificador e 10 por rede a cada hora.
+
+O nome de usuário não é pedido: o gateway o deriva da parte local do e-mail, normaliza para o padrão aceito e acrescenta um sufixo numérico quando já existe alguém com o mesmo nome. O login por e-mail continua valendo, e o administrador pode ajustar o nome de usuário depois em **Ambientes**.
 
 A rota grava apenas uma solicitação pendente. A senha vai direto para o Supabase Auth e a identidade criada ali fica inerte: como não existe usuário autorizado correspondente, o login continua recusado. Quando a senha informada confere com uma solicitação ainda pendente, o login responde `credentials_pending_approval` em vez da mensagem genérica — a distinção só aparece depois que a própria senha é verificada.
 

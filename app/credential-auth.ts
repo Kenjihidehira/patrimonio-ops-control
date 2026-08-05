@@ -12,11 +12,10 @@ const APP_PATH = "/demo";
 const MAX_FORM_BYTES = 8 * 1024;
 
 export async function completeCredentialLogin(request: Request): Promise<Response> {
-  const requestUrl = new URL(request.url);
   let returnTo = APP_PATH;
 
   try {
-    if (!isSameOriginPost(request, requestUrl)) {
+    if (!isSameOriginPost(request)) {
       return Response.json(
         { error: "Origem da solicitação inválida." },
         { status: 403, headers: { "cache-control": "no-store" } },
@@ -85,9 +84,19 @@ export async function completeCredentialLogin(request: Request): Promise<Respons
   }
 }
 
-function isSameOriginPost(request: Request, requestUrl: URL): boolean {
+// A origem é conferida contra o host efetivamente servido, e não contra
+// `request.url`: atrás de um proxy, a URL interna não corresponde ao domínio
+// público e toda requisição legítima seria recusada.
+function isSameOriginPost(request: Request): boolean {
   if (request.method !== "POST") return false;
-  return request.headers.get("origin") === requestUrl.origin;
+  const origin = request.headers.get("origin");
+  const host = request.headers.get("x-forwarded-host") ?? request.headers.get("host");
+  if (!origin || !host) return false;
+  try {
+    return new URL(origin).host === host;
+  } catch {
+    return false;
+  }
 }
 
 function clientAddress(request: Request): string {

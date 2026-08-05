@@ -3,6 +3,16 @@
 Todas as alterações relevantes do Patrimônio Ops Control são registradas neste arquivo.
 O formato segue Keep a Changelog e as versões usam Semantic Versioning.
 
+## [0.7.1] - 2026-08-05
+
+### Corrigido
+
+- Verificação de mesma origem no login por senha e no autocadastro passa a comparar o host encaminhado, e não `request.url`. Atrás do proxy da Vercel a URL interna não corresponde ao domínio público, e toda requisição legítima era recusada com "Origem da solicitação inválida".
+
+### Alterado
+
+- Autocadastro pede apenas nome, e-mail, senha e confirmação. O nome de usuário é derivado da parte local do e-mail, com sufixo numérico em caso de homônimo, e os campos de nome de usuário e justificativa saíram do formulário público.
+
 ## [0.7.0] - 2026-08-05
 
 ### Alterado

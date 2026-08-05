@@ -1042,21 +1042,15 @@ async function registerAccessRequest(requestValue, clientAddressValue) {
   await enforceRegistrationRateLimits(identifier || "invalid-identifier", clientAddressValue);
 
   if (!identifier) throw httpError("invalid_user_identifier", 400, "22023");
-  const username = normalizeUsername(request.username);
-  if (!username) throw httpError("invalid_credential_username", 400, "22023");
   validateNewPassword(password);
 
   const existingUser = await dataRequest("rpc/patrimonio_resolve_credential_login", {
     method: "POST",
     body: JSON.stringify({ p_login: identifier }),
   });
-  const existingByUsername = await dataRequest("rpc/patrimonio_resolve_credential_login", {
-    method: "POST",
-    body: JSON.stringify({ p_login: username }),
-  });
-  if (existingUser || existingByUsername) {
-    throw httpError("access_request_duplicate", 409, "23505");
-  }
+  if (existingUser) throw httpError("access_request_duplicate", 409, "23505");
+
+  const username = await deriveAvailableUsername(identifier);
 
   let authUserId = "";
   let createdAuthUser = false;
@@ -1152,6 +1146,39 @@ async function reviewAccessRequest(adminIdentifier, reviewValue) {
     }
   }
   return data;
+}
+
+// Deriva o nome de usuário da parte local do e-mail, para que o autocadastro
+// peça apenas nome, e-mail e senha. Sufixos numéricos resolvem homônimos.
+async function deriveAvailableUsername(identifier) {
+  const base = sanitizeUsernameSeed(String(identifier).split("@")[0] ?? "");
+  for (let attempt = 0; attempt < 25; attempt += 1) {
+    const suffix = attempt === 0 ? "" : String(attempt + 1);
+    const candidate = `${base.slice(0, 32 - suffix.length)}${suffix}`;
+    if (!usernamePattern.test(candidate)) continue;
+    const takenByUser = await dataRequest("rpc/patrimonio_resolve_credential_login", {
+      method: "POST",
+      body: JSON.stringify({ p_login: candidate }),
+    });
+    if (takenByUser) continue;
+    const takenByRequest = await dataRequest("rpc/patrimonio_resolve_pending_access_request", {
+      method: "POST",
+      body: JSON.stringify({ p_login: candidate }),
+    });
+    if (takenByRequest) continue;
+    return candidate;
+  }
+  throw httpError("access_request_duplicate", 409, "23505");
+}
+
+function sanitizeUsernameSeed(value) {
+  const cleaned = String(value)
+    .toLowerCase()
+    .replace(/[^a-z0-9._-]+/g, ".")
+    .replace(/^[^a-z0-9]+/, "")
+    .replace(/[^a-z0-9]+$/, "")
+    .slice(0, 32);
+  return cleaned.length >= 3 ? cleaned : `${cleaned}usuario`.slice(0, 32);
 }
 
 async function enforceRegistrationRateLimits(identifier, clientAddressValue) {

@@ -53,7 +53,7 @@ test("gateway verifica senha no Supabase, limita tentativas e não expõe tokens
 test("rota de credenciais aceita somente formulário local pequeno e cria sessão comum", () => {
   assert.match(credentialRoute, /export async function POST/);
   assert.doesNotMatch(credentialRoute, /export const GET/);
-  assert.match(credentialAuth, /request\.headers\.get\("origin"\) === requestUrl\.origin/);
+  assert.match(credentialAuth, /new URL\(origin\)\.host === host/);
   assert.match(credentialAuth, /application\/x-www-form-urlencoded/);
   assert.match(credentialAuth, /new TextEncoder\(\)\.encode\(body\)\.length > MAX_FORM_BYTES/);
   assert.match(credentialAuth, /safeRelativeReturnPath/);

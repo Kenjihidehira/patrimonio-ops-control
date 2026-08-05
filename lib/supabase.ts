@@ -322,9 +322,7 @@ export async function saveUserAccess(
 export async function registerAccessRequest(
   request: {
     identifier: string;
-    username: string;
     displayName: string;
-    justification: string;
     password: string;
   },
   clientAddress: string,
