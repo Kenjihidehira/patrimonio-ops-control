@@ -307,8 +307,6 @@ export default function PatrimonioApp() {
   const visibleViews = (Object.keys(viewCopy) as ViewId[]).filter(
     (item) => item !== "environments" || environment?.isAdmin,
   );
-  const gazinLogBrand = environment?.activeDepartment.slug === "gazin-log";
-
   return (
     <div className="app-shell">
       <header className={`app-header ${mobileNavigationOpen ? "is-open" : ""}`}>
@@ -316,18 +314,18 @@ export default function PatrimonioApp() {
           <button
             className="app-brand"
             type="button"
-            aria-label={`${gazinLogBrand ? "Gazin" : "Dados CX"} Patrimônio Ops, abrir dashboard`}
+            aria-label="Gazin Patrimônio Ops, abrir dashboard"
             onClick={() => {
               setView("dashboard");
               setMobileNavigationOpen(false);
             }}
           >
             <Image
-              className={`app-brand-logo ${gazinLogBrand ? "app-brand-logo--gazin" : ""}`.trim()}
-              src={gazinLogBrand ? "/brand/gazin-logo.png" : "/brand/cx-mark-header.png"}
+              className="app-brand-logo app-brand-logo--gazin"
+              src="/brand/gazin-logo.png"
               alt=""
-              width={gazinLogBrand ? 800 : 440}
-              height={gazinLogBrand ? 200 : 230}
+              width={800}
+              height={200}
               priority
             />
             <span className="app-brand-copy"><strong>Patrimônio Ops</strong><small>Gestão empresarial</small></span>
