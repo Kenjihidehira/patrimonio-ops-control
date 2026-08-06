@@ -144,14 +144,14 @@ body {
 
 .app-brand strong {
   font-size: 17px;
-  font-weight: 760;
+  font-weight: 700;
   letter-spacing: -0.015em;
 }
 
 .app-brand small {
   margin-top: 5px;
   color: #66dbe2;
-  font-size: 9px;
+  font-size: 11px;
   letter-spacing: 0.09em;
 }
 
@@ -166,8 +166,8 @@ body {
 
 .sidebar-department span {
   color: #8ba8c3;
-  font-size: 9px;
-  font-weight: 750;
+  font-size: 11px;
+  font-weight: 500;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
@@ -176,7 +176,7 @@ body {
   overflow: hidden;
   color: #62dce3;
   font-size: 13px;
-  font-weight: 720;
+  font-weight: 700;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -201,7 +201,7 @@ body {
   border-radius: 3px;
   color: #d6e2ee;
   font-size: 13px;
-  font-weight: 640;
+  font-weight: 600;
   text-align: left;
 }
 
@@ -251,7 +251,7 @@ body {
 
 .sidebar-footer a {
   color: #b9cce0;
-  font-weight: 680;
+  font-weight: 700;
   text-underline-offset: 3px;
 }
 
@@ -305,7 +305,7 @@ body {
 
 .page-heading h1 {
   font-size: clamp(24px, 2vw, 29px);
-  font-weight: 750;
+  font-weight: 700;
   line-height: 1.12;
   letter-spacing: -0.035em;
 }
@@ -313,7 +313,7 @@ body {
 .page-heading > p:last-child {
   max-width: 720px;
   margin-top: 5px;
-  font-size: 12.5px;
+  font-size: 13px;
 }
 
 .header-actions {
@@ -337,7 +337,7 @@ body {
 }
 
 .department-switcher > span {
-  font-size: 8px;
+  font-size: 10px;
   letter-spacing: 0.08em;
 }
 
@@ -369,7 +369,7 @@ body {
   padding: 8px 13px;
   border-radius: 3px;
   font-size: 12px;
-  font-weight: 680;
+  font-weight: 500;
 }
 
 .button svg {
@@ -420,7 +420,7 @@ body {
 
 .kpi-content > span {
   font-size: 11px;
-  font-weight: 620;
+  font-weight: 600;
   text-transform: none;
 }
 
@@ -433,7 +433,7 @@ body {
 
 .kpi-content small {
   margin-top: 3px;
-  font-size: 9px;
+  font-size: 11px;
 }
 
 .filter-band {
@@ -451,7 +451,7 @@ body {
 .filter-heading h2,
 .panel-heading h2 {
   font-size: 14px;
-  font-weight: 720;
+  font-weight: 700;
 }
 
 .filter-grid {
@@ -474,7 +474,7 @@ body {
   min-height: 31px;
   padding: 6px 10px;
   border-radius: 3px;
-  font-size: 10.5px;
+  font-size: 11px;
 }
 
 .inventory-layout {
@@ -524,7 +524,7 @@ body {
   height: 43px;
   padding: 10px 12px;
   background: var(--table-head);
-  font-size: 9px;
+  font-size: 11px;
   letter-spacing: 0.045em;
 }
 
@@ -547,8 +547,8 @@ body {
 }
 
 .status-badge {
-  border-radius: 3px;
-  font-weight: 680;
+  border-radius: 0;
+  font-weight: 500;
 }
 
 .pagination {
@@ -992,7 +992,7 @@ body {
   color: var(--muted);
   font: inherit;
   font-size: 11px;
-  font-weight: 700;
+  font-weight: 500;
   letter-spacing: 0;
   cursor: pointer;
 }
@@ -1056,7 +1056,7 @@ body {
 .operations-overview-grid .operational-panel-toolbar p {
   max-width: 680px;
   margin-top: 4px;
-  font-size: 10.5px;
+  font-size: 11px;
   line-height: 1.45;
 }
 
@@ -1103,7 +1103,7 @@ body {
   border-radius: 3px;
   background: var(--coral-soft);
   color: var(--coral);
-  font-size: 10.5px;
+  font-size: 11px;
   line-height: 1.4;
 }
 
@@ -1117,8 +1117,8 @@ body {
   border-radius: 3px;
   background: var(--surface-soft);
   color: var(--muted);
-  font-size: 9px;
-  font-weight: 800;
+  font-size: 11px;
+  font-weight: 500;
   letter-spacing: 0;
   line-height: 1.2;
   white-space: nowrap;
@@ -1157,8 +1157,8 @@ body {
   min-width: min(280px, 100%);
   gap: 4px;
   color: var(--muted);
-  font-size: 9px;
-  font-weight: 750;
+  font-size: 11px;
+  font-weight: 500;
 }
 
 .operation-toolbar-select select {
@@ -1323,7 +1323,7 @@ body {
   margin-top: 3px;
   overflow: hidden;
   color: var(--table-text);
-  font-size: 10.5px;
+  font-size: 11px;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -1332,7 +1332,7 @@ body {
 .operation-record-meta {
   margin-top: 4px;
   color: var(--muted);
-  font-size: 9.5px;
+  font-size: 11px;
   line-height: 1.35;
 }
 
@@ -1365,8 +1365,8 @@ body {
   background: var(--surface);
   color: var(--muted);
   font: inherit;
-  font-size: 9px;
-  font-weight: 750;
+  font-size: 11px;
+  font-weight: 500;
   cursor: pointer;
 }
 
@@ -1423,7 +1423,7 @@ body {
 
 .tracking-battery {
   color: var(--muted);
-  font-size: 9.5px;
+  font-size: 11px;
   white-space: nowrap;
 }
 
@@ -1467,7 +1467,7 @@ body {
 .tracking-tag-card > span,
 .tracking-tag-card > small {
   color: var(--muted);
-  font-size: 9.5px;
+  font-size: 11px;
   line-height: 1.4;
 }
 
@@ -1520,8 +1520,8 @@ body {
 }
 
 .decision-indicators span {
-  font-size: 9px;
-  font-weight: 750;
+  font-size: 11px;
+  font-weight: 500;
 }
 
 .decision-indicators strong {
@@ -1533,7 +1533,7 @@ body {
 
 .decision-indicators small {
   margin-top: 3px;
-  font-size: 8.5px;
+  font-size: 10px;
 }
 
 .decision-indicators button.has-risk strong,
@@ -1589,7 +1589,7 @@ body {
 
 .operations-alert-list small {
   margin-top: 4px;
-  font-size: 9.5px;
+  font-size: 11px;
 }
 
 .operations-alert-indicator {
@@ -1664,7 +1664,7 @@ body {
   display: block;
   margin-top: 4px;
   color: var(--muted);
-  font-size: 8.5px;
+  font-size: 10px;
   text-align: right;
 }
 
@@ -1699,13 +1699,13 @@ body {
 
 .operations-timeline strong {
   color: var(--heading-text);
-  font-size: 10.5px;
+  font-size: 11px;
 }
 
 .operations-timeline small {
   margin-top: 3px;
   color: var(--muted);
-  font-size: 9px;
+  font-size: 11px;
 }
 
 @media (max-width: 1180px) {
@@ -2106,8 +2106,8 @@ body {
   background: transparent;
   color: var(--muted);
   font: inherit;
-  font-size: 10.5px;
-  font-weight: 700;
+  font-size: 11px;
+  font-weight: 500;
   letter-spacing: 0;
   cursor: pointer;
 }
@@ -2122,7 +2122,7 @@ body {
   border-radius: 3px;
   background: var(--line);
   color: var(--table-text);
-  font-size: 8.5px;
+  font-size: 10px;
   font-variant-numeric: tabular-nums;
 }
 
@@ -2177,8 +2177,8 @@ body {
 .data-source-header {
   background: var(--surface-soft);
   color: var(--muted);
-  font-size: 9px;
-  font-weight: 800;
+  font-size: 11px;
+  font-weight: 500;
   letter-spacing: 0.055em;
   text-transform: uppercase;
 }
@@ -2202,7 +2202,7 @@ body {
 
 .data-source-domain details {
   color: var(--muted);
-  font-size: 9.5px;
+  font-size: 11px;
 }
 
 .data-source-domain summary {
@@ -2270,8 +2270,8 @@ body {
   border-bottom: 1px solid var(--line);
   background: var(--surface-soft);
   color: var(--muted);
-  font-size: 9.5px;
-  font-weight: 750;
+  font-size: 11px;
+  font-weight: 500;
 }
 
 .asset-checklist legend span {
@@ -2328,13 +2328,13 @@ body {
 
 .asset-checklist label strong {
   color: var(--heading-text);
-  font-size: 10.5px;
+  font-size: 11px;
 }
 
 .asset-checklist label small {
   margin-top: 2px;
   color: var(--muted);
-  font-size: 8.5px;
+  font-size: 10px;
 }
 
 .operation-record-expanded {
@@ -2357,8 +2357,8 @@ body {
   border-radius: 3px;
   background: var(--surface-soft);
   color: var(--table-text);
-  font-size: 8.5px;
-  font-weight: 750;
+  font-size: 10px;
+  font-weight: 500;
   line-height: 1.2;
 }
 
@@ -2405,7 +2405,7 @@ body {
 .offboarding-case > header span {
   margin-top: 3px;
   color: var(--muted);
-  font-size: 9px;
+  font-size: 11px;
 }
 
 .offboarding-case > footer {
@@ -2437,13 +2437,13 @@ body {
 
 .offboarding-assets strong {
   color: var(--heading-text);
-  font-size: 10.5px;
+  font-size: 11px;
 }
 
 .offboarding-assets small {
   margin-top: 3px;
   color: var(--muted);
-  font-size: 8.5px;
+  font-size: 10px;
 }
 
 .offboarding-asset-actions {
@@ -2460,7 +2460,7 @@ body {
   border-radius: 3px;
   background: var(--surface-inset);
   color: var(--table-text);
-  font-size: 9px;
+  font-size: 11px;
 }
 
 .offboarding-asset-actions button {
@@ -2476,7 +2476,7 @@ body {
   color: var(--muted);
   font: inherit;
   font-size: 14px;
-  font-weight: 800;
+  font-weight: 700;
   cursor: pointer;
 }
 
@@ -2521,8 +2521,8 @@ body {
   border-radius: 3px;
   background: var(--surface-soft);
   color: var(--emphasis-text);
-  font-size: 8px;
-  font-weight: 850;
+  font-size: 10px;
+  font-weight: 500;
 }
 
 .document-card-main {
@@ -2547,7 +2547,7 @@ body {
 .document-card-main small {
   margin-top: 4px;
   color: var(--muted);
-  font-size: 8.5px;
+  font-size: 10px;
 }
 
 .document-card-actions {
@@ -2575,7 +2575,7 @@ body {
 
 .accounting-value small {
   color: var(--muted);
-  font-size: 8.5px;
+  font-size: 10px;
 }
 
 .accounting-value strong {
@@ -2699,7 +2699,7 @@ body {
 .dashboard-context-label {
   color: var(--field-label);
   font-size: 10px;
-  font-weight: 760;
+  font-weight: 500;
   letter-spacing: 0.07em;
   text-transform: uppercase;
 }
@@ -2708,7 +2708,7 @@ body {
   overflow: hidden;
   color: var(--heading-text);
   font-size: 15px;
-  font-weight: 750;
+  font-weight: 700;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -2744,7 +2744,7 @@ body {
   margin: 0;
   color: var(--heading-text);
   font-size: 12px;
-  font-weight: 750;
+  font-weight: 500;
 }
 
 .dashboard-filters-heading > span {
@@ -2770,7 +2770,7 @@ body {
 .dashboard-filter-field > span {
   color: var(--field-label);
   font-size: 10px;
-  font-weight: 720;
+  font-weight: 500;
 }
 
 .dashboard-filter-field select {
@@ -2876,14 +2876,14 @@ body {
 .dashboard-kpi > span {
   color: var(--field-label);
   font-size: 11px;
-  font-weight: 680;
+  font-weight: 500;
 }
 
 .dashboard-kpi > strong {
   color: var(--heading-text);
   font-size: clamp(22px, 1.8vw, 29px);
   font-variant-numeric: tabular-nums;
-  font-weight: 790;
+  font-weight: 700;
   letter-spacing: -0.035em;
   line-height: 1.12;
 }
@@ -2951,7 +2951,7 @@ body {
 .dashboard-panel-heading h2 {
   color: var(--heading-text);
   font-size: 14px;
-  font-weight: 760;
+  font-weight: 700;
   letter-spacing: -0.01em;
 }
 
@@ -2966,7 +2966,7 @@ body {
   flex: 0 0 auto;
   color: var(--muted);
   font-size: 10px;
-  font-weight: 680;
+  font-weight: 500;
 }
 
 .dashboard-panel-heading > button {
@@ -2978,7 +2978,7 @@ body {
   color: var(--emphasis-text);
   cursor: pointer;
   font-size: 10px;
-  font-weight: 720;
+  font-weight: 500;
 }
 
 .dashboard-panel-heading > button:hover {
@@ -3033,7 +3033,7 @@ body {
 .dashboard-movement-bars span {
   color: var(--muted);
   font-size: 10px;
-  font-weight: 680;
+  font-weight: 500;
 }
 
 .dashboard-status-row > strong,
@@ -3120,19 +3120,19 @@ body {
 .dashboard-attention-copy strong {
   color: var(--heading-text);
   font-size: 11px;
-  font-weight: 710;
+  font-weight: 500;
 }
 
 .dashboard-attention-copy small {
   color: var(--muted);
-  font-size: 9px;
+  font-size: 11px;
 }
 
 .dashboard-attention-value {
   color: var(--heading-text);
   font-size: 15px;
   font-variant-numeric: tabular-nums;
-  font-weight: 760;
+  font-weight: 700;
 }
 
 .dashboard-attention-arrow {
@@ -3197,12 +3197,12 @@ body {
 .dashboard-horizontal-row > div:first-child strong {
   color: var(--flow-text);
   font-size: 10px;
-  font-weight: 680;
+  font-weight: 500;
 }
 
 .dashboard-horizontal-row > div:first-child small {
   color: var(--muted);
-  font-size: 8px;
+  font-size: 10px;
 }
 
 .dashboard-horizontal-row > strong {
@@ -3242,12 +3242,12 @@ body {
 .dashboard-progress-heading > div span,
 .dashboard-progress-heading > span {
   color: var(--muted);
-  font-size: 9px;
+  font-size: 11px;
 }
 
 .dashboard-progress-heading > span {
   padding-top: 5px;
-  font-weight: 680;
+  font-weight: 700;
 }
 
 .dashboard-progress-heading > span.is-overdue {
@@ -3280,14 +3280,14 @@ body {
   align-items: center;
   gap: 5px;
   color: var(--muted);
-  font-size: 9px;
+  font-size: 11px;
 }
 
 .dashboard-campaign-results dd {
   color: var(--heading-text);
   font-size: 11px;
   font-variant-numeric: tabular-nums;
-  font-weight: 720;
+  font-weight: 500;
 }
 
 .dashboard-campaign-results i.is-confirmed {
@@ -3317,7 +3317,7 @@ body {
 
 .dashboard-aging-chart > div > span {
   color: var(--muted);
-  font-size: 9px;
+  font-size: 11px;
 }
 
 .dashboard-aging-chart progress.is-critical {
@@ -3336,7 +3336,7 @@ body {
   padding-top: 12px;
   border-top: 1px solid var(--line);
   color: var(--muted);
-  font-size: 9px;
+  font-size: 11px;
 }
 
 .dashboard-coverage-list {
@@ -3358,13 +3358,13 @@ body {
 
 .dashboard-coverage-row > div:first-child strong {
   color: var(--flow-text);
-  font-size: 9px;
-  font-weight: 680;
+  font-size: 11px;
+  font-weight: 500;
 }
 
 .dashboard-coverage-row > div:first-child span {
   color: var(--muted);
-  font-size: 8px;
+  font-size: 10px;
   font-variant-numeric: tabular-nums;
   text-align: right;
 }
@@ -3379,7 +3379,7 @@ body {
   padding-top: 12px;
   border-top: 1px solid var(--line);
   color: var(--muted);
-  font-size: 9px;
+  font-size: 11px;
 }
 
 .dashboard-coverage-note strong {
@@ -3631,7 +3631,7 @@ body {
 .app-brand small {
   margin-top: 3px;
   color: #7eb3b8;
-  font-size: 8px;
+  font-size: 10px;
 }
 
 .primary-nav {
@@ -3656,7 +3656,7 @@ body {
   border: 0;
   border-radius: 3px;
   color: #d6e2ee;
-  font-size: 10.5px;
+  font-size: 11px;
   text-align: center;
 }
 
@@ -3671,8 +3671,8 @@ body {
 }
 
 .nav-item.is-active {
-  background: rgba(13, 108, 219, 0.28);
-  box-shadow: inset 0 -3px 0 #6baeb4;
+  background: rgba(255, 255, 255, 0.1);
+  box-shadow: inset 0 -3px 0 var(--yellow);
 }
 
 .nav-item.is-active .nav-item-icon {
@@ -4028,7 +4028,7 @@ body {
 /* Enterprise SaaS application shell and nuclei directory */
 :root {
   --saas-content-max: 1520px;
-  --saas-radius: 6px;
+  --saas-radius: 3px;
 }
 
 .app-header {
@@ -4076,8 +4076,8 @@ body {
 }
 
 .nav-item.is-active {
-  background: rgba(106, 132, 153, 0.22);
-  box-shadow: inset 0 -2px 0 #8ca5a8;
+  background: rgba(255, 255, 255, 0.1);
+  box-shadow: inset 0 -3px 0 var(--yellow);
 }
 
 .button,
@@ -4180,7 +4180,7 @@ textarea {
 }
 
 .nuclei-overview .operational-metric-content > span {
-  font-size: 9px;
+  font-size: 11px;
   letter-spacing: 0.045em;
 }
 
@@ -4265,7 +4265,7 @@ textarea {
   color: var(--muted);
   font: inherit;
   font-size: 11px;
-  font-weight: 700;
+  font-weight: 500;
   cursor: pointer;
 }
 
@@ -4313,8 +4313,8 @@ textarea {
 .nuclei-table thead th {
   height: 42px;
   color: var(--table-head-text);
-  font-size: 9px;
-  font-weight: 800;
+  font-size: 11px;
+  font-weight: 500;
   letter-spacing: 0.055em;
   text-transform: uppercase;
   white-space: nowrap;
@@ -4376,7 +4376,7 @@ textarea {
   background: var(--surface-soft);
   color: var(--muted);
   font-size: 10px;
-  font-weight: 800;
+  font-weight: 500;
   letter-spacing: 0;
 }
 
@@ -4429,8 +4429,8 @@ textarea {
   border-radius: 3px;
   background: color-mix(in srgb, var(--success) 10%, var(--surface));
   color: var(--success);
-  font-size: 9px;
-  font-weight: 800;
+  font-size: 11px;
+  font-weight: 500;
   white-space: nowrap;
 }
 
@@ -4455,7 +4455,7 @@ textarea {
   color: var(--emphasis-text);
   font: inherit;
   font-size: 11px;
-  font-weight: 750;
+  font-weight: 500;
   white-space: nowrap;
   cursor: pointer;
 }
@@ -4642,8 +4642,8 @@ textarea {
   .nucleus-mobile-metrics span {
     margin-top: 3px;
     color: var(--muted);
-    font-size: 9px;
-    font-weight: 800;
+    font-size: 11px;
+    font-weight: 500;
     letter-spacing: 0.04em;
     text-transform: uppercase;
   }

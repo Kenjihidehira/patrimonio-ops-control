@@ -291,8 +291,8 @@ textarea:disabled {
 .app-brand small {
   margin-top: 4px;
   color: #64D4D9;
-  font-size: 9px;
-  font-weight: 800;
+  font-size: 11px;
+  font-weight: 500;
   text-transform: uppercase;
 }
 
@@ -323,7 +323,7 @@ textarea:disabled {
   background: transparent;
   color: #DCEBF8;
   cursor: pointer;
-  font-size: 12.5px;
+  font-size: 13px;
   font-weight: 700;
   text-align: center;
   white-space: nowrap;
@@ -392,7 +392,7 @@ textarea:disabled {
   margin: 0 0 5px;
   color: var(--brand-700);
   font-size: 10px;
-  font-weight: 800;
+  font-weight: 500;
   text-transform: uppercase;
 }
 
@@ -425,8 +425,8 @@ textarea:disabled {
 
 .department-switcher > span {
   color: var(--muted);
-  font-size: 9px;
-  font-weight: 800;
+  font-size: 11px;
+  font-weight: 500;
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
@@ -439,7 +439,7 @@ textarea:disabled {
   background-color: var(--surface);
   color: var(--heading-text);
   font-size: 11px;
-  font-weight: 750;
+  font-weight: 500;
 }
 
 .theme-toggle {
@@ -454,7 +454,7 @@ textarea:disabled {
   color: var(--ink);
   cursor: pointer;
   font-size: 10px;
-  font-weight: 750;
+  font-weight: 500;
   white-space: nowrap;
 }
 
@@ -520,7 +520,7 @@ textarea:disabled {
   background: var(--brand-100);
   color: var(--emphasis-text);
   font-size: 11px;
-  font-weight: 800;
+  font-weight: 500;
 }
 
 .session-control small,
@@ -534,7 +534,7 @@ textarea:disabled {
 
 .session-control small {
   color: var(--muted);
-  font-size: 9px;
+  font-size: 11px;
 }
 
 .session-control strong {
@@ -553,7 +553,7 @@ textarea:disabled {
   cursor: pointer;
   font-family: inherit;
   font-size: 10px;
-  font-weight: 700;
+  font-weight: 500;
   text-decoration: none;
 }
 
@@ -606,7 +606,7 @@ textarea:disabled {
 
 .button > span[aria-hidden="true"] {
   color: currentColor;
-  font-weight: 850;
+  font-weight: 700;
 }
 
 .button-secondary > span[aria-hidden="true"],
@@ -677,7 +677,7 @@ textarea:disabled {
 
 .app-footer a {
   color: var(--brand-700);
-  font-weight: 750;
+  font-weight: 700;
   text-underline-offset: 3px;
 }
 
@@ -771,7 +771,7 @@ textarea:disabled {
 .kpi-content > span {
   color: var(--muted);
   font-size: 10px;
-  font-weight: 800;
+  font-weight: 500;
   text-transform: uppercase;
 }
 
@@ -785,7 +785,7 @@ textarea:disabled {
 .kpi-content > small {
   margin-top: 6px;
   color: var(--muted);
-  font-size: 10.5px;
+  font-size: 11px;
 }
 
 .filter-band {
@@ -822,12 +822,12 @@ textarea:disabled {
 .section-toolbar p {
   margin: 3px 0 0;
   color: var(--muted);
-  font-size: 11.5px;
+  font-size: 12px;
 }
 
 .filter-heading p > span {
   color: var(--heading-text);
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .filter-grid {
@@ -850,8 +850,8 @@ textarea:disabled {
   justify-content: flex-end;
   gap: 4px;
   color: var(--muted);
-  font-size: 9px;
-  font-weight: 750;
+  font-size: 11px;
+  font-weight: 500;
   white-space: nowrap;
 }
 
@@ -901,8 +901,8 @@ textarea:disabled {
   background: var(--surface);
   color: var(--ink);
   cursor: pointer;
-  font-size: 10.5px;
-  font-weight: 750;
+  font-size: 11px;
+  font-weight: 500;
 }
 
 .quick-filter span {
@@ -913,7 +913,7 @@ textarea:disabled {
   border-radius: 3px;
   background: var(--surface-soft);
   color: var(--muted);
-  font-size: 9px;
+  font-size: 11px;
 }
 
 .quick-filter:hover,
@@ -953,8 +953,8 @@ textarea:disabled {
 
 .field > span {
   color: var(--field-label);
-  font-size: 10.5px;
-  font-weight: 750;
+  font-size: 11px;
+  font-weight: 500;
 }
 
 .field input,
@@ -1060,7 +1060,7 @@ textarea:disabled {
   background: var(--surface-soft);
   color: var(--muted);
   font-size: 10px;
-  font-weight: 700;
+  font-weight: 500;
 }
 
 .table-scroll {
@@ -1090,8 +1090,8 @@ th {
   top: 0;
   background: var(--table-head);
   color: var(--table-head-text);
-  font-size: 9.5px;
-  font-weight: 800;
+  font-size: 11px;
+  font-weight: 500;
   text-transform: uppercase;
 }
 
@@ -1109,7 +1109,7 @@ th {
   border-top: 1px solid var(--line);
   background: var(--surface);
   color: var(--muted);
-  font-size: 10.5px;
+  font-size: 11px;
 }
 
 .pagination-controls {
@@ -1146,7 +1146,7 @@ th {
 
 td {
   color: var(--table-text);
-  font-size: 11.5px;
+  font-size: 12px;
 }
 
 tbody tr {
@@ -1172,7 +1172,7 @@ tbody tr:last-child td {
   background: transparent;
   color: var(--brand-700);
   cursor: pointer;
-  font-weight: 850;
+  font-weight: 700;
 }
 
 .cell-primary,
@@ -1182,7 +1182,7 @@ tbody tr:last-child td {
 
 .cell-primary {
   color: var(--ink);
-  font-weight: 750;
+  font-weight: 700;
 }
 
 .cell-secondary {
@@ -1190,7 +1190,7 @@ tbody tr:last-child td {
   margin-top: 2px;
   overflow: hidden;
   color: var(--muted);
-  font-size: 9.5px;
+  font-size: 11px;
   text-overflow: ellipsis;
 }
 
@@ -1388,8 +1388,8 @@ tbody tr:last-child td {
 .inventory-asset-detail .detail-label {
   display: block;
   color: var(--muted);
-  font-size: 8.5px;
-  font-weight: 800;
+  font-size: 10px;
+  font-weight: 500;
   text-transform: uppercase;
 }
 
@@ -1411,7 +1411,7 @@ tbody tr:last-child td {
 .detail-type {
   margin: 4px 0 0;
   color: var(--muted);
-  font-size: 11.5px;
+  font-size: 12px;
 }
 
 .detail-actions {
@@ -1435,7 +1435,7 @@ tbody tr:last-child td {
 
 .inventory-asset-detail .detail-actions .button {
   min-height: 42px;
-  font-size: 11.5px;
+  font-size: 12px;
   white-space: nowrap;
 }
 
@@ -1477,11 +1477,11 @@ tbody tr:last-child td {
   color: var(--muted);
   cursor: pointer;
   font-size: 10px;
-  font-weight: 750;
+  font-weight: 500;
 }
 
 .inventory-asset-detail .detail-tab {
-  font-size: 11.5px;
+  font-size: 12px;
 }
 
 .detail-tab::after {
@@ -1510,7 +1510,7 @@ tbody tr:last-child td {
   border-radius: 3px;
   background: var(--surface-soft);
   color: var(--muted);
-  font-size: 8px;
+  font-size: 10px;
 }
 
 .detail-scrim {
@@ -1534,8 +1534,8 @@ tbody tr:last-child td {
 
 .detail-grid dt {
   color: var(--muted);
-  font-size: 9px;
-  font-weight: 750;
+  font-size: 11px;
+  font-weight: 500;
   text-transform: uppercase;
 }
 
@@ -1544,7 +1544,7 @@ tbody tr:last-child td {
   overflow-wrap: anywhere;
   color: var(--ink);
   font-size: 11px;
-  font-weight: 650;
+  font-weight: 600;
 }
 
 .inventory-asset-detail .detail-grid {
@@ -1572,12 +1572,12 @@ tbody tr:last-child td {
 }
 
 .inventory-asset-detail .detail-grid dt {
-  font-size: 8.5px;
+  font-size: 10px;
 }
 
 .inventory-asset-detail .detail-grid dd {
   margin-top: 5px;
-  font-size: 11.5px;
+  font-size: 12px;
 }
 
 .status-form {
@@ -1660,8 +1660,8 @@ tbody tr:last-child td {
 
 .inventory-asset-detail .status-current-state span {
   color: var(--muted);
-  font-size: 8px;
-  font-weight: 750;
+  font-size: 10px;
+  font-weight: 500;
   text-transform: uppercase;
 }
 
@@ -1671,7 +1671,7 @@ tbody tr:last-child td {
   border-radius: 3px;
   background: color-mix(in srgb, var(--asset-status-accent) 10%, var(--surface));
   color: var(--asset-status-accent);
-  font-size: 9px;
+  font-size: 11px;
   line-height: 1;
 }
 
@@ -1722,14 +1722,14 @@ tbody tr:last-child td {
 .movement-item span {
   margin-top: 2px;
   color: var(--muted);
-  font-size: 9px;
+  font-size: 11px;
   overflow-wrap: anywhere;
 }
 
 .movement-item small {
   margin-top: 3px;
   color: var(--subtle-text);
-  font-size: 8px;
+  font-size: 10px;
 }
 
 .section-toolbar {
@@ -1782,8 +1782,8 @@ tbody tr:last-child td {
 
 .nuclei-overview span {
   color: var(--muted);
-  font-size: 9px;
-  font-weight: 800;
+  font-size: 11px;
+  font-weight: 500;
   text-transform: uppercase;
 }
 
@@ -1797,7 +1797,7 @@ tbody tr:last-child td {
 .nuclei-overview small {
   margin-top: 4px;
   color: var(--muted);
-  font-size: 9px;
+  font-size: 11px;
 }
 
 .nuclei-list-toolbar {
@@ -1873,7 +1873,7 @@ tbody tr:last-child td {
   background: var(--brand-100);
   color: var(--emphasis-text);
   font-size: 10px;
-  font-weight: 850;
+  font-weight: 500;
 }
 
 .nucleus-identity {
@@ -1892,8 +1892,8 @@ tbody tr:last-child td {
   border-radius: 3px;
   background: var(--success-soft);
   color: var(--success);
-  font-size: 8px;
-  font-weight: 800;
+  font-size: 10px;
+  font-weight: 500;
   white-space: nowrap;
 }
 
@@ -1942,8 +1942,8 @@ tbody tr:last-child td {
 
 .nucleus-meta span {
   color: var(--muted);
-  font-size: 8px;
-  font-weight: 750;
+  font-size: 10px;
+  font-weight: 500;
   text-transform: uppercase;
 }
 
@@ -1952,7 +1952,7 @@ tbody tr:last-child td {
   overflow-wrap: anywhere;
   color: var(--ink);
   font-size: 10px;
-  font-weight: 650;
+  font-weight: 600;
   line-height: 1.35;
 }
 
@@ -1966,7 +1966,7 @@ tbody tr:last-child td {
   justify-content: space-between;
   gap: 12px;
   color: var(--muted);
-  font-size: 9px;
+  font-size: 11px;
 }
 
 .nucleus-allocation strong {
@@ -2050,7 +2050,7 @@ tbody tr:last-child td {
   background: var(--brand-100);
   color: var(--emphasis-text);
   font-size: 12px;
-  font-weight: 900;
+  font-weight: 500;
 }
 
 .nucleus-asset-editor-heading p:last-child {
@@ -2107,8 +2107,8 @@ tbody tr:last-child td {
 
 .nucleus-inventory-summary span {
   color: var(--muted);
-  font-size: 8px;
-  font-weight: 800;
+  font-size: 10px;
+  font-weight: 500;
   text-transform: uppercase;
 }
 
@@ -2122,7 +2122,7 @@ tbody tr:last-child td {
 .nucleus-inventory-summary small {
   margin-top: 3px;
   color: var(--muted);
-  font-size: 9px;
+  font-size: 11px;
 }
 
 .nucleus-inventory-toolbar {
@@ -2144,7 +2144,7 @@ tbody tr:last-child td {
 .nucleus-inventory-toolbar p {
   margin: 3px 0 0;
   color: var(--muted);
-  font-size: 9px;
+  font-size: 11px;
 }
 
 .nucleus-inventory-search {
@@ -2206,8 +2206,8 @@ tbody tr:last-child td {
 .nucleus-inventory-table th {
   background: var(--table-head);
   color: var(--muted);
-  font-size: 8px;
-  font-weight: 800;
+  font-size: 10px;
+  font-weight: 500;
   text-transform: uppercase;
 }
 
@@ -2324,7 +2324,7 @@ tbody tr:last-child td {
 .nucleus-inventory-mobile-heading > div > span {
   margin-top: 2px;
   color: var(--muted);
-  font-size: 9px;
+  font-size: 11px;
 }
 
 .nucleus-inventory-mobile-card dl {
@@ -2339,8 +2339,8 @@ tbody tr:last-child td {
 
 .nucleus-inventory-mobile-card dt {
   color: var(--muted);
-  font-size: 8px;
-  font-weight: 800;
+  font-size: 10px;
+  font-weight: 500;
   text-transform: uppercase;
 }
 
@@ -2456,7 +2456,7 @@ tbody tr:last-child td {
   background: transparent;
   color: var(--emphasis-text);
   font: inherit;
-  font-weight: 800;
+  font-weight: 700;
   text-align: left;
   cursor: pointer;
 }
@@ -2481,7 +2481,7 @@ tbody tr:last-child td {
   background: var(--brand-100);
   color: var(--emphasis-text);
   font-size: 10px;
-  font-weight: 850;
+  font-weight: 500;
 }
 
 .people-status {
@@ -2491,8 +2491,8 @@ tbody tr:last-child td {
   padding: 4px 8px;
   border: 1px solid transparent;
   border-radius: 3px;
-  font-size: 9px;
-  font-weight: 800;
+  font-size: 11px;
+  font-weight: 500;
   white-space: nowrap;
 }
 
@@ -2541,7 +2541,7 @@ tbody tr:last-child td {
   background: var(--action-bg);
   color: var(--on-action);
   font-size: 18px;
-  font-weight: 850;
+  font-weight: 700;
 }
 
 .profile-identity h2,
@@ -2600,8 +2600,8 @@ tbody tr:last-child td {
   border-radius: 3px;
   background: var(--surface);
   color: var(--muted);
-  font-size: 9px;
-  font-weight: 750;
+  font-size: 11px;
+  font-weight: 500;
 }
 
 @media (min-width: 721px) {
@@ -2665,8 +2665,8 @@ tbody tr:last-child td {
   border-radius: 3px;
   background: color-mix(in srgb, var(--profile-icon-accent) 11%, var(--surface));
   color: var(--profile-icon-accent);
-  font-size: 9px;
-  font-weight: 850;
+  font-size: 11px;
+  font-weight: 500;
 }
 
 .profile-asset-icon svg {
@@ -2699,14 +2699,14 @@ tbody tr:last-child td {
   flex: 0 0 auto;
   color: var(--emphasis-text);
   font-size: 11px;
-  font-weight: 850;
+  font-weight: 500;
 }
 
 .profile-asset-heading span {
   overflow: hidden;
   color: var(--ink);
   font-size: 11px;
-  font-weight: 750;
+  font-weight: 500;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -2717,7 +2717,7 @@ tbody tr:last-child td {
 
 .nucleus-metrics span {
   color: var(--muted);
-  font-size: 8px;
+  font-size: 10px;
   text-transform: uppercase;
 }
 
@@ -2763,13 +2763,13 @@ tbody tr:last-child td {
 .audit-item span {
   margin-top: 2px;
   color: var(--muted);
-  font-size: 9px;
+  font-size: 11px;
 }
 
 .audit-asset {
   color: var(--brand-700);
   font-size: 12px;
-  font-weight: 850;
+  font-weight: 500;
 }
 
 .audit-flow {
@@ -2819,7 +2819,7 @@ tbody tr:last-child td {
 .import-run > div span {
   margin-top: 3px;
   color: var(--muted);
-  font-size: 9px;
+  font-size: 11px;
 }
 
 .import-run dl {
@@ -2837,14 +2837,14 @@ tbody tr:last-child td {
 
 .import-run dt {
   color: var(--muted);
-  font-size: 8px;
+  font-size: 10px;
   text-transform: uppercase;
 }
 
 .import-run dd {
   margin: 2px 0 0;
   font-size: 16px;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .toast {
@@ -2856,7 +2856,7 @@ tbody tr:last-child td {
   box-shadow: var(--shadow);
   color: var(--toast-success-text);
   font-size: 11px;
-  font-weight: 700;
+  font-weight: 500;
 }
 
 .toast.is-error {
@@ -2973,8 +2973,8 @@ tbody tr:last-child td {
 
 .scanner-missing-identifier div > span {
   color: var(--muted);
-  font-size: 9px;
-  font-weight: 800;
+  font-size: 11px;
+  font-weight: 500;
   text-transform: uppercase;
 }
 
@@ -3027,7 +3027,7 @@ tbody tr:last-child td {
   color: var(--heading-text);
   cursor: default;
   font-size: 14px;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .scanner-asset-modal {
@@ -3094,7 +3094,7 @@ tbody tr:last-child td {
   gap: 7px;
   margin-bottom: 4px;
   color: var(--brand-700);
-  font-size: 8.5px;
+  font-size: 10px;
 }
 
 .scanner-asset-modal .modal-header .eyebrow::before {
@@ -3228,8 +3228,8 @@ tbody tr:last-child td {
 .scanner-asset-detail .detail-label {
   display: block;
   color: var(--muted);
-  font-size: 8.5px;
-  font-weight: 800;
+  font-size: 10px;
+  font-weight: 500;
   text-transform: uppercase;
 }
 
@@ -3244,13 +3244,13 @@ tbody tr:last-child td {
   margin-top: 5px;
   color: var(--table-text);
   font-size: 12px;
-  font-weight: 650;
+  font-weight: 600;
 }
 
 .scanner-asset-detail .status-badge {
   min-height: 30px;
   padding: 5px 11px;
-  font-size: 9.5px;
+  font-size: 11px;
 }
 
 .scanner-asset-detail .detail-actions {
@@ -3262,7 +3262,7 @@ tbody tr:last-child td {
 .scanner-asset-detail .detail-actions .button {
   min-height: 42px;
   background: color-mix(in srgb, var(--surface-raised) 92%, transparent);
-  font-size: 11.5px;
+  font-size: 12px;
 }
 
 .scanner-asset-detail .detail-actions .button:hover {
@@ -3292,7 +3292,7 @@ tbody tr:last-child td {
   margin-top: 7px;
   padding-top: 1px;
   border-radius: 3px;
-  font-size: 10.5px;
+  font-size: 11px;
 }
 
 .scanner-asset-detail .detail-tab:hover {
@@ -3342,7 +3342,7 @@ tbody tr:last-child td {
 
 .scanner-asset-detail .detail-grid dt {
   color: var(--muted);
-  font-size: 8.5px;
+  font-size: 10px;
   letter-spacing: 0;
 }
 
@@ -3404,8 +3404,8 @@ tbody tr:last-child td {
 
 .scanner-asset-detail .status-current-state span {
   color: var(--muted);
-  font-size: 9px;
-  font-weight: 750;
+  font-size: 11px;
+  font-weight: 500;
   text-transform: uppercase;
 }
 
@@ -3564,7 +3564,7 @@ tbody tr:last-child td {
 
 .preview-metrics span {
   color: var(--muted);
-  font-size: 8px;
+  font-size: 10px;
   text-transform: uppercase;
 }
 
@@ -3601,8 +3601,8 @@ tbody tr:last-child td {
 .preview-issues li span {
   display: block;
   color: var(--coral);
-  font-size: 8px;
-  font-weight: 800;
+  font-size: 10px;
+  font-weight: 500;
   text-transform: uppercase;
 }
 
@@ -3681,7 +3681,7 @@ tbody tr:last-child td {
   background: var(--coral-soft);
   color: var(--form-error-text);
   font-size: 11px;
-  font-weight: 650;
+  font-weight: 600;
 }
 
 .form-error[hidden] {
@@ -3733,8 +3733,8 @@ tbody tr:last-child td {
   display: block;
   margin-bottom: 7px;
   color: var(--brand-700);
-  font-size: 9px;
-  font-weight: 850;
+  font-size: 11px;
+  font-weight: 500;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
@@ -3761,7 +3761,7 @@ tbody tr:last-child td {
   background: color-mix(in srgb, var(--success) 10%, var(--surface));
   color: var(--success);
   font-size: 10px;
-  font-weight: 800;
+  font-weight: 500;
   white-space: nowrap;
 }
 
@@ -3841,7 +3841,7 @@ tbody tr:last-child td {
   margin-bottom: 7px;
   color: var(--ink);
   font-size: 11px;
-  font-weight: 750;
+  font-weight: 500;
 }
 
 .environment-memberships label {
@@ -3855,7 +3855,7 @@ tbody tr:last-child td {
   background: var(--surface);
   color: var(--ink);
   font-size: 11px;
-  font-weight: 700;
+  font-weight: 500;
 }
 
 .environment-form-actions {
@@ -3950,7 +3950,7 @@ tbody tr:last-child td {
   padding: 14px 20px 6px;
   color: var(--muted);
   font-size: 10px;
-  font-weight: 800;
+  font-weight: 500;
   letter-spacing: 0.05em;
   text-transform: uppercase;
 }
@@ -3974,8 +3974,8 @@ tbody tr:last-child td {
   border-radius: 3px;
   background: var(--brand-100);
   color: var(--brand-700);
-  font-size: 9px;
-  font-weight: 800;
+  font-size: 11px;
+  font-weight: 500;
 }
 
 .environment-user-tags > span.is-active {
@@ -3990,7 +3990,7 @@ tbody tr:last-child td {
 
 .environment-last-login {
   color: var(--muted);
-  font-size: 9px;
+  font-size: 11px;
 }
 
 .environment-warning {
@@ -4049,7 +4049,7 @@ tbody tr:last-child td {
 .security-event-list span,
 .security-event-list small {
   color: var(--muted);
-  font-size: 9px;
+  font-size: 11px;
 }
 
 .security-event-outcome {
@@ -4058,7 +4058,7 @@ tbody tr:last-child td {
   padding: 3px 6px;
   border-radius: 3px;
   background: var(--surface-soft);
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .security-event-outcome.is-success {
@@ -4089,8 +4089,8 @@ tbody tr:last-child td {
 
 .environment-transfer-history article > div:first-child > span {
   color: var(--brand-700);
-  font-size: 9px;
-  font-weight: 850;
+  font-size: 11px;
+  font-weight: 500;
   text-transform: uppercase;
 }
 
@@ -4152,7 +4152,7 @@ tbody tr:last-child td {
     gap: 6px;
     padding-right: 9px;
     padding-left: 9px;
-    font-size: 11.5px;
+    font-size: 12px;
   }
 
   .nav-item-icon,
@@ -4286,7 +4286,7 @@ tbody tr:last-child td {
   }
 
   .app-brand small {
-    font-size: 9px;
+    font-size: 11px;
   }
 
   .primary-nav {
@@ -4402,7 +4402,7 @@ tbody tr:last-child td {
   }
 
   .kpi-content > small {
-    font-size: 9px;
+    font-size: 11px;
   }
 
   .nuclei-overview {
@@ -4551,7 +4551,7 @@ tbody tr:last-child td {
 
   .mobile-asset-metadata small {
     color: var(--muted);
-    font-size: 8px;
+    font-size: 10px;
     text-transform: uppercase;
   }
 
@@ -4971,8 +4971,8 @@ tbody tr:last-child td {
 .inventory-asset-detail .detail-grid .detail-section-title span,
 .scanner-asset-detail .detail-grid .detail-section-title span {
   color: var(--muted);
-  font-size: 9px;
-  font-weight: 800;
+  font-size: 11px;
+  font-weight: 500;
   letter-spacing: 0;
   text-transform: uppercase;
 }
@@ -5136,7 +5136,7 @@ tbody tr:last-child td {
 .operational-metric-content > span {
   color: var(--muted);
   font-size: 10px;
-  font-weight: 800;
+  font-weight: 500;
   text-transform: uppercase;
 }
 
@@ -5195,8 +5195,8 @@ tbody tr:last-child td {
   border-radius: 3px;
   background: var(--surface-soft);
   color: var(--muted);
-  font-size: 9px;
-  font-weight: 800;
+  font-size: 11px;
+  font-weight: 500;
   white-space: nowrap;
 }
 
@@ -5333,7 +5333,7 @@ tbody tr:last-child td {
   background: var(--blue-soft);
   color: var(--status-blue-text) !important;
   font-size: 8px !important;
-  font-weight: 800;
+  font-weight: 500;
 }
 
 .audit-asset {
@@ -5341,7 +5341,7 @@ tbody tr:last-child td {
   margin: 0;
   color: var(--emphasis-text);
   font-size: 12px;
-  font-weight: 850;
+  font-weight: 500;
 }
 
 .audit-item-asset > small,
@@ -5350,12 +5350,12 @@ tbody tr:last-child td {
   display: block;
   margin-top: 3px;
   color: var(--muted);
-  font-size: 8.5px;
+  font-size: 10px;
 }
 
 .audit-item-time > span {
   margin: 0 0 4px;
-  font-weight: 750;
+  font-weight: 700;
   text-transform: uppercase;
 }
 
@@ -5388,15 +5388,15 @@ tbody tr:last-child td {
 
 .audit-flow-point small {
   color: var(--muted);
-  font-size: 8px;
-  font-weight: 750;
+  font-size: 10px;
+  font-weight: 500;
   text-transform: uppercase;
 }
 
 .audit-flow-point strong {
   margin-top: 3px;
   color: var(--flow-text);
-  font-size: 9.5px;
+  font-size: 11px;
   line-height: 1.35;
 }
 
@@ -5410,7 +5410,7 @@ tbody tr:last-child td {
 .audit-note > span {
   display: block;
   color: var(--ink);
-  font-size: 9.5px;
+  font-size: 11px;
   line-height: 1.45;
 }
 
@@ -5499,7 +5499,7 @@ tbody tr:last-child td {
 .import-run-main > div span {
   margin-top: 3px;
   color: var(--muted);
-  font-size: 8.5px;
+  font-size: 10px;
 }
 
 .import-result {
@@ -5511,8 +5511,8 @@ tbody tr:last-child td {
   border-radius: 3px;
   background: var(--success-soft);
   color: var(--success);
-  font-size: 8px;
-  font-weight: 800;
+  font-size: 10px;
+  font-weight: 500;
   white-space: nowrap;
 }
 
@@ -5544,8 +5544,8 @@ tbody tr:last-child td {
 
 .import-run-metrics dt {
   color: var(--muted);
-  font-size: 8px;
-  font-weight: 750;
+  font-size: 10px;
+  font-weight: 500;
   text-transform: uppercase;
 }
 
@@ -5553,7 +5553,7 @@ tbody tr:last-child td {
   margin: 3px 0 0;
   color: var(--heading-text);
   font-size: 18px;
-  font-weight: 850;
+  font-weight: 700;
   line-height: 1;
 }
 
@@ -5567,7 +5567,7 @@ tbody tr:last-child td {
   border-top: 1px solid var(--line);
   background: var(--surface-inset);
   color: var(--muted);
-  font-size: 9px;
+  font-size: 11px;
 }
 
 .import-run-footer strong {
@@ -5583,8 +5583,8 @@ tbody tr:last-child td {
   border-radius: 3px;
   background: var(--brand-100);
   color: var(--emphasis-text);
-  font-size: 8px;
-  font-weight: 850;
+  font-size: 10px;
+  font-weight: 500;
 }
 
 .people-panel {
@@ -5634,8 +5634,8 @@ tbody tr:last-child td {
   border-radius: 3px;
   background: var(--brand-100);
   color: var(--emphasis-text);
-  font-size: 9px;
-  font-weight: 850;
+  font-size: 11px;
+  font-weight: 500;
 }
 
 .nucleus-cell {
@@ -5652,13 +5652,13 @@ tbody tr:last-child td {
   border-radius: 3px;
   background: var(--brand-100);
   color: var(--emphasis-text);
-  font-size: 8px;
+  font-size: 10px;
 }
 
 .nucleus-cell > span {
   overflow: hidden;
   color: var(--muted);
-  font-size: 9px;
+  font-size: 11px;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -5686,8 +5686,8 @@ tbody tr:last-child td {
   border-radius: 3px;
   background: var(--surface-soft);
   color: var(--muted);
-  font-size: 8px;
-  font-weight: 700;
+  font-size: 10px;
+  font-weight: 500;
 }
 
 .people-mobile-list {
@@ -5731,7 +5731,7 @@ tbody tr:last-child td {
 .people-mobile-card > header div > span {
   margin-top: 2px;
   color: var(--muted);
-  font-size: 8.5px;
+  font-size: 10px;
 }
 
 .people-mobile-assets {
@@ -5744,8 +5744,8 @@ tbody tr:last-child td {
 .people-mobile-assets > span {
   display: block;
   color: var(--muted);
-  font-size: 8px;
-  font-weight: 750;
+  font-size: 10px;
+  font-weight: 500;
   text-transform: uppercase;
 }
 
@@ -5762,7 +5762,7 @@ tbody tr:last-child td {
   border-radius: 3px;
   background: var(--surface);
   color: var(--emphasis-text);
-  font-size: 8.5px;
+  font-size: 10px;
 }
 
 .people-mobile-card > footer {
@@ -5950,4 +5950,40 @@ tbody tr:last-child td {
 
 .data-table {
   font-variant-numeric: tabular-nums;
+}
+
+/* ---------------------------------------------------------------------------
+   Assinatura visual
+
+   Caráter aqui não vem de sombra nem de canto arredondado, e sim de tres
+   decisoes repetidas com disciplina: espacamento nos rotulos pequenos, o
+   amarelo da marca como unica marcacao de "isto esta ativo", e contraste real
+   entre titulo e corpo.
+   --------------------------------------------------------------------------- */
+
+th {
+  letter-spacing: 0.07em;
+}
+
+.eyebrow,
+.privacy-eyebrow,
+.record-count,
+.operational-metric-label,
+.metric-label {
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* O amarelo Gazin marca o que esta ativo — linha selecionada, aba aberta,
+   secao corrente. Um gesto so, sempre igual, e o que vira identidade. */
+tbody tr.is-selected {
+  box-shadow: inset 3px 0 0 var(--yellow);
+}
+
+.page-heading h1 {
+  letter-spacing: -0.02em;
+}
+
+.page-heading {
+  padding-bottom: 2px;
 }

@@ -200,7 +200,7 @@ a {
   margin-top: 6px;
   color: var(--teal);
   font-size: 10px;
-  font-weight: 800;
+  font-weight: 700;
   text-transform: uppercase;
 }
 
@@ -213,7 +213,7 @@ a {
   margin: 0 0 8px;
   color: var(--brand-700);
   font-size: 10px;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
@@ -271,7 +271,7 @@ a {
   border-radius: 3px;
   color: var(--login-muted);
   font-size: 12px;
-  font-weight: 750;
+  font-weight: 700;
   text-align: center;
   text-decoration: none;
   transition: background 150ms ease, color 150ms ease;
@@ -328,7 +328,7 @@ a {
 .login-field span {
   color: var(--login-text);
   font-size: 12px;
-  font-weight: 750;
+  font-weight: 700;
 }
 
 .login-field input {
@@ -362,7 +362,7 @@ a {
   color: var(--login-button-text);
   cursor: pointer;
   font: inherit;
-  font-weight: 800;
+  font-weight: 700;
   text-align: left;
   transition: background-color 150ms ease, border-color 150ms ease;
 }
@@ -405,7 +405,7 @@ a {
   background: var(--login-button-start);
   color: var(--login-button-text);
   font-size: 15px;
-  font-weight: 800;
+  font-weight: 700;
   text-decoration: none;
   transition: background-color 150ms ease, border-color 150ms ease;
 }
@@ -506,7 +506,7 @@ a {
 
 .login-legal a {
   color: var(--brand-700);
-  font-weight: 750;
+  font-weight: 700;
   text-underline-offset: 3px;
 }
 
