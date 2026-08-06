@@ -222,7 +222,7 @@ A interface segue o padrão de relatório em lista com detalhe do objeto, comum 
 - [Sistema de design Atlassian - Tabela dinâmica](https://atlassian.design/components/dynamic-table)
 - [Shopify Polaris - Filtros de índice](https://polaris-react.shopify.com/components/selection-and-input/index-filters)
 
-A identidade visual usa azul cobalto e amarelo como referências da presença digital da Gazin, mantendo superfícies neutras e cores semânticas independentes para garantir leitura operacional e contraste.
+A cor institucional é o azul da própria logo Gazin (`#0B109F`), extraído dela e não aproximado: a rampa de marca deriva desse valor no tema claro e no escuro. O amarelo `#FFC400` marca exclusivamente o que está ativo — linha selecionada e aba aberta. Superfícies permanecem neutras e as cores semânticas de status são independentes da marca, para garantir leitura operacional e contraste.
 
 Foram adotados padrões operacionais recorrentes nessas soluções: visibilidade imediata de status, busca por posse e localização, filtros rápidos de exceção, paginação para inventários extensos e acesso contextual ao histórico. O sistema também reúne inventário cíclico, custódia, manutenção, rastreamento, contratos, garantias, contabilidade, reservas, kits, desligamentos, documentos privados, inspeções e integrações em uma central operacional.
 

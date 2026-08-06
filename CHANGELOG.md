@@ -11,6 +11,10 @@ O formato segue Keep a Changelog e as versões usam Semantic Versioning.
 - Tipografia trocada de Inter para IBM Plex Sans, com IBM Plex Mono e figuras tabulares em identificadores e colunas numéricas. As fontes são servidas pelo próprio domínio via `next/font`, porque a CSP restringe `font-src` a 'self'.
 - Status deixa de ser cápsula com fundo e passa a ser marca vertical com texto colorido: em tabela densa a cápsula criava uma segunda camada de caixas competindo com a linha.
 - Títulos das telas passam a ser o nome da visão, sem legenda explicativa. Software corporativo não se apresenta em toda tela.
+- Cor institucional passa a ser o azul da própria logo Gazin (`#0B109F`), extraído da imagem. O cobalto `#0055A5` documentado era uma aproximação, e o azul acinzentado `#315f87` que de fato renderizava não vinha da marca.
+- Cores de status recuperam saturação: o conjunto de tokens que vencia era dessaturado (`#607f83`, `#5e7f74`, `#b45d64`) e não comunicava urgência.
+- Hierarquia tipográfica: quatro pesos no lugar de dezesseis — havia valores como 620, 680 e 850, que nenhuma fonte tem e o navegador sintetizava — e escala sem valores fracionários, com os 85 rótulos pequenos fora do negrito.
+- O amarelo `#FFC400` passa a marcar exclusivamente o que está ativo: linha selecionada e aba aberta.
 
 ### Corrigido
 

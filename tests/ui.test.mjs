@@ -416,8 +416,19 @@ test("tema escuro é acessível e persiste somente a preferência em cookie", ()
   assert.match(themeInit, /prefers-color-scheme: dark/);
   assert.match(css, /:root\[data-theme="dark"\]/);
   assert.match(css, /--heading-text:\s*#FFFFFF/i);
-  assert.match(css, /--icon-accent:\s*#8EC9FF/i);
+  // Azul institucional derivado da logo Gazin, clareado para o tema escuro.
+  assert.match(css, /--icon-accent:\s*#AEB3FF/i);
   assert.doesNotMatch(reactUi, /localStorage|sessionStorage/);
+});
+
+test("a paleta institucional vem do azul da logo Gazin", () => {
+  // O bloco de tokens do enterprise.css carrega depois e é o que vale.
+  assert.match(enterpriseCss, /--brand-700: #0B109F;/);
+  assert.match(enterpriseCss, /--sidebar-bg: #080B73;/);
+  assert.match(enterpriseCss, /--action-bg: #0B109F;/);
+  assert.match(loginCss, /--brand-700: #0B109F;/);
+  // O cobalto anterior não era a cor da marca e não deve voltar.
+  assert.doesNotMatch(enterpriseCss, /#315f87|#0055A5/i);
 });
 
 test("visual empresarial permanece plano e sem efeitos neon", () => {
