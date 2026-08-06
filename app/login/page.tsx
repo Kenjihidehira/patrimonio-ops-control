@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 
 export const metadata: Metadata = {
   title: "Entrar | Patrimônio Ops",
@@ -43,13 +42,12 @@ export default async function LoginPage({
       <section className="login-card" aria-labelledby="login-title">
         <header className="login-brand">
           <div className="login-brand-lockup" aria-label="Patrimônio Ops, Dados CX">
-            <Image
+            <img
               className="login-brand-logo"
               src="/brand/cx-mark-header.png"
               alt=""
               width={440}
               height={230}
-              priority
             />
             <span className="login-brand-copy">
               <strong>Patrimônio Ops</strong>

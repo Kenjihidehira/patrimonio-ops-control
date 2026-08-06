@@ -8,7 +8,6 @@ import {
   useRef,
   useState,
 } from "react";
-import Image from "next/image";
 import {
   isFleetPatrimonyId,
   isOfficialPatrimonyId,
@@ -44,39 +43,17 @@ import {
   formValue,
 } from "./ui";
 
-const viewCopy: Record<ViewId, { title: string; description: string }> = {
-  dashboard: {
-    title: "Acompanhamento patrimonial",
-    description: "Indicadores executivos, pendências e cobertura dos controles do departamento.",
-  },
-  inventory: {
-    title: "Controle de patrimônios",
-    description: "Localize ativos, acompanhe responsáveis e trate divergências por núcleo.",
-  },
-  operations: {
-    title: "Centro de operações patrimoniais",
-    description: "Execute inventários, custódia, manutenção e rastreamento em um único fluxo auditável.",
-  },
-  nuclei: {
-    title: "Responsabilidade por núcleo",
-    description: "Acompanhe concentração, alocação e alertas em cada área da empresa.",
-  },
-  audit: {
-    title: "Histórico de movimentações",
-    description: "Consulte alterações de posse, status e cadastro registradas pela operação.",
-  },
-  imports: {
-    title: "Carga e conciliação de planilhas",
-    description: "Pré-valide arquivos XLSX e acompanhe o resultado das importações.",
-  },
-  collaborators: {
-    title: "Responsáveis pelos patrimônios",
-    description: "Consulte e ajuste os perfis derivados dos responsáveis presentes na base.",
-  },
-  environments: {
-    title: "Ambientes e acessos",
-    description: "Controle departamentos, usuários autorizados e transferências entre ambientes.",
-  },
+// Sem legenda sob o título: quem abre o Inventário sabe o que é inventário.
+// Contexto que importa vira número no cabeçalho da tela, não frase.
+const viewCopy: Record<ViewId, { title: string }> = {
+  dashboard: { title: "Dashboard" },
+  inventory: { title: "Inventário" },
+  operations: { title: "Operações" },
+  nuclei: { title: "Núcleos" },
+  audit: { title: "Auditoria" },
+  imports: { title: "Importações" },
+  collaborators: { title: "Colaboradores" },
+  environments: { title: "Ambientes" },
 };
 
 export default function PatrimonioApp() {
@@ -320,13 +297,12 @@ export default function PatrimonioApp() {
               setMobileNavigationOpen(false);
             }}
           >
-            <Image
+            <img
               className="app-brand-logo app-brand-logo--gazin"
               src="/brand/gazin-logo.png"
               alt=""
               width={800}
               height={200}
-              priority
             />
             <span className="app-brand-copy"><strong>Patrimônio Ops</strong><small>Gestão empresarial</small></span>
           </button>
@@ -426,7 +402,6 @@ export default function PatrimonioApp() {
           <div className="topbar-main">
             <div className="page-heading">
               <h1>{copy.title}</h1>
-              <p>{copy.description}</p>
             </div>
           </div>
           <div className="data-actions">

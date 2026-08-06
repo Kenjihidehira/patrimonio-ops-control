@@ -3,6 +3,19 @@
 Todas as alterações relevantes do Patrimônio Ops Control são registradas neste arquivo.
 O formato segue Keep a Changelog e as versões usam Semantic Versioning.
 
+## [0.8.0] - 2026-08-06
+
+### Alterado
+
+- Acabamento visual unificado: um único raio de 3px no lugar de oito valores diferentes, e 65 sombras decorativas removidas das superfícies em fluxo. Sombra permanece apenas onde tem função — camada sobreposta e anel de foco (22 ocorrências).
+- Tipografia trocada de Inter para IBM Plex Sans, com IBM Plex Mono e figuras tabulares em identificadores e colunas numéricas. As fontes são servidas pelo próprio domínio via `next/font`, porque a CSP restringe `font-src` a 'self'.
+- Status deixa de ser cápsula com fundo e passa a ser marca vertical com texto colorido: em tabela densa a cápsula criava uma segunda camada de caixas competindo com a linha.
+- Títulos das telas passam a ser o nome da visão, sem legenda explicativa. Software corporativo não se apresenta em toda tela.
+
+### Corrigido
+
+- `next/image` gravava `style="color:transparent"` no elemento, que a CSP da aplicação bloqueia por não permitir atributo `style` inline. As imagens — logos estáticas, ícones de tipo e QR gerado localmente — passam a usar `<img>`, eliminando a violação sem afrouxar a política.
+
 ## [0.7.1] - 2026-08-05
 
 ### Corrigido

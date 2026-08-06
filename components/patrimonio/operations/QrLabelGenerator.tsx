@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import QRCode from "qrcode";
 import { useEffect, useMemo, useState } from "react";
 import type { Dashboard } from "../types";
@@ -81,12 +80,11 @@ export function QrLabelGenerator({ dashboard }: { dashboard: Dashboard }) {
         {error ? <p className="operation-inline-error" role="alert">{error}</p> : null}
         {dataUrl && asset ? (
           <div className="qr-label-preview">
-            <Image
+            <img
               src={dataUrl}
               alt={`QR Code do patrimônio ${visibleIdentifier}`}
               width={128}
               height={128}
-              unoptimized
             />
             <div>
               <strong><AssetIdentifier asset={asset} /></strong>

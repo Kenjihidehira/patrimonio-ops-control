@@ -6,7 +6,6 @@ import {
   useEffect,
   useRef,
 } from "react";
-import Image from "next/image";
 import type {
   Asset,
   AssetStatus,
@@ -143,16 +142,14 @@ export function AssetTypeIcon({
   className?: string;
 }) {
   return (
-    <Image
+    <img
       className={`asset-type-image ${className}`.trim()}
       src={assetTypeImagePaths[type]}
       alt=""
       aria-hidden="true"
       width={384}
       height={384}
-      sizes="64px"
       draggable={false}
-      unoptimized
     />
   );
 }

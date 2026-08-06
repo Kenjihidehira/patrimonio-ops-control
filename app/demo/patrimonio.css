@@ -62,8 +62,7 @@
   --shadow: 0 14px 34px rgba(6, 49, 95, 0.12);
   --shadow-soft: 0 5px 16px rgba(6, 49, 95, 0.07);
   --shadow-panel: 0 12px 28px rgba(6, 49, 95, 0.09);
-  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
-    "Segoe UI", sans-serif;
+  font-family: var(--font-plex-sans), "Segoe UI", ui-sans-serif, system-ui, sans-serif;
   font-synthesis: none;
 }
 
@@ -213,7 +212,6 @@ textarea:disabled {
   border-bottom: 0;
   background: var(--sidebar-bg);
   color: #ffffff;
-  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.08), 0 8px 24px rgba(2, 24, 47, 0.2);
 }
 
 .app-header::after {
@@ -245,7 +243,7 @@ textarea:disabled {
   min-height: 58px;
   padding: 4px 10px 4px 3px;
   border: 1px solid transparent;
-  border-radius: 8px;
+  border-radius: 3px;
   background: transparent;
   color: #ffffff;
   cursor: pointer;
@@ -309,7 +307,7 @@ textarea:disabled {
   min-width: 0;
   padding: 5px;
   border: 0;
-  border-radius: 8px;
+  border-radius: 3px;
   background: rgba(0, 19, 39, 0.16);
 }
 
@@ -321,7 +319,7 @@ textarea:disabled {
   min-height: 48px;
   padding: 9px 14px;
   border: 1px solid transparent;
-  border-radius: 7px;
+  border-radius: 3px;
   background: transparent;
   color: #DCEBF8;
   cursor: pointer;
@@ -437,12 +435,11 @@ textarea:disabled {
   min-height: 42px;
   padding: 7px 34px 7px 11px;
   border: 1px solid var(--line);
-  border-radius: 6px;
+  border-radius: 3px;
   background-color: var(--surface);
   color: var(--heading-text);
   font-size: 11px;
   font-weight: 750;
-  box-shadow: var(--shadow-soft);
 }
 
 .theme-toggle {
@@ -452,14 +449,13 @@ textarea:disabled {
   min-height: 42px;
   padding: 7px 10px;
   border: 1px solid var(--line);
-  border-radius: 6px;
+  border-radius: 3px;
   background: var(--surface);
   color: var(--ink);
   cursor: pointer;
   font-size: 10px;
   font-weight: 750;
   white-space: nowrap;
-  box-shadow: var(--shadow-soft);
 }
 
 .theme-toggle:hover {
@@ -473,7 +469,7 @@ textarea:disabled {
   height: 20px;
   padding: 2px;
   border: 1px solid var(--line-strong);
-  border-radius: 999px;
+  border-radius: 3px;
   background: var(--surface-soft);
   transition: background-color 160ms ease, border-color 160ms ease;
 }
@@ -510,9 +506,8 @@ textarea:disabled {
   min-height: 42px;
   padding: 5px 10px 5px 6px;
   border: 1px solid var(--line);
-  border-radius: 6px;
+  border-radius: 3px;
   background: var(--surface);
-  box-shadow: 0 2px 8px rgba(6, 49, 95, 0.04);
 }
 
 .session-avatar {
@@ -580,7 +575,7 @@ textarea:disabled {
   min-height: 42px;
   padding: 9px 14px;
   border: 1px solid transparent;
-  border-radius: 6px;
+  border-radius: 3px;
   cursor: pointer;
   font-weight: 700;
   text-decoration: none;
@@ -650,7 +645,7 @@ textarea:disabled {
   padding: 11px 14px;
   border: 1px solid var(--notice-border);
   border-left: 4px solid var(--yellow);
-  border-radius: 6px;
+  border-radius: 3px;
   background: var(--yellow-soft);
 }
 
@@ -725,15 +720,13 @@ textarea:disabled {
   overflow: hidden;
   border: 1px solid var(--line);
   border-top: 3px solid var(--kpi-accent);
-  border-radius: 8px;
+  border-radius: 3px;
   background: var(--surface-raised);
-  box-shadow: var(--shadow-panel);
   transition: border-color 160ms ease, transform 160ms ease, box-shadow 160ms ease;
 }
 
 .kpi-item:hover {
   border-color: color-mix(in srgb, var(--kpi-accent) 46%, var(--line));
-  box-shadow: var(--shadow);
   transform: translateY(-2px);
 }
 
@@ -755,7 +748,7 @@ textarea:disabled {
   height: 48px;
   place-items: center;
   border: 1px solid color-mix(in srgb, var(--kpi-accent) 34%, var(--line));
-  border-radius: 8px;
+  border-radius: 3px;
   background: color-mix(in srgb, var(--kpi-accent) 11%, var(--surface));
   color: var(--kpi-accent);
 }
@@ -799,9 +792,8 @@ textarea:disabled {
   margin-bottom: 20px;
   padding: 18px 18px 17px;
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: 3px;
   background: var(--surface-raised);
-  box-shadow: var(--shadow-panel);
 }
 
 .filter-heading,
@@ -905,7 +897,7 @@ textarea:disabled {
   min-height: 36px;
   padding: 6px 11px;
   border: 1px solid var(--line-strong);
-  border-radius: 5px;
+  border-radius: 3px;
   background: var(--surface);
   color: var(--ink);
   cursor: pointer;
@@ -918,7 +910,7 @@ textarea:disabled {
   min-width: 21px;
   height: 21px;
   place-items: center;
-  border-radius: 4px;
+  border-radius: 3px;
   background: var(--surface-soft);
   color: var(--muted);
   font-size: 9px;
@@ -972,7 +964,7 @@ textarea:disabled {
   min-height: 44px;
   padding: 9px 11px;
   border: 1px solid var(--line-strong);
-  border-radius: 5px;
+  border-radius: 3px;
   background: var(--surface);
   color: var(--ink);
 }
@@ -1050,9 +1042,8 @@ textarea:disabled {
   min-width: 0;
   overflow: hidden;
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: 3px;
   background: var(--surface-raised);
-  box-shadow: var(--shadow-panel);
 }
 
 .panel-heading {
@@ -1065,7 +1056,7 @@ textarea:disabled {
 .revision-badge {
   flex: 0 0 auto;
   padding: 4px 8px;
-  border-radius: 999px;
+  border-radius: 3px;
   background: var(--surface-soft);
   color: var(--muted);
   font-size: 10px;
@@ -1147,7 +1138,7 @@ th {
   min-height: 34px;
   padding: 5px 28px 5px 9px;
   border: 1px solid var(--line-strong);
-  border-radius: 5px;
+  border-radius: 3px;
   background: var(--surface);
   color: var(--ink);
   font-size: 10px;
@@ -1220,7 +1211,7 @@ tbody tr:last-child td {
   height: 34px;
   place-items: center;
   border: 1px solid var(--status-blue-border);
-  border-radius: 6px;
+  border-radius: 3px;
   background: var(--blue-soft);
   color: var(--status-blue-text);
 }
@@ -1248,39 +1239,37 @@ tbody tr:last-child td {
   color: var(--emphasis-text);
 }
 
+/* Status como marca vertical, não como cápsula: em tabela densa a cápsula
+   cria uma segunda camada de caixas competindo com a linha. A barra à esquerda
+   colore sem encher, e continua legível em preto e branco pela posição. */
 .status-badge {
   display: inline-flex;
   align-items: center;
-  min-height: 26px;
-  padding: 4px 9px;
-  border: 1px solid transparent;
-  border-radius: 999px;
-  font-size: 9.5px;
-  font-weight: 800;
+  min-height: 20px;
+  padding: 1px 0 1px 8px;
+  border: 0;
+  border-left: 3px solid currentColor;
+  border-radius: 0;
+  background: transparent;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0;
 }
 
 .status-allocated {
-  border-color: var(--status-blue-border);
-  background: var(--blue-soft);
   color: var(--status-blue-text);
 }
 
 .status-available {
-  border-color: var(--status-success-border);
-  background: var(--success-soft);
   color: var(--success);
 }
 
 .status-maintenance {
-  border-color: var(--status-warning-border);
-  background: var(--yellow-soft);
   color: var(--status-warning-text);
 }
 
 .status-discrepancy,
 .status-retired {
-  border-color: var(--status-danger-border);
-  background: var(--coral-soft);
   color: var(--status-danger-text);
 }
 
@@ -1307,7 +1296,7 @@ tbody tr:last-child td {
   width: min(300px, 80%);
   height: 8px;
   margin-bottom: 8px;
-  border-radius: 4px;
+  border-radius: 3px;
   background: var(--loading-bg);
   animation: pulse 1.1s ease-in-out infinite alternate;
 }
@@ -1331,7 +1320,6 @@ tbody tr:last-child td {
   top: 20px;
   min-height: 0;
   border-color: color-mix(in srgb, var(--brand-700) 24%, var(--line));
-  box-shadow: var(--shadow);
 }
 
 .detail-header {
@@ -1388,7 +1376,7 @@ tbody tr:last-child td {
   width: 50px;
   height: 50px;
   flex-basis: 50px;
-  border-radius: 8px;
+  border-radius: 3px;
   box-shadow: inset 0 0 0 1px color-mix(in srgb, currentColor 12%, transparent);
 }
 
@@ -1519,7 +1507,7 @@ tbody tr:last-child td {
   min-width: 18px;
   height: 18px;
   place-items: center;
-  border-radius: 4px;
+  border-radius: 3px;
   background: var(--surface-soft);
   color: var(--muted);
   font-size: 8px;
@@ -1661,7 +1649,7 @@ tbody tr:last-child td {
   flex: 0 0 30px;
   place-items: center;
   border: 1px solid color-mix(in srgb, var(--asset-status-accent) 36%, var(--line));
-  border-radius: 6px;
+  border-radius: 3px;
   background: color-mix(in srgb, var(--asset-status-accent) 10%, var(--surface));
   color: var(--asset-status-accent);
 }
@@ -1680,7 +1668,7 @@ tbody tr:last-child td {
 .inventory-asset-detail .status-current-state strong {
   padding: 4px 8px;
   border: 1px solid color-mix(in srgb, var(--asset-status-accent) 38%, var(--line));
-  border-radius: 999px;
+  border-radius: 3px;
   background: color-mix(in srgb, var(--asset-status-accent) 10%, var(--surface));
   color: var(--asset-status-accent);
   font-size: 9px;
@@ -1709,7 +1697,6 @@ tbody tr:last-child td {
   border-radius: 50%;
   content: "";
   background: var(--brand-700);
-  box-shadow: 0 0 0 3px var(--brand-100);
 }
 
 .movement-item:not(:last-child)::after {
@@ -1757,9 +1744,8 @@ tbody tr:last-child td {
   grid-template-columns: repeat(4, minmax(0, 1fr));
   overflow: hidden;
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: 3px;
   background: var(--surface);
-  box-shadow: var(--shadow-soft);
 }
 
 .nuclei-overview > div {
@@ -1853,15 +1839,13 @@ tbody tr:last-child td {
   flex-direction: column;
   overflow: hidden;
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: 3px;
   background: var(--surface);
-  box-shadow: var(--shadow-soft);
   transition: border-color 150ms ease, box-shadow 150ms ease, transform 150ms ease;
 }
 
 .nucleus-card:hover {
   border-color: var(--line-strong);
-  box-shadow: var(--shadow);
   transform: translateY(-2px);
 }
 
@@ -1885,7 +1869,7 @@ tbody tr:last-child td {
   min-height: 28px;
   padding: 4px 8px;
   place-items: center;
-  border-radius: 5px;
+  border-radius: 3px;
   background: var(--brand-100);
   color: var(--emphasis-text);
   font-size: 10px;
@@ -1905,7 +1889,7 @@ tbody tr:last-child td {
   align-items: center;
   padding: 3px 8px;
   border: 1px solid var(--status-success-border);
-  border-radius: 999px;
+  border-radius: 3px;
   background: var(--success-soft);
   color: var(--success);
   font-size: 8px;
@@ -1998,7 +1982,7 @@ tbody tr:last-child td {
   height: 5px;
   margin-top: 7px;
   overflow: hidden;
-  border-radius: 999px;
+  border-radius: 3px;
   background: var(--loading-bg);
 }
 
@@ -2062,7 +2046,7 @@ tbody tr:last-child td {
   height: 46px;
   place-items: center;
   border: 1px solid color-mix(in srgb, var(--brand-700) 35%, var(--line));
-  border-radius: 7px;
+  border-radius: 3px;
   background: var(--brand-100);
   color: var(--emphasis-text);
   font-size: 12px;
@@ -2087,9 +2071,8 @@ tbody tr:last-child td {
   grid-template-columns: repeat(4, minmax(0, 1fr));
   overflow: hidden;
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: 3px;
   background: var(--surface-soft);
-  box-shadow: var(--shadow-soft);
 }
 
 .nucleus-inventory-summary > div {
@@ -2199,9 +2182,8 @@ tbody tr:last-child td {
 .nucleus-inventory-table-wrap {
   overflow: auto;
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: 3px;
   background: var(--surface);
-  box-shadow: var(--shadow-soft);
 }
 
 .nucleus-inventory-table {
@@ -2271,7 +2253,7 @@ tbody tr:last-child td {
   width: 34px;
   height: 34px;
   place-items: center;
-  border-radius: 6px;
+  border-radius: 3px;
   border: 1px solid color-mix(in srgb, var(--asset-accent) 25%, var(--line));
   background: color-mix(in srgb, var(--asset-accent) 11%, var(--surface));
   color: var(--asset-accent);
@@ -2305,15 +2287,13 @@ tbody tr:last-child td {
   padding: 13px;
   border: 1px solid var(--line);
   border-left: 3px solid var(--asset-accent);
-  border-radius: 8px;
+  border-radius: 3px;
   background: var(--surface);
-  box-shadow: var(--shadow-soft);
   transition: border-color 140ms ease, box-shadow 140ms ease, transform 140ms ease;
 }
 
 .nucleus-inventory-mobile-card:hover {
   border-color: color-mix(in srgb, var(--asset-accent) 45%, var(--line));
-  box-shadow: var(--shadow);
   transform: translateY(-1px);
 }
 
@@ -2441,9 +2421,8 @@ tbody tr:last-child td {
 .people-panel {
   overflow: hidden;
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: 3px;
   background: var(--surface);
-  box-shadow: var(--shadow-soft);
 }
 
 .people-filters {
@@ -2456,7 +2435,7 @@ tbody tr:last-child td {
 .people-table-wrap {
   min-height: 260px;
   border: 0;
-  border-radius: 0;
+  border-radius: 3px;
 }
 
 .people-table {
@@ -2511,7 +2490,7 @@ tbody tr:last-child td {
   min-height: 25px;
   padding: 4px 8px;
   border: 1px solid transparent;
-  border-radius: 999px;
+  border-radius: 3px;
   font-size: 9px;
   font-weight: 800;
   white-space: nowrap;
@@ -2558,12 +2537,11 @@ tbody tr:last-child td {
   width: 52px;
   height: 52px;
   place-items: center;
-  border-radius: 8px;
+  border-radius: 3px;
   background: var(--action-bg);
   color: var(--on-action);
   font-size: 18px;
   font-weight: 850;
-  box-shadow: 0 7px 18px rgba(0, 85, 165, 0.2);
 }
 
 .profile-identity h2,
@@ -2619,7 +2597,7 @@ tbody tr:last-child td {
   min-height: 24px;
   padding: 4px 8px;
   border: 1px solid var(--line);
-  border-radius: 999px;
+  border-radius: 3px;
   background: var(--surface);
   color: var(--muted);
   font-size: 9px;
@@ -2654,14 +2632,13 @@ tbody tr:last-child td {
   padding: 11px 12px;
   border: 1px solid var(--line);
   border-left: 3px solid var(--asset-accent);
-  border-radius: 6px;
+  border-radius: 3px;
   background: var(--surface);
   transition: border-color 150ms ease, box-shadow 150ms ease, transform 150ms ease;
 }
 
 .profile-asset-item:hover {
   border-color: var(--asset-accent);
-  box-shadow: var(--shadow-soft);
   transform: translateX(2px);
 }
 
@@ -2685,7 +2662,7 @@ tbody tr:last-child td {
   height: 44px;
   place-items: center;
   border: 1px solid color-mix(in srgb, var(--profile-icon-accent) 34%, var(--line));
-  border-radius: 6px;
+  border-radius: 3px;
   background: color-mix(in srgb, var(--profile-icon-accent) 11%, var(--surface));
   color: var(--profile-icon-accent);
   font-size: 9px;
@@ -2754,7 +2731,7 @@ tbody tr:last-child td {
 .audit-list {
   overflow: hidden;
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: 3px;
   background: var(--surface);
 }
 
@@ -2812,7 +2789,7 @@ tbody tr:last-child td {
   display: grid;
   overflow: hidden;
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: 3px;
   background: var(--surface);
 }
 
@@ -2874,7 +2851,7 @@ tbody tr:last-child td {
   padding: 12px 14px;
   border: 1px solid var(--toast-success-border);
   border-left: 4px solid var(--success);
-  border-radius: 6px;
+  border-radius: 3px;
   background: var(--toast-success-bg);
   box-shadow: var(--shadow);
   color: var(--toast-success-text);
@@ -2895,7 +2872,7 @@ tbody tr:last-child td {
   padding: 0;
   overflow: hidden;
   border: 0;
-  border-radius: 8px;
+  border-radius: 3px;
   background: var(--surface);
   box-shadow: var(--modal-shadow);
 }
@@ -2979,7 +2956,7 @@ tbody tr:last-child td {
   flex: 0 0 52px;
   place-items: center;
   border: 1px solid color-mix(in srgb, var(--coral) 40%, var(--line));
-  border-radius: 8px;
+  border-radius: 3px;
   background: color-mix(in srgb, var(--coral) 10%, var(--surface));
   color: var(--coral);
 }
@@ -3217,7 +3194,7 @@ tbody tr:last-child td {
   flex: 0 0 56px;
   place-items: center;
   border: 1px solid color-mix(in srgb, var(--brand-700) 34%, var(--line));
-  border-radius: 8px;
+  border-radius: 3px;
   background: color-mix(in srgb, var(--brand-700) 10%, var(--surface));
   color: var(--brand-700);
   box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--surface) 55%, transparent),
@@ -3274,7 +3251,6 @@ tbody tr:last-child td {
   min-height: 30px;
   padding: 5px 11px;
   font-size: 9.5px;
-  box-shadow: 0 4px 12px color-mix(in srgb, var(--scanner-status-accent) 12%, transparent);
 }
 
 .scanner-asset-detail .detail-actions {
@@ -3315,7 +3291,7 @@ tbody tr:last-child td {
   justify-content: center;
   margin-top: 7px;
   padding-top: 1px;
-  border-radius: 6px 6px 0 0;
+  border-radius: 3px;
   font-size: 10.5px;
 }
 
@@ -3349,9 +3325,8 @@ tbody tr:last-child td {
   gap: 1px;
   overflow: hidden;
   border: 1px solid color-mix(in srgb, var(--brand-700) 16%, var(--line));
-  border-radius: 8px;
+  border-radius: 3px;
   background: var(--line);
-  box-shadow: var(--shadow-soft);
 }
 
 .scanner-asset-detail .detail-grid > div {
@@ -3390,9 +3365,8 @@ tbody tr:last-child td {
   padding: 18px;
   border: 1px solid color-mix(in srgb, var(--scanner-status-accent) 26%, var(--line));
   border-left: 4px solid var(--scanner-status-accent);
-  border-radius: 8px;
+  border-radius: 3px;
   background: color-mix(in srgb, var(--scanner-status-accent) 4%, var(--surface-raised));
-  box-shadow: var(--shadow-soft);
 }
 
 .scanner-asset-detail .status-editor-heading {
@@ -3438,7 +3412,7 @@ tbody tr:last-child td {
 .scanner-asset-detail .status-current-state strong {
   padding: 6px 10px;
   border: 1px solid color-mix(in srgb, var(--scanner-status-accent) 38%, var(--line));
-  border-radius: 999px;
+  border-radius: 3px;
   background: color-mix(in srgb, var(--scanner-status-accent) 10%, var(--surface));
   color: var(--scanner-status-accent);
   font-size: 10px;
@@ -3452,7 +3426,7 @@ tbody tr:last-child td {
   flex: 0 0 36px;
   place-items: center;
   border: 1px solid color-mix(in srgb, var(--scanner-status-accent) 36%, var(--line));
-  border-radius: 6px;
+  border-radius: 3px;
   background: color-mix(in srgb, var(--scanner-status-accent) 10%, var(--surface));
   color: var(--scanner-status-accent);
 }
@@ -3470,7 +3444,6 @@ tbody tr:last-child td {
   width: 100%;
   min-width: 150px;
   min-height: 46px;
-  box-shadow: 0 8px 18px color-mix(in srgb, var(--action-bg) 24%, transparent);
 }
 
 .scanner-asset-detail .status-form .form-error {
@@ -3501,7 +3474,7 @@ tbody tr:last-child td {
   gap: 5px;
   padding: 18px;
   border: 1px dashed var(--line-strong);
-  border-radius: 6px;
+  border-radius: 3px;
   background: var(--surface-soft);
 }
 
@@ -3518,7 +3491,7 @@ tbody tr:last-child td {
   margin-top: 8px;
   padding: 8px;
   border: 1px solid var(--line);
-  border-radius: 5px;
+  border-radius: 3px;
   background: var(--surface);
 }
 
@@ -3532,7 +3505,7 @@ tbody tr:last-child td {
   gap: 7px;
   padding: 12px;
   border: 1px solid var(--line-strong);
-  border-radius: 6px;
+  border-radius: 3px;
   background: var(--surface-soft);
   color: var(--body-text);
 }
@@ -3572,7 +3545,7 @@ tbody tr:last-child td {
   grid-template-columns: repeat(4, minmax(0, 1fr));
   overflow: hidden;
   border: 1px solid var(--line);
-  border-radius: 6px;
+  border-radius: 3px;
 }
 
 .preview-metrics div {
@@ -3605,7 +3578,7 @@ tbody tr:last-child td {
   padding: 12px 14px;
   overflow-y: auto;
   border: 1px solid var(--line);
-  border-radius: 6px;
+  border-radius: 3px;
 }
 
 .preview-issues > strong {
@@ -3677,7 +3650,7 @@ tbody tr:last-child td {
   padding: 0;
   place-items: center;
   border: 1px solid var(--line);
-  border-radius: 6px;
+  border-radius: 3px;
   background: var(--surface);
   color: var(--icon-muted);
   cursor: pointer;
@@ -3704,7 +3677,7 @@ tbody tr:last-child td {
   margin: 0 18px 14px;
   padding: 9px 11px;
   border: 1px solid var(--toast-error-border);
-  border-radius: 5px;
+  border-radius: 3px;
   background: var(--coral-soft);
   color: var(--form-error-text);
   font-size: 11px;
@@ -3736,9 +3709,8 @@ tbody tr:last-child td {
   padding: 24px;
   overflow: hidden;
   border: 1px solid var(--line);
-  border-radius: 12px;
+  border-radius: 3px;
   background: var(--surface);
-  box-shadow: var(--shadow-soft);
 }
 
 .environment-card::before {
@@ -3785,7 +3757,7 @@ tbody tr:last-child td {
   gap: 7px;
   padding: 8px 11px;
   border: 1px solid color-mix(in srgb, var(--success) 32%, var(--line));
-  border-radius: 999px;
+  border-radius: 3px;
   background: color-mix(in srgb, var(--success) 10%, var(--surface));
   color: var(--success);
   font-size: 10px;
@@ -3828,7 +3800,7 @@ tbody tr:last-child td {
   gap: 10px;
   padding: 12px;
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: 3px;
   background: var(--surface);
 }
 
@@ -3879,7 +3851,7 @@ tbody tr:last-child td {
   min-height: 38px;
   padding: 8px 11px;
   border: 1px solid var(--line);
-  border-radius: 7px;
+  border-radius: 3px;
   background: var(--surface);
   color: var(--ink);
   font-size: 11px;
@@ -3999,7 +3971,7 @@ tbody tr:last-child td {
 .environment-user-tags > span {
   margin: 0;
   padding: 5px 7px;
-  border-radius: 999px;
+  border-radius: 3px;
   background: var(--brand-100);
   color: var(--brand-700);
   font-size: 9px;
@@ -4084,7 +4056,7 @@ tbody tr:last-child td {
   width: fit-content;
   margin-top: 5px !important;
   padding: 3px 6px;
-  border-radius: 999px;
+  border-radius: 3px;
   background: var(--surface-soft);
   font-weight: 800;
 }
@@ -4255,7 +4227,7 @@ tbody tr:last-child td {
     margin: 0 calc(clamp(20px, 3vw, 44px) * -1);
     padding: 6px clamp(20px, 3vw, 44px) 8px;
     border-width: 1px 0 0;
-    border-radius: 0;
+    border-radius: 3px;
     overflow-x: auto;
     overscroll-behavior-x: contain;
     scroll-snap-type: x proximity;
@@ -4518,7 +4490,7 @@ tbody tr:last-child td {
     min-height: 126px;
     padding: 13px;
     border: 1px solid var(--line);
-    border-radius: 7px;
+    border-radius: 3px;
     background: var(--surface);
     color: var(--ink);
     cursor: pointer;
@@ -4613,7 +4585,7 @@ tbody tr:last-child td {
     max-height: min(72vh, 680px);
     min-height: 0;
     overflow-y: auto;
-    border-radius: 8px 8px 0 0;
+    border-radius: 3px;
     visibility: hidden;
     transform: translateY(105%);
     transition: transform 180ms ease, visibility 180ms ease;
@@ -4689,7 +4661,7 @@ tbody tr:last-child td {
 
   .audit-list {
     border: 0;
-    border-radius: 0;
+    border-radius: 3px;
     background: transparent;
   }
 
@@ -4698,7 +4670,7 @@ tbody tr:last-child td {
     gap: 5px;
     margin-bottom: 10px;
     border: 1px solid var(--line);
-    border-radius: 8px;
+    border-radius: 3px;
     background: var(--surface);
   }
 
@@ -5098,7 +5070,6 @@ tbody tr:last-child td {
   overflow: visible;
   border: 0;
   background: transparent;
-  box-shadow: none;
 }
 
 .operational-summary-three {
@@ -5118,15 +5089,13 @@ tbody tr:last-child td {
   overflow: hidden;
   border: 1px solid var(--line);
   border-top: 3px solid var(--metric-accent);
-  border-radius: 8px;
+  border-radius: 3px;
   background: var(--surface-raised);
-  box-shadow: var(--shadow-panel);
   transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
 }
 
 .operational-metric:hover {
   border-color: color-mix(in srgb, var(--metric-accent) 46%, var(--line));
-  box-shadow: var(--shadow);
   transform: translateY(-2px);
 }
 
@@ -5141,7 +5110,7 @@ tbody tr:last-child td {
   height: 46px;
   place-items: center;
   border: 1px solid color-mix(in srgb, var(--metric-accent) 34%, var(--line));
-  border-radius: 8px;
+  border-radius: 3px;
   background: color-mix(in srgb, var(--metric-accent) 11%, var(--surface));
   color: var(--metric-accent);
 }
@@ -5191,9 +5160,8 @@ tbody tr:last-child td {
 .operational-panel {
   overflow: hidden;
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: 3px;
   background: var(--surface-raised);
-  box-shadow: var(--shadow-panel);
 }
 
 .operational-panel-toolbar {
@@ -5224,7 +5192,7 @@ tbody tr:last-child td {
   align-items: center;
   padding: 5px 10px;
   border: 1px solid var(--line);
-  border-radius: 999px;
+  border-radius: 3px;
   background: var(--surface-soft);
   color: var(--muted);
   font-size: 9px;
@@ -5279,7 +5247,6 @@ tbody tr:last-child td {
   min-height: 274px;
   padding: 20px;
   background: var(--surface-raised);
-  box-shadow: var(--shadow-panel);
 }
 
 .nucleus-card h3 {
@@ -5311,7 +5278,7 @@ tbody tr:last-child td {
 .audit-list {
   overflow: visible;
   border: 0;
-  border-radius: 0;
+  border-radius: 3px;
   background: transparent;
 }
 
@@ -5337,7 +5304,7 @@ tbody tr:last-child td {
   height: 42px;
   place-items: center;
   border: 1px solid color-mix(in srgb, var(--brand-700) 34%, var(--line));
-  border-radius: 7px;
+  border-radius: 3px;
   background: var(--brand-100);
   color: var(--icon-accent);
 }
@@ -5362,7 +5329,7 @@ tbody tr:last-child td {
   margin: 0 0 5px !important;
   padding: 3px 7px;
   border: 1px solid var(--status-blue-border);
-  border-radius: 999px;
+  border-radius: 3px;
   background: var(--blue-soft);
   color: var(--status-blue-text) !important;
   font-size: 8px !important;
@@ -5408,7 +5375,7 @@ tbody tr:last-child td {
   min-width: 0;
   padding: 9px 10px;
   border: 1px solid var(--line);
-  border-radius: 6px;
+  border-radius: 3px;
   background: var(--surface-soft);
 }
 
@@ -5460,7 +5427,7 @@ tbody tr:last-child td {
   padding: 18px;
   overflow: visible;
   border: 0;
-  border-radius: 0;
+  border-radius: 3px;
   background: transparent;
 }
 
@@ -5475,15 +5442,13 @@ tbody tr:last-child td {
   overflow: hidden;
   border: 1px solid var(--line);
   border-bottom: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: 3px;
   background: var(--surface);
-  box-shadow: var(--shadow-soft);
   transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
 }
 
 .import-run:hover {
   border-color: var(--line-strong);
-  box-shadow: var(--shadow);
   transform: translateY(-2px);
 }
 
@@ -5502,7 +5467,7 @@ tbody tr:last-child td {
   height: 42px;
   place-items: center;
   border: 1px solid color-mix(in srgb, var(--brand-700) 34%, var(--line));
-  border-radius: 7px;
+  border-radius: 3px;
   background: var(--brand-100);
   color: var(--icon-accent);
 }
@@ -5543,7 +5508,7 @@ tbody tr:last-child td {
   align-items: center;
   padding: 4px 8px;
   border: 1px solid var(--status-success-border);
-  border-radius: 999px;
+  border-radius: 3px;
   background: var(--success-soft);
   color: var(--success);
   font-size: 8px;
@@ -5569,7 +5534,7 @@ tbody tr:last-child td {
   padding: 10px 11px;
   border: 1px solid var(--line);
   border-left: 3px solid var(--brand-700);
-  border-radius: 5px;
+  border-radius: 3px;
   background: var(--surface-soft);
 }
 
@@ -5615,7 +5580,7 @@ tbody tr:last-child td {
   width: 28px;
   height: 28px;
   place-items: center;
-  border-radius: 6px;
+  border-radius: 3px;
   background: var(--brand-100);
   color: var(--emphasis-text);
   font-size: 8px;
@@ -5626,7 +5591,6 @@ tbody tr:last-child td {
   overflow: hidden;
   border: 1px solid var(--line);
   background: var(--surface-raised);
-  box-shadow: var(--shadow-panel);
 }
 
 .people-filters {
@@ -5637,7 +5601,7 @@ tbody tr:last-child td {
 .people-table-wrap {
   min-height: 0;
   border: 0;
-  border-radius: 0;
+  border-radius: 3px;
 }
 
 .people-table {
@@ -5667,7 +5631,7 @@ tbody tr:last-child td {
   height: 38px;
   place-items: center;
   border: 1px solid color-mix(in srgb, var(--brand-700) 30%, var(--line));
-  border-radius: 7px;
+  border-radius: 3px;
   background: var(--brand-100);
   color: var(--emphasis-text);
   font-size: 9px;
@@ -5685,7 +5649,7 @@ tbody tr:last-child td {
   display: grid;
   min-height: 28px;
   place-items: center;
-  border-radius: 5px;
+  border-radius: 3px;
   background: var(--brand-100);
   color: var(--emphasis-text);
   font-size: 8px;
@@ -5719,7 +5683,7 @@ tbody tr:last-child td {
   align-items: center;
   padding: 3px 6px;
   border: 1px solid var(--line);
-  border-radius: 4px;
+  border-radius: 3px;
   background: var(--surface-soft);
   color: var(--muted);
   font-size: 8px;
@@ -5736,7 +5700,7 @@ tbody tr:last-child td {
   padding: 14px;
   border: 1px solid var(--line);
   border-left: 3px solid var(--brand-700);
-  border-radius: 7px;
+  border-radius: 3px;
   background: var(--surface);
 }
 
@@ -5773,7 +5737,7 @@ tbody tr:last-child td {
 .people-mobile-assets {
   padding: 10px;
   border: 1px solid var(--line);
-  border-radius: 6px;
+  border-radius: 3px;
   background: var(--surface-soft);
 }
 
@@ -5795,7 +5759,7 @@ tbody tr:last-child td {
 .people-mobile-assets > strong > span {
   padding: 3px 6px;
   border: 1px solid var(--line);
-  border-radius: 4px;
+  border-radius: 3px;
   background: var(--surface);
   color: var(--emphasis-text);
   font-size: 8.5px;
@@ -5911,7 +5875,7 @@ tbody tr:last-child td {
     margin: 10px;
     padding: 14px;
     border: 1px solid var(--line);
-    border-radius: 7px;
+    border-radius: 3px;
   }
 
   .audit-item-icon {
@@ -5967,4 +5931,23 @@ tbody tr:last-child td {
   .people-mobile-card > footer .button {
     width: 100%;
   }
+}
+
+/* Acabamento: identificadores e números em monoespaçada de figuras tabulares.
+   Alinhar dígito com dígito é o que torna a varredura vertical de uma tabela
+   densa realmente rápida. */
+.asset-id-button,
+.asset-identifiers,
+.nucleus-code,
+.nucleus-inventory-code,
+.scanner-missing-identifier,
+.data-table td:first-child,
+.metric-value,
+.record-count {
+  font-family: var(--font-plex-mono), ui-monospace, "Cascadia Mono", monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+.data-table {
+  font-variant-numeric: tabular-nums;
 }

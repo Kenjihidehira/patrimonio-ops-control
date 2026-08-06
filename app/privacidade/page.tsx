@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import "./privacy.css";
 
 export const metadata: Metadata = {
@@ -16,7 +15,7 @@ export default function PrivacyPage() {
       <article className="privacy-document">
         <header className="privacy-header">
           <a className="privacy-brand" href="/login" aria-label="Voltar para o login">
-            <Image src="/brand/cx-mark-header.png" alt="" width={440} height={230} priority />
+            <img src="/brand/cx-mark-header.png" alt="" width={440} height={230} />
             <span><strong>Patrimônio Ops</strong><small>Privacidade e proteção de dados</small></span>
           </a>
           <div>

@@ -136,8 +136,11 @@ test("dashboard executivo é a entrada padrão e usa somente indicadores sustent
 });
 
 test("interface contém os fluxos comerciais essenciais", () => {
+  // Os títulos das telas são os próprios nomes das visões, sem legenda:
+  // software corporativo não se apresenta em toda tela.
+  assert.match(reactUi, /inventory: \{ title: "Inventário" \}/);
+  assert.doesNotMatch(reactUi, /description: "Localize ativos/);
   for (const marker of [
-    "Controle de patrimônios",
     "Novo patrimônio",
     "Transferir patrimônio",
     "Alterar patrimônio",
