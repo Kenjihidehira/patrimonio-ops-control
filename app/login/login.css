@@ -951,3 +951,182 @@ a {
     grid-column: 1 / -1;
   }
 }
+
+/* ---------------------------------------------------------------------------
+   Altura, nao so largura
+
+   Celular deitado, netbook e janela encolhida tem largura de sobra e altura
+   escassa. Ai o que precisa encolher e o espaco vertical — e o que pode sair
+   e o que nao participa de entrar.
+   --------------------------------------------------------------------------- */
+@media (max-height: 720px) {
+  .login-shell {
+    padding: 18px clamp(16px, 4vw, 40px);
+    align-content: start;
+  }
+
+  .login-brand {
+    padding-bottom: 12px;
+  }
+
+  .login-brand-logo {
+    width: 88px;
+    height: 46px;
+  }
+
+  .login-avatar {
+    padding: 16px 0 4px;
+  }
+
+  .login-avatar-ring {
+    width: 62px;
+    height: 62px;
+  }
+
+  .login-avatar::before,
+  .login-avatar::after {
+    width: 62px;
+  }
+
+  .login-avatar-ring svg {
+    width: 30px;
+    height: 30px;
+  }
+
+  .login-content {
+    padding-bottom: clamp(18px, 2.4vw, 26px);
+  }
+
+  .login-content h1 {
+    font-size: 20px;
+  }
+
+  .login-description {
+    margin-bottom: 16px;
+  }
+
+  .credential-form {
+    gap: 12px;
+  }
+
+  .login-field input,
+  .login-field textarea {
+    min-height: 42px;
+  }
+
+  .provider-divider {
+    margin: 14px 0;
+  }
+
+  .security-copy {
+    margin-top: 16px;
+    padding-top: 14px;
+  }
+}
+
+@media (max-height: 560px) {
+  /* O avatar e decorativo: numa faixa dessas ele custa altura que o formulario
+     precisa. A nota de seguranca continua acessivel na pagina de privacidade. */
+  .login-avatar,
+  .security-copy,
+  .login-description {
+    display: none;
+  }
+
+  /* O titulo ja diz "Entrar" ou "Solicitar acesso": a descricao repete o que a
+     tela mostra, e nessa faixa cada linha custa uma rolagem. */
+  .provider-button {
+    min-height: 42px;
+    padding: 8px 14px;
+  }
+
+  .login-modes {
+    margin-bottom: 12px;
+    padding: 3px;
+  }
+
+  .login-mode {
+    padding: 6px 10px;
+  }
+
+  .provider-divider {
+    margin: 10px 0;
+  }
+
+  .login-brand {
+    padding-bottom: 10px;
+  }
+
+  .login-content {
+    padding-top: 18px;
+  }
+
+  .login-content h1 {
+    font-size: 18px;
+  }
+
+  .login-description {
+    margin: 6px 0 14px;
+    font-size: 12px;
+  }
+
+  .login-legal {
+    margin-top: 12px;
+  }
+}
+
+/* Telas muito estreitas: o respiro lateral vira largura util para o campo. */
+@media (max-width: 380px) {
+  .login-shell {
+    padding-inline: 12px;
+  }
+
+  .login-content {
+    padding-inline: 16px;
+  }
+
+  .login-options {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+}
+
+/* Tela deitada: falta altura e sobra largura. A marca sai de cima do
+   formulario e vai para o lado, o que corta quase metade da altura. */
+@media (max-height: 620px) and (min-width: 680px) {
+  .login-stack {
+    display: grid;
+    width: min(100%, 820px);
+    grid-template-columns: minmax(150px, 0.5fr) minmax(0, 1fr);
+    align-items: center;
+    gap: clamp(20px, 3vw, 40px);
+  }
+
+  .login-brand {
+    padding: 0;
+  }
+
+  .login-brand-lockup {
+    flex-direction: column;
+    gap: 12px;
+    text-align: center;
+  }
+
+  .login-brand-logo {
+    width: 116px;
+    height: 60px;
+  }
+
+  .credential-form {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 14px;
+  }
+
+  .credential-form > .login-field:nth-of-type(-n + 2),
+  .credential-form > .credential-submit,
+  .credential-form > .login-options,
+  .credential-form > input[type="hidden"] {
+    grid-column: 1 / -1;
+  }
+}

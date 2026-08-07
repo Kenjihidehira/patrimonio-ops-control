@@ -603,3 +603,17 @@ test("manter conectado estende a sessão sem torná-la permanente", () => {
   // A autorização continua sendo reconsultada a cada requisição.
   assert.match(sharedAuth, /isIdentityStillAuthorized/);
 });
+
+test("login responde à altura da tela, não só à largura", () => {
+  // Celular deitado tem largura de sobra e altura escassa: a marca sai de cima
+  // do formulário e vai para o lado, o que corta quase metade da altura.
+  assert.match(loginCss, /@media \(max-height: 620px\) and \(min-width: 680px\)/);
+  assert.match(loginCss, /@media \(max-height: 720px\)/);
+  // Em faixa muito baixa, o que é decorativo sai para o formulário caber.
+  assert.match(
+    loginCss,
+    /@media \(max-height: 560px\)[\s\S]*?\.login-avatar,\s*\.security-copy,\s*\.login-description \{\s*display: none;/,
+  );
+  // Tela muito estreita: o respiro lateral vira largura útil do campo.
+  assert.match(loginCss, /@media \(max-width: 380px\)[\s\S]*?flex-direction: column;/);
+});
