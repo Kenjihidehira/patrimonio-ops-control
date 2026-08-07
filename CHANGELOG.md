@@ -3,6 +3,24 @@
 Todas as alterações relevantes do Patrimônio Ops Control são registradas neste arquivo.
 O formato segue Keep a Changelog e as versões usam Semantic Versioning.
 
+## [0.9.0] - 2026-08-06
+
+### Adicionado
+
+- **Manter conectado** no login por senha: estende a sessão de 8 horas para 30 dias. Não a torna permanente — a autorização continua sendo reconsultada a cada requisição e a versão de sessão continua invalidando o cookie a cada alteração de acesso.
+- Link **Esqueci minha senha** na tela de login. O destino ainda não existe: aponta para `?mode=reset`, que não tem tratamento.
+
+### Alterado
+
+- Tela de login redesenhada a partir de referência aprovada: avatar decorativo com réguas laterais, campos com bloco de ícone, botão em caixa alta e linha de opções. O avatar não é foto de perfil — antes do login não há usuário conhecido.
+- O fundo passa a ser um degradê da rampa azul Gazin e o cartão desaparece: o formulário assenta direto sobre o fundo. É a única exceção à regra de superfície chapada, e o teste passa a permitir gradiente exclusivamente em `app/login/login.css`.
+- O amarelo `#FFC400` assume a ação primária no login, papel que na referência cabia ao rosa.
+
+### Corrigido
+
+- `--brand-700` não clareava no tema escuro em `login.css`, o que deixava o anel do avatar em 1,17:1. Passa a ter valor próprio por tema.
+- Bloco de ícone dos campos media 1,55:1 no tema escuro em cinza; passa a usar o azul institucional.
+
 ## [0.8.0] - 2026-08-06
 
 ### Alterado

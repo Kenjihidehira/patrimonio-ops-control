@@ -434,8 +434,12 @@ test("a paleta institucional vem do azul da logo Gazin", () => {
 });
 
 test("visual empresarial permanece plano e sem efeitos neon", () => {
-  const applicationStyles = [css, enterpriseCss, loginCss, privacyCss].join("\n");
-  assert.doesNotMatch(applicationStyles, /(?:linear|radial|conic)-gradient|drop-shadow/);
+  // A superfície chapada continua valendo para o sistema. A tela de login é a
+  // exceção deliberada: adota o degradê da referência aprovada, e só ela.
+  const applicationStyles = [css, enterpriseCss, privacyCss].join("\n");
+  assert.doesNotMatch(applicationStyles, /(?:linear|radial|conic)-gradient/);
+  assert.doesNotMatch([applicationStyles, loginCss].join("\n"), /drop-shadow/);
+  assert.match(loginCss, /background: linear-gradient\(163deg/);
   assert.match(enterpriseCss, /--canvas: #111d29/);
   // O azul da marca toma a tela; o cartão claro é o único ponto de foco.
   assert.match(loginCss, /--login-canvas: #080B73;/);
@@ -447,8 +451,8 @@ test("visual empresarial permanece plano e sem efeitos neon", () => {
 });
 
 test("o login usa cartão centrado com faixa amarela", () => {
-  assert.match(loginCss, /\.login-stack \{\s*width: min\(100%, 600px\);/);
-  assert.match(loginCss, /\.login-card::before \{[\s\S]*?background: var\(--yellow\)/);
+  assert.match(loginCss, /\.login-stack \{\s*width: min\(100%, 340px\);/);
+  assert.match(loginCss, /\.credential-submit \{[\s\S]*?background: var\(--yellow\)/);
   assert.match(loginCss, /\.login-mode-active \{\s*background: var\(--login-button-start\);/);
 });
 

@@ -20,7 +20,7 @@
   --login-glow-teal: transparent;
   --login-card: #FFFFFF;
   --login-card-deep: #F1F4F6;
-  --login-card-border: #8B90C4;
+  --login-card-border: rgba(255, 255, 255, 0.4);
   --login-card-highlight: transparent;
   --login-text: #172235;
   --login-muted: #5F6F82;
@@ -104,7 +104,11 @@ a {
   min-height: 100dvh;
   padding: clamp(24px, 5vw, 64px);
   place-items: center;
-  background: var(--login-canvas);
+  background: linear-gradient(163deg, #1B22C9 0%, #0B109F 34%, #080B73 62%, #05073F 100%);
+}
+
+:root[data-theme="dark"] .login-shell {
+  background: linear-gradient(163deg, #141BB0 0%, #0A0C56 38%, #070A3A 68%, #04061F 100%);
 }
 
 .login-shell::before {
@@ -118,27 +122,18 @@ a {
 .login-card {
   position: relative;
   width: 100%;
-  overflow: hidden;
   border: 0;
-  border-radius: 22px;
-  background: var(--login-card);
-  box-shadow: 0 22px 52px var(--login-shadow);
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
 }
 
 .login-card::before {
-  position: absolute;
-  z-index: 3;
-  top: 0;
-  right: 0;
-  left: 0;
-  height: 3px;
-  background: var(--yellow);
-  content: "";
-  pointer-events: none;
+  display: none;
 }
 
 .login-stack {
-  width: min(100%, 600px);
+  width: min(100%, 340px);
 }
 
 .login-brand {
@@ -707,4 +702,186 @@ a {
 .forgot-link:hover {
   color: var(--brand-700);
   text-decoration: underline;
+}
+
+/* ---------------------------------------------------------------------------
+   Sobre o degrade
+
+   Sem cartao, tudo assenta direto no fundo: o texto fica claro, os campos sao
+   placas semitransparentes e o amarelo da marca assume o papel de acao
+   primaria — que na referencia cabia ao rosa.
+   --------------------------------------------------------------------------- */
+.login-content {
+  padding: 0;
+}
+
+.login-content h1,
+.login-description,
+.eyebrow {
+  text-align: center;
+}
+
+.login-content h1 {
+  color: #FFFFFF;
+  font-size: 22px;
+}
+
+.login-description {
+  max-width: none;
+  margin: 8px 0 22px;
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 13px;
+}
+
+.eyebrow {
+  color: var(--yellow);
+}
+
+.login-avatar {
+  padding: 0 0 22px;
+}
+
+.login-avatar::before,
+.login-avatar::after {
+  width: 74px;
+  background: rgba(255, 255, 255, 0.34);
+}
+
+.login-avatar-ring {
+  border-color: rgba(255, 255, 255, 0.72);
+  color: #FFFFFF;
+}
+
+.login-field input,
+.login-field textarea {
+  border: 0;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.9);
+  color: #16203A;
+}
+
+.login-field input::placeholder {
+  color: #5A6478;
+}
+
+.login-field input:hover,
+.login-field textarea:hover {
+  background: rgba(255, 255, 255, 0.97);
+}
+
+.login-field input:focus,
+.login-field textarea:focus {
+  outline: 0;
+  box-shadow: 0 0 0 3px rgba(255, 196, 0, 0.55);
+}
+
+.login-field-icon .field-icon {
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 44px;
+  border-radius: 4px 0 0 4px;
+  background: rgba(9, 13, 74, 0.24);
+  color: #FFFFFF;
+}
+
+.login-field-icon input {
+  padding-left: 58px;
+}
+
+/* O amarelo da marca assume o papel que na referencia era do rosa. */
+.credential-submit {
+  grid-template-columns: minmax(0, 1fr);
+  justify-items: center;
+  min-height: 46px;
+  border: 0;
+  border-radius: 4px;
+  background: var(--yellow);
+  color: #05073F;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.credential-submit:hover {
+  background: #E5B000;
+}
+
+.credential-submit .provider-arrow {
+  display: none;
+}
+
+.remember-me {
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.remember-me input {
+  accent-color: var(--yellow);
+}
+
+.forgot-link {
+  color: rgba(255, 255, 255, 0.72);
+  font-style: italic;
+}
+
+.forgot-link:hover {
+  color: #FFFFFF;
+}
+
+.login-modes {
+  border: 0;
+  background: transparent;
+}
+
+.login-mode {
+  color: rgba(255, 255, 255, 0.66);
+}
+
+.login-mode:hover {
+  color: #FFFFFF;
+}
+
+.login-mode-active {
+  background: rgba(255, 255, 255, 0.16);
+  color: #FFFFFF;
+}
+
+.provider-divider {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.provider-divider::before,
+.provider-divider::after {
+  background: rgba(255, 255, 255, 0.24);
+}
+
+.provider-button {
+  border: 1px solid rgba(255, 255, 255, 0.42);
+  border-radius: 4px;
+  background: transparent;
+  color: #FFFFFF;
+}
+
+.provider-button:hover {
+  border-color: #FFFFFF;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.security-copy {
+  border-top: 1px solid rgba(255, 255, 255, 0.24);
+  color: rgba(255, 255, 255, 0.74);
+}
+
+.security-icon {
+  background: rgba(255, 255, 255, 0.14);
+  color: #FFFFFF;
+}
+
+.login-legal a {
+  color: rgba(255, 255, 255, 0.66);
+}
+
+.login-legal a:hover {
+  color: #FFFFFF;
 }
