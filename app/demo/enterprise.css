@@ -3758,6 +3758,66 @@ body {
   display: none;
 }
 
+/* Notebook: 1366 e 1440 ficavam entre a faixa de 1260px e o tamanho cheio, e o
+   header nao cabia. A nav e flex centralizada dentro de uma trilha `1fr`, entao
+   o excesso nao rolava nem quebrava: vazava simetricamente para os dois lados e
+   caia por cima da marca e das acoes.
+   O espaco sai de tudo que e repeticao — o nome ao lado da logo, o nome do
+   usuario ao lado da inicial, o nome inteiro do departamento — e nao dos
+   rotulos da nav, que sao a funcao do header. */
+@media (min-width: 1341px) and (max-width: 1619px) {
+  .app-header-inner {
+    padding-inline: clamp(14px, 1.4vw, 22px);
+    gap: 12px;
+  }
+
+  /* Medido em 1366: apertar recuos e gaps rende ~22px, e faltavam 90. A logo
+     Gazin sozinha ja identifica o produto. */
+  .app-brand-copy {
+    display: none;
+  }
+
+  /* Precisa repetir a classe: `.app-brand-logo.app-brand-logo--gazin` fixa 104px
+     e vence um seletor de classe unica, mesmo dentro desta media query. */
+  .app-brand-logo.app-brand-logo--gazin {
+    width: 84px;
+    flex-basis: 84px;
+  }
+
+  /* O bloco de sessao reserva 174px para 133px de conteudo. O piso existe para o
+     nome nao dancar a cada troca de usuario; nesta largura ele cede. */
+  .app-header .session-control {
+    min-width: 146px;
+  }
+
+  .nav-item {
+    padding-inline: 7px;
+    font-size: 10.5px;
+  }
+
+  /* O seletor cresce com o nome do departamento ("Atendimento ao Cliente" leva
+     183px). Com teto, o proprio `select` corta o texto e a nav fica com a
+     largura de que precisa. */
+  .app-header .department-switcher {
+    min-width: 140px;
+    max-width: 166px;
+  }
+}
+
+/* Rede de seguranca: sem isto, o excesso da nav nao rola nem quebra — vaza da
+   trilha e se sobrepoe a marca e as acoes, que foi o defeito original. Rolar na
+   horizontal e feio, mas e reversivel pelo usuario; sobrepor esconde conteudo.
+   Com o conteudo cabendo nas faixas acima isto nao chega a aparecer. */
+.primary-nav {
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.primary-nav::-webkit-scrollbar {
+  display: none;
+}
+
 @media (max-width: 1260px) {
   .app-header-inner {
     gap: 10px;
@@ -3780,7 +3840,13 @@ body {
   }
 }
 
-@media (max-width: 1020px) {
+/* Onde a nav horizontal deixa de caber ela recolhe no menu, em vez de se
+   sobrepor. Medido com os 8 itens ja compactados: 1280px sobrepoe 30px, 1366px
+   sobra 7px, 1440px sobra 39px — o limite fica por volta de 1350px. Este bloco
+   valia so a partir de 1020px, entao a faixa 1021–1340 exibia a nav inteira sem
+   ter largura para ela. O espacamento de conteudo continua em 1020px, mais
+   abaixo: e assunto de tablet, nao do header. */
+@media (max-width: 1340px) {
   .app-header {
     position: sticky;
     inset: auto;
@@ -3836,12 +3902,17 @@ body {
     display: none;
   }
 
+  .topbar {
+    top: 76px;
+  }
+}
+
+@media (max-width: 1020px) {
   .main-content {
     padding-inline: 22px;
   }
 
   .topbar {
-    top: 76px;
     margin-inline: -22px;
     padding-inline: 22px;
   }

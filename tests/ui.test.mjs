@@ -260,6 +260,36 @@ test("layout contém breakpoints de tablet, celular e redução de movimento", (
   assert.match(enterpriseCss, /prefers-reduced-motion/);
 });
 
+test("header recolhe onde a nav horizontal deixa de caber", () => {
+  // Medido com os 8 itens compactados: 1280px sobrepunha 30px, 1341px sobra
+  // 8,5px, 1366px sobra 19px. O recolhimento tem de comecar antes de 1341, ou a
+  // nav volta a vazar da trilha `1fr` por cima da marca e das acoes.
+  // Mira o bloco que define o recolhimento atual — `.app-header.is-open
+  // .primary-nav` so existe nele. Uma faixa anterior de 1020px sobrou de um
+  // desenho antigo (gaveta lateral) e e sobrescrita por este.
+  const recolhimento = enterpriseCss.match(
+    /@media \(max-width: (\d+)px\) \{[^@]*?\.app-header\.is-open \.primary-nav \{\s*display: grid;/,
+  );
+  assert.ok(recolhimento, "faixa que recolhe a nav no menu nao encontrada");
+  const largura = Number(recolhimento[1]);
+  assert.ok(
+    largura >= 1300 && largura < 1341,
+    `recolhimento em ${largura}px deixa a nav sem largura entre esse valor e 1341px`,
+  );
+
+  // A faixa compacta cobre de onde a nav volta a aparecer ate onde o header em
+  // tamanho cheio cabe: em 1521px sem compactar a sobreposicao era de 22px.
+  assert.match(enterpriseCss, /@media \(min-width: 1341px\) and \(max-width: 1619px\)/);
+  // A logo so encolhe se a regra repetir a classe; com uma so, o seletor
+  // `.app-brand-logo.app-brand-logo--gazin` mantem os 104px.
+  assert.match(
+    enterpriseCss,
+    /@media \(min-width: 1341px\)[\s\S]*?\.app-brand-logo\.app-brand-logo--gazin \{\s*width: 84px;/,
+  );
+  // Rede de seguranca: o excesso rola em vez de se sobrepor.
+  assert.match(enterpriseCss, /\.primary-nav \{\s*min-width: 0;\s*overflow-x: auto;/);
+});
+
 test("inventário oferece filtros, paginação e experiência móvel dedicada", () => {
   for (const marker of [
     "quick-filters",
