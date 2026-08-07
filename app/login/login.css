@@ -4,33 +4,19 @@
   --brand-900: #080B73;
   --brand-700: #0B109F;
   --brand-100: #E9EAFC;
-  --ink: #172235;
-  --muted: #5F6F82;
-  --line: #DCE4EE;
-  --surface: #ffffff;
-  --surface-soft: #F4F7FA;
   --yellow: #FFC400;
-  --teal: #A9ADEB;
   --coral: #C93B48;
-  --coral-soft: #FDECEE;
-  --login-canvas: #DEE0F2;
-  --login-canvas-deep: #D2D5EA;
-  --login-grid: rgba(62, 82, 100, 0.1);
-  --login-glow-blue: transparent;
-  --login-glow-teal: transparent;
+  --ink: #172235;
+  --login-canvas: #F2F3FA;
   --login-card: #FFFFFF;
   --login-card-deep: #F4F5FC;
-  --login-card-border: #C7CAE4;
-  --login-card-highlight: transparent;
+  --login-line: #C7CAE4;
+  --login-field-line: #8B90C4;
+  --login-field-line-hover: #6B70AE;
   --login-text: #172235;
   --login-muted: #4C5768;
-  --login-divider: rgba(11, 16, 159, 0.16);
-  --login-shadow: rgba(32, 47, 61, 0.18);
-  --login-button-start: #0B109F;
-  --login-button-end: #080B73;
-  --login-button-text: #FFFFFF;
-  --login-brand-start: #080B73;
-  --login-brand-end: #05073F;
+  --login-on-brand: #FFFFFF;
+  --login-on-brand-muted: #B9BDEE;
   --login-error-border: #E5A99F;
   --login-error-bg: #FDECEE;
   --login-error-text: #743226;
@@ -42,24 +28,18 @@
 }
 
 :root[data-theme="dark"] {
+  --brand-700: #A3A8FF;
+  --brand-900: #0A0C56;
   --login-canvas: #18232D;
-  --login-canvas-deep: #131E27;
-  --login-grid: rgba(164, 178, 190, 0.08);
-  --login-glow-blue: transparent;
-  --login-glow-teal: transparent;
   --login-card: #22313E;
   --login-card-deep: #1D2B37;
-  --login-card-border: #465967;
-  --login-card-highlight: transparent;
+  --login-line: #40515F;
+  --login-field-line: #55607A;
+  --login-field-line-hover: #7A869E;
   --login-text: #F0F2F4;
   --login-muted: #B5BEC6;
-  --login-divider: #40515F;
-  --login-shadow: rgba(0, 0, 0, 0.3);
-  --login-button-start: #3A43DC;
-  --login-button-end: #2029C4;
-  --login-button-text: #F5F7F8;
-  --login-brand-start: #0A0C56;
-  --login-brand-end: #070A3A;
+  --login-on-brand: #F5F7FF;
+  --login-on-brand-muted: #A9AEE4;
   --login-error-border: #9F5360;
   --login-error-bg: #3A2029;
   --login-error-text: #FFD7DC;
@@ -95,120 +75,102 @@ a {
   outline-offset: 3px;
 }
 
+/* Tela dividida: a marca ocupa a coluna esquerda em altura total e o acesso
+   fica a direita. Sem cartao flutuando no meio da tela. */
 .login-shell {
-  position: relative;
-  isolation: isolate;
   display: grid;
-  overflow: hidden;
   min-height: 100dvh;
-  padding: clamp(24px, 5vw, 64px);
-  place-items: center;
-  background: var(--login-canvas);
+  grid-template-columns: minmax(320px, 0.9fr) minmax(430px, 1.1fr);
 }
 
-.login-shell::before {
-  display: none;
-}
-
-.login-shell::after {
-  display: none;
-}
-
-.login-card {
-  position: relative;
-  width: min(100%, 480px);
-  overflow: hidden;
-  border: 1px solid var(--login-card-border);
-  border-top: 4px solid var(--yellow);
-  border-radius: 3px;
-  background: var(--login-card);
-}
-
-.login-card::before {
-  position: absolute;
-  z-index: 3;
-  top: 0;
-  right: 0;
-  left: 0;
-  height: 1px;
-  background: var(--login-card-border);
-  content: "";
-  pointer-events: none;
-}
-
-.login-brand {
-  position: relative;
-  overflow: hidden;
-  padding: 22px clamp(24px, 6vw, 38px);
-  background: var(--login-brand-start);
-}
-
-.login-brand::before,
-.login-brand::after {
-  display: none;
-}
-
-.login-brand::before {
-  width: 180px;
-  height: 180px;
-  top: -112px;
-  right: -28px;
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  border-radius: 50%;
-}
-
-.login-brand::after {
-  display: none;
-}
-
-.login-brand-lockup {
-  position: relative;
-  z-index: 1;
+.brand-panel {
   display: flex;
+  min-height: 100dvh;
+  padding: clamp(28px, 4vw, 56px);
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 40px;
+  border-top: 4px solid var(--yellow);
+  background: var(--brand-900);
+  color: var(--login-on-brand);
+}
+
+.brand {
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
-  gap: 13px;
-  color: #ffffff;
+  align-self: flex-start;
+  gap: 12px;
 }
 
-.login-brand-logo {
+.brand-logo {
   display: block;
-  width: 112px;
-  height: 58px;
+  width: 104px;
+  height: 26px;
   object-fit: contain;
-  filter: none;
 }
 
-.login-brand-copy {
-  min-width: 0;
-}
-
-.login-brand-copy strong,
-.login-brand-copy small {
+.brand-lockup strong,
+.brand-lockup small {
   display: block;
 }
 
-.login-brand-copy strong {
-  font-size: 19px;
-  line-height: 1.15;
+.brand-lockup strong {
+  font-size: 14px;
+  font-weight: 500;
 }
 
-.login-brand-copy small {
-  margin-top: 6px;
-  color: var(--teal);
+.brand-lockup small {
+  margin-top: 2px;
+  color: var(--login-on-brand-muted);
   font-size: 10px;
   font-weight: 500;
   letter-spacing: 0.12em;
   text-transform: uppercase;
 }
 
-.login-content {
-  position: relative;
-  padding: clamp(30px, 6vw, 42px) clamp(30px, 6vw, 42px) clamp(34px, 6vw, 44px);
+.brand-copy {
+  width: min(100%, 460px);
+  margin: auto 0;
+}
+
+.brand-copy .eyebrow {
+  color: var(--yellow);
+}
+
+.brand-copy h1 {
+  margin: 0;
+  font-size: clamp(30px, 3.4vw, 44px);
+  font-weight: 500;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+.brand-copy > p:last-child {
+  max-width: 420px;
+  margin: 20px 0 0;
+  color: var(--login-on-brand-muted);
+  font-size: 15px;
+}
+
+.trust-note {
+  display: flex;
+  margin: 0;
+  align-items: center;
+  gap: 10px;
+  color: var(--login-on-brand-muted);
+  font-size: 12px;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--yellow);
 }
 
 .eyebrow {
-  margin: 0 0 8px;
+  margin: 0 0 10px;
   color: var(--brand-700);
   font-size: 11px;
   font-weight: 500;
@@ -216,22 +178,34 @@ a {
   text-transform: uppercase;
 }
 
-.login-content h1 {
+.access-panel {
+  display: grid;
+  min-height: 100dvh;
+  padding: clamp(28px, 5vw, 72px);
+  place-items: center;
+  background: var(--login-canvas);
+}
+
+.access-content {
+  width: min(100%, 440px);
+}
+
+.access-content h2 {
   margin: 0;
-  color: var(--login-text);
   font-size: 28px;
+  font-weight: 500;
   line-height: 1.2;
   letter-spacing: -0.02em;
 }
 
-.login-description {
-  max-width: 420px;
-  margin: 10px 0 28px;
+.access-description {
+  margin: 8px 0 26px;
   color: var(--login-muted);
-  font-size: 15px;
+  font-size: 14px;
 }
 
-.error-message {
+.error-message,
+.success-message {
   margin-bottom: 18px;
   padding: 11px 13px;
   border: 1px solid var(--login-error-border);
@@ -243,33 +217,25 @@ a {
 }
 
 .success-message {
-  margin-bottom: 18px;
-  padding: 11px 13px;
-  border: 1px solid var(--login-success-border);
-  border-left: 4px solid var(--login-success-border);
-  border-radius: 3px;
+  border-color: var(--login-success-border);
+  border-left-color: var(--login-success-border);
   background: var(--login-success-bg);
   color: var(--login-success-text);
-  font-size: 12px;
 }
 
-/* Abas como texto sublinhado, nao como caixa preenchida: e o marcador de
-   estado mais discreto que existe, e nao cria mais uma moldura na tela. */
+/* Abas como texto sublinhado: e o marcador de estado mais discreto que existe
+   e nao cria mais uma moldura na tela. */
 .login-modes {
   display: flex;
   gap: 22px;
   margin-bottom: 24px;
-  padding: 0;
-  border: 0;
-  border-bottom: 1px solid var(--login-card-border);
-  background: transparent;
+  border-bottom: 1px solid var(--login-line);
 }
 
-.login-mode {
+.login-modes a {
   margin-bottom: -1px;
   padding: 0 0 10px;
   border-bottom: 2px solid transparent;
-  border-radius: 0;
   color: var(--login-muted);
   font-size: 13px;
   font-weight: 500;
@@ -277,48 +243,18 @@ a {
   transition: color 150ms ease, border-color 150ms ease;
 }
 
-.login-mode:hover {
+.login-modes a:hover {
   color: var(--login-text);
 }
 
-.login-mode-active {
+.login-modes a[aria-current="page"] {
   border-bottom-color: var(--brand-700);
-  background: transparent;
   color: var(--login-text);
-}
-
-.login-mode:focus-visible {
-  outline: 2px solid var(--brand-700);
-  outline-offset: 2px;
 }
 
 .credential-form {
   display: grid;
   gap: 16px;
-}
-
-.login-field-help {
-  color: var(--login-muted);
-  font-size: 11px;
-}
-
-.login-field textarea {
-  width: 100%;
-  min-height: 84px;
-  padding: 11px 13px;
-  border: 1px solid var(--login-card-border);
-  border-radius: 3px;
-  background: var(--login-card-deep);
-  color: var(--login-text);
-  font: inherit;
-  resize: vertical;
-  transition: border-color 150ms ease, box-shadow 150ms ease;
-}
-
-.login-field textarea:focus {
-  border-color: var(--brand-700);
-  outline: 0;
-  box-shadow: 0 0 0 3px rgba(11, 16, 159, 0.15);
 }
 
 .login-field {
@@ -333,22 +269,39 @@ a {
   letter-spacing: 0.02em;
 }
 
-.login-field input {
+.login-field input,
+.login-field textarea {
   width: 100%;
-  min-height: 48px;
+  min-height: 46px;
   padding: 11px 13px;
-  border: 1px solid var(--login-card-border);
+  border: 1px solid var(--login-field-line);
   border-radius: 3px;
-  background: var(--login-card-deep);
+  background: var(--login-card);
   color: var(--login-text);
   font: inherit;
   transition: border-color 150ms ease, box-shadow 150ms ease;
 }
 
-.login-field input:focus {
+.login-field textarea {
+  min-height: 84px;
+  resize: vertical;
+}
+
+.login-field input:hover,
+.login-field textarea:hover {
+  border-color: var(--login-field-line-hover);
+}
+
+.login-field input:focus,
+.login-field textarea:focus {
   border-color: var(--brand-700);
   outline: 0;
-  box-shadow: 0 0 0 3px rgba(49, 95, 135, 0.16);
+  box-shadow: 0 0 0 3px rgba(11, 16, 159, 0.15);
+}
+
+.login-field-help {
+  color: var(--login-muted);
+  font-size: 11px;
 }
 
 .credential-submit {
@@ -356,23 +309,22 @@ a {
   grid-template-columns: minmax(0, 1fr) 20px;
   align-items: center;
   gap: 12px;
-  min-height: 52px;
+  min-height: 50px;
   padding: 12px 18px;
-  border: 1px solid var(--login-button-start);
+  border: 1px solid var(--brand-700);
   border-radius: 3px;
-  background: var(--login-button-start);
-  color: var(--login-button-text);
+  background: var(--brand-700);
+  color: #ffffff;
   cursor: pointer;
   font: inherit;
-  font-weight: 700;
+  font-weight: 500;
   text-align: left;
-  transition: background-color 150ms ease, border-color 150ms ease;
+  transition: background 150ms ease, border-color 150ms ease;
 }
 
-.credential-submit:hover,
-.credential-submit:active {
-  border-color: var(--login-button-end);
-  background: var(--login-button-end);
+.credential-submit:hover {
+  border-color: var(--brand-950);
+  background: var(--brand-950);
 }
 
 .provider-divider {
@@ -383,77 +335,48 @@ a {
   margin: 22px 0;
   color: var(--login-muted);
   font-size: 11px;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
 }
 
 .provider-divider::before,
 .provider-divider::after {
   height: 1px;
-  background: var(--login-divider);
+  background: var(--login-line);
   content: "";
 }
 
+/* Entrar e a acao primaria; o Google e alternativa. Dois botoes solidos na
+   mesma cor obrigam a ler os dois para descobrir qual e qual. */
 .provider-button {
-  position: relative;
   display: grid;
-  overflow: hidden;
   grid-template-columns: 24px minmax(0, 1fr) 20px;
   align-items: center;
   gap: 12px;
-  min-height: 62px;
-  padding: 13px 19px;
-  border: 1px solid var(--login-card-border);
+  min-height: 50px;
+  padding: 12px 18px;
+  border: 1px solid var(--login-field-line);
   border-radius: 3px;
-  background: var(--login-button-start);
-  color: var(--login-button-text);
-  font-size: 15px;
-  font-weight: 700;
+  background: transparent;
+  color: var(--login-text);
+  font-weight: 500;
   text-decoration: none;
-  transition: background-color 150ms ease, border-color 150ms ease;
-}
-
-.provider-button::before {
-  display: none;
+  transition: border-color 150ms ease, background 150ms ease;
 }
 
 .provider-button:hover {
-  border-color: var(--login-muted);
-  background: var(--login-button-end);
-}
-
-.provider-button:hover::before {
-  left: 108%;
-}
-
-.provider-button:active {
-  background: var(--login-button-end);
-}
-
-.provider-button-google {
+  border-color: var(--login-field-line-hover);
   background: var(--login-card-deep);
-  color: var(--login-text);
-}
-
-.provider-button-google:hover,
-.provider-button-google:active {
-  background: var(--login-card);
 }
 
 .google-mark {
-  position: relative;
-  z-index: 1;
-  width: 22px;
-  height: 22px;
-  padding: 3px;
-  border-radius: 50%;
-  background: #ffffff;
+  width: 20px;
+  height: 20px;
 }
 
 .provider-arrow {
-  position: relative;
-  z-index: 1;
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
   fill: none;
   stroke: currentColor;
   stroke-linecap: round;
@@ -463,12 +386,12 @@ a {
 
 .security-copy {
   display: grid;
-  grid-template-columns: 30px minmax(0, 1fr);
+  grid-template-columns: 26px minmax(0, 1fr);
   align-items: start;
   gap: 11px;
-  margin-top: 28px;
-  padding-top: 22px;
-  border-top: 1px solid var(--login-divider);
+  margin-top: 26px;
+  padding-top: 20px;
+  border-top: 1px solid var(--login-line);
   color: var(--login-muted);
   font-size: 11px;
 }
@@ -479,18 +402,21 @@ a {
 
 .security-icon {
   display: grid;
-  width: 30px;
-  height: 30px;
+  width: 26px;
+  height: 26px;
   place-items: center;
-  border-radius: 50%;
-  border: 1px solid var(--login-card-border);
-  background: var(--login-card-deep);
+  border-radius: 3px;
+  background: var(--brand-100);
   color: var(--brand-700);
 }
 
+:root[data-theme="dark"] .security-icon {
+  background: rgba(163, 168, 255, 0.14);
+}
+
 .security-icon svg {
-  width: 16px;
-  height: 16px;
+  width: 15px;
+  height: 15px;
   fill: none;
   stroke: currentColor;
   stroke-linecap: round;
@@ -501,51 +427,53 @@ a {
 .login-legal {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px 16px;
+  gap: 6px 18px;
   margin-top: 18px;
-  font-size: 11px;
 }
 
 .login-legal a {
+  color: var(--login-muted);
+  font-size: 11px;
+  text-decoration: none;
+}
+
+.login-legal a:hover {
   color: var(--brand-700);
-  font-weight: 700;
-  text-underline-offset: 3px;
+  text-decoration: underline;
 }
 
-@media (max-width: 760px) {
+@media (max-width: 900px) {
   .login-shell {
-    padding: 22px;
-  }
-}
-
-@media (max-width: 430px) {
-  .login-shell {
-    padding: 14px;
+    grid-template-columns: minmax(0, 1fr);
   }
 
-  .login-card {
-    border-radius: 3px;
+  .brand-panel {
+    min-height: auto;
+    padding: 26px clamp(22px, 6vw, 40px) 30px;
+    gap: 26px;
   }
 
-  .login-brand {
-    padding: 18px 20px;
+  .brand-copy {
+    margin: 0;
   }
 
-  .login-brand-logo {
-    width: 104px;
-    height: 54px;
+  .brand-copy h1 {
+    font-size: 26px;
   }
 
-  .login-brand-copy strong {
-    font-size: 15px;
+  .brand-copy > p:last-child {
+    margin-top: 12px;
+    font-size: 14px;
   }
 
-  .login-content {
-    padding: 28px 22px;
+  .trust-note {
+    display: none;
   }
 
-  .login-content h1 {
-    font-size: 24px;
+  .access-panel {
+    min-height: auto;
+    padding: 32px clamp(22px, 6vw, 40px) 44px;
+    align-content: start;
   }
 }
 
@@ -553,66 +481,6 @@ a {
   *,
   *::before,
   *::after {
-    scroll-behavior: auto !important;
-    animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
   }
-}
-
-/* O campo se define pela borda, nao por um cinza quase igual ao do cartao:
-   sobre superficie branca, caixa levemente tingida some. A faixa de abas
-   mantem o tom, porque ali o preenchimento e que separa a aba ativa. */
-.login-field input,
-.login-field textarea {
-  border-color: #8B90C4;
-  background: var(--login-card);
-}
-
-.login-field input:hover,
-.login-field textarea:hover {
-  border-color: #6B70AE;
-}
-
-/* No escuro o campo precisa de fundo proprio, senao some no cartao. A borda
-   nao e sobrescrita: o mesmo tom passa nos dois temas (3,05:1 no claro,
-   4,37:1 no escuro), e uma regra a menos e uma regra a menos para brigar. */
-:root[data-theme="dark"] .login-field input,
-:root[data-theme="dark"] .login-field textarea {
-  background: var(--login-card-deep);
-}
-
-/* Entrar e a acao primaria; o Google e alternativa. Dois botoes solidos na
-   mesma cor obrigam a ler os dois para descobrir qual e qual. */
-.provider-button {
-  border-color: #8B90C4;
-  background: transparent;
-  color: var(--login-text);
-}
-
-.provider-button:hover {
-  border-color: #6B70AE;
-  background: var(--login-card-deep);
-  color: var(--login-text);
-}
-
-:root[data-theme="dark"] .provider-button {
-  border-color: #55607A;
-  color: var(--login-text);
-}
-
-:root[data-theme="dark"] .provider-button:hover {
-  background: var(--login-card-deep);
-}
-
-/* Cores explicitas das abas no tema escuro. NAO FOI POSSIVEL VERIFICAR:
-   as medicoes de tema escuro neste ambiente se contradizem — a variavel chega
-   ao elemento com o valor escuro, mas a cor computada e a do tema claro, e o
-   painel do navegador nao estava compondo quadros. Conferir a olho antes de
-   confiar. */
-:root[data-theme="dark"] .login-mode {
-  color: #B5BEC6;
-}
-
-:root[data-theme="dark"] .login-mode-active {
-  color: #F0F2F4;
 }

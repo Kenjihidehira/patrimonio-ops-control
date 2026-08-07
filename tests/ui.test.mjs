@@ -436,18 +436,18 @@ test("visual empresarial permanece plano e sem efeitos neon", () => {
   assert.doesNotMatch(applicationStyles, /(?:linear|radial|conic)-gradient|drop-shadow/);
   assert.match(enterpriseCss, /--canvas: #111d29/);
   assert.match(loginCss, /--login-canvas: #18232D/);
-  assert.match(loginCss, /\.credential-submit \{[\s\S]*?background: var\(--login-button-start\)/);
+  assert.match(loginCss, /\.credential-submit \{[\s\S]*?background: var\(--brand-700\)/);
   // Entrar é a ação primária e o Google é alternativa: dois botões sólidos na
   // mesma cor obrigam a ler os dois para descobrir qual é qual.
-  assert.match(loginCss, /\.provider-button \{\s*border-color: #8B90C4;\s*background: transparent;/);
+  assert.match(loginCss, /\.provider-button \{[\s\S]*?background: transparent;/);
 });
 
 test("o login é uma coluna estreita, como nas primeiras versões", () => {
-  assert.match(loginCss, /width: min\(100%, 480px\)/);
-  assert.match(loginCss, /border-top: 4px solid var\(--yellow\)/);
+  assert.match(loginCss, /\.login-shell \{[\s\S]*?grid-template-columns: minmax\(320px, 0\.9fr\) minmax\(430px, 1\.1fr\)/);
+  assert.match(loginCss, /\.brand-panel \{[\s\S]*?border-top: 4px solid var\(--yellow\)/);
   // Abas como texto sublinhado, não como caixa preenchida.
-  assert.match(loginCss, /\.login-mode-active \{\s*border-bottom-color: var\(--brand-700\);\s*background: transparent;/);
-  assert.doesNotMatch(loginCss, /grid-template-columns: 312px/);
+  assert.match(loginCss, /\.login-modes a\[aria-current="page"\] \{\s*border-bottom-color: var\(--brand-700\);/);
+  assert.doesNotMatch(loginCss, /\.login-card/);
 });
 
 test("persistência permanece no servidor e escrita exige autenticação", () => {
@@ -478,17 +478,18 @@ test("tela React de login oferece credenciais e Google com navegação responsiv
   assert.match(loginPage, /autoComplete="current-password"/);
   assert.match(loginPage, /Continuar com Google/);
   assert.match(loginPage, /\/api\/auth\/google\/login/);
-  assert.match(loginPage, /\/brand\/cx-mark-header\.png/);
-  assert.match(loginPage, /className="login-card"/);
+  // A mesma logo Gazin identifica o produto em toda parte, inclusive no login.
+  assert.match(loginPage, /\/brand\/gazin-logo\.png/);
+  // Tela dividida: marca à esquerda em altura total, acesso à direita.
+  assert.match(loginPage, /className="brand-panel"/);
+  assert.match(loginPage, /className="access-panel"/);
   assert.match(loginPage, /role="alert"/);
-  assert.match(loginCss, /\.login-shell\s*\{[\s\S]*place-items:\s*center/);
-  assert.match(loginCss, /\.login-shell::before\s*\{/);
-  assert.match(loginCss, /\.login-card\s*\{[\s\S]*width:\s*min\(100%, 480px\)/);
-  assert.match(loginCss, /\.login-card\s*\{[\s\S]*background:\s*var\(--login-card\)/);
-  assert.match(loginCss, /\.login-card::before\s*\{/);
+  assert.match(loginCss, /\.access-panel \{[\s\S]*?place-items: center/);
+  assert.match(loginCss, /\.access-content \{[\s\S]*?width: min\(100%, 440px\)/);
+  assert.match(loginCss, /\.brand-panel \{[\s\S]*?background: var\(--brand-900\)/);
   assert.match(loginCss, /:root\[data-theme="dark"\]/);
-  assert.match(loginCss, /@media \(max-width: 760px\)/);
-  assert.doesNotMatch(loginPage, /brand-mark|brand-panel|access-panel|Voltar ao sistema/);
+  assert.match(loginCss, /@media \(max-width: 900px\)/);
+  assert.doesNotMatch(loginPage, /brand-mark|Voltar ao sistema/);
   assert.doesNotMatch(loginPage, /GitHub|\/api\/auth\/github\//);
   assert.doesNotMatch(loginPage, /Microsoft/);
 });
