@@ -442,10 +442,12 @@ test("visual empresarial permanece plano e sem efeitos neon", () => {
   assert.match(loginCss, /\.provider-button \{\s*border-color: #8B90C4;\s*background: transparent;/);
 });
 
-test("o login se abre em duas colunas quando há largura", () => {
-  assert.match(loginCss, /@media \(min-width: 900px\)[\s\S]*grid-template-columns: 312px minmax\(0, 1fr\)/);
-  // A régua amarela troca de orientação, não de função.
-  assert.match(loginCss, /\.login-brand::after \{\s*position: absolute;/);
+test("o login é uma coluna estreita, como nas primeiras versões", () => {
+  assert.match(loginCss, /width: min\(100%, 480px\)/);
+  assert.match(loginCss, /border-top: 4px solid var\(--yellow\)/);
+  // Abas como texto sublinhado, não como caixa preenchida.
+  assert.match(loginCss, /\.login-mode-active \{\s*border-bottom-color: var\(--brand-700\);\s*background: transparent;/);
+  assert.doesNotMatch(loginCss, /grid-template-columns: 312px/);
 });
 
 test("persistência permanece no servidor e escrita exige autenticação", () => {
@@ -481,7 +483,7 @@ test("tela React de login oferece credenciais e Google com navegação responsiv
   assert.match(loginPage, /role="alert"/);
   assert.match(loginCss, /\.login-shell\s*\{[\s\S]*place-items:\s*center/);
   assert.match(loginCss, /\.login-shell::before\s*\{/);
-  assert.match(loginCss, /\.login-card\s*\{[\s\S]*width:\s*min\(100%, 600px\)/);
+  assert.match(loginCss, /\.login-card\s*\{[\s\S]*width:\s*min\(100%, 480px\)/);
   assert.match(loginCss, /\.login-card\s*\{[\s\S]*background:\s*var\(--login-card\)/);
   assert.match(loginCss, /\.login-card::before\s*\{/);
   assert.match(loginCss, /:root\[data-theme="dark"\]/);
