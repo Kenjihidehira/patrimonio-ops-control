@@ -4071,9 +4071,9 @@ body {
 }
 
 .scanner-asset-type-icon {
-  width: 64px;
-  height: 64px;
-  flex-basis: 64px;
+  width: 54px;
+  height: 54px;
+  flex-basis: 54px;
   padding: 5px;
   border-color: var(--line);
   background: var(--surface-soft);
