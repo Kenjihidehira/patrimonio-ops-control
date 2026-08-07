@@ -137,18 +137,27 @@ a {
 .login-card {
   position: relative;
   width: 100%;
-  border: 0;
-  border-radius: 0;
-  background: transparent;
-  box-shadow: none;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 18px 44px rgba(2, 4, 26, 0.42);
 }
 
 .login-card::before {
-  display: none;
+  position: absolute;
+  z-index: 3;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: 3px;
+  background: var(--yellow);
+  content: "";
+  pointer-events: none;
 }
 
 .login-stack {
-  width: min(100%, 340px);
+  width: min(100%, 384px);
 }
 
 .login-brand {
@@ -576,12 +585,11 @@ a {
 
 /* A logo e azul sobre transparente; num fundo azul ela sumiria. A placa branca
    devolve o contraste sem precisar de uma segunda versao do arquivo. */
+/* Sem placa: o losango azul se funde ao fundo e as letras brancas da logo
+   e que fazem a leitura. */
 .login-brand-plate {
   display: inline-grid;
-  padding: 9px 13px;
   place-items: center;
-  border-radius: 10px;
-  background: #FFFFFF;
 }
 
 .login-brand-copy strong {
@@ -727,7 +735,7 @@ a {
    primaria — que na referencia cabia ao rosa.
    --------------------------------------------------------------------------- */
 .login-content {
-  padding: 0;
+  padding: 0 26px 28px;
 }
 
 .login-content h1,

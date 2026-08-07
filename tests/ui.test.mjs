@@ -455,7 +455,9 @@ test("visual empresarial permanece plano e sem efeitos neon", () => {
 });
 
 test("o login usa cartão centrado com faixa amarela", () => {
-  assert.match(loginCss, /\.login-stack \{\s*width: min\(100%, 340px\);/);
+  assert.match(loginCss, /\.login-stack \{\s*width: min\(100%, 384px\);/);
+  // O formulario volta a ter caixa, translucida para o fundo atravessar.
+  assert.match(loginCss, /\.login-card \{[\s\S]*?background: rgba\(255, 255, 255, 0\.08\)/);
   assert.match(loginCss, /\.credential-submit \{[\s\S]*?background: var\(--yellow\)/);
   assert.match(loginCss, /\.login-mode-active \{\s*background: var\(--login-button-start\);/);
 });
@@ -496,7 +498,8 @@ test("tela React de login oferece credenciais e Google com navegação responsiv
   assert.match(loginCss, /\.login-card \{[\s\S]*?background: var\(--login-card\)/);
   // A marca assina por cima do cartão, sem painel proprio.
   assert.match(loginCss, /\.login-brand \{\s*padding: 0 0 20px;\s*background: transparent;/);
-  assert.match(loginCss, /\.login-brand-plate \{[\s\S]*?background: #FFFFFF;/);
+  // A logo perde a placa: sobre o fundo escuro sao as letras brancas que leem.
+  assert.doesNotMatch(loginCss, /\.login-brand-plate \{[\s\S]*?background: #FFFFFF;/);
   assert.match(loginCss, /:root\[data-theme="dark"\]/);
   assert.match(loginCss, /@media \(max-width: 760px\)/);
   assert.doesNotMatch(loginPage, /brand-mark|brand-panel|access-panel|Voltar ao sistema/);
