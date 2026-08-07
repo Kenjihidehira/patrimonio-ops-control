@@ -288,6 +288,14 @@ test("header recolhe onde a nav horizontal deixa de caber", () => {
   );
   // Rede de seguranca: o excesso rola em vez de se sobrepor.
   assert.match(enterpriseCss, /\.primary-nav \{\s*min-width: 0;\s*overflow-x: auto;/);
+
+  // Todo item de grid tem `min-width: auto`, entao o `select` do departamento
+  // nao encolhia abaixo da opcao mais longa e escapava da caixa, indo parar por
+  // cima do botao de tema. Medido em 1366: 183px de select numa label de 166px.
+  assert.match(
+    enterpriseCss,
+    /\.app-header \.department-switcher select \{\s*width: 100%;\s*min-width: 0;/,
+  );
 });
 
 test("inventário oferece filtros, paginação e experiência móvel dedicada", () => {

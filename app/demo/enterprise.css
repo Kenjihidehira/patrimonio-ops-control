@@ -3709,6 +3709,15 @@ body {
   color-scheme: dark;
 }
 
+/* O switcher e um grid, e todo item de grid tem `min-width: auto`: o `select`
+   nao encolhe abaixo da opcao mais longa e escapa da propria caixa, indo parar
+   por cima do botao de tema. Com `min-width: 0` ele acompanha a label e corta o
+   texto sozinho — o nome completo continua na lista aberta. */
+.app-header .department-switcher select {
+  width: 100%;
+  min-width: 0;
+}
+
 .app-header .theme-toggle:hover {
   border-color: rgba(100, 212, 217, 0.7);
 }
@@ -3787,7 +3796,7 @@ body {
   /* O bloco de sessao reserva 174px para 133px de conteudo. O piso existe para o
      nome nao dancar a cada troca de usuario; nesta largura ele cede. */
   .app-header .session-control {
-    min-width: 146px;
+    min-width: 134px;
   }
 
   .nav-item {
@@ -3796,11 +3805,11 @@ body {
   }
 
   /* O seletor cresce com o nome do departamento ("Atendimento ao Cliente" leva
-     183px). Com teto, o proprio `select` corta o texto e a nav fica com a
-     largura de que precisa. */
+     183px). Com teto, o proprio `select` corta o texto — o nome completo segue
+     na lista aberta — e a nav fica com a largura de que precisa. */
   .app-header .department-switcher {
-    min-width: 140px;
-    max-width: 166px;
+    min-width: 128px;
+    max-width: 142px;
   }
 }
 
