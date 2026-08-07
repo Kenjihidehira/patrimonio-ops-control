@@ -942,6 +942,35 @@ a {
   .credential-form > input[type="hidden"] {
     grid-column: 1 / -1;
   }
+
+  /* Com a marca ao lado, o avatar divide o eixo vertical com o formulario:
+     encolhe para caber sem sumir. */
+  .login-avatar {
+    padding: 14px 0 2px;
+  }
+
+  .login-avatar-ring {
+    width: 54px;
+    height: 54px;
+  }
+
+  .login-avatar::before,
+  .login-avatar::after {
+    width: 54px;
+  }
+
+  .login-avatar-ring svg {
+    width: 26px;
+    height: 26px;
+  }
+
+  .provider-button {
+    min-height: 44px;
+  }
+
+  .login-content {
+    padding-bottom: 20px;
+  }
 }
 
 /* No login sao so dois campos: manter em coluna unica evita um formulario
@@ -1094,7 +1123,7 @@ a {
 
 /* Tela deitada: falta altura e sobra largura. A marca sai de cima do
    formulario e vai para o lado, o que corta quase metade da altura. */
-@media (max-height: 620px) and (min-width: 680px) {
+@media (max-height: 820px) and (min-width: 900px) {
   .login-stack {
     display: grid;
     width: min(100%, 820px);
@@ -1128,5 +1157,17 @@ a {
   .credential-form > .login-options,
   .credential-form > input[type="hidden"] {
     grid-column: 1 / -1;
+  }
+}
+
+/* Faixa de notebook: altura apertada mas nao critica. Sai a nota de seguranca,
+   cujo conteudo permanece integral no aviso de privacidade, linkado abaixo. */
+@media (max-height: 760px) {
+  .security-copy {
+    display: none;
+  }
+
+  .login-legal {
+    margin-top: 14px;
   }
 }

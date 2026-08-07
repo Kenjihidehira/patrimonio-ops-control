@@ -607,7 +607,10 @@ test("manter conectado estende a sessão sem torná-la permanente", () => {
 test("login responde à altura da tela, não só à largura", () => {
   // Celular deitado tem largura de sobra e altura escassa: a marca sai de cima
   // do formulário e vai para o lado, o que corta quase metade da altura.
-  assert.match(loginCss, /@media \(max-height: 620px\) and \(min-width: 680px\)/);
+  // Notebook comum tem 1366x768 e sobra ~625px de altura util: a faixa precisa
+  // alcancar essa tela, nao parar no celular deitado.
+  assert.match(loginCss, /@media \(max-height: 820px\) and \(min-width: 900px\)/);
+  assert.match(loginCss, /@media \(max-height: 760px\)[\s\S]*?\.security-copy \{\s*display: none;/);
   assert.match(loginCss, /@media \(max-height: 720px\)/);
   // Em faixa muito baixa, o que é decorativo sai para o formulário caber.
   assert.match(
