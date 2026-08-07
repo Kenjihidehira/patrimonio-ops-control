@@ -500,8 +500,13 @@ test("tela React de login oferece credenciais e Google com navegação responsiv
   assert.match(loginPage, /role="alert"/);
   assert.match(loginCss, /\.login-shell \{[\s\S]*?place-items: center/);
   assert.match(loginCss, /\.login-card \{[\s\S]*?background: var\(--login-card\)/);
-  // A marca assina por cima do cartão, sem painel proprio.
-  assert.match(loginCss, /\.login-brand \{\s*padding: 0 0 20px;\s*background: transparent;/);
+  // A marca mora dentro da caixa e e o primeiro elemento dela: a logo assina no
+  // topo do cartao em qualquer tela, nunca ao lado nem solta acima.
+  assert.match(
+    loginPage,
+    /<section className="login-card"[^>]*>\s*<header className="login-brand">/,
+  );
+  assert.match(loginCss, /\.login-brand \{\s*padding: clamp\([^)]*\) clamp\([^)]*\) clamp\([^)]*\);\s*background: transparent;/);
   // A logo perde a placa: sobre o fundo escuro sao as letras brancas que leem.
   assert.doesNotMatch(loginCss, /\.login-brand-plate \{[\s\S]*?background: #FFFFFF;/);
   assert.match(loginCss, /:root\[data-theme="dark"\]/);
@@ -605,11 +610,16 @@ test("manter conectado estende a sessão sem torná-la permanente", () => {
 });
 
 test("login responde à altura da tela, não só à largura", () => {
-  // Celular deitado tem largura de sobra e altura escassa: a marca sai de cima
-  // do formulário e vai para o lado, o que corta quase metade da altura.
   // Notebook comum tem 1366x768 e sobra ~625px de altura util: a faixa precisa
-  // alcancar essa tela, nao parar no celular deitado.
+  // alcancar essa tela, nao parar no celular deitado. Nessa altura a logo fica
+  // no topo da caixa e quem sai e o avatar — decorativo e redundante com ela.
   assert.match(loginCss, /@media \(max-height: 820px\) and \(min-width: 900px\)/);
+  assert.match(
+    loginCss,
+    /@media \(max-height: 820px\) and \(min-width: 900px\) \{\s*\.login-avatar \{\s*display: none;/,
+  );
+  // A marca continua dentro do cartao nessa faixa: encolhe, nao muda de lugar.
+  assert.doesNotMatch(loginCss, /\.login-stack \{\s*[\s\S]{0,120}?grid-template-columns/);
   assert.match(loginCss, /@media \(max-height: 760px\)[\s\S]*?\.security-copy \{\s*display: none;/);
   assert.match(loginCss, /@media \(max-height: 720px\)/);
   // Em faixa muito baixa, o que é decorativo sai para o formulário caber.

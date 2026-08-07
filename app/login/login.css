@@ -163,8 +163,10 @@ a {
   width: min(100%, clamp(340px, 62vw, 560px));
 }
 
+/* A marca mora dentro da caixa, encostada na faixa amarela do topo. O recuo
+   lateral acompanha o de `.login-content` para a logo alinhar com os campos. */
 .login-brand {
-  padding: 0 0 20px;
+  padding: clamp(22px, 3.4vw, 30px) clamp(20px, 4.4vw, 40px) clamp(16px, 2.4vw, 22px);
   background: transparent;
 }
 
@@ -1121,30 +1123,62 @@ a {
   }
 }
 
-/* Tela deitada: falta altura e sobra largura. A marca sai de cima do
-   formulario e vai para o lado, o que corta quase metade da altura. */
+/* Faixa de notebook: altura apertada mas nao critica. Sai a nota de seguranca,
+   cujo conteudo permanece integral no aviso de privacidade, linkado abaixo. */
+@media (max-height: 760px) {
+  .security-copy {
+    display: none;
+  }
+
+  .login-legal {
+    margin-top: 14px;
+  }
+}
+
+/* A logo fica no topo da caixa em qualquer tela. Em altura de notebook o que
+   sai e o avatar: ele e decorativo, e com a logo logo acima vira um segundo
+   simbolo disputando o mesmo lugar. As duas colunas do cadastro continuam. */
 @media (max-height: 820px) and (min-width: 900px) {
-  .login-stack {
-    display: grid;
-    width: min(100%, 820px);
-    grid-template-columns: minmax(150px, 0.5fr) minmax(0, 1fr);
-    align-items: center;
-    gap: clamp(20px, 3vw, 40px);
+  .login-avatar {
+    display: none;
   }
 
   .login-brand {
-    padding: 0;
+    padding-top: 18px;
+    padding-bottom: 12px;
   }
 
-  .login-brand-lockup {
-    flex-direction: column;
-    gap: 12px;
-    text-align: center;
-  }
-
+  /* Em altura de notebook a logo encolhe em vez de sair: ela e a ancora da
+     caixa, e o que sobra de espaco vem de margens, nao de conteudo. */
   .login-brand-logo {
-    width: 116px;
-    height: 60px;
+    width: 104px;
+    height: 54px;
+  }
+
+  .login-content {
+    padding-top: 16px;
+    padding-bottom: 20px;
+  }
+
+  .login-description {
+    margin-bottom: 14px;
+  }
+
+  .login-modes {
+    margin-bottom: 12px;
+  }
+
+  .provider-divider {
+    margin-top: 14px;
+    margin-bottom: 14px;
+  }
+
+  .login-legal {
+    margin-top: 10px;
+  }
+
+  .provider-button {
+    min-height: 44px;
   }
 
   .credential-form {
@@ -1157,17 +1191,5 @@ a {
   .credential-form > .login-options,
   .credential-form > input[type="hidden"] {
     grid-column: 1 / -1;
-  }
-}
-
-/* Faixa de notebook: altura apertada mas nao critica. Sai a nota de seguranca,
-   cujo conteudo permanece integral no aviso de privacidade, linkado abaixo. */
-@media (max-height: 760px) {
-  .security-copy {
-    display: none;
-  }
-
-  .login-legal {
-    margin-top: 14px;
   }
 }

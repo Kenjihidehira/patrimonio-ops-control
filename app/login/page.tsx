@@ -40,25 +40,25 @@ export default async function LoginPage({
   return (
     <main className="login-shell">
       <div className="login-stack">
-        <header className="login-brand">
-          <div className="login-brand-lockup" aria-label="Patrimônio Ops, Gazin">
-            <span className="login-brand-plate">
-              <img
-                className="login-brand-logo"
-                src="/brand/gazin-logo.png"
-                alt=""
-                width={800}
-                height={200}
-              />
-            </span>
-            <span className="login-brand-copy">
-              <strong>Patrimônio Ops</strong>
-              <small>Gestão empresarial</small>
-            </span>
-          </div>
-        </header>
-
         <section className="login-card" aria-labelledby="login-title">
+          <header className="login-brand">
+            <div className="login-brand-lockup" aria-label="Patrimônio Ops, Gazin">
+              <span className="login-brand-plate">
+                <img
+                  className="login-brand-logo"
+                  src="/brand/gazin-logo.png"
+                  alt=""
+                  width={800}
+                  height={200}
+                />
+              </span>
+              <span className="login-brand-copy">
+                <strong>Patrimônio Ops</strong>
+                <small>Gestão empresarial</small>
+              </span>
+            </div>
+          </header>
+
           <div className="login-avatar" aria-hidden="true">
             <span className="login-avatar-ring"><UserIcon /></span>
           </div>
