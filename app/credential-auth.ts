@@ -46,6 +46,7 @@ export async function completeCredentialLogin(request: Request): Promise<Respons
     const form = new URLSearchParams(body);
     const login = String(form.get("login") ?? "").trim().toLowerCase().slice(0, 254);
     const password = String(form.get("password") ?? "");
+    const remember = form.get("remember") === "on";
     returnTo = safeRelativeReturnPath(String(form.get("return_to") ?? APP_PATH));
     if (!login || !password) {
       return authFailureResponse(request, "credentials", "invalid_credentials", returnTo);
@@ -67,6 +68,7 @@ export async function completeCredentialLogin(request: Request): Promise<Respons
         sessionVersion: identity.sessionVersion,
       },
       returnTo,
+      remember,
     );
   } catch (error) {
     if (error instanceof SupabaseError) {

@@ -42,6 +42,7 @@
 }
 
 :root[data-theme="dark"] {
+  --brand-700: #A3A8FF;
   --login-canvas: #070A3A;
   --login-canvas-deep: #04061F;
   --login-grid: rgba(164, 178, 190, 0.08);
@@ -575,4 +576,135 @@ a {
 
 .login-brand-copy strong {
   color: #FFFFFF;
+}
+
+/* ---------------------------------------------------------------------------
+   Avatar, campos com icone e linha de opcoes
+
+   O avatar e decorativo: antes do login o sistema nao sabe quem e a pessoa,
+   entao nao existe foto de perfil para exibir. Ele funciona como marcador de
+   "area de acesso", com as reguas laterais da referencia.
+   --------------------------------------------------------------------------- */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.login-avatar {
+  display: grid;
+  padding: 30px 0 4px;
+  place-items: center;
+}
+
+.login-avatar::before,
+.login-avatar::after {
+  width: 84px;
+  height: 1px;
+  grid-row: 1;
+  background: var(--login-card-border);
+  content: "";
+}
+
+.login-avatar::before {
+  grid-column: 1;
+  justify-self: end;
+  margin-right: 18px;
+}
+
+.login-avatar-ring {
+  display: grid;
+  width: 84px;
+  height: 84px;
+  grid-column: 1;
+  grid-row: 1;
+  place-items: center;
+  border: 2px solid var(--brand-700);
+  border-radius: 50%;
+  color: var(--brand-700);
+}
+
+.login-avatar::after {
+  grid-column: 1;
+  justify-self: start;
+  margin-left: 18px;
+}
+
+.login-avatar-ring svg {
+  width: 40px;
+  height: 40px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-width: 1.5;
+}
+
+.login-field-icon {
+  position: relative;
+  gap: 0;
+}
+
+.login-field-icon .field-icon {
+  position: absolute;
+  top: 1px;
+  bottom: 1px;
+  left: 1px;
+  display: grid;
+  width: 46px;
+  place-items: center;
+  border-radius: 8px 0 0 8px;
+  background: var(--brand-700);
+  color: var(--login-card);
+  pointer-events: none;
+}
+
+.login-field-icon .field-icon svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-width: 1.6;
+}
+
+.login-field-icon input {
+  padding-left: 60px;
+}
+
+.login-options {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 2px;
+}
+
+.remember-me {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--login-text);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.remember-me input {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  accent-color: var(--brand-700);
+}
+
+.forgot-link {
+  color: var(--login-muted);
+  font-size: 12px;
+  text-decoration: none;
+}
+
+.forgot-link:hover {
+  color: var(--brand-700);
+  text-decoration: underline;
 }

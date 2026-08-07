@@ -59,6 +59,9 @@ export default async function LoginPage({
         </header>
 
         <section className="login-card" aria-labelledby="login-title">
+          <div className="login-avatar" aria-hidden="true">
+            <span className="login-avatar-ring"><UserIcon /></span>
+          </div>
 
         <div className="login-content">
           <p className="eyebrow">Acesso seguro</p>
@@ -154,11 +157,13 @@ export default async function LoginPage({
             <>
               <form className="credential-form" action="/api/auth/credentials/login" method="post">
                 <input type="hidden" name="return_to" value={returnTo} />
-                <label className="login-field">
-                  <span>Usuário ou e-mail</span>
+                <label className="login-field login-field-icon">
+                  <span className="sr-only">Usuário ou e-mail</span>
+                  <span className="field-icon" aria-hidden="true"><UserIcon /></span>
                   <input
                     name="login"
                     type="text"
+                    placeholder="Usuário ou e-mail"
                     autoComplete="username"
                     autoCapitalize="none"
                     spellCheck={false}
@@ -167,11 +172,13 @@ export default async function LoginPage({
                     required
                   />
                 </label>
-                <label className="login-field">
-                  <span>Senha</span>
+                <label className="login-field login-field-icon">
+                  <span className="sr-only">Senha</span>
+                  <span className="field-icon" aria-hidden="true"><LockIcon /></span>
                   <input
                     name="password"
                     type="password"
+                    placeholder="Senha"
                     autoComplete="current-password"
                     maxLength={72}
                     required
@@ -181,6 +188,15 @@ export default async function LoginPage({
                   <span>Entrar</span>
                   <ArrowRightIcon />
                 </button>
+                <div className="login-options">
+                  <label className="remember-me">
+                    <input type="checkbox" name="remember" />
+                    <span>Manter conectado</span>
+                  </label>
+                  <a className="forgot-link" href={`/login?return_to=${encodeURIComponent(returnTo)}&mode=reset`}>
+                    Esqueci minha senha
+                  </a>
+                </div>
               </form>
 
               <div className="provider-divider"><span>ou</span></div>
@@ -234,6 +250,15 @@ function ArrowRightIcon() {
   return (
     <svg className="provider-arrow" viewBox="0 0 20 20" aria-hidden="true">
       <path d="m7.5 4.5 5.5 5.5-5.5 5.5M13 10H3.5" />
+    </svg>
+  );
+}
+
+function UserIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <circle cx="12" cy="8.5" r="3.6" />
+      <path d="M4.8 20.2a7.2 7.2 0 0 1 14.4 0" />
     </svg>
   );
 }

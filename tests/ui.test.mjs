@@ -31,6 +31,7 @@ const [
   workspace,
   googleAuth,
   sharedAuth,
+  credentialAuthSource,
   logoutRoute,
   workbook,
   operationsCenter,
@@ -69,6 +70,7 @@ const [
   read("lib/workspace.ts"),
   read("app/google-auth.ts"),
   read("app/auth.ts"),
+  read("app/credential-auth.ts"),
   read("app/api/auth/logout/route.ts"),
   read("lib/workbook.ts"),
   read("components/patrimonio/OperationsCenterView.tsx"),
@@ -563,4 +565,26 @@ test("documentos privados exigem sessão e aplicam limites antes do gateway", ()
   assert.match(documentsApi, /uploadAssetDocument/);
   assert.match(documentsApi, /getAssetDocumentUrl/);
   assert.match(documentsApi, /status: 302/);
+});
+
+test("login traz avatar decorativo, campos com ícone e manter conectado", () => {
+  // O avatar é decorativo: antes do login não há usuário conhecido, logo não
+  // existe foto de perfil para exibir.
+  assert.match(loginPage, /className="login-avatar" aria-hidden="true"/);
+  assert.match(loginCss, /\.login-avatar-ring \{[\s\S]*?border-radius: 50%/);
+  assert.match(loginPage, /className="login-field login-field-icon"/);
+  assert.match(loginPage, /className="field-icon" aria-hidden="true"/);
+  // Rótulo continua existindo para leitor de tela, mesmo com placeholder visível.
+  assert.match(loginPage, /<span className="sr-only">Usuário ou e-mail<\/span>/);
+  assert.match(loginPage, /<input type="checkbox" name="remember" \/>/);
+  assert.match(loginPage, /Esqueci minha senha/);
+});
+
+test("manter conectado estende a sessão sem torná-la permanente", () => {
+  assert.match(sharedAuth, /const REMEMBERED_SESSION_SECONDS = 30 \* 24 \* 60 \* 60;/);
+  assert.match(sharedAuth, /const lifetime = remember \? REMEMBERED_SESSION_SECONDS : SESSION_SECONDS;/);
+  assert.match(sharedAuth, /setExpirationTime\(`\$\{lifetime\}s`\)/);
+  assert.match(credentialAuthSource, /form\.get\("remember"\) === "on"/);
+  // A autorização continua sendo reconsultada a cada requisição.
+  assert.match(sharedAuth, /isIdentityStillAuthorized/);
 });

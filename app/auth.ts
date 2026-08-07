@@ -38,6 +38,9 @@ const SESSION_ISSUER = "patrimonio-ops-control";
 const SESSION_AUDIENCE = "patrimonio-ops-control-web";
 const OAUTH_AUDIENCE = "patrimonio-ops-control-oauth";
 const SESSION_SECONDS = 8 * 60 * 60;
+// "Lembrar de mim" estende a sessao, nao a torna permanente: a autorizacao
+// continua sendo reconsultada a cada requisicao e a revogacao continua imediata.
+const REMEMBERED_SESSION_SECONDS = 30 * 24 * 60 * 60;
 const OAUTH_SECONDS = 10 * 60;
 
 export async function getAuthenticatedUser(): Promise<AuthenticatedUser | null> {
@@ -157,7 +160,9 @@ export async function createSessionResponse(
   request: Request,
   identity: SessionIdentity,
   returnTo: string,
+  remember = false,
 ): Promise<Response> {
+  const lifetime = remember ? REMEMBERED_SESSION_SECONDS : SESSION_SECONDS;
   const session = await new SignJWT({
     kind: "session",
     provider: identity.provider,
@@ -171,7 +176,7 @@ export async function createSessionResponse(
     .setAudience(SESSION_AUDIENCE)
     .setSubject(`${identity.provider}:${identity.subject}`)
     .setIssuedAt()
-    .setExpirationTime(`${SESSION_SECONDS}s`)
+    .setExpirationTime(`${lifetime}s`)
     .sign(sessionSecret());
 
   const response = redirectResponse(
@@ -180,7 +185,7 @@ export async function createSessionResponse(
   );
   response.headers.append(
     "set-cookie",
-    serializeCookie(cookieName(SESSION_COOKIE, request), session, SESSION_SECONDS, request),
+    serializeCookie(cookieName(SESSION_COOKIE, request), session, lifetime, request),
   );
   appendClearedOAuthCookies(response, request);
   return response;
