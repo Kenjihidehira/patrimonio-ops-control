@@ -104,11 +104,26 @@ a {
   min-height: 100dvh;
   padding: clamp(24px, 5vw, 64px);
   place-items: center;
-  background: linear-gradient(163deg, #1B22C9 0%, #0B109F 34%, #080B73 62%, #05073F 100%);
-}
-
-:root[data-theme="dark"] .login-shell {
-  background: linear-gradient(163deg, #141BB0 0%, #0A0C56 38%, #070A3A 68%, #04061F 100%);
+  /* Recriacao em CSS do fundo institucional: brilho no alto, feixes de luz
+     diagonais e a base azul escurecendo. Sem imagem: nada a carregar, e o
+     desenho acompanha o tema. */
+  background:
+    radial-gradient(120% 78% at 50% -8%, rgba(255, 255, 255, 0.07) 0%, rgba(255, 255, 255, 0) 58%),
+    repeating-linear-gradient(
+      104deg,
+      rgba(255, 255, 255, 0.05) 0px,
+      rgba(255, 255, 255, 0.05) 2px,
+      rgba(255, 255, 255, 0) 2px,
+      rgba(255, 255, 255, 0) 74px
+    ),
+    repeating-linear-gradient(
+      98deg,
+      rgba(255, 255, 255, 0.032) 0px,
+      rgba(255, 255, 255, 0.032) 26px,
+      rgba(255, 255, 255, 0) 26px,
+      rgba(255, 255, 255, 0) 168px
+    ),
+    linear-gradient(163deg, #0F2E86 0%, #0B1C6E 24%, #0A0C56 52%, #070A3A 76%, #04061F 100%);
 }
 
 .login-shell::before {

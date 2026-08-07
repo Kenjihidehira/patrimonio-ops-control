@@ -439,7 +439,11 @@ test("visual empresarial permanece plano e sem efeitos neon", () => {
   const applicationStyles = [css, enterpriseCss, privacyCss].join("\n");
   assert.doesNotMatch(applicationStyles, /(?:linear|radial|conic)-gradient/);
   assert.doesNotMatch([applicationStyles, loginCss].join("\n"), /drop-shadow/);
-  assert.match(loginCss, /background: linear-gradient\(163deg/);
+  // O fundo institucional e recriado em CSS: brilho no alto, feixes diagonais
+  // e a base azul escurecendo. Tom unico, sem seguir o tema do sistema.
+  assert.match(loginCss, /linear-gradient\(163deg, #0F2E86/);
+  assert.match(loginCss, /repeating-linear-gradient\(/);
+  assert.doesNotMatch(loginCss, /data-theme="dark"\] \.login-shell/);
   assert.match(enterpriseCss, /--canvas: #111d29/);
   // O azul da marca toma a tela; o cartão claro é o único ponto de foco.
   assert.match(loginCss, /--login-canvas: #080B73;/);
