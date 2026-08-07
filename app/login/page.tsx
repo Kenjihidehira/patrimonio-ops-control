@@ -39,39 +39,32 @@ export default async function LoginPage({
 
   return (
     <main className="login-shell">
-      <aside className="brand-panel">
-        <div className="brand" aria-label="Patrimônio Ops, Gazin">
-          <img className="brand-logo" src="/brand/gazin-logo.png" alt="" width={800} height={200} />
-          <span className="brand-lockup">
-            <strong>Patrimônio Ops</strong>
-            <small>Gestão empresarial</small>
-          </span>
-        </div>
+      <section className="login-card" aria-labelledby="login-title">
+        <header className="login-brand">
+          <div className="login-brand-lockup" aria-label="Patrimônio Ops, Gazin">
+            <img
+              className="login-brand-logo"
+              src="/brand/gazin-logo.png"
+              alt=""
+              width={800}
+              height={200}
+            />
+            <span className="login-brand-copy">
+              <strong>Patrimônio Ops</strong>
+              <small>Gestão empresarial</small>
+            </span>
+          </div>
+        </header>
 
-        <div className="brand-copy">
-          <p className="eyebrow">Controle patrimonial</p>
-          <h1>Cada ativo com dono, lugar e histórico.</h1>
-          <p>
-            Importação de planilhas, conferência por etiqueta, transferências e baixa —
-            tudo registrado como evento auditável.
-          </p>
-        </div>
-
-        <p className="trust-note">
-          <span className="status-dot" aria-hidden="true" />
-          Acesso restrito às contas liberadas pelo administrador.
-        </p>
-      </aside>
-
-      <section className="access-panel" aria-labelledby="login-title">
-        <div className="access-content">
-          <h2 id="login-title">
-            {registering ? "Solicitar acesso" : "Entrar"}
-          </h2>
-          <p className="access-description">
+        <div className="login-content">
+          <p className="eyebrow">Acesso seguro</p>
+          <h1 id="login-title">
+            {registering ? "Solicitar acesso ao Patrimônio Ops" : "Entrar no Patrimônio Ops"}
+          </h1>
+          <p className="login-description">
             {registering
-              ? "O acesso só é liberado depois que um administrador aprovar a solicitação."
-              : "Use seu usuário ou e-mail autorizado."}
+              ? "Preencha seus dados. O acesso só é liberado depois que um administrador aprovar a solicitação."
+              : "Entre com seu usuário ou e-mail autorizado. O acesso Google continua disponível."}
           </p>
 
           <nav className="login-modes" aria-label="Formas de acesso">

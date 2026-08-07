@@ -4,19 +4,33 @@
   --brand-900: #080B73;
   --brand-700: #0B109F;
   --brand-100: #E9EAFC;
-  --yellow: #FFC400;
-  --coral: #C93B48;
   --ink: #172235;
-  --login-canvas: #F2F3FA;
-  --login-card: #FFFFFF;
-  --login-card-deep: #F4F5FC;
-  --login-line: #C7CAE4;
-  --login-field-line: #8B90C4;
-  --login-field-line-hover: #6B70AE;
+  --muted: #5F6F82;
+  --line: #DCE4EE;
+  --surface: #ffffff;
+  --surface-soft: #F4F7FA;
+  --yellow: #FFC400;
+  --teal: #A9ADEB;
+  --coral: #C93B48;
+  --coral-soft: #FDECEE;
+  --login-canvas: #E8EDF2;
+  --login-canvas-deep: #DDE4EA;
+  --login-grid: rgba(62, 82, 100, 0.1);
+  --login-glow-blue: transparent;
+  --login-glow-teal: transparent;
+  --login-card: #F7F9FA;
+  --login-card-deep: #F1F4F6;
+  --login-card-border: #B8C4CE;
+  --login-card-highlight: transparent;
   --login-text: #172235;
-  --login-muted: #4C5768;
-  --login-on-brand: #FFFFFF;
-  --login-on-brand-muted: #B9BDEE;
+  --login-muted: #5F6F82;
+  --login-divider: rgba(6, 74, 143, 0.14);
+  --login-shadow: rgba(32, 47, 61, 0.18);
+  --login-button-start: #0B109F;
+  --login-button-end: #080B73;
+  --login-button-text: #FFFFFF;
+  --login-brand-start: #080B73;
+  --login-brand-end: #05073F;
   --login-error-border: #E5A99F;
   --login-error-bg: #FDECEE;
   --login-error-text: #743226;
@@ -28,18 +42,24 @@
 }
 
 :root[data-theme="dark"] {
-  --brand-700: #A3A8FF;
-  --brand-900: #0A0C56;
   --login-canvas: #18232D;
+  --login-canvas-deep: #131E27;
+  --login-grid: rgba(164, 178, 190, 0.08);
+  --login-glow-blue: transparent;
+  --login-glow-teal: transparent;
   --login-card: #22313E;
   --login-card-deep: #1D2B37;
-  --login-line: #40515F;
-  --login-field-line: #55607A;
-  --login-field-line-hover: #7A869E;
+  --login-card-border: #465967;
+  --login-card-highlight: transparent;
   --login-text: #F0F2F4;
   --login-muted: #B5BEC6;
-  --login-on-brand: #F5F7FF;
-  --login-on-brand-muted: #A9AEE4;
+  --login-divider: #40515F;
+  --login-shadow: rgba(0, 0, 0, 0.3);
+  --login-button-start: #3A43DC;
+  --login-button-end: #2029C4;
+  --login-button-text: #F5F7F8;
+  --login-brand-start: #0A0C56;
+  --login-brand-end: #070A3A;
   --login-error-border: #9F5360;
   --login-error-bg: #3A2029;
   --login-error-text: #FFD7DC;
@@ -75,186 +95,231 @@ a {
   outline-offset: 3px;
 }
 
-/* Tela dividida: a marca ocupa a coluna esquerda em altura total e o acesso
-   fica a direita. Sem cartao flutuando no meio da tela. */
 .login-shell {
+  position: relative;
+  isolation: isolate;
   display: grid;
+  overflow: hidden;
   min-height: 100dvh;
-  grid-template-columns: minmax(320px, 0.9fr) minmax(430px, 1.1fr);
-}
-
-.brand-panel {
-  display: flex;
-  min-height: 100dvh;
-  padding: clamp(28px, 4vw, 56px);
-  flex-direction: column;
-  justify-content: space-between;
-  gap: 40px;
-  border-top: 4px solid var(--yellow);
-  background: var(--brand-900);
-  color: var(--login-on-brand);
-}
-
-.brand {
-  display: inline-flex;
-  align-items: center;
-  align-self: flex-start;
-  gap: 12px;
-}
-
-.brand-logo {
-  display: block;
-  width: 104px;
-  height: 26px;
-  object-fit: contain;
-}
-
-.brand-lockup strong,
-.brand-lockup small {
-  display: block;
-}
-
-.brand-lockup strong {
-  font-size: 14px;
-  font-weight: 500;
-}
-
-.brand-lockup small {
-  margin-top: 2px;
-  color: var(--login-on-brand-muted);
-  font-size: 10px;
-  font-weight: 500;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-}
-
-.brand-copy {
-  width: min(100%, 460px);
-  margin: auto 0;
-}
-
-.brand-copy .eyebrow {
-  color: var(--yellow);
-}
-
-.brand-copy h1 {
-  margin: 0;
-  font-size: clamp(30px, 3.4vw, 44px);
-  font-weight: 500;
-  line-height: 1.1;
-  letter-spacing: -0.02em;
-}
-
-.brand-copy > p:last-child {
-  max-width: 420px;
-  margin: 20px 0 0;
-  color: var(--login-on-brand-muted);
-  font-size: 15px;
-}
-
-.trust-note {
-  display: flex;
-  margin: 0;
-  align-items: center;
-  gap: 10px;
-  color: var(--login-on-brand-muted);
-  font-size: 12px;
-}
-
-.status-dot {
-  width: 8px;
-  height: 8px;
-  flex: none;
-  border-radius: 50%;
-  background: var(--yellow);
-}
-
-.eyebrow {
-  margin: 0 0 10px;
-  color: var(--brand-700);
-  font-size: 11px;
-  font-weight: 500;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-}
-
-.access-panel {
-  display: grid;
-  min-height: 100dvh;
-  padding: clamp(28px, 5vw, 72px);
+  padding: clamp(24px, 5vw, 64px);
   place-items: center;
   background: var(--login-canvas);
 }
 
-.access-content {
-  width: min(100%, 440px);
+.login-shell::before {
+  display: none;
 }
 
-.access-content h2 {
+.login-shell::after {
+  display: none;
+}
+
+.login-card {
+  position: relative;
+  width: min(100%, 600px);
+  overflow: hidden;
+  border: 1px solid var(--login-card-border);
+  border-radius: 22px;
+  background: var(--login-card);
+  box-shadow: 0 18px 44px var(--login-shadow);
+}
+
+.login-card::before {
+  position: absolute;
+  z-index: 3;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: 3px;
+  background: var(--yellow);
+  content: "";
+  pointer-events: none;
+}
+
+.login-brand {
+  position: relative;
+  overflow: hidden;
+  padding: 32px clamp(32px, 6vw, 48px) 30px;
+  background: var(--login-brand-start);
+}
+
+.login-brand::before,
+.login-brand::after {
+  display: none;
+}
+
+.login-brand::before {
+  width: 180px;
+  height: 180px;
+  top: -112px;
+  right: -28px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 50%;
+  box-shadow: 0 0 0 28px rgba(255, 255, 255, 0.04);
+}
+
+.login-brand::after {
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 1px;
+  background: transparent;
+}
+
+.login-brand-lockup {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 13px;
+  color: #ffffff;
+}
+
+.login-brand-logo {
+  display: block;
+  width: 146px;
+  height: 76px;
+  object-fit: contain;
+  filter: none;
+}
+
+.login-brand-copy {
+  min-width: 0;
+}
+
+.login-brand-copy strong,
+.login-brand-copy small {
+  display: block;
+}
+
+.login-brand-copy strong {
+  font-size: 19px;
+  line-height: 1.15;
+}
+
+.login-brand-copy small {
+  margin-top: 6px;
+  color: var(--teal);
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.login-content {
+  position: relative;
+  padding: clamp(38px, 6vw, 50px) clamp(38px, 6vw, 52px) clamp(42px, 6vw, 54px);
+}
+
+.eyebrow {
+  margin: 0 0 8px;
+  color: var(--brand-700);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.login-content h1 {
   margin: 0;
-  font-size: 28px;
-  font-weight: 500;
-  line-height: 1.2;
-  letter-spacing: -0.02em;
+  color: var(--login-text);
+  font-size: 34px;
+  line-height: 1.16;
+  letter-spacing: -0.025em;
 }
 
-.access-description {
-  margin: 8px 0 26px;
+.login-description {
+  max-width: 450px;
+  margin: 12px 0 32px;
   color: var(--login-muted);
-  font-size: 14px;
+  font-size: 15px;
 }
 
-.error-message,
-.success-message {
+.error-message {
   margin-bottom: 18px;
   padding: 11px 13px;
   border: 1px solid var(--login-error-border);
   border-left: 4px solid var(--coral);
-  border-radius: 3px;
+  border-radius: 6px;
   background: var(--login-error-bg);
   color: var(--login-error-text);
   font-size: 12px;
 }
 
 .success-message {
-  border-color: var(--login-success-border);
-  border-left-color: var(--login-success-border);
+  margin-bottom: 18px;
+  padding: 11px 13px;
+  border: 1px solid var(--login-success-border);
+  border-left: 4px solid var(--login-success-border);
+  border-radius: 6px;
   background: var(--login-success-bg);
   color: var(--login-success-text);
+  font-size: 12px;
 }
 
-/* Abas como texto sublinhado: e o marcador de estado mais discreto que existe
-   e nao cria mais uma moldura na tela. */
 .login-modes {
-  display: flex;
-  gap: 22px;
-  margin-bottom: 24px;
-  border-bottom: 1px solid var(--login-line);
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+  margin-bottom: 18px;
+  padding: 4px;
+  border: 1px solid var(--login-card-border);
+  border-radius: 9px;
+  background: var(--login-card-deep);
 }
 
-.login-modes a {
-  margin-bottom: -1px;
-  padding: 0 0 10px;
-  border-bottom: 2px solid transparent;
+.login-mode {
+  padding: 9px 12px;
+  border-radius: 6px;
   color: var(--login-muted);
-  font-size: 13px;
-  font-weight: 500;
+  font-size: 12px;
+  font-weight: 750;
+  text-align: center;
   text-decoration: none;
-  transition: color 150ms ease, border-color 150ms ease;
+  transition: background 150ms ease, color 150ms ease;
 }
 
-.login-modes a:hover {
+.login-mode:hover {
   color: var(--login-text);
 }
 
-.login-modes a[aria-current="page"] {
-  border-bottom-color: var(--brand-700);
-  color: var(--login-text);
+.login-mode-active {
+  background: var(--login-button-start);
+  color: var(--login-button-text);
+}
+
+.login-mode:focus-visible {
+  outline: 2px solid var(--brand-700);
+  outline-offset: 2px;
 }
 
 .credential-form {
   display: grid;
   gap: 16px;
+}
+
+.login-field-help {
+  color: var(--login-muted);
+  font-size: 11px;
+}
+
+.login-field textarea {
+  width: 100%;
+  min-height: 84px;
+  padding: 11px 13px;
+  border: 1px solid var(--login-card-border);
+  border-radius: 8px;
+  background: var(--login-card-deep);
+  color: var(--login-text);
+  font: inherit;
+  resize: vertical;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.login-field textarea:focus {
+  border-color: var(--brand-700);
+  outline: 0;
+  box-shadow: 0 0 0 3px rgba(11, 16, 159, 0.15);
 }
 
 .login-field {
@@ -265,43 +330,25 @@ a {
 .login-field span {
   color: var(--login-text);
   font-size: 12px;
-  font-weight: 500;
-  letter-spacing: 0.02em;
+  font-weight: 750;
 }
 
-.login-field input,
-.login-field textarea {
+.login-field input {
   width: 100%;
-  min-height: 46px;
+  min-height: 48px;
   padding: 11px 13px;
-  border: 1px solid var(--login-field-line);
-  border-radius: 3px;
-  background: var(--login-card);
+  border: 1px solid var(--login-card-border);
+  border-radius: 8px;
+  background: var(--login-card-deep);
   color: var(--login-text);
   font: inherit;
   transition: border-color 150ms ease, box-shadow 150ms ease;
 }
 
-.login-field textarea {
-  min-height: 84px;
-  resize: vertical;
-}
-
-.login-field input:hover,
-.login-field textarea:hover {
-  border-color: var(--login-field-line-hover);
-}
-
-.login-field input:focus,
-.login-field textarea:focus {
+.login-field input:focus {
   border-color: var(--brand-700);
   outline: 0;
   box-shadow: 0 0 0 3px rgba(11, 16, 159, 0.15);
-}
-
-.login-field-help {
-  color: var(--login-muted);
-  font-size: 11px;
 }
 
 .credential-submit {
@@ -309,22 +356,23 @@ a {
   grid-template-columns: minmax(0, 1fr) 20px;
   align-items: center;
   gap: 12px;
-  min-height: 50px;
+  min-height: 52px;
   padding: 12px 18px;
-  border: 1px solid var(--brand-700);
-  border-radius: 3px;
-  background: var(--brand-700);
-  color: #ffffff;
+  border: 1px solid var(--login-button-start);
+  border-radius: 8px;
+  background: var(--login-button-start);
+  color: var(--login-button-text);
   cursor: pointer;
   font: inherit;
-  font-weight: 500;
+  font-weight: 800;
   text-align: left;
-  transition: background 150ms ease, border-color 150ms ease;
+  transition: background-color 150ms ease, border-color 150ms ease;
 }
 
-.credential-submit:hover {
-  border-color: var(--brand-950);
-  background: var(--brand-950);
+.credential-submit:hover,
+.credential-submit:active {
+  border-color: var(--login-button-end);
+  background: var(--login-button-end);
 }
 
 .provider-divider {
@@ -335,48 +383,78 @@ a {
   margin: 22px 0;
   color: var(--login-muted);
   font-size: 11px;
-  letter-spacing: 0.06em;
   text-transform: uppercase;
 }
 
 .provider-divider::before,
 .provider-divider::after {
   height: 1px;
-  background: var(--login-line);
+  background: var(--login-divider);
   content: "";
 }
 
-/* Entrar e a acao primaria; o Google e alternativa. Dois botoes solidos na
-   mesma cor obrigam a ler os dois para descobrir qual e qual. */
 .provider-button {
+  position: relative;
   display: grid;
+  overflow: hidden;
   grid-template-columns: 24px minmax(0, 1fr) 20px;
   align-items: center;
   gap: 12px;
-  min-height: 50px;
-  padding: 12px 18px;
-  border: 1px solid var(--login-field-line);
-  border-radius: 3px;
-  background: transparent;
-  color: var(--login-text);
-  font-weight: 500;
+  min-height: 62px;
+  padding: 13px 19px;
+  border: 1px solid var(--login-card-border);
+  border-radius: 10px;
+  background: var(--login-button-start);
+  color: var(--login-button-text);
+  font-size: 15px;
+  font-weight: 800;
   text-decoration: none;
-  transition: border-color 150ms ease, background 150ms ease;
+  box-shadow: none;
+  transition: background-color 150ms ease, border-color 150ms ease;
+}
+
+.provider-button::before {
+  display: none;
 }
 
 .provider-button:hover {
-  border-color: var(--login-field-line-hover);
+  border-color: var(--login-muted);
+  background: var(--login-button-end);
+}
+
+.provider-button:hover::before {
+  left: 108%;
+}
+
+.provider-button:active {
+  background: var(--login-button-end);
+}
+
+.provider-button-google {
   background: var(--login-card-deep);
+  color: var(--login-text);
+}
+
+.provider-button-google:hover,
+.provider-button-google:active {
+  background: var(--login-card);
 }
 
 .google-mark {
-  width: 20px;
-  height: 20px;
+  position: relative;
+  z-index: 1;
+  width: 22px;
+  height: 22px;
+  padding: 3px;
+  border-radius: 50%;
+  background: #ffffff;
 }
 
 .provider-arrow {
-  width: 18px;
-  height: 18px;
+  position: relative;
+  z-index: 1;
+  width: 20px;
+  height: 20px;
   fill: none;
   stroke: currentColor;
   stroke-linecap: round;
@@ -386,12 +464,12 @@ a {
 
 .security-copy {
   display: grid;
-  grid-template-columns: 26px minmax(0, 1fr);
+  grid-template-columns: 30px minmax(0, 1fr);
   align-items: start;
   gap: 11px;
-  margin-top: 26px;
-  padding-top: 20px;
-  border-top: 1px solid var(--login-line);
+  margin-top: 28px;
+  padding-top: 22px;
+  border-top: 1px solid var(--login-divider);
   color: var(--login-muted);
   font-size: 11px;
 }
@@ -402,21 +480,19 @@ a {
 
 .security-icon {
   display: grid;
-  width: 26px;
-  height: 26px;
+  width: 30px;
+  height: 30px;
   place-items: center;
-  border-radius: 3px;
-  background: var(--brand-100);
+  border-radius: 50%;
+  border: 1px solid var(--login-card-border);
+  background: var(--login-card-deep);
   color: var(--brand-700);
-}
-
-:root[data-theme="dark"] .security-icon {
-  background: rgba(163, 168, 255, 0.14);
+  box-shadow: none;
 }
 
 .security-icon svg {
-  width: 15px;
-  height: 15px;
+  width: 16px;
+  height: 16px;
   fill: none;
   stroke: currentColor;
   stroke-linecap: round;
@@ -427,53 +503,51 @@ a {
 .login-legal {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px 18px;
+  gap: 8px 16px;
   margin-top: 18px;
+  font-size: 11px;
 }
 
 .login-legal a {
-  color: var(--login-muted);
-  font-size: 11px;
-  text-decoration: none;
-}
-
-.login-legal a:hover {
   color: var(--brand-700);
-  text-decoration: underline;
+  font-weight: 750;
+  text-underline-offset: 3px;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 760px) {
   .login-shell {
-    grid-template-columns: minmax(0, 1fr);
+    padding: 22px;
+  }
+}
+
+@media (max-width: 430px) {
+  .login-shell {
+    padding: 14px;
   }
 
-  .brand-panel {
-    min-height: auto;
-    padding: 26px clamp(22px, 6vw, 40px) 30px;
-    gap: 26px;
+  .login-card {
+    border-radius: 16px;
   }
 
-  .brand-copy {
-    margin: 0;
+  .login-brand {
+    padding: 18px 20px;
   }
 
-  .brand-copy h1 {
-    font-size: 26px;
+  .login-brand-logo {
+    width: 104px;
+    height: 54px;
   }
 
-  .brand-copy > p:last-child {
-    margin-top: 12px;
-    font-size: 14px;
+  .login-brand-copy strong {
+    font-size: 15px;
   }
 
-  .trust-note {
-    display: none;
+  .login-content {
+    padding: 28px 22px;
   }
 
-  .access-panel {
-    min-height: auto;
-    padding: 32px clamp(22px, 6vw, 40px) 44px;
-    align-content: start;
+  .login-content h1 {
+    font-size: 24px;
   }
 }
 
@@ -481,6 +555,8 @@ a {
   *,
   *::before,
   *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
   }
 }
