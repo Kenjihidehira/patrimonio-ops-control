@@ -455,7 +455,11 @@ test("visual empresarial permanece plano e sem efeitos neon", () => {
 });
 
 test("o login usa cartão centrado com faixa amarela", () => {
-  assert.match(loginCss, /\.login-stack \{\s*width: min\(100%, 384px\);/);
+  // Largura fluida em vez de fixa, com piso para o celular e teto para o
+  // formulario nao esticar a ponto de perder relacao com o texto.
+  assert.match(loginCss, /width: min\(100%, clamp\(340px, 62vw, 560px\)\);/);
+  // Com largura sobrando, senha e confirmacao ficam lado a lado.
+  assert.match(loginCss, /@media \(min-width: 760px\)[\s\S]*?grid-template-columns: repeat\(2, minmax\(0, 1fr\)\)/);
   // O formulario volta a ter caixa, translucida para o fundo atravessar.
   assert.match(loginCss, /\.login-card \{[\s\S]*?background: rgba\(255, 255, 255, 0\.08\)/);
   assert.match(loginCss, /\.credential-submit \{[\s\S]*?background: var\(--yellow\)/);

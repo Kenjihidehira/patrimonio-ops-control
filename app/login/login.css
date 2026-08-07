@@ -156,8 +156,11 @@ a {
   pointer-events: none;
 }
 
+/* Largura fluida: acompanha a janela em vez de ficar presa a um valor. O piso
+   protege o celular e o teto impede que o formulario estique a ponto de os
+   campos perderem relacao com o texto. */
 .login-stack {
-  width: min(100%, 384px);
+  width: min(100%, clamp(340px, 62vw, 560px));
 }
 
 .login-brand {
@@ -735,7 +738,7 @@ a {
    primaria — que na referencia cabia ao rosa.
    --------------------------------------------------------------------------- */
 .login-content {
-  padding: 0 26px 28px;
+  padding: 0 clamp(20px, 4.4vw, 40px) clamp(24px, 3.6vw, 34px);
 }
 
 .login-content h1,
@@ -907,4 +910,44 @@ a {
 
 .login-legal a:hover {
   color: #FFFFFF;
+}
+
+/* Com largura sobrando, o cadastro usa duas colunas: quatro campos empilhados
+   num cartao largo desperdicam a metade direita e alongam demais a tela. */
+@media (min-width: 760px) {
+  .login-avatar-ring {
+    width: 92px;
+    height: 92px;
+  }
+
+  .login-avatar::before,
+  .login-avatar::after {
+    width: 92px;
+  }
+
+  .login-content h1 {
+    font-size: 25px;
+  }
+
+  .credential-form {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 14px;
+  }
+
+  /* Nome e e-mail ocupam a linha inteira; senha e confirmacao ficam lado a
+     lado, que e o par que se le junto. */
+  .credential-form > .login-field:nth-of-type(-n + 2),
+  .credential-form > .credential-submit,
+  .credential-form > .login-options,
+  .credential-form > input[type="hidden"] {
+    grid-column: 1 / -1;
+  }
+}
+
+/* No login sao so dois campos: manter em coluna unica evita um formulario
+   largo e raso, que fica estranho ao lado de um botao de largura inteira. */
+@media (min-width: 760px) {
+  form[action="/api/auth/credentials/login"] .login-field {
+    grid-column: 1 / -1;
+  }
 }
