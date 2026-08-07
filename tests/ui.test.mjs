@@ -496,8 +496,19 @@ test("o login usa cartão centrado com faixa amarela", () => {
   // Largura fluida em vez de fixa, com piso para o celular e teto para o
   // formulario nao esticar a ponto de perder relacao com o texto.
   assert.match(loginCss, /width: min\(100%, clamp\(340px, 62vw, 560px\)\);/);
-  // Com largura sobrando, senha e confirmacao ficam lado a lado.
-  assert.match(loginCss, /@media \(min-width: 760px\)[\s\S]*?grid-template-columns: repeat\(2, minmax\(0, 1fr\)\)/);
+  // Senha e confirmacao dividem a linha ja no celular: e a linha economizada
+  // que tira a rolagem do cadastro em tela de telefone.
+  assert.match(loginCss, /@media \(min-width: 340px\)[\s\S]*?grid-template-columns: repeat\(2, minmax\(0, 1fr\)\)/);
+  // No login sao so dois campos e eles seguem em coluna unica.
+  assert.match(
+    loginCss,
+    /form\[action="\/api\/auth\/credentials\/login"\] \.login-field \{\s*grid-column: 1 \/ -1;/,
+  );
+
+  // Sem `align-content: start` o campo estica com a linha da grade e as linhas
+  // `auto` absorvem a sobra: medido, o input de "Confirmar senha" ia a 55px
+  // contra 43px do "Senha", porque o vizinho tem uma linha a mais de ajuda.
+  assert.match(loginCss, /\.login-field \{\s*display: grid;\s*align-content: start;/);
   // O formulario volta a ter caixa, translucida para o fundo atravessar.
   assert.match(loginCss, /\.login-card \{[\s\S]*?background: rgba\(255, 255, 255, 0\.08\)/);
   assert.match(loginCss, /\.credential-submit \{[\s\S]*?background: var\(--yellow\)/);
