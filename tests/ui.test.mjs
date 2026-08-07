@@ -436,7 +436,16 @@ test("visual empresarial permanece plano e sem efeitos neon", () => {
   assert.doesNotMatch(applicationStyles, /(?:linear|radial|conic)-gradient|drop-shadow/);
   assert.match(enterpriseCss, /--canvas: #111d29/);
   assert.match(loginCss, /--login-canvas: #18232D/);
-  assert.match(loginCss, /\.provider-button[\s\S]*background: var\(--login-button-start\)/);
+  assert.match(loginCss, /\.credential-submit \{[\s\S]*?background: var\(--login-button-start\)/);
+  // Entrar é a ação primária e o Google é alternativa: dois botões sólidos na
+  // mesma cor obrigam a ler os dois para descobrir qual é qual.
+  assert.match(loginCss, /\.provider-button \{\s*border-color: #8B90C4;\s*background: transparent;/);
+});
+
+test("o login se abre em duas colunas quando há largura", () => {
+  assert.match(loginCss, /@media \(min-width: 900px\)[\s\S]*grid-template-columns: 312px minmax\(0, 1fr\)/);
+  // A régua amarela troca de orientação, não de função.
+  assert.match(loginCss, /\.login-brand::after \{\s*position: absolute;/);
 });
 
 test("persistência permanece no servidor e escrita exige autenticação", () => {

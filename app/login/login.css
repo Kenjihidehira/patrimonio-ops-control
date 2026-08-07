@@ -157,6 +157,7 @@ a {
 }
 
 .login-brand::after {
+  position: absolute;
   display: block;
   right: 0;
   bottom: 0;
@@ -580,5 +581,75 @@ a {
    4,37:1 no escuro), e uma regra a menos e uma regra a menos para brigar. */
 :root[data-theme="dark"] .login-field input,
 :root[data-theme="dark"] .login-field textarea {
+  background: var(--login-card-deep);
+}
+
+/* ---------------------------------------------------------------------------
+   Composicao
+
+   Em tela larga o cartao deixa de ser pilha e vira duas colunas: a marca ocupa
+   uma faixa propria e a regua amarela, que no empilhado separa marca e
+   formulario, vira a divisoria vertical entre eles. Mesmo gesto, orientacao
+   que a largura pede.
+   --------------------------------------------------------------------------- */
+@media (min-width: 900px) {
+  .login-card {
+    display: grid;
+    width: min(100%, 880px);
+    grid-template-columns: 312px minmax(0, 1fr);
+    align-items: stretch;
+  }
+
+  .login-brand {
+    display: grid;
+    padding: 44px 34px;
+    place-content: center;
+  }
+
+  .login-brand::after {
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: auto;
+    width: 3px;
+    height: auto;
+  }
+
+  .login-brand-lockup {
+    flex-direction: column;
+    gap: 18px;
+    text-align: center;
+  }
+
+  .login-brand-logo {
+    width: 168px;
+    height: 88px;
+  }
+
+  .login-content {
+    padding: 46px 46px 48px;
+  }
+}
+
+/* Entrar e a acao primaria; o Google e alternativa. Dois botoes solidos na
+   mesma cor obrigam a ler os dois para descobrir qual e qual. */
+.provider-button {
+  border-color: #8B90C4;
+  background: transparent;
+  color: var(--login-text);
+}
+
+.provider-button:hover {
+  border-color: #6B70AE;
+  background: var(--login-card-deep);
+  color: var(--login-text);
+}
+
+:root[data-theme="dark"] .provider-button {
+  border-color: #55607A;
+  color: var(--login-text);
+}
+
+:root[data-theme="dark"] .provider-button:hover {
   background: var(--login-card-deep);
 }
