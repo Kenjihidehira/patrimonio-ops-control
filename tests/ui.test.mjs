@@ -435,7 +435,9 @@ test("visual empresarial permanece plano e sem efeitos neon", () => {
   const applicationStyles = [css, enterpriseCss, loginCss, privacyCss].join("\n");
   assert.doesNotMatch(applicationStyles, /(?:linear|radial|conic)-gradient|drop-shadow/);
   assert.match(enterpriseCss, /--canvas: #111d29/);
-  assert.match(loginCss, /--login-canvas: #18232D/);
+  // O azul da marca toma a tela; o cartão claro é o único ponto de foco.
+  assert.match(loginCss, /--login-canvas: #080B73;/);
+  assert.match(loginCss, /--login-canvas: #070A3A;/);
   assert.match(loginCss, /\.credential-submit \{[\s\S]*?background: var\(--login-button-start\)/);
   // Entrar é a ação primária e o Google é alternativa: dois botões sólidos na
   // mesma cor obrigam a ler os dois para descobrir qual é qual.
@@ -443,7 +445,7 @@ test("visual empresarial permanece plano e sem efeitos neon", () => {
 });
 
 test("o login usa cartão centrado com faixa amarela", () => {
-  assert.match(loginCss, /\.login-card \{[\s\S]*?width: min\(100%, 600px\)/);
+  assert.match(loginCss, /\.login-stack \{\s*width: min\(100%, 600px\);/);
   assert.match(loginCss, /\.login-card::before \{[\s\S]*?background: var\(--yellow\)/);
   assert.match(loginCss, /\.login-mode-active \{\s*background: var\(--login-button-start\);/);
 });
@@ -482,7 +484,9 @@ test("tela React de login oferece credenciais e Google com navegação responsiv
   assert.match(loginPage, /role="alert"/);
   assert.match(loginCss, /\.login-shell \{[\s\S]*?place-items: center/);
   assert.match(loginCss, /\.login-card \{[\s\S]*?background: var\(--login-card\)/);
-  assert.match(loginCss, /\.login-brand \{[\s\S]*?background: var\(--login-brand-start\)/);
+  // A marca assina por cima do cartão, sem painel proprio.
+  assert.match(loginCss, /\.login-brand \{\s*padding: 0 0 20px;\s*background: transparent;/);
+  assert.match(loginCss, /\.login-brand-plate \{[\s\S]*?background: #FFFFFF;/);
   assert.match(loginCss, /:root\[data-theme="dark"\]/);
   assert.match(loginCss, /@media \(max-width: 760px\)/);
   assert.doesNotMatch(loginPage, /brand-mark|brand-panel|access-panel|Voltar ao sistema/);

@@ -39,22 +39,26 @@ export default async function LoginPage({
 
   return (
     <main className="login-shell">
-      <section className="login-card" aria-labelledby="login-title">
+      <div className="login-stack">
         <header className="login-brand">
           <div className="login-brand-lockup" aria-label="Patrimônio Ops, Gazin">
-            <img
-              className="login-brand-logo"
-              src="/brand/gazin-logo.png"
-              alt=""
-              width={800}
-              height={200}
-            />
+            <span className="login-brand-plate">
+              <img
+                className="login-brand-logo"
+                src="/brand/gazin-logo.png"
+                alt=""
+                width={800}
+                height={200}
+              />
+            </span>
             <span className="login-brand-copy">
               <strong>Patrimônio Ops</strong>
               <small>Gestão empresarial</small>
             </span>
           </div>
         </header>
+
+        <section className="login-card" aria-labelledby="login-title">
 
         <div className="login-content">
           <p className="eyebrow">Acesso seguro</p>
@@ -204,8 +208,9 @@ export default async function LoginPage({
               Política corporativa Gazin
             </a>
           </nav>
-        </div>
-      </section>
+          </div>
+        </section>
+      </div>
     </main>
   );
 }

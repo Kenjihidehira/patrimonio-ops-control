@@ -13,19 +13,19 @@
   --teal: #A9ADEB;
   --coral: #C93B48;
   --coral-soft: #FDECEE;
-  --login-canvas: #E8EDF2;
-  --login-canvas-deep: #DDE4EA;
+  --login-canvas: #080B73;
+  --login-canvas-deep: #05073F;
   --login-grid: rgba(62, 82, 100, 0.1);
   --login-glow-blue: transparent;
   --login-glow-teal: transparent;
-  --login-card: #F7F9FA;
+  --login-card: #FFFFFF;
   --login-card-deep: #F1F4F6;
-  --login-card-border: #B8C4CE;
+  --login-card-border: #8B90C4;
   --login-card-highlight: transparent;
   --login-text: #172235;
   --login-muted: #5F6F82;
   --login-divider: rgba(6, 74, 143, 0.14);
-  --login-shadow: rgba(32, 47, 61, 0.18);
+  --login-shadow: rgba(0, 0, 0, 0.36);
   --login-button-start: #0B109F;
   --login-button-end: #080B73;
   --login-button-text: #FFFFFF;
@@ -42,19 +42,19 @@
 }
 
 :root[data-theme="dark"] {
-  --login-canvas: #18232D;
-  --login-canvas-deep: #131E27;
+  --login-canvas: #070A3A;
+  --login-canvas-deep: #04061F;
   --login-grid: rgba(164, 178, 190, 0.08);
   --login-glow-blue: transparent;
   --login-glow-teal: transparent;
-  --login-card: #22313E;
-  --login-card-deep: #1D2B37;
+  --login-card: #2A3C4F;
+  --login-card-deep: #223243;
   --login-card-border: #465967;
   --login-card-highlight: transparent;
   --login-text: #F0F2F4;
   --login-muted: #B5BEC6;
   --login-divider: #40515F;
-  --login-shadow: rgba(0, 0, 0, 0.3);
+  --login-shadow: rgba(0, 0, 0, 0.5);
   --login-button-start: #3A43DC;
   --login-button-end: #2029C4;
   --login-button-text: #F5F7F8;
@@ -116,12 +116,12 @@ a {
 
 .login-card {
   position: relative;
-  width: min(100%, 600px);
+  width: 100%;
   overflow: hidden;
-  border: 1px solid var(--login-card-border);
+  border: 0;
   border-radius: 22px;
   background: var(--login-card);
-  box-shadow: 0 18px 44px var(--login-shadow);
+  box-shadow: 0 22px 52px var(--login-shadow);
 }
 
 .login-card::before {
@@ -136,11 +136,13 @@ a {
   pointer-events: none;
 }
 
+.login-stack {
+  width: min(100%, 600px);
+}
+
 .login-brand {
-  position: relative;
-  overflow: hidden;
-  padding: 32px clamp(32px, 6vw, 48px) 30px;
-  background: var(--login-brand-start);
+  padding: 0 0 20px;
+  background: transparent;
 }
 
 .login-brand::before,
@@ -559,4 +561,18 @@ a {
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+/* A logo e azul sobre transparente; num fundo azul ela sumiria. A placa branca
+   devolve o contraste sem precisar de uma segunda versao do arquivo. */
+.login-brand-plate {
+  display: inline-grid;
+  padding: 9px 13px;
+  place-items: center;
+  border-radius: 10px;
+  background: #FFFFFF;
+}
+
+.login-brand-copy strong {
+  color: #FFFFFF;
 }
