@@ -1,0 +1,202 @@
+/* Camada vidromorfica do sistema.
+ *
+ * Carrega depois de `patrimonio.css` e `enterprise.css` de proposito. Aqueles
+ * dois trazem 118 blocos de topo redundantes — a familia do header aparece 3x e
+ * `.primary-nav` 4x —, entao qualquer regra escrita no meio deles pode nascer
+ * inerte, o que ja aconteceu varias vezes nesta base. Aqui a ordem resolve: e a
+ * ultima palavra sobre superficie, e nao depende de especificidade inflada.
+ *
+ * A fusao daqueles blocos continua pendente. E mecanica, mas so e segura com
+ * comparacao de estilo computado antes e depois; feita no olho, troca um
+ * problema invisivel por outro.
+ *
+ * O texto nao e redefinido aqui: sai de `--heading-text` e `--muted`, que o
+ * tema ja resolve. Impor cor propria foi o que quebrou o tema claro na primeira
+ * tentativa — 43 de 100 textos abaixo de 4,5:1, alguns em 1,04:1.
+ */
+
+:root {
+  /* Tema claro. O degrade mantem a familia do azul Gazin, mas alto o
+     suficiente para o texto escuro do tema continuar legivel por cima. */
+  --glass-canvas:
+    radial-gradient(120% 78% at 50% -8%, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0) 58%),
+    repeating-linear-gradient(
+      104deg,
+      rgba(255, 255, 255, 0.5) 0px,
+      rgba(255, 255, 255, 0.5) 2px,
+      rgba(255, 255, 255, 0) 2px,
+      rgba(255, 255, 255, 0) 74px
+    ),
+    linear-gradient(163deg, #EDF0FF 0%, #E3E8F8 28%, #F2F5FA 58%, #E6EBF6 100%);
+
+  --glass-surface: rgba(255, 255, 255, 0.66);
+  --glass-surface-raised: rgba(255, 255, 255, 0.82);
+  --glass-surface-hover: rgba(255, 255, 255, 0.78);
+  --glass-solid: #F7F9FC;
+  --glass-border: rgba(23, 34, 53, 0.22);
+  --glass-border-strong: rgba(23, 34, 53, 0.38);
+  --glass-blur: 18px;
+  --glass-shadow: 0 14px 34px rgba(23, 34, 53, 0.12);
+
+  /* O header segue escuro nos dois temas. O texto dele e branco fixo em
+     `enterprise.css` — a barra sempre foi azul —, e clarea-la no tema claro
+     levou 42 de 100 textos abaixo do minimo, alguns a 1,02:1. Manter escuro
+     preserva o branco, a identidade da marca e o contraste. */
+  /* Mais opaco no tema claro: com 0,72 a tela clara atravessava e levantava o
+     fundo do header para rgb(86, 89, 119), derrubando o texto secundario a
+     2,99:1. Com 0,92 o fundo volta a rgb(27, 32, 72). */
+  --glass-header: rgba(9, 14, 56, 0.92);
+  --glass-header-solid: #0A0E38;
+  --glass-header-border: rgba(255, 255, 255, 0.16);
+
+  /* O vidro claro fica um fio abaixo do branco puro, e isso derrubou o texto
+     secundario de 4,69:1 para 4,46:1 em 26 lugares — abaixo do minimo de 4,5.
+     Este tom devolve 4,83:1 sobre a superficie. */
+  --muted: #626F84;
+}
+
+:root[data-theme="dark"] {
+  --glass-canvas:
+    radial-gradient(120% 78% at 50% -8%, rgba(255, 255, 255, 0.07) 0%, rgba(255, 255, 255, 0) 58%),
+    repeating-linear-gradient(
+      104deg,
+      rgba(255, 255, 255, 0.05) 0px,
+      rgba(255, 255, 255, 0.05) 2px,
+      rgba(255, 255, 255, 0) 2px,
+      rgba(255, 255, 255, 0) 74px
+    ),
+    repeating-linear-gradient(
+      98deg,
+      rgba(255, 255, 255, 0.032) 0px,
+      rgba(255, 255, 255, 0.032) 26px,
+      rgba(255, 255, 255, 0) 26px,
+      rgba(255, 255, 255, 0) 168px
+    ),
+    linear-gradient(163deg, #0F2E86 0%, #0B1C6E 24%, #0A0C56 52%, #070A3A 76%, #04061F 100%);
+
+  --glass-surface: rgba(255, 255, 255, 0.07);
+  --glass-surface-raised: rgba(255, 255, 255, 0.12);
+  --glass-surface-hover: rgba(255, 255, 255, 0.11);
+  --glass-solid: #0C1240;
+  --glass-border: rgba(255, 255, 255, 0.22);
+  --glass-border-strong: rgba(255, 255, 255, 0.4);
+  --glass-shadow: 0 16px 40px rgba(2, 4, 26, 0.38);
+  --glass-header: rgba(9, 14, 56, 0.72);
+}
+
+.app-shell {
+  background: var(--glass-canvas);
+  background-attachment: fixed;
+}
+
+/* O conteudo rola sobre o degrade em vez de trazer a propria cor: e o que
+   deixa o desfoque ter o que desfocar. */
+.main-content,
+.view-section {
+  background: transparent;
+}
+
+/* Queda sem `backdrop-filter`: cor solida, nao o vidro sem desfoque. Com 7% de
+   opacidade e sem desfoque, o texto ficaria sobre o degrade cru. */
+.topbar,
+.dashboard-panel,
+.app-footer,
+.detail-panel,
+.section-toolbar {
+  border: 1px solid var(--glass-border);
+  background: var(--glass-solid);
+  box-shadow: var(--glass-shadow);
+}
+
+.app-header {
+  border-bottom: 1px solid var(--glass-header-border);
+  background: var(--glass-header-solid);
+  box-shadow: var(--glass-shadow);
+}
+
+@supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+  .topbar,
+  .dashboard-panel,
+  .app-footer,
+  .detail-panel,
+  .section-toolbar {
+    background: var(--glass-surface);
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(140%);
+    backdrop-filter: blur(var(--glass-blur)) saturate(140%);
+  }
+
+  .app-header {
+    background: var(--glass-header);
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(140%);
+    backdrop-filter: blur(var(--glass-blur)) saturate(140%);
+  }
+}
+
+.dashboard-panel,
+.detail-panel {
+  border-radius: 14px;
+}
+
+.topbar {
+  border-top: 0;
+  border-radius: 0 0 14px 14px;
+}
+
+/* Movimento: so o suficiente para a superficie parecer material. */
+.dashboard-panel {
+  transition: background-color 160ms ease, border-color 160ms ease, transform 160ms ease;
+}
+
+.dashboard-panel:hover {
+  border-color: var(--glass-border-strong);
+  background: var(--glass-surface-hover);
+  transform: translateY(-2px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dashboard-panel {
+    transition: none;
+  }
+
+  .dashboard-panel:hover {
+    transform: none;
+  }
+}
+
+/* Alvo de toque de 44px. Medido no laboratorio, 13 de 29 controles ficavam
+   abaixo: os `select` entre 36 e 42px, o interruptor de tema em 42, os botoes
+   em 40 e o "Sair" em 27x30 — o menor da tela e o de acao mais definitiva.
+   Fica nesta camada porque e a ultima a falar sobre a barra e os paineis. */
+/* Precisa de `.department-switcher` no meio: `.app-header .department-switcher
+   select` fixa 42px e vence um seletor de duas classes. */
+.app-header .department-switcher select,
+.app-header .theme-toggle,
+.app-header .session-sign-out,
+.dashboard-filters select,
+.section-toolbar select,
+.app-shell .button,
+.app-shell .button-small {
+  min-height: 44px;
+}
+
+.app-header .session-sign-out,
+.app-header .theme-toggle {
+  min-width: 44px;
+}
+
+/* Os 44px de largura no "Sair" comeram a folga do header, que caiu de 31 para
+   1,6px em 1366. A largura volta do seletor de departamento: o nome completo
+   segue na lista aberta, e a barra nao pode voltar a se sobrepor. */
+@media (min-width: 1341px) and (max-width: 1619px) {
+  .app-header .department-switcher {
+    min-width: 118px;
+    max-width: 124px;
+  }
+}
+
+/* Botoes de texto dentro dos paineis: 21px de altura medidos. Sao controles
+   autonomos, nao links no meio de uma frase, entao valem os 44px. */
+.dashboard-panel button:not(.dashboard-kpi) {
+  min-height: 44px;
+  padding-block: 10px;
+}

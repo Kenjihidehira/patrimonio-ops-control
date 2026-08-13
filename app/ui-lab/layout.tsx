@@ -3,6 +3,7 @@
 // ordem aqui faria o laboratorio mentir sobre o que a tela real mostra.
 import "../demo/patrimonio.css";
 import "../demo/enterprise.css";
+import "../demo/glass.css";
 
 export default function UiLabLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return children;

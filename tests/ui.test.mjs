@@ -21,6 +21,7 @@ const [
   types,
   css,
   enterpriseCss,
+  glassCss,
   loginCss,
   privacyCss,
   api,
@@ -60,6 +61,7 @@ const [
   read("components/patrimonio/types.ts"),
   read("app/demo/patrimonio.css"),
   read("app/demo/enterprise.css"),
+  read("app/demo/glass.css"),
   read("app/login/login.css"),
   read("app/privacidade/privacy.css"),
   read("app/api/state/route.ts"),
@@ -472,8 +474,9 @@ test("a paleta institucional vem do azul da logo Gazin", () => {
 });
 
 test("visual empresarial permanece plano e sem efeitos neon", () => {
-  // A superfície chapada continua valendo para o sistema. A tela de login é a
-  // exceção deliberada: adota o degradê da referência aprovada, e só ela.
+  // As duas folhas de base seguem chapadas: quem traz degradê e desfoque é a
+  // camada `glass.css`, que carrega por último. Manter a base plana é o que
+  // permite tirar o vidro trocando uma folha, sem caçar regra por regra.
   const applicationStyles = [css, enterpriseCss, privacyCss].join("\n");
   assert.doesNotMatch(applicationStyles, /(?:linear|radial|conic)-gradient/);
   assert.doesNotMatch([applicationStyles, loginCss].join("\n"), /drop-shadow/);
@@ -726,4 +729,37 @@ test("o laboratório de interface não existe em produção", async () => {
   assert.doesNotMatch(rotaEstado, /ui-?lab|NODE_ENV|fixture|ensaio/i);
   const autenticacao = await read("app/auth.ts");
   assert.doesNotMatch(autenticacao, /ui-?lab|fixture|ensaio/i);
+});
+
+test("camada de vidro responde ao tema e degrada sem backdrop-filter", () => {
+  // O degradê do sistema é o mesmo da tela de login: os dois ambientes passam a
+  // ter o mesmo fundo, que é o que dá ao desfoque algo para desfocar.
+  assert.match(glassCss, /linear-gradient\(163deg, #0F2E86/);
+
+  // Cada tema tem sua superfície. Impor cor de texto própria aqui foi o que
+  // quebrou o tema claro na primeira tentativa — 43 de 100 textos abaixo de
+  // 4,5:1, alguns em 1,04:1 —, então o texto continua saindo dos tokens do tema.
+  assert.match(glassCss, /:root\[data-theme="dark"\][\s\S]*?--glass-surface:/);
+  assert.doesNotMatch(glassCss, /\.app-shell \{[^}]*\bcolor:/);
+
+  // O header fica escuro nos dois temas: o texto dele é branco fixo em
+  // `enterprise.css`, e clarear a barra no tema claro levou 42 textos abaixo do
+  // mínimo, alguns a 1,02:1.
+  assert.match(glassCss, /--glass-header:/);
+
+  // Sem `backdrop-filter` a queda é para cor sólida, não para o vidro sem
+  // desfoque: a 7% de opacidade e sem desfoque, o texto ficaria sobre o degradê
+  // cru.
+  assert.match(glassCss, /@supports \(backdrop-filter: blur\(1px\)\)/);
+  assert.match(glassCss, /--glass-solid:/);
+
+  // O movimento é enfeite e o desenho não depende dele.
+  assert.match(glassCss, /@media \(prefers-reduced-motion: reduce\)[\s\S]*?transform: none;/);
+
+  // Alvo de toque: medido no laboratório, 13 de 29 controles ficavam abaixo de
+  // 44px, sendo "Sair" o menor, em 27x30.
+  assert.match(glassCss, /min-height: 44px;/);
+  // A regra do seletor precisa repetir `.department-switcher`, senão perde para
+  // `.app-header .department-switcher select`, que fixa 42px.
+  assert.match(glassCss, /\.app-header \.department-switcher select/);
 });
