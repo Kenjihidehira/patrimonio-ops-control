@@ -509,6 +509,32 @@ test("o login usa cartão centrado com faixa amarela", () => {
   // `auto` absorvem a sobra: medido, o input de "Confirmar senha" ia a 55px
   // contra 43px do "Senha", porque o vizinho tem uma linha a mais de ajuda.
   assert.match(loginCss, /\.login-field \{\s*display: grid;\s*align-content: start;/);
+});
+
+test("os controles do login respeitam alvo de toque e foco visivel", () => {
+  // 44px e o piso do alvo de toque. Nenhuma faixa pode baixar disso para
+  // recuperar altura: o espaco sai de margens, nao de area clicavel.
+  const alturasMinimas = [...loginCss.matchAll(/min-height:\s*(\d+)px/g)].map((m) => Number(m[1]));
+  const abaixoDoPiso = alturasMinimas.filter((valor) => valor > 0 && valor < 44);
+  assert.deepEqual(
+    abaixoDoPiso,
+    [],
+    `min-height abaixo de 44px encontrado: ${abaixoDoPiso.join(", ")}`,
+  );
+
+  // O anel de foco era azul-escuro translucido e media 1,03:1 sobre a caixa.
+  // Duas camadas — nucleo escuro e halo claro — garantem 3:1 em qualquer
+  // superficie desta tela, que mistura caixa escura e barra de abas clara.
+  assert.doesNotMatch(loginCss, /outline: 3px solid rgba\(11, 16, 159, 0\.38\)/);
+  assert.match(
+    loginCss,
+    /:focus-visible \{\s*outline: 2px solid var\(--brand-950\);\s*outline-offset: 2px;\s*box-shadow: 0 0 0 5px var\(--yellow\);/,
+  );
+  // O campo nao pode anular o anel no foco por teclado.
+  assert.match(
+    loginCss,
+    /\.login-field input:focus-visible,\s*\.login-field textarea:focus-visible \{\s*outline: 2px solid var\(--brand-950\);/,
+  );
   // O formulario volta a ter caixa, translucida para o fundo atravessar.
   assert.match(loginCss, /\.login-card \{[\s\S]*?background: rgba\(255, 255, 255, 0\.08\)/);
   assert.match(loginCss, /\.credential-submit \{[\s\S]*?background: var\(--yellow\)/);

@@ -91,9 +91,14 @@ a {
   -webkit-tap-highlight-color: transparent;
 }
 
+/* Anel de foco de duas camadas. O anterior era azul-escuro translucido e media
+   1,03:1 sobre a caixa — invisivel, contra os 3:1 que a WCAG 2.4.11 pede.
+   Nenhuma cor unica resolve: a caixa e escura e a barra de abas e clara. Com
+   um nucleo escuro e um halo claro, um dos lados sempre contrasta. */
 :focus-visible {
-  outline: 3px solid rgba(11, 16, 159, 0.38);
-  outline-offset: 3px;
+  outline: 2px solid var(--brand-950);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 5px var(--yellow);
 }
 
 .login-shell {
@@ -295,9 +300,13 @@ a {
   background: var(--login-card-deep);
 }
 
+/* 44px e o alvo de toque minimo. As abas mediam 36px. */
 .login-mode {
+  display: grid;
+  min-height: 44px;
   padding: 9px 12px;
   border-radius: 6px;
+  place-items: center;
   color: var(--login-muted);
   font-size: 12px;
   font-weight: 750;
@@ -316,7 +325,7 @@ a {
 }
 
 .login-mode:focus-visible {
-  outline: 2px solid var(--brand-700);
+  outline: 2px solid var(--brand-950);
   outline-offset: 2px;
 }
 
@@ -713,6 +722,7 @@ a {
 
 .remember-me {
   display: inline-flex;
+  min-height: 44px;
   align-items: center;
   gap: 8px;
   color: var(--login-text);
@@ -806,7 +816,14 @@ a {
 .login-field input:focus,
 .login-field textarea:focus {
   outline: 0;
-  box-shadow: 0 0 0 3px rgba(255, 196, 0, 0.55);
+  box-shadow: none;
+}
+
+.login-field input:focus-visible,
+.login-field textarea:focus-visible {
+  outline: 2px solid var(--brand-950);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 5px var(--yellow);
 }
 
 .login-field-icon .field-icon {
@@ -1061,9 +1078,11 @@ a {
     gap: 12px;
   }
 
+  /* Nao desce de 44px: e o alvo de toque minimo, e a altura economizada aqui
+     sai de margens, nao de area clicavel. */
   .login-field input,
   .login-field textarea {
-    min-height: 42px;
+    min-height: 44px;
   }
 
   .provider-divider {
@@ -1088,7 +1107,7 @@ a {
   /* O titulo ja diz "Entrar" ou "Solicitar acesso": a descricao repete o que a
      tela mostra, e nessa faixa cada linha custa uma rolagem. */
   .provider-button {
-    min-height: 42px;
+    min-height: 44px;
     padding: 8px 14px;
   }
 
@@ -1273,7 +1292,12 @@ a {
   }
 
   .login-modes {
-    margin-bottom: 6px;
+    margin-bottom: 4px;
+    padding: 3px;
+  }
+
+  .login-legal {
+    margin-top: 8px;
   }
 
   .login-shell {
@@ -1303,7 +1327,7 @@ a {
   }
 
   .login-field input {
-    min-height: 40px;
+    min-height: 44px;
   }
 }
 
@@ -1314,4 +1338,13 @@ a {
   .login-description {
     display: none;
   }
+}
+
+/* Alvo de toque de 44px onde o texto sozinho nao chega la. O aviso legal fica
+   de fora de proposito: sao links dentro de uma frase corrida, caso que a
+   WCAG 2.5.8 dispensa — aumenta-los quebraria o paragrafo. */
+.forgot-link {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
 }
