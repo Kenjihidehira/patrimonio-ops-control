@@ -37,6 +37,8 @@
   --glass-border-strong: rgba(23, 34, 53, 0.38);
   --glass-blur: 18px;
   --glass-shadow: 0 14px 34px rgba(23, 34, 53, 0.12);
+  --glass-blur-raised: 26px;
+  --glass-shadow-raised: 0 24px 56px rgba(23, 34, 53, 0.2);
 
   /* O header segue escuro nos dois temas. O texto dele e branco fixo em
      `enterprise.css` — a barra sempre foi azul —, e clarea-la no tema claro
@@ -51,8 +53,17 @@
 
   /* O vidro claro fica um fio abaixo do branco puro, e isso derrubou o texto
      secundario de 4,69:1 para 4,46:1 em 26 lugares — abaixo do minimo de 4,5.
-     Este tom devolve 4,83:1 sobre a superficie. */
-  --muted: #626F84;
+     O tom tambem cobre o pior fundo do tema claro, que nao e o vidro: e a linha
+     selecionada da tabela, em `--brand-100`. La o tom antigo dava 4,0:1 e ja
+     reprovava antes deste trabalho; este da 4,76:1. */
+  --muted: #5C6878;
+
+  /* Cores de estado usadas como texto. Medidas nos dois piores fundos claros —
+     o vidro (248,249,252) e a linha selecionada (233,234,252) — os tons
+     originais davam 4,58/4,05 no sucesso e 3,65/3,22 no coral. Estes passam nos
+     dois. So o tema claro muda: no escuro os tons originais ja passam. */
+  --success: #097268;
+  --coral: #BE3543;
 }
 
 :root[data-theme="dark"] {
@@ -81,6 +92,7 @@
   --glass-border: rgba(255, 255, 255, 0.22);
   --glass-border-strong: rgba(255, 255, 255, 0.4);
   --glass-shadow: 0 16px 40px rgba(2, 4, 26, 0.38);
+  --glass-shadow-raised: 0 26px 64px rgba(2, 4, 26, 0.5);
   --glass-header: rgba(9, 14, 56, 0.72);
 }
 
@@ -199,4 +211,190 @@
 .dashboard-panel button:not(.dashboard-kpi) {
   min-height: 44px;
   padding-block: 10px;
+}
+
+/* ---------------------------------------------------------------------------
+   Tabela, modal e controles.
+   --------------------------------------------------------------------------- */
+
+/* O vidro fica no contêiner externo. `.table-panel` fica dentro de
+   `.inventory-layout`: se as duas desfocassem, opacidade e desfoque se somariam
+   e o painel viraria uma chapa leitosa. */
+.inventory-layout,
+.nucleus-card,
+.kpi-item {
+  border: 1px solid var(--glass-border);
+  background: var(--glass-solid);
+  box-shadow: var(--glass-shadow);
+}
+
+.table-panel {
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+@supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+  .inventory-layout,
+  .nucleus-card,
+  .kpi-item {
+    background: var(--glass-surface);
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(140%);
+    backdrop-filter: blur(var(--glass-blur)) saturate(140%);
+  }
+}
+
+.inventory-layout,
+.nucleus-card,
+.kpi-item {
+  border-radius: 14px;
+}
+
+/* O cabeçalho da tabela precisa continuar legível enquanto as linhas passam por
+   baixo dele; por isso ganha desfoque próprio em vez de opacidade. */
+.table-panel thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--glass-surface-raised);
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  backdrop-filter: blur(var(--glass-blur));
+}
+
+/* Modal: superfície elevada, desfoque maior, e o fundo da página desfocado
+   atrás dela — é o que separa o que está em foco do resto. */
+.modal-content {
+  border: 1px solid var(--glass-border-strong);
+  background: var(--glass-solid);
+  box-shadow: var(--glass-shadow-raised, var(--glass-shadow));
+}
+
+@supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+  .modal-content {
+    background: var(--glass-surface-raised);
+    -webkit-backdrop-filter: blur(var(--glass-blur-raised, 26px)) saturate(150%);
+    backdrop-filter: blur(var(--glass-blur-raised, 26px)) saturate(150%);
+  }
+
+  .modal::backdrop {
+    -webkit-backdrop-filter: blur(3px);
+    backdrop-filter: blur(3px);
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Estados dos controles: padrão, foco, hover, pressionado, desativado e
+   carregando. O desativado não conta para contraste na WCAG, mas ainda precisa
+   parecer desativado; o carregando precisa dizer isso a quem não vê a tela.
+   --------------------------------------------------------------------------- */
+
+.app-shell .button,
+.app-shell .pagination-button,
+.app-shell .field input,
+.app-shell .field select,
+.app-shell .field textarea {
+  transition: background-color 140ms ease, border-color 140ms ease, box-shadow 140ms ease;
+}
+
+.app-shell .button:hover:not(:disabled),
+.app-shell .pagination-button:hover:not(:disabled) {
+  border-color: var(--glass-border-strong);
+}
+
+/* Pressionado: afunda em vez de crescer. Cresce dá a impressão de que o clique
+   não pegou. */
+.app-shell .button:active:not(:disabled),
+.app-shell .pagination-button:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.app-shell .field input:focus-visible,
+.app-shell .field select:focus-visible,
+.app-shell .field textarea:focus-visible {
+  border-color: var(--brand-700);
+}
+
+.app-shell .button:disabled,
+.app-shell .pagination-button:disabled,
+.app-shell .field input:disabled,
+.app-shell .field select:disabled {
+  opacity: 0.55;
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
+/* Carregando: `aria-busy` é o que o leitor de tela anuncia, então o desenho
+   segue o mesmo atributo em vez de uma classe à parte — assim os dois não têm
+   como divergir. */
+.app-shell [aria-busy="true"] {
+  cursor: progress;
+}
+
+.app-shell .button[aria-busy="true"] {
+  opacity: 0.7;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-shell .button,
+  .app-shell .pagination-button,
+  .app-shell .field input,
+  .app-shell .field select,
+  .app-shell .field textarea {
+    transition: none;
+  }
+
+  .app-shell .button:active:not(:disabled),
+  .app-shell .pagination-button:active:not(:disabled) {
+    transform: none;
+  }
+}
+
+/* Alvo de toque nas demais telas. Os controles autonomos vao a 44px. Os que
+   vivem dentro da linha da tabela — `.asset-id-button` e
+   `.collaborator-name-button`, 29 no total — ficam como estao: elevar cada um a
+   44px somaria mais de 400px de altura numa tabela de 25 linhas e destruiria a
+   densidade de que a tela depende. Eles ficam entre 26 e 35px, acima do piso de
+   24x24 da WCAG 2.5.8, e a linha inteira continua clicavel. */
+.app-shell .quick-filter,
+.app-shell .icon-button,
+.app-shell .nucleus-inventory-link,
+.app-shell .pagination-button,
+.app-shell input[type="search"],
+.app-shell select {
+  min-height: 44px;
+}
+
+.app-shell .icon-button {
+  min-width: 44px;
+}
+
+/* A caixa de marcacao continua com 16px desenhados; o que cresce e a area
+   sensivel, por um pseudo-elemento. Aumentar a caixa em si deixaria a lista
+   desalinhada. */
+.app-shell input[type="checkbox"] {
+  position: relative;
+}
+
+.app-shell input[type="checkbox"]::after {
+  position: absolute;
+  inset: -14px;
+  content: "";
+}
+
+/* Os que sobraram, cada um vencido por um seletor mais especifico do que
+   `.app-shell .button`: as acoes do painel de detalhe e do formulario de
+   status, as abas de Operacoes e os filtros de Nucleos. */
+.app-shell .detail-actions .button,
+.app-shell .status-form .button,
+.app-shell .operations-tabs button,
+.app-shell .nuclei-health-filter button {
+  min-height: 44px;
+}
+
+/* O numero do patrimonio e o botao mais repetido do sistema — 25 por pagina de
+   tabela — e media 18px, abaixo do piso de 24x24 da WCAG 2.5.8. Sobe para 24
+   por recuo, sem alterar a altura da linha, que e dada pela celula. */
+.app-shell .asset-id-button {
+  min-height: 24px;
+  padding-block: 3px;
 }

@@ -763,3 +763,38 @@ test("camada de vidro responde ao tema e degrada sem backdrop-filter", () => {
   // `.app-header .department-switcher select`, que fixa 42px.
   assert.match(glassCss, /\.app-header \.department-switcher select/);
 });
+
+test("vidro cobre tabela, modal e controles com estados definidos", () => {
+  // O vidro fica no contêiner externo. `.table-panel` vive dentro de
+  // `.inventory-layout`: se as duas desfocassem, opacidade e desfoque se
+  // somariam e o painel viraria uma chapa leitosa.
+  assert.match(glassCss, /\.inventory-layout,[\s\S]*?backdrop-filter: blur/);
+  assert.match(glassCss, /\.table-panel \{\s*border: 0;\s*background: transparent;/);
+
+  // O modal é superfície elevada e desfoca o que está atrás dele.
+  assert.match(glassCss, /\.modal-content \{[\s\S]*?--glass-border-strong/);
+  assert.match(glassCss, /\.modal::backdrop \{[\s\S]*?backdrop-filter: blur/);
+
+  // Estados: foco, pressionado, desativado e carregando. O carregando segue
+  // `aria-busy`, o mesmo atributo que o leitor de tela anuncia, para que
+  // desenho e anúncio não tenham como divergir.
+  assert.match(glassCss, /:focus-visible \{\s*border-color: var\(--brand-700\)/);
+  assert.match(glassCss, /:active:not\(:disabled\)/);
+  assert.match(glassCss, /:disabled,[\s\S]*?cursor: not-allowed;/);
+  assert.match(glassCss, /\[aria-busy="true"\]/);
+
+  // Cores de estado usadas como texto: os tons originais reprovavam sobre o
+  // vidro claro e sobre a linha selecionada (4,58/4,05 no sucesso e 3,65/3,22
+  // no coral). Só o tema claro muda.
+  assert.match(glassCss, /--success: #097268;/);
+  assert.match(glassCss, /--coral: #BE3543;/);
+
+  // O número do patrimônio é o botão mais repetido do sistema e media 18px,
+  // abaixo do piso de 24x24. Não vai a 44px de propósito: seriam mais de 400px
+  // de altura numa tabela de 25 linhas.
+  assert.match(glassCss, /\.asset-id-button \{\s*min-height: 24px;/);
+  assert.doesNotMatch(glassCss, /\.asset-id-button \{\s*min-height: 44px;/);
+
+  // A caixa de marcação continua com 16px desenhados; cresce a área sensível.
+  assert.match(glassCss, /input\[type="checkbox"\]::after \{[\s\S]*?inset: -14px;/);
+});
