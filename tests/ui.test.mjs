@@ -705,3 +705,25 @@ test("login responde à altura da tela, não só à largura", () => {
   // Tela muito estreita: o respiro lateral vira largura útil do campo.
   assert.match(loginCss, /@media \(max-width: 380px\)[\s\S]*?flex-direction: column;/);
 });
+
+test("o laboratório de interface não existe em produção", async () => {
+  // O laboratório injeta dados de ensaio e substitui `fetch`. Nada disso pode
+  // responder em produção — verificado tambem contra o build real, onde
+  // /ui-lab devolve 404 e /login devolve 200.
+  const pagina = await read("app/ui-lab/page.tsx");
+  assert.match(
+    pagina,
+    /if \(process\.env\.NODE_ENV === "production"\) notFound\(\);/,
+    "a guarda de produção do laboratório sumiu",
+  );
+  assert.match(pagina, /import \{ notFound \} from "next\/navigation";/);
+
+  // O desvio de rede fica contido no laboratório: nenhuma rota de autenticação
+  // ou de API pode ter sido afrouxada para ele funcionar.
+  const cliente = await read("app/ui-lab/UiLabClient.tsx");
+  assert.match(cliente, /url\.startsWith\("\/api\/state"\)/);
+  const rotaEstado = await read("app/api/state/route.ts");
+  assert.doesNotMatch(rotaEstado, /ui-?lab|NODE_ENV|fixture|ensaio/i);
+  const autenticacao = await read("app/auth.ts");
+  assert.doesNotMatch(autenticacao, /ui-?lab|fixture|ensaio/i);
+});
