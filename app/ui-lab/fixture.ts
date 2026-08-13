@@ -1,4 +1,5 @@
 import { buildDashboard } from "@/lib/domain";
+import { buildFilteredDashboardAnalytics, defaultDashboardFilters } from "@/lib/dashboard-filters";
 
 // Dados de ensaio para o laboratorio de interface. Existem para desenhar e
 // medir as telas internas sem sessao: nenhuma rota de autenticacao e tocada, e
@@ -93,35 +94,49 @@ export function dashboardDeEnsaio() {
     { includeFinancials: true },
   );
 
+  const operacoes = {
+    inventoryCampaigns: [],
+    inventoryCampaignAssets: [],
+    custodyTerms: [],
+    maintenanceOrders: [],
+    trackingTags: [],
+    trackingEvents: [],
+    assetDocuments: [],
+    assetContracts: [],
+    assetAccounting: [],
+    assetKits: [],
+    assetKitItems: [],
+    reservations: [],
+    reservationAssets: [],
+    offboardingCases: [],
+    offboardingAssets: [],
+    lifecycleRequests: [],
+    customFields: [],
+    assetCustomValues: [],
+    integrations: [],
+    integrationEvents: [],
+    dataSourcePolicies: [],
+    reconciliationIssues: [],
+    assetInspections: [],
+  };
+
+  // A analitica sai do mesmo construtor que o sistema usa, alimentado pelos
+  // ativos de ensaio. Sem isto o painel cai no vazio "Indicadores em
+  // processamento" e nao ha superficie para medir. Numeros inventados aqui
+  // dariam um painel que nao corresponde aos dados ao lado.
+  const { analytics } = buildFilteredDashboardAnalytics({
+    assets: base.nucleusInventory,
+    nuclei: base.nuclei,
+    operations: operacoes,
+    filters: { ...defaultDashboardFilters },
+    now: new Date("2026-08-13T15:48:00-03:00"),
+  });
+
   return {
     ...base,
     imports: [],
-    operations: {
-      inventoryCampaigns: [],
-      inventoryCampaignAssets: [],
-      custodyTerms: [],
-      maintenanceOrders: [],
-      trackingTags: [],
-      trackingEvents: [],
-      assetDocuments: [],
-      assetContracts: [],
-      assetAccounting: [],
-      assetKits: [],
-      assetKitItems: [],
-      reservations: [],
-      reservationAssets: [],
-      offboardingCases: [],
-      offboardingAssets: [],
-      lifecycleRequests: [],
-      customFields: [],
-      assetCustomValues: [],
-      integrations: [],
-      integrationEvents: [],
-      dataSourcePolicies: [],
-      reconciliationIssues: [],
-      assetInspections: [],
-    },
-    analytics: null,
+    operations: operacoes,
+    analytics,
     environment: {
       activeDepartment: departamentos[0],
       departments: departamentos,
