@@ -825,3 +825,27 @@ test("vidro nao cobra desfoque por quadro de rolagem", () => {
   // vidro sem custar composição.
   assert.match(glassCss, /box-shadow: inset 0 1px 0 var\(--glass-highlight\)/);
 });
+
+test("recusa de sessão nomeia o motivo sem vazar quem tentou entrar", () => {
+  // Todas as recusas desabavam no mesmo `return null`, e o `catch` que
+  // envolvia a função inteira transformava uma falha de rede do gateway em
+  // logout silencioso — indistinguível de acesso revogado.
+  for (const motivo of [
+    "sem_cookie",
+    "token_invalido",
+    "conteudo_inesperado",
+    "acesso_revogado",
+    "gateway_indisponivel",
+  ]) {
+    assert.match(sharedAuth, new RegExp(`"${motivo}"`));
+  }
+
+  // O log não leva identificador nem token: quem depura precisa do ramo que
+  // disparou, não de quem tentou entrar.
+  assert.match(sharedAuth, /console\.warn\(`Sessao recusada: \$\{motivo\}`\)/);
+  assert.doesNotMatch(sharedAuth, /Sessao recusada[^`]*identifier/);
+
+  // Não confirmar a autorização continua barrando: negar quando não dá para
+  // perguntar é o lado certo de errar.
+  assert.match(sharedAuth, /catch \{\s*return recusarSessao\("gateway_indisponivel"\);/);
+});
