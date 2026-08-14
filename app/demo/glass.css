@@ -223,10 +223,25 @@
 /* Os 44px de largura no "Sair" comeram a folga do header, que caiu de 31 para
    1,6px em 1366. A largura volta do seletor de departamento: o nome completo
    segue na lista aberta, e a barra nao pode voltar a se sobrepor. */
-@media (min-width: 1341px) and (max-width: 1619px) {
+/* O teto subiu de 1619 para 1699: os 44px de alvo de toque engordaram o "Sair"
+   e o interruptor, e o header em tamanho cheio — que ainda mostra o nome do
+   produto ao lado da logo — deixou de caber com folga antes disso. Medido:
+   1635 dava 5,8px de folga, 1720 da 33,9. */
+@media (min-width: 1341px) and (max-width: 1699px) {
+  /* O nome do departamento vinha cortado em "Atendiment": a caixa tinha 124px
+     e o texto pede 163 com o recuo. A largura sai da nav, que ocupa 808px, e
+     do proprio recuo do seletor — nao do texto, que e o que se le. */
   .app-header .department-switcher {
-    min-width: 118px;
-    max-width: 124px;
+    min-width: 150px;
+    max-width: 172px;
+  }
+
+  .app-header .department-switcher select {
+    padding-right: 26px;
+  }
+
+  .nav-item {
+    padding-inline: 5px;
   }
 }
 
@@ -444,4 +459,12 @@
 
 .modal-content {
   box-shadow: inset 0 1px 0 var(--glass-highlight), var(--glass-shadow-raised);
+}
+
+/* Acima de 1619 a faixa de notebook nao vale, e la o seletor cresce ate 198px.
+   Somado a largura que os 44px de alvo cobraram do "Sair" e do interruptor, a
+   nav voltava a se sobrepor aos vizinhos — medido em 1635: -5,3px de folga.
+   O teto vale em qualquer largura; a faixa de notebook so aperta mais. */
+.app-header .department-switcher {
+  max-width: 176px;
 }

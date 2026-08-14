@@ -849,3 +849,18 @@ test("recusa de sessão nomeia o motivo sem vazar quem tentou entrar", () => {
   // perguntar é o lado certo de errar.
   assert.match(sharedAuth, /catch \{\s*return recusarSessao\("gateway_indisponivel"\);/);
 });
+
+test("nome do departamento nao e cortado no meio da palavra", () => {
+  // A caixa tinha 124px e o nome pede 163 com o recuo: aparecia "Atendiment".
+  // A largura veio da nav, que ocupava 808px, e do recuo do proprio seletor.
+  assert.match(glassCss, /\.app-header \.department-switcher \{\s*max-width: 176px;/);
+  assert.match(glassCss, /min-width: 150px;\s*max-width: 172px;/);
+
+  // Nome maior que a caixa termina em reticencias, nao em corte seco.
+  assert.match(enterpriseCss, /\.app-header \.department-switcher select \{[^}]*text-overflow: ellipsis;/);
+
+  // Os 44px de alvo engordaram "Sair" e interruptor, e o header em tamanho
+  // cheio deixou de caber com folga antes de ~1700: em 1635 sobravam 5,8px,
+  // em 1720 sobram 33,9. Por isso a faixa compacta vai ate 1699.
+  assert.match(glassCss, /@media \(min-width: 1341px\) and \(max-width: 1699px\)/);
+});

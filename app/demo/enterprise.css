@@ -3716,6 +3716,10 @@ body {
 .app-header .department-switcher select {
   width: 100%;
   min-width: 0;
+  /* Um nome maior que a caixa termina em reticencias em vez de ser cortado no
+     meio da palavra: "Atendiment" parece defeito, "Atendimento ao Clien…"
+     parece o que e. */
+  text-overflow: ellipsis;
 }
 
 .app-header .theme-toggle:hover {
