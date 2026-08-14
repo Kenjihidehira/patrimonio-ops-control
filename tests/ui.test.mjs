@@ -798,3 +798,30 @@ test("vidro cobre tabela, modal e controles com estados definidos", () => {
   // A caixa de marcação continua com 16px desenhados; cresce a área sensível.
   assert.match(glassCss, /input\[type="checkbox"\]::after \{[\s\S]*?inset: -14px;/);
 });
+
+test("vidro nao cobra desfoque por quadro de rolagem", () => {
+  // Sem os comentários: eles citam as próprias propriedades que este teste
+  // proíbe, e a citação não é a declaração.
+  const semComentarios = glassCss.replace(/\/\*[\s\S]*?\*\//g, "");
+
+  // `background-attachment: fixed` prende as quatro camadas do degradê ao
+  // viewport, e o navegador repinta as quatro a cada quadro de rolagem. Uma
+  // camada fixa própria é pintada uma vez e depois só composta.
+  assert.doesNotMatch(semComentarios, /background-attachment:\s*fixed/);
+  assert.match(glassCss, /\.app-shell::before \{[\s\S]*?position: fixed;[\s\S]*?z-index: -1;/);
+
+  // O cabeçalho da tabela é fixo e fica sobre um painel que já desfoca: dar
+  // desfoque próprio custaria uma recomposição por quadro para desfocar um
+  // fundo já desfocado.
+  // `[^}]*` e não `[\s\S]*?`: o segundo atravessa o fecho da regra e casa com
+  // um `backdrop-filter` de qualquer bloco mais abaixo.
+  assert.doesNotMatch(semComentarios, /thead th \{[^}]*backdrop-filter/);
+  assert.match(glassCss, /--glass-head:/);
+
+  // Mesma razão para o KPI, que vive dentro de um painel de vidro.
+  assert.match(glassCss, /\.kpi-item \{\s*background: var\(--glass-surface-raised\);\s*\}/);
+
+  // A luz na borda é sombra, não filtro: é o que faz a superfície ler como
+  // vidro sem custar composição.
+  assert.match(glassCss, /box-shadow: inset 0 1px 0 var\(--glass-highlight\)/);
+});

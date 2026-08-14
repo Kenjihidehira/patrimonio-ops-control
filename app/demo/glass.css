@@ -64,6 +64,14 @@
      dois. So o tema claro muda: no escuro os tons originais ja passam. */
   --success: #097268;
   --coral: #BE3543;
+
+  /* Tinta do cabecalho fixo da tabela: opaca o bastante para as linhas
+     passarem por baixo sem borrar a leitura. */
+  --glass-head: #EEF1F7;
+
+  /* A luz na borda de cima e o que faz a superficie ler como vidro e nao como
+     um retangulo translucido: simula a espessura pegando a luz. */
+  --glass-highlight: rgba(255, 255, 255, 0.85);
 }
 
 :root[data-theme="dark"] {
@@ -94,11 +102,26 @@
   --glass-shadow: 0 16px 40px rgba(2, 4, 26, 0.38);
   --glass-shadow-raised: 0 26px 64px rgba(2, 4, 26, 0.5);
   --glass-header: rgba(9, 14, 56, 0.72);
+  --glass-head: #1A2148;
+  --glass-highlight: rgba(255, 255, 255, 0.22);
 }
 
+/* O degrade fica numa camada fixa propria em vez de
+   `background-attachment: fixed`. Sao quatro camadas de fundo: presas ao
+   viewport, o navegador repinta as quatro a cada quadro de rolagem. Assim ele
+   pinta uma vez e so compoe. */
 .app-shell {
+  position: relative;
+  isolation: isolate;
+}
+
+.app-shell::before {
+  position: fixed;
+  z-index: -1;
+  inset: 0;
   background: var(--glass-canvas);
-  background-attachment: fixed;
+  content: "";
+  pointer-events: none;
 }
 
 /* O conteudo rola sobre o degrade em vez de trazer a propria cor: e o que
@@ -148,6 +171,7 @@
 .detail-panel {
   border-radius: 14px;
 }
+
 
 .topbar {
   border-top: 0;
@@ -236,11 +260,16 @@
 
 @supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
   .inventory-layout,
-  .nucleus-card,
-  .kpi-item {
+  .nucleus-card {
     background: var(--glass-surface);
     -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(140%);
     backdrop-filter: blur(var(--glass-blur)) saturate(140%);
+  }
+
+  /* O KPI vive dentro de um painel que ja desfoca. Desfocar de novo custa outra
+     camada e ainda embaca o que ja estava embacado. Tinta resolve. */
+  .kpi-item {
+    background: var(--glass-surface-raised);
   }
 }
 
@@ -252,13 +281,14 @@
 
 /* O cabeçalho da tabela precisa continuar legível enquanto as linhas passam por
    baixo dele; por isso ganha desfoque próprio em vez de opacidade. */
+/* O cabecalho e fixo e fica sobre um painel que ja desfoca. Dar desfoque
+   proprio a ele custa uma recomposicao por quadro de rolagem para desfocar um
+   fundo ja desfocado — o resultado visual e o mesmo de uma tinta mais densa. */
 .table-panel thead th {
   position: sticky;
   top: 0;
   z-index: 1;
-  background: var(--glass-surface-raised);
-  -webkit-backdrop-filter: blur(var(--glass-blur));
-  backdrop-filter: blur(var(--glass-blur));
+  background: var(--glass-head);
 }
 
 /* Modal: superfície elevada, desfoque maior, e o fundo da página desfocado
@@ -397,4 +427,21 @@
 .app-shell .asset-id-button {
   min-height: 24px;
   padding-block: 3px;
+}
+
+/* Uma linha de luz no topo, por dentro da borda: e o que separa vidro de
+   retangulo translucido. Custa nada — e sombra, nao filtro.
+   Fica no fim do arquivo porque as regras de superficie mais abaixo definem
+   `box-shadow` e sobrescreveriam a luz se ela viesse antes. */
+.topbar,
+.dashboard-panel,
+.detail-panel,
+.section-toolbar,
+.inventory-layout,
+.nucleus-card {
+  box-shadow: inset 0 1px 0 var(--glass-highlight), var(--glass-shadow);
+}
+
+.modal-content {
+  box-shadow: inset 0 1px 0 var(--glass-highlight), var(--glass-shadow-raised);
 }
