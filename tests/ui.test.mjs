@@ -732,9 +732,13 @@ test("o laboratório de interface não existe em produção", async () => {
 });
 
 test("camada de vidro responde ao tema e degrada sem backdrop-filter", () => {
-  // O degradê do sistema é o mesmo da tela de login: os dois ambientes passam a
-  // ter o mesmo fundo, que é o que dá ao desfoque algo para desfocar.
-  assert.match(glassCss, /linear-gradient\(163deg, #0F2E86/);
+  // O fundo e quase preto com um brilho azul entrando por um canto so. O
+  // degrade do login saiu daqui: com ele, o mesmo painel tinha fundo diferente
+  // no topo e no rodape da pagina, e a leitura do vidro mudava conforme a
+  // rolagem. Uniforme, o vidro le igual em qualquer posicao — e medir contraste
+  // deixa de exigir amostrar a cor do fundo elemento por elemento.
+  assert.match(glassCss, /radial-gradient\(90% 60% at 82% 0%, rgba\(11, 16, 159, 0\.55\)/);
+  assert.doesNotMatch(glassCss, /linear-gradient\(163deg, #0F2E86/);
 
   // Cada tema tem sua superfície. Impor cor de texto própria aqui foi o que
   // quebrou o tema claro na primeira tentativa — 43 de 100 textos abaixo de

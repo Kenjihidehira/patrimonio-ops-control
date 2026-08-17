@@ -18,16 +18,11 @@
 :root {
   /* Tema claro. O degrade mantem a familia do azul Gazin, mas alto o
      suficiente para o texto escuro do tema continuar legivel por cima. */
+  /* A mesma ideia na versao alta: um so tom claro com o brilho azul no mesmo
+     canto, na mesma posicao, para os dois temas serem a mesma tela. */
   --glass-canvas:
-    radial-gradient(120% 78% at 50% -8%, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0) 58%),
-    repeating-linear-gradient(
-      104deg,
-      rgba(255, 255, 255, 0.5) 0px,
-      rgba(255, 255, 255, 0.5) 2px,
-      rgba(255, 255, 255, 0) 2px,
-      rgba(255, 255, 255, 0) 74px
-    ),
-    linear-gradient(163deg, #EDF0FF 0%, #E3E8F8 28%, #F2F5FA 58%, #E6EBF6 100%);
+    radial-gradient(90% 60% at 82% 0%, rgba(11, 16, 159, 0.14) 0%, rgba(11, 16, 159, 0) 62%),
+    #F4F6FB;
 
   --glass-surface: rgba(255, 255, 255, 0.66);
   --glass-surface-raised: rgba(255, 255, 255, 0.82);
@@ -75,23 +70,15 @@
 }
 
 :root[data-theme="dark"] {
+  /* Quase preto com um brilho azul entrando por um canto so. O vidro fica mais
+     evidente aqui do que sobre o degrade antigo, porque a diferenca entre
+     painel e chao e a maior das opcoes que comparamos.
+     Ganho lateral: o fundo e praticamente uniforme, entao a leitura do vidro
+     nao muda mais conforme a pagina rola — no degrade anterior, o mesmo painel
+     tinha fundo diferente no topo e no rodape. */
   --glass-canvas:
-    radial-gradient(120% 78% at 50% -8%, rgba(255, 255, 255, 0.07) 0%, rgba(255, 255, 255, 0) 58%),
-    repeating-linear-gradient(
-      104deg,
-      rgba(255, 255, 255, 0.05) 0px,
-      rgba(255, 255, 255, 0.05) 2px,
-      rgba(255, 255, 255, 0) 2px,
-      rgba(255, 255, 255, 0) 74px
-    ),
-    repeating-linear-gradient(
-      98deg,
-      rgba(255, 255, 255, 0.032) 0px,
-      rgba(255, 255, 255, 0.032) 26px,
-      rgba(255, 255, 255, 0) 26px,
-      rgba(255, 255, 255, 0) 168px
-    ),
-    linear-gradient(163deg, #0F2E86 0%, #0B1C6E 24%, #0A0C56 52%, #070A3A 76%, #04061F 100%);
+    radial-gradient(90% 60% at 82% 0%, rgba(11, 16, 159, 0.55) 0%, rgba(11, 16, 159, 0) 62%),
+    #080B14;
 
   --glass-surface: rgba(255, 255, 255, 0.07);
   --glass-surface-raised: rgba(255, 255, 255, 0.12);
