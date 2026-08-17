@@ -395,34 +395,6 @@ export default function PatrimonioApp() {
             ))}
           </nav>
 
-          {/* Com as secoes no menu, chegar a uma custa um clique a mais. Estes
-              atalhos devolvem esse clique para as mais procuradas. A escolha
-              veio da maquete aprovada, nao de medicao de uso: quando houver
-              dado real, e so trocar esta lista. */}
-          <div className="header-shortcuts">
-            {(["inventory", "operations", "nuclei", "audit"] as const)
-              .filter((item) => visibleViews.includes(item))
-              .map((item) => (
-                <button
-                  key={item}
-                  className={`header-shortcut ${view === item ? "is-active" : ""}`}
-                  type="button"
-                  aria-current={view === item ? "page" : undefined}
-                  onClick={() => {
-                    setView(item);
-                    setMobileNavigationOpen(false);
-                  }}
-                >
-                  {{
-                    inventory: "Inventário",
-                    operations: "Operações",
-                    nuclei: "Núcleos",
-                    audit: "Auditoria",
-                  }[item]}
-                </button>
-              ))}
-          </div>
-
           <div className="header-actions">
             {environment?.departments.length ? (
               <label className="department-switcher">

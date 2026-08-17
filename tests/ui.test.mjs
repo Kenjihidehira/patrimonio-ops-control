@@ -883,11 +883,10 @@ test("leitura no centro dá rosto ao leitor que já existia", () => {
   assert.match(app, /campoDeLeituraRef/);
   assert.doesNotMatch(app, /document\.querySelector\(["'`]\.header-scan/);
 
-  // As seções recolhem no menu que já existia para o celular, agora em
-  // qualquer largura; os atalhos devolvem o clique perdido.
-  assert.match(glassCss, /\.app-header\.is-open \.primary-nav \{\s*display: grid;/);
-  assert.match(app, /className="header-shortcuts"/);
-
-  // 44px também aqui: recusei 36px no modelo anterior pelo mesmo motivo.
-  assert.match(glassCss, /\.header-shortcut \{[\s\S]*?min-height: 44px;/);
+  // As oito seções aparecem em linha a partir de 1041px; abaixo disso recolhem
+  // no menu que já existia para o celular. Os atalhos que duplicavam quatro
+  // delas saíram: duas faixas diziam a mesma coisa, desalinhadas entre si.
+  assert.match(glassCss, /@media \(min-width: 1041px\)[\s\S]*?\.primary-nav \{\s*display: flex;/);
+  assert.match(glassCss, /@media \(min-width: 1041px\)[\s\S]*?\.mobile-menu-toggle \{\s*display: none;/);
+  assert.doesNotMatch(app, /className="header-shortcuts"/);
 });

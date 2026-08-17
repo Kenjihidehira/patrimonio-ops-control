@@ -684,3 +684,79 @@
   width: auto;
   justify-self: stretch;
 }
+
+/* ---------------------------------------------------------------------------
+   As oito secoes voltam a aparecer em linha.
+
+   O menu recolhido resolvia a largura, mas escondia a navegacao inteira atras
+   de um clique e deixava uma fileira solta de atalhos embaixo — duas faixas
+   dizendo a mesma coisa, desalinhadas entre si. Agora a linha de baixo e a
+   navegacao completa, e os atalhos sairam por redundancia.
+
+   A leitura de patrimonio continua no centro da linha de cima: e o que o
+   modelo escolhido tinha de proprio, e nao disputa espaco com as abas porque
+   as duas coisas moram em linhas diferentes.
+   --------------------------------------------------------------------------- */
+@media (min-width: 1041px) {
+  .app-header-inner {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    row-gap: 0;
+  }
+
+  .app-brand { grid-column: 1; grid-row: 1; }
+  .header-scan { grid-column: 2; grid-row: 1; }
+  .header-actions { grid-column: 3; grid-row: 1; }
+
+  /* O botao existia para abrir o que agora esta sempre a vista. */
+  .mobile-menu-toggle {
+    display: none;
+  }
+
+  /* Linha unica, em sequencia, alinhada a esquerda com a logo — nao centrada,
+     para o inicio da fila bater com o inicio da marca. */
+  .primary-nav {
+    display: flex;
+    grid-column: 1 / -1;
+    grid-row: 2;
+    width: 100%;
+    padding: 6px 0 0;
+    gap: 2px;
+    justify-content: flex-start;
+    border-top: 0;
+    overflow: visible;
+  }
+
+  .nav-item {
+    min-height: 44px;
+    padding-inline: 12px;
+    flex-direction: row;
+    gap: 7px;
+    border-radius: 8px 8px 0 0;
+    font-size: 12px;
+  }
+
+  .nav-item-icon {
+    display: grid;
+  }
+
+  .nav-item-icon,
+  .nav-item-icon svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  /* O ativo se prende a borda de baixo da barra, apontando para o conteudo que
+     ele abre — em vez de flutuar como pastilha solta. */
+  .nav-item.is-active {
+    background: rgba(255, 255, 255, 0.14);
+    box-shadow: inset 0 3px 0 var(--yellow);
+    color: #FFFFFF;
+    font-weight: 630;
+  }
+
+  /* Com a nav em linha propria, sobra largura na linha de cima: o nome do
+     departamento volta a caber inteiro em vez de virar "Atendimento ao Cli…". */
+  .app-header .department-switcher {
+    max-width: 208px;
+  }
+}
