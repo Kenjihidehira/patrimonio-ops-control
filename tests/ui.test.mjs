@@ -917,3 +917,21 @@ test("o vidro cobre todas as telas, não só as duas primeiras", () => {
   assert.match(glassCss, /\.nuclei-overview \.operational-metric \{[^}]*background: var\(--glass-surface-raised\)/);
   assert.match(glassCss, /\.operational-panel \.operational-filters \{[^}]*background: transparent/);
 });
+
+test("a faixa de título da seção é um cartão, não uma tira", () => {
+  // Ela recebia vidro, borda e luz, mas ficou com canto 0 e recuo 0: uma tira
+  // de canto vivo entre painéis de 14px, com o texto encostado na borda.
+  assert.match(glassCss, /\.section-toolbar \{[\s\S]*?border-radius: 14px;/);
+  assert.match(glassCss, /\.section-toolbar \{[\s\S]*?padding: 15px 18px;/);
+
+  // Um bloco com ID vencia qualquer regra de classe da camada de sistema, então
+  // não adiantava escrever lá. Sobrou dele só o que é posição; o `border-bottom:
+  // 0` chegava a apagar a borda inferior do cartão, deixando-o com três lados.
+  assert.doesNotMatch(enterpriseCss, /#nuclei-view > \.section-toolbar \{[^}]*border-bottom: 0/);
+  assert.doesNotMatch(enterpriseCss, /#nuclei-view > \.section-toolbar \{[^}]*align-items: end/);
+  assert.doesNotMatch(enterpriseCss, /#nuclei-view > \.section-toolbar h2 \{[^}]*font-size: 20px/);
+
+  // O título repetia o nome da tela que a topbar mostra logo acima, no mesmo
+  // peso: "Núcleos" e depois "Núcleos da empresa" a 20px contra 21,6px.
+  assert.match(glassCss, /\.section-toolbar > div > h2 \{[\s\S]*?font-size: 16px;/);
+});

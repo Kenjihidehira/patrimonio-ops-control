@@ -4197,24 +4197,21 @@ textarea {
   max-width: var(--saas-content-max);
 }
 
+/* Sobrou daqui so o que e posicao. Recuo, alinhamento, borda e tamanho de texto
+   saem: eram do desenho antigo, quando esta faixa era uma tira chapada com
+   linha embaixo. Agora ela e um cartao de vidro, e quem manda nisso e
+   `glass.css`. O `border-bottom: 0` daqui chegava a apagar a borda inferior do
+   cartao, deixando-o com tres lados. Como o seletor tem ID, vencia qualquer
+   regra de classe da camada de sistema — nao adiantava escrever la. */
 #nuclei-view > .section-toolbar {
   min-height: 0;
   margin-bottom: 18px;
-  padding-bottom: 0;
-  align-items: end;
-  border-bottom: 0;
 }
 
 #nuclei-view > .section-toolbar h2 {
   color: var(--heading-text);
-  font-size: 20px;
   line-height: 1.2;
   letter-spacing: -0.02em;
-}
-
-#nuclei-view > .section-toolbar p {
-  margin-top: 5px;
-  font-size: 12px;
 }
 
 .nuclei-overview {

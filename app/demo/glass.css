@@ -796,3 +796,39 @@
   border-color: var(--glass-border);
   background: transparent;
 }
+
+/* ---------------------------------------------------------------------------
+   A faixa de titulo da secao.
+
+   Ela ja recebia vidro, borda e luz, mas tinha ficado com canto 0 e recuo 0:
+   uma tira de canto vivo no meio de paineis de 14px, com o texto encostado na
+   borda. Media 1239x48 sem um pixel de respiro.
+
+   Tambem estava com `align-items: end`, que colava titulo, descricao e botao na
+   base da caixa em vez de centraliza-los na altura.
+   --------------------------------------------------------------------------- */
+.section-toolbar {
+  align-items: center;
+  padding: 15px 18px;
+  border-radius: 14px;
+}
+
+/* O titulo repete o nome da tela, que a topbar ja mostra logo acima — "Nucleos"
+   e depois "Nucleos da empresa". Baixar o peso tira a competicao entre os dois
+   sem esconder informacao: o que carrega sentido aqui e a descricao. */
+.section-toolbar > div > h2 {
+  font-size: 16px;
+  font-weight: 640;
+  letter-spacing: -0.01em;
+}
+
+.section-toolbar > div > p {
+  margin-top: 3px;
+  max-width: 68ch;
+  font-size: 12.5px;
+}
+
+/* O botao e a unica acao da faixa: nao deve encolher quando a descricao cresce. */
+.section-toolbar > .button {
+  flex: none;
+}
