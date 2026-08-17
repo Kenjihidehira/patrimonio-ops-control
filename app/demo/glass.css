@@ -468,3 +468,219 @@
 .app-header .department-switcher {
   max-width: 176px;
 }
+
+/* ---------------------------------------------------------------------------
+   Leitura no centro (modelo escolhido).
+
+   O centro da barra deixa de ser navegacao e passa a ser a acao principal do
+   sistema. Nao e invencao de tela: `useBarcodeScanner` ja escuta o teclado em
+   qualquer pagina e chama `handleScan`, entao um leitor fisico ja funcionava de
+   qualquer lugar — so que sem nada na tela dizendo isso. Quem nao tem leitor
+   precisava ir ao Inventario e digitar na busca de la.
+
+   As secoes recolhem no menu, que ja existia para o celular e agora vale em
+   qualquer largura. Custa um clique a mais para navegar; os atalhos abaixo da
+   barra devolvem esse clique para as secoes mais procuradas.
+   --------------------------------------------------------------------------- */
+.app-header-inner {
+  grid-template-columns: auto auto minmax(0, 1fr) auto;
+}
+
+.app-brand {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+.mobile-menu-toggle {
+  display: flex;
+  grid-column: 2;
+  grid-row: 1;
+  gap: 8px;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 13px;
+  border: 1px solid var(--glass-header-border);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.07);
+  color: #FFFFFF;
+  font: inherit;
+  font-size: 12.5px;
+}
+
+.mobile-menu-toggle svg {
+  width: 17px;
+  height: 17px;
+}
+
+.header-scan {
+  display: flex;
+  grid-column: 3;
+  grid-row: 1;
+  width: min(460px, 100%);
+  align-items: center;
+  gap: 10px;
+  justify-self: center;
+  min-height: 44px;
+  padding: 0 14px;
+  border: 1px solid rgba(255, 255, 255, 0.26);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.header-scan:focus-within {
+  border-color: var(--yellow);
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.header-scan-icon {
+  display: grid;
+  flex: none;
+  place-items: center;
+  color: var(--yellow);
+}
+
+.header-scan-icon svg {
+  width: 17px;
+  height: 17px;
+}
+
+.header-scan input {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  background: none;
+  color: #FFFFFF;
+  font: inherit;
+  font-size: 13px;
+}
+
+.header-scan input::placeholder {
+  color: #A9BDD4;
+}
+
+.header-scan input:focus {
+  outline: 0;
+}
+
+.header-actions {
+  grid-column: 4;
+  grid-row: 1;
+}
+
+/* A nav vira painel: escondida ate o menu abrir, em qualquer largura. */
+.primary-nav {
+  display: none;
+  grid-column: 1 / -1;
+  grid-row: 2;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  width: 100%;
+  padding: 10px 0 4px;
+  border-top: 1px solid var(--glass-header-border);
+}
+
+.app-header.is-open .primary-nav {
+  display: grid;
+}
+
+/* Atalhos: devolvem em um clique as secoes mais procuradas. Quais sao elas
+   veio da maquete aprovada, nao de medicao de uso — trocar e uma linha. */
+.header-shortcuts {
+  display: flex;
+  gap: 5px;
+  grid-column: 1 / -1;
+  grid-row: 3;
+  padding-top: 8px;
+}
+
+.header-shortcut {
+  /* 44 e nao os 32 da maquete: recusei 36px no modelo anterior por causa do
+     alvo de toque, e aplicar 32 aqui seria usar dois pesos e duas medidas. */
+  min-height: 44px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.07);
+  color: #D6E2EE;
+  font: inherit;
+  font-size: 11.5px;
+  cursor: pointer;
+}
+
+.header-shortcut:hover {
+  background: rgba(255, 255, 255, 0.13);
+  color: #FFFFFF;
+}
+
+.header-shortcut.is-active {
+  background: var(--yellow);
+  color: #0A0E38;
+  font-weight: 640;
+}
+
+/* Sem espaco para o campo no centro: ele desce para uma linha propria, em vez
+   de espremer a marca e as acoes. */
+@media (max-width: 900px) {
+  .app-header-inner {
+    grid-template-columns: auto auto minmax(0, 1fr);
+  }
+
+  .header-scan {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    width: 100%;
+  }
+
+  .header-actions {
+    grid-column: 3;
+    grid-row: 1;
+  }
+
+  .primary-nav {
+    grid-row: 3;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .header-shortcuts {
+    grid-row: 4;
+    overflow-x: auto;
+  }
+
+  .mobile-menu-label {
+    display: none;
+  }
+}
+
+/* Ajustes medidos depois de montar o modelo.
+
+   1. A barra tinha 138px. A linha da nav, mesmo escondida, existia por causa do
+      `grid-row: 3` dos atalhos, e cobrava um segundo gap de 12px. Com
+      `row-gap: 0` o espaco passa a vir do recuo de cada faixa, que so existe
+      quando a faixa existe.
+   2. Os rotulos empilhados sobre o seletor e sobre o nome do usuario levavam a
+      primeira linha a 62px — os mesmos 18px que ja me travaram antes.
+   3. Centralizar o campo dentro da coluna nao o centraliza na barra: a direita
+      tem 440px contra 134 da esquerda, e ele ficava 147px fora de centro. Em vez
+      de fingir simetria que nao existe, o campo ocupa a folga do meio. */
+.app-header-inner {
+  row-gap: 0;
+}
+
+.app-header .department-switcher > span,
+.app-header .session-text small {
+  display: none;
+}
+
+.app-header .department-switcher,
+.app-header .session-control {
+  min-height: 44px;
+  align-items: center;
+}
+
+.app-header .session-control {
+  padding-block: 0;
+}
+
+.header-scan {
+  width: auto;
+  justify-self: stretch;
+}

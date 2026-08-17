@@ -81,6 +81,7 @@ export default function PatrimonioApp() {
   const [mutationError, setMutationError] = useState<string | null>(null);
   const scannerUpdateRef = useRef<(state: "ready" | "reading" | "success" | "error", label: string) => void>(() => undefined);
   const lastProcessedScanRef = useRef<string | null>(null);
+  const campoDeLeituraRef = useRef<HTMLInputElement | null>(null);
   const scanSequenceRef = useRef(0);
   const debouncedSearch = useDebouncedValue(filterDraft.search, 280);
   const apiFilters = useMemo(
@@ -187,7 +188,16 @@ export default function PatrimonioApp() {
     refresh,
     showToast,
   ]);
-  const scanner = useBarcodeScanner(handleScan);
+  // O leitor fisico digita no campo do header quando ele esta com foco, e o
+  // gancho consome o Enter antes do formulario — entao o codigo lido ficaria
+  // parado la depois da consulta. O campo e nao controlado de proposito: um
+  // leitor dispara uma tecla a cada ~10ms, e controlar o valor renderizaria o
+  // app inteiro a cada caractere da rajada.
+  const escanearELimpar = useCallback(async (identifier: string) => {
+    if (campoDeLeituraRef.current) campoDeLeituraRef.current.value = "";
+    await handleScan(identifier);
+  }, [handleScan]);
+  const scanner = useBarcodeScanner(escanearELimpar);
   useEffect(() => {
     scannerUpdateRef.current = scanner.updateState;
   }, [scanner.updateState]);
@@ -309,7 +319,7 @@ export default function PatrimonioApp() {
           <button
             className="mobile-menu-toggle"
             type="button"
-            aria-label={mobileNavigationOpen ? "Fechar navegação" : "Abrir navegação"}
+            aria-label={mobileNavigationOpen ? "Fechar seções" : "Abrir seções"}
             aria-expanded={mobileNavigationOpen}
             onClick={() => setMobileNavigationOpen((isOpen) => !isOpen)}
           >
@@ -320,7 +330,44 @@ export default function PatrimonioApp() {
                 <path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
               )}
             </svg>
+            <span className="mobile-menu-label">Seções</span>
           </button>
+
+          {/* O leitor fisico ja alimenta `handleScan` de qualquer tela, por um
+              escutador global de teclado — mas so quem tem o leitor alcanca
+              isso. Este campo da rosto aquela funcao para quem digita.
+              `data-inventory-search` e o que faz o escutador tolerar digitacao
+              aqui em vez de engolir as teclas: sem ele, o leitor fisico para de
+              funcionar quando o foco esta neste campo. */}
+          <form
+            className="header-scan"
+            role="search"
+            onSubmit={(event) => {
+              event.preventDefault();
+              const alvo = new FormData(event.currentTarget).get("identifier");
+              const identificador = String(alvo ?? "").trim();
+              if (!identificador) return;
+              void handleScan(identificador);
+              event.currentTarget.reset();
+            }}
+          >
+            <span className="header-scan-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none">
+                <circle cx="11" cy="11" r="6.5" stroke="currentColor" strokeWidth="1.9" />
+                <path d="m16 16 4.5 4.5" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
+              </svg>
+            </span>
+            <input
+              ref={campoDeLeituraRef}
+              name="identifier"
+              type="search"
+              inputMode="numeric"
+              autoComplete="off"
+              data-inventory-search
+              aria-label="Ler ou buscar patrimônio"
+              placeholder="Ler ou buscar patrimônio…"
+            />
+          </form>
           <nav className="primary-nav" aria-label="Navegação principal">
             {visibleViews.map((item) => (
               <button
@@ -347,6 +394,35 @@ export default function PatrimonioApp() {
               </button>
             ))}
           </nav>
+
+          {/* Com as secoes no menu, chegar a uma custa um clique a mais. Estes
+              atalhos devolvem esse clique para as mais procuradas. A escolha
+              veio da maquete aprovada, nao de medicao de uso: quando houver
+              dado real, e so trocar esta lista. */}
+          <div className="header-shortcuts">
+            {(["inventory", "operations", "nuclei", "audit"] as const)
+              .filter((item) => visibleViews.includes(item))
+              .map((item) => (
+                <button
+                  key={item}
+                  className={`header-shortcut ${view === item ? "is-active" : ""}`}
+                  type="button"
+                  aria-current={view === item ? "page" : undefined}
+                  onClick={() => {
+                    setView(item);
+                    setMobileNavigationOpen(false);
+                  }}
+                >
+                  {{
+                    inventory: "Inventário",
+                    operations: "Operações",
+                    nuclei: "Núcleos",
+                    audit: "Auditoria",
+                  }[item]}
+                </button>
+              ))}
+          </div>
+
           <div className="header-actions">
             {environment?.departments.length ? (
               <label className="department-switcher">

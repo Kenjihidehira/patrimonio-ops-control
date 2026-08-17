@@ -864,3 +864,30 @@ test("nome do departamento nao e cortado no meio da palavra", () => {
   // em 1720 sobram 33,9. Por isso a faixa compacta vai ate 1699.
   assert.match(glassCss, /@media \(min-width: 1341px\) and \(max-width: 1699px\)/);
 });
+
+test("leitura no centro dá rosto ao leitor que já existia", () => {
+  // `useBarcodeScanner` já escutava o teclado em qualquer tela e chamava
+  // `handleScan`: um leitor físico sempre funcionou de qualquer lugar, sem
+  // nada na tela dizendo isso. O campo torna a função alcançável por quem
+  // digita, e reusa a mesma rota — não há segunda implementação de busca.
+  assert.match(app, /className="header-scan"/);
+  assert.match(app, /void handleScan\(identificador\)/);
+
+  // Sem `data-inventory-search` o escutador global engole as teclas e o leitor
+  // físico para de funcionar justamente quando o foco está no campo de leitura.
+  assert.match(app, /data-inventory-search/);
+  assert.match(hooks, /target\.matches\("\[data-inventory-search\]"\)/);
+
+  // O campo é não controlado de propósito: o leitor dispara uma tecla a cada
+  // ~10ms e controlar o valor renderizaria o app a cada caractere da rajada.
+  assert.match(app, /campoDeLeituraRef/);
+  assert.doesNotMatch(app, /document\.querySelector\(["'`]\.header-scan/);
+
+  // As seções recolhem no menu que já existia para o celular, agora em
+  // qualquer largura; os atalhos devolvem o clique perdido.
+  assert.match(glassCss, /\.app-header\.is-open \.primary-nav \{\s*display: grid;/);
+  assert.match(app, /className="header-shortcuts"/);
+
+  // 44px também aqui: recusei 36px no modelo anterior pelo mesmo motivo.
+  assert.match(glassCss, /\.header-shortcut \{[\s\S]*?min-height: 44px;/);
+});
