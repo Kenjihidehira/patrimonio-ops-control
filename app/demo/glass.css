@@ -747,3 +747,52 @@
     max-width: 208px;
   }
 }
+
+/* ---------------------------------------------------------------------------
+   As superficies que ficaram de fora.
+
+   O vidro foi aplicado tela a tela — Dashboard e Inventario — e por isso seis
+   conteineres de outras telas continuaram chapados, com canto de 3px, no meio
+   de um sistema de 14px. Em Nucleos isso saltava: a fileira de indicadores e o
+   painel "Areas cadastradas" eram brancos solidos enquanto a barra e a topbar
+   ao redor eram vidro.
+
+   Aqui a lista e por tela, nao por caso: Nucleos, Inventario, Auditoria,
+   Importacoes, Colaboradores, Ambientes e Operacoes.
+   --------------------------------------------------------------------------- */
+.nuclei-overview,
+.nuclei-directory,
+.filter-band,
+.operational-panel,
+.environment-card,
+.decision-indicators {
+  border: 1px solid var(--glass-border);
+  border-radius: 14px;
+  background: var(--glass-solid);
+  box-shadow: inset 0 1px 0 var(--glass-highlight), var(--glass-shadow);
+}
+
+@supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+  .nuclei-overview,
+  .nuclei-directory,
+  .filter-band,
+  .operational-panel,
+  .environment-card,
+  .decision-indicators {
+    background: var(--glass-surface);
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(140%);
+    backdrop-filter: blur(var(--glass-blur)) saturate(140%);
+  }
+}
+
+/* Estes dois moram dentro dos de cima. Desfocar de novo custaria outra camada
+   por quadro e embacaria o que ja estava embacado — tinta basta. */
+.nuclei-overview .operational-metric {
+  border-color: var(--glass-border);
+  background: var(--glass-surface-raised);
+}
+
+.operational-panel .operational-filters {
+  border-color: var(--glass-border);
+  background: transparent;
+}

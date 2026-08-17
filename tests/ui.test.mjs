@@ -894,3 +894,26 @@ test("leitura no centro dá rosto ao leitor que já existia", () => {
   assert.match(glassCss, /@media \(min-width: 1041px\)[\s\S]*?\.mobile-menu-toggle \{\s*display: none;/);
   assert.doesNotMatch(app, /className="header-shortcuts"/);
 });
+
+test("o vidro cobre todas as telas, não só as duas primeiras", () => {
+  // O vidro foi aplicado tela a tela — Dashboard e Inventário — e seis
+  // contêineres de outras telas ficaram chapados, com canto de 3px no meio de
+  // um sistema de 14px. Em Núcleos saltava: a fileira de indicadores e o painel
+  // "Áreas cadastradas" eram brancos sólidos entre superfícies de vidro.
+  for (const seletor of [
+    "\.nuclei-overview",
+    "\.nuclei-directory",
+    "\.filter-band",
+    "\.operational-panel",
+    "\.environment-card",
+    "\.decision-indicators",
+  ]) {
+    assert.match(glassCss, new RegExp(`${seletor},|${seletor} \{`));
+  }
+
+  // Os dois que moram dentro de outros recebem tinta, não desfoque próprio:
+  // desfocar de novo custa outra camada por quadro e embaça o que já estava
+  // embaçado.
+  assert.match(glassCss, /\.nuclei-overview \.operational-metric \{[^}]*background: var\(--glass-surface-raised\)/);
+  assert.match(glassCss, /\.operational-panel \.operational-filters \{[^}]*background: transparent/);
+});
