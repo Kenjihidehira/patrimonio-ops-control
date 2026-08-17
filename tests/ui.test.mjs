@@ -850,17 +850,26 @@ test("recusa de sessão nomeia o motivo sem vazar quem tentou entrar", () => {
   assert.match(sharedAuth, /catch \{\s*return recusarSessao\("gateway_indisponivel"\);/);
 });
 
-test("nome do departamento nao e cortado no meio da palavra", () => {
-  // A caixa tinha 124px e o nome pede 163 com o recuo: aparecia "Atendiment".
-  // A largura veio da nav, que ocupava 808px, e do recuo do proprio seletor.
-  assert.match(glassCss, /\.app-header \.department-switcher \{\s*max-width: 176px;/);
-  assert.match(glassCss, /min-width: 150px;\s*max-width: 172px;/);
+test("barra baixa: sem icones, ativo em pastilha e alvo de 44px", () => {
+  // Direcao escolhida: a barra recua para o conteudo dominar. Medido no
+  // laboratorio, a altura cai de 75px para 59px.
+  assert.match(glassCss, /@media \(min-width: 1341px\)[\s\S]*?\.nav-item-icon \{\s*display: none;/);
+  assert.match(glassCss, /\.app-brand-copy \{\s*display: none;/);
+
+  // O ativo era um traco na borda inferior da barra, a 20px do rotulo que
+  // marcava; vira fundo do proprio item.
+  assert.match(glassCss, /\.nav-item\.is-active \{[^}]*box-shadow: none;/);
+
+  // A maquete que aprovou esta direcao baixava os controles para 36px, o que
+  // conflita com o alvo de toque minimo. Aqui a altura vem do recuo removido,
+  // nao do tamanho do alvo: os 44px continuam.
+  assert.match(glassCss, /\.app-header \.department-switcher select,\s*\.app-header \.theme-toggle,\s*\.app-header \.session-sign-out,[\s\S]*?min-height: 44px;/);
+  assert.doesNotMatch(glassCss.replace(/\/\*[\s\S]*?\*\//g, ""), /min-height: 36px/);
+
+  // Os rotulos empilhados acima dos controles respondiam por 18px da barra, e
+  // ambos descreviam o sistema em vez de servir a quem opera.
+  assert.match(glassCss, /\.app-header \.department-switcher > span,\s*\.app-header \.session-text small \{\s*display: none;/);
 
   // Nome maior que a caixa termina em reticencias, nao em corte seco.
   assert.match(enterpriseCss, /\.app-header \.department-switcher select \{[^}]*text-overflow: ellipsis;/);
-
-  // Os 44px de alvo engordaram "Sair" e interruptor, e o header em tamanho
-  // cheio deixou de caber com folga antes de ~1700: em 1635 sobravam 5,8px,
-  // em 1720 sobram 33,9. Por isso a faixa compacta vai ate 1699.
-  assert.match(glassCss, /@media \(min-width: 1341px\) and \(max-width: 1699px\)/);
 });

@@ -220,28 +220,12 @@
   min-width: 44px;
 }
 
-/* Os 44px de largura no "Sair" comeram a folga do header, que caiu de 31 para
-   1,6px em 1366. A largura volta do seletor de departamento: o nome completo
-   segue na lista aberta, e a barra nao pode voltar a se sobrepor. */
-/* O teto subiu de 1619 para 1699: os 44px de alvo de toque engordaram o "Sair"
-   e o interruptor, e o header em tamanho cheio — que ainda mostra o nome do
-   produto ao lado da logo — deixou de caber com folga antes disso. Medido:
-   1635 dava 5,8px de folga, 1720 da 33,9. */
-@media (min-width: 1341px) and (max-width: 1699px) {
-  /* O nome do departamento vinha cortado em "Atendiment": a caixa tinha 124px
-     e o texto pede 163 com o recuo. A largura sai da nav, que ocupa 808px, e
-     do proprio recuo do seletor — nao do texto, que e o que se le. */
+/* A largura que os icones da nav ocupavam — 8 itens x 23px entre simbolo e
+   respiro — paga os 44px de alvo de toque sem apertar mais nada. Por isso a
+   faixa que espremia recuo e seletor entre 1341 e 1699 saiu daqui. */
+@media (min-width: 1341px) {
   .app-header .department-switcher {
     min-width: 150px;
-    max-width: 172px;
-  }
-
-  .app-header .department-switcher select {
-    padding-right: 26px;
-  }
-
-  .nav-item {
-    padding-inline: 5px;
   }
 }
 
@@ -467,4 +451,95 @@
    O teto vale em qualquer largura; a faixa de notebook so aperta mais. */
 .app-header .department-switcher {
   max-width: 176px;
+}
+
+/* ---------------------------------------------------------------------------
+   Barra baixa e discreta (direcao C).
+
+   A barra recua para o conteudo dominar: sai o nome do produto ao lado da logo,
+   saem os icones da navegacao, e o item ativo vira pastilha preenchida em vez
+   de um traco colado na borda de baixo, longe do rotulo que ele marca.
+
+   A maquete que aprovou esta direcao baixava os controles para 36px. Aqui eles
+   ficam em 44: os 36 conflitavam com o alvo de toque minimo, e o que a maquete
+   comprava com altura este arquivo compra com a largura dos icones removidos.
+   --------------------------------------------------------------------------- */
+@media (min-width: 1341px) {
+  .app-header-inner {
+    min-height: 58px;
+    padding-top: 6px;
+    padding-bottom: 6px;
+  }
+
+  /* A logo sozinha identifica o produto; o nome ao lado repetia a mesma coisa
+     em duas linguagens. */
+  .app-brand-copy {
+    display: none;
+  }
+
+  .app-brand {
+    min-height: 44px;
+    padding-right: 4px;
+  }
+
+  .app-brand-logo.app-brand-logo--gazin {
+    width: 74px;
+    height: 28px;
+  }
+
+  /* Icone e rotulo diziam a mesma coisa. Sem o icone o rotulo fica em uma
+     linha so, a fila encurta e a barra pode baixar. */
+  .nav-item-icon {
+    display: none;
+  }
+
+  .nav-item {
+    min-height: 44px;
+    padding-inline: 11px;
+    flex-direction: row;
+    gap: 0;
+    border-radius: 8px;
+    font-size: 12px;
+  }
+
+  /* O ativo era um traco na borda inferior da barra, a 20px do rotulo que ele
+     marcava. Vira fundo do proprio item. */
+  .nav-item.is-active {
+    background: rgba(255, 255, 255, 0.16);
+    box-shadow: none;
+    color: #FFFFFF;
+    font-weight: 620;
+  }
+
+  /* O rotulo em caixa alta ficava acima do seletor e sozinho respondia por
+     18 dos 75px da barra — e o proprio seletor ja diz o nome do departamento.
+     Some tambem "Usuario e senha": e o metodo de login, nao uma informacao de
+     quem trabalha. Sem os dois, o bloco da direita cabe em 44px como o resto. */
+  .app-header .department-switcher > span,
+  .app-header .session-text small {
+    display: none;
+  }
+
+  .app-header .department-switcher,
+  .app-header .session-control {
+    min-height: 44px;
+    align-items: center;
+  }
+
+  .app-header .department-switcher select,
+  .app-header .theme-toggle,
+  .app-header .session-control {
+    border-radius: 999px;
+  }
+
+  .app-header .session-avatar {
+    border-radius: 50%;
+  }
+
+  /* O bloco de sessao tinha recuo vertical proprio somado ao botao de 44px
+     dentro dele, o que o levava a 56 e segurava a barra inteira. */
+  .app-header .session-control {
+    padding-block: 0;
+    padding-left: 6px;
+  }
 }
