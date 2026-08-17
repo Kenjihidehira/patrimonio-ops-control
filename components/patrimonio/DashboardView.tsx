@@ -389,19 +389,127 @@ function StatusBar({
   );
 }
 
+// Seis meses de contagem e mudanca no tempo, e mudanca no tempo se le em linha:
+// a inclinacao entre dois pontos e a propria variacao. Em barras, comparar dois
+// meses exige medir dois comprimentos e subtrair de cabeca.
+const TENDENCIA = { largura: 640, altura: 190, margemX: 34, margemTopo: 22, margemBase: 30 };
+
 function MovementTrend({ data }: { data: AnalyticsSnapshot["movementTrend"] }) {
-  const maximum = Math.max(1, ...data.map((item) => item.count));
+  const [ativo, setAtivo] = useState<number | null>(null);
   const total = data.reduce((sum, item) => sum + item.count, 0);
   if (!total) return <PanelEmpty message="Nenhuma movimentação foi registrada nos últimos seis meses." />;
+
+  const { largura, altura, margemX, margemTopo, margemBase } = TENDENCIA;
+  const maximo = Math.max(1, ...data.map((item) => item.count));
+  const alturaUtil = altura - margemTopo - margemBase;
+  const passo = data.length > 1 ? (largura - margemX * 2) / (data.length - 1) : 0;
+  const pontos = data.map((item, indice) => ({
+    ...item,
+    x: margemX + passo * indice,
+    y: margemTopo + alturaUtil * (1 - item.count / maximo),
+  }));
+  const linha = pontos.map((p, i) => `${i ? "L" : "M"}${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join(" ");
+  const area = `${linha} L${pontos[pontos.length - 1].x.toFixed(1)} ${margemTopo + alturaUtil} L${pontos[0].x.toFixed(1)} ${margemTopo + alturaUtil} Z`;
+  const pico = pontos.reduce((maior, p) => (p.count > maior.count ? p : maior), pontos[0]);
+  const ultimo = pontos[pontos.length - 1];
+  // Rotulo direto so no pico e no ultimo mes: numero em todo ponto vira ruido,
+  // e esses dois sao os que respondem "qual foi o maior" e "como estamos agora".
+  const rotulados = new Set([pico.key, ultimo.key]);
+  const emFoco = ativo === null ? null : pontos[ativo];
+
   return (
-    <div className="dashboard-movement-bars" role="img" aria-label={`Movimentações por mês: ${data.map((item) => `${item.label} ${item.count}`).join(", ")}`}>
-      {data.map((item) => (
-        <div key={item.key}>
-          <span>{item.label}</span>
-          <progress value={item.count} max={maximum}>{item.count}</progress>
-          <strong>{numberFormatter.format(item.count)}</strong>
-        </div>
-      ))}
+    <div className="dashboard-trend">
+      <svg
+        className="dashboard-trend-plot"
+        viewBox={`0 0 ${largura} ${altura}`}
+        role="img"
+        aria-label={`Movimentações por mês: ${data.map((item) => `${item.label}, ${item.count}`).join("; ")}.`}
+        onPointerLeave={() => setAtivo(null)}
+        onPointerMove={(evento) => {
+          const caixa = evento.currentTarget.getBoundingClientRect();
+          const x = ((evento.clientX - caixa.left) / caixa.width) * largura;
+          let maisPerto = 0;
+          pontos.forEach((p, i) => {
+            if (Math.abs(p.x - x) < Math.abs(pontos[maisPerto].x - x)) maisPerto = i;
+          });
+          setAtivo(maisPerto);
+        }}
+      >
+        {/* Grade recessiva: tres linhas bastam para dar escala sem competir. */}
+        {[0, 0.5, 1].map((fracao) => (
+          <line
+            key={fracao}
+            className="dashboard-trend-grid"
+            x1={margemX}
+            x2={largura - margemX}
+            y1={margemTopo + alturaUtil * fracao}
+            y2={margemTopo + alturaUtil * fracao}
+          />
+        ))}
+
+        <path className="dashboard-trend-area" d={area} />
+        <path className="dashboard-trend-line" d={linha} vectorEffect="non-scaling-stroke" />
+
+        {emFoco ? (
+          <line
+            className="dashboard-trend-crosshair"
+            x1={emFoco.x}
+            x2={emFoco.x}
+            y1={margemTopo}
+            y2={margemTopo + alturaUtil}
+            vectorEffect="non-scaling-stroke"
+          />
+        ) : null}
+
+        {pontos.map((ponto, indice) => (
+          <circle
+            key={ponto.key}
+            className={`dashboard-trend-dot ${ativo === indice ? "is-active" : ""} ${ponto.key === ultimo.key ? "is-last" : ""}`}
+            cx={ponto.x}
+            cy={ponto.y}
+            r={ativo === indice ? 6 : 4}
+          />
+        ))}
+
+        {pontos.map((ponto) => (
+          <text key={ponto.key} className="dashboard-trend-month" x={ponto.x} y={altura - 10}>
+            {ponto.label}
+          </text>
+        ))}
+
+        {pontos.filter((ponto) => rotulados.has(ponto.key)).map((ponto) => (
+          <text
+            key={ponto.key}
+            className="dashboard-trend-value"
+            x={ponto.x}
+            y={ponto.y - 11}
+          >
+            {numberFormatter.format(ponto.count)}
+          </text>
+        ))}
+      </svg>
+
+      {emFoco ? (
+        <p className="dashboard-trend-readout" aria-hidden="true">
+          <strong>{numberFormatter.format(emFoco.count)}</strong>
+          <span>{emFoco.label}</span>
+        </p>
+      ) : null}
+
+      {/* O grafico e uma imagem para quem le a tela; a tabela e onde os numeros
+          ficam disponiveis um a um, sem depender de passar o ponteiro. */}
+      <table className="sr-only">
+        <caption>Movimentações registradas por mês</caption>
+        <thead><tr><th scope="col">Mês</th><th scope="col">Movimentações</th></tr></thead>
+        <tbody>
+          {data.map((item) => (
+            <tr key={item.key}>
+              <th scope="row">{item.label}</th>
+              <td>{numberFormatter.format(item.count)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }

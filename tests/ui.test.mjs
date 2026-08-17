@@ -940,3 +940,30 @@ test("a faixa de título da seção é um cartão, não uma tira", () => {
   // e o vertical torto em 18/4.
   assert.match(glassCss, /\.app-footer \{[\s\S]*?padding: 13px 18px;[\s\S]*?border-radius: 14px;/);
 });
+
+test("movimentações viram linha, não barras", () => {
+  // Seis meses de contagem é mudança no tempo, e mudança no tempo se lê em
+  // linha: a inclinação entre dois pontos é a própria variação. Em barras,
+  // comparar dois meses exigia medir dois comprimentos e subtrair de cabeça.
+  assert.match(dashboardView, /className="dashboard-trend-plot"/);
+  assert.match(dashboardView, /dashboard-trend-line/);
+  assert.doesNotMatch(dashboardView, /dashboard-movement-bars/);
+
+  // Rótulo direto só no pico e no último mês: número em todo ponto vira ruído.
+  assert.match(dashboardView, /const rotulados = new Set\(\[pico\.key, ultimo\.key\]\)/);
+
+  // Série única não leva legenda — o título do painel já a nomeia.
+  assert.doesNotMatch(dashboardView, /dashboard-trend-legend/);
+
+  // Os números continuam alcançáveis sem depender do ponteiro.
+  assert.match(dashboardView, /<table className="sr-only">/);
+  assert.match(dashboardView, /Movimentações registradas por mês/);
+
+  // O raio do ponto ativo vive no JSX: `r` como propriedade CSS não pegou
+  // sobre o atributo do SVG neste ambiente.
+  assert.match(dashboardView, /r=\{ativo === indice \? 6 : 4\}/);
+
+  // Texto do gráfico usa tokens de texto, nunca a cor da série.
+  assert.match(glassCss, /\.dashboard-trend-month \{\s*fill: var\(--muted\)/);
+  assert.match(glassCss, /\.dashboard-trend-value \{\s*fill: var\(--heading-text\)/);
+});
