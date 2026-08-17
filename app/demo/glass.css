@@ -832,3 +832,13 @@
 .section-toolbar > .button {
   flex: none;
 }
+
+/* O rodape tinha o mesmo defeito da faixa de titulo: recebeu vidro e borda nos
+   quatro lados, mas ficou com canto 0 e recuo horizontal 0 — o texto encostava
+   a 1px da borda esquerda e o link a 1px da direita. O recuo vertical ainda era
+   torto, 18px em cima contra 4px embaixo. */
+.app-footer {
+  align-items: center;
+  padding: 13px 18px;
+  border-radius: 14px;
+}

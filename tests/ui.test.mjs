@@ -934,4 +934,9 @@ test("a faixa de título da seção é um cartão, não uma tira", () => {
   // O título repetia o nome da tela que a topbar mostra logo acima, no mesmo
   // peso: "Núcleos" e depois "Núcleos da empresa" a 20px contra 21,6px.
   assert.match(glassCss, /\.section-toolbar > div > h2 \{[\s\S]*?font-size: 16px;/);
+
+  // O rodape tinha o mesmo defeito: vidro e borda nos quatro lados, canto 0 e
+  // recuo horizontal 0 — texto a 1px da borda esquerda, link a 1px da direita,
+  // e o vertical torto em 18/4.
+  assert.match(glassCss, /\.app-footer \{[\s\S]*?padding: 13px 18px;[\s\S]*?border-radius: 14px;/);
 });
