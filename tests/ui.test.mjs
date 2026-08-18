@@ -967,3 +967,19 @@ test("movimentações viram linha, não barras", () => {
   assert.match(glassCss, /\.dashboard-trend-month \{\s*fill: var\(--muted\)/);
   assert.match(glassCss, /\.dashboard-trend-value \{\s*fill: var\(--heading-text\)/);
 });
+
+test("o dashboard abre pelos números, não pelos controles", () => {
+  // Um painel é varrido para saber o estado; o controle vem depois de você
+  // saber o que está olhando. Os filtros ficavam acima de tudo e empurravam os
+  // indicadores para 435px do topo da página — agora começam em 296px.
+  const posicao = (marcador) => dashboardView.indexOf(marcador);
+  const contexto = posicao('className="dashboard-context"');
+  const indicadores = posicao('className="dashboard-kpis"');
+  const filtros = posicao('className="dashboard-filters"');
+  const primeiroGrafico = posicao('dashboard-grid dashboard-grid-primary');
+
+  assert.ok(contexto > -1 && indicadores > -1 && filtros > -1 && primeiroGrafico > -1);
+  assert.ok(indicadores < filtros, "os indicadores vêm antes dos filtros");
+  // E os filtros seguem imediatamente acima dos gráficos, que é o que filtram.
+  assert.ok(filtros < primeiroGrafico, "os filtros vêm antes dos gráficos");
+});

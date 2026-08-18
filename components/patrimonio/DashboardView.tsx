@@ -96,6 +96,49 @@ export function DashboardView({
         </button>
       </div>
 
+      <section className="dashboard-kpis" aria-label="Indicadores executivos">
+        <KpiButton
+          label="Ativos ativos"
+          value={numberFormatter.format(analytics.assets.total)}
+          detail={`${numberFormatter.format(analytics.assets.available)} disponíveis · ${numberFormatter.format(analytics.assets.retired)} baixados`}
+          onClick={() => onNavigate("inventory")}
+        />
+        <KpiButton
+          label="Taxa de alocação"
+          value={formatPercent(analytics.assets.allocationRate)}
+          detail={`${numberFormatter.format(analytics.assets.allocated)} ativos em uso`}
+          onClick={() => onNavigate("inventory")}
+        />
+        <KpiButton
+          label="Divergências"
+          value={formatPercent(analytics.assets.discrepancyRate)}
+          detail={`${numberFormatter.format(analytics.assets.discrepancies)} exigem conferência`}
+          tone={analytics.assets.discrepancies ? "danger" : "success"}
+          onClick={() => onNavigate("inventory")}
+        />
+        <KpiButton
+          label="Inventário vigente"
+          value={campaign ? formatPercent(campaign.completionRate) : "—"}
+          detail={campaign ? `${numberFormatter.format(campaign.checkedCount)} de ${numberFormatter.format(campaign.targetCount)} conferidos` : "Nenhuma campanha cadastrada"}
+          tone={campaign?.overdue ? "danger" : campaign ? "neutral" : "warning"}
+          onClick={() => onNavigate("operations")}
+        />
+        <KpiButton
+          label="Custódia formalizada"
+          value={analytics.custody.coverageRate === null ? "—" : formatPercent(analytics.custody.coverageRate)}
+          detail={`${numberFormatter.format(analytics.custody.formalizedAssets)} de ${numberFormatter.format(analytics.custody.allocatedAssets)} alocados`}
+          tone={analytics.custody.pendingTerms ? "warning" : "neutral"}
+          onClick={() => onNavigate("operations")}
+        />
+        <KpiButton
+          label="Manutenções vencidas"
+          value={numberFormatter.format(analytics.maintenance.overdue)}
+          detail={`${numberFormatter.format(analytics.maintenance.open)} ordens abertas`}
+          tone={analytics.maintenance.overdue ? "danger" : "success"}
+          onClick={() => onNavigate("operations")}
+        />
+      </section>
+
       <section className="dashboard-filters" aria-labelledby="dashboard-filters-title">
         <header className="dashboard-filters-heading">
           <h2 id="dashboard-filters-title">Filtros do dashboard</h2>
@@ -166,49 +209,6 @@ export function DashboardView({
             Limpar filtros
           </button>
         </div>
-      </section>
-
-      <section className="dashboard-kpis" aria-label="Indicadores executivos">
-        <KpiButton
-          label="Ativos ativos"
-          value={numberFormatter.format(analytics.assets.total)}
-          detail={`${numberFormatter.format(analytics.assets.available)} disponíveis · ${numberFormatter.format(analytics.assets.retired)} baixados`}
-          onClick={() => onNavigate("inventory")}
-        />
-        <KpiButton
-          label="Taxa de alocação"
-          value={formatPercent(analytics.assets.allocationRate)}
-          detail={`${numberFormatter.format(analytics.assets.allocated)} ativos em uso`}
-          onClick={() => onNavigate("inventory")}
-        />
-        <KpiButton
-          label="Divergências"
-          value={formatPercent(analytics.assets.discrepancyRate)}
-          detail={`${numberFormatter.format(analytics.assets.discrepancies)} exigem conferência`}
-          tone={analytics.assets.discrepancies ? "danger" : "success"}
-          onClick={() => onNavigate("inventory")}
-        />
-        <KpiButton
-          label="Inventário vigente"
-          value={campaign ? formatPercent(campaign.completionRate) : "—"}
-          detail={campaign ? `${numberFormatter.format(campaign.checkedCount)} de ${numberFormatter.format(campaign.targetCount)} conferidos` : "Nenhuma campanha cadastrada"}
-          tone={campaign?.overdue ? "danger" : campaign ? "neutral" : "warning"}
-          onClick={() => onNavigate("operations")}
-        />
-        <KpiButton
-          label="Custódia formalizada"
-          value={analytics.custody.coverageRate === null ? "—" : formatPercent(analytics.custody.coverageRate)}
-          detail={`${numberFormatter.format(analytics.custody.formalizedAssets)} de ${numberFormatter.format(analytics.custody.allocatedAssets)} alocados`}
-          tone={analytics.custody.pendingTerms ? "warning" : "neutral"}
-          onClick={() => onNavigate("operations")}
-        />
-        <KpiButton
-          label="Manutenções vencidas"
-          value={numberFormatter.format(analytics.maintenance.overdue)}
-          detail={`${numberFormatter.format(analytics.maintenance.open)} ordens abertas`}
-          tone={analytics.maintenance.overdue ? "danger" : "success"}
-          onClick={() => onNavigate("operations")}
-        />
       </section>
 
       <div className="dashboard-grid dashboard-grid-primary">
