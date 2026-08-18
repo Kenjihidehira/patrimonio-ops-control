@@ -934,3 +934,35 @@
   font-size: 12px;
 }
 
+
+/* ---------------------------------------------------------------------------
+   Barras do dashboard.
+
+   Ficam em `<progress>` de proposito, e nao por descuido: a CSP deste app
+   bloqueia estilo embutido, entao uma barra em `div` nao teria como receber a
+   largura do dado. Os atributos `value` e `max` resolvem isso sem estilo
+   inline. Trocar por `div` quebraria em producao.
+
+   O que faltava era consistencia: a cobertura desenhava 6px e os demais
+   paineis 7px, no mesmo painel de indicadores.
+   --------------------------------------------------------------------------- */
+.dashboard-view progress,
+.dashboard-coverage-row > progress {
+  height: 7px;
+  border-radius: 999px;
+}
+
+/* Ponta arredondada tambem no fim do dado. A trilha ja arredondava por recorte,
+   entao so a ponta esquerda ficava redonda e a direita — que e onde o dado
+   termina e o olho mede — saia quadrada. */
+.dashboard-view progress::-webkit-progress-bar {
+  border-radius: 999px;
+}
+
+.dashboard-view progress::-webkit-progress-value {
+  border-radius: 999px;
+}
+
+.dashboard-view progress::-moz-progress-bar {
+  border-radius: 999px;
+}

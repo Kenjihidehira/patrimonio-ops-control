@@ -383,7 +383,11 @@ function StatusBar({
   return (
     <div className={`dashboard-status-row is-${tone}`}>
       <span>{label}</span>
-      <progress value={value} max={Math.max(1, total)}>{value} de {total}</progress>
+      <progress
+        aria-label={`${label}: ${numberFormatter.format(value)} de ${numberFormatter.format(total)}`}
+        value={value}
+        max={Math.max(1, total)}
+      >{value} de {total}</progress>
       <strong>{numberFormatter.format(value)}</strong>
     </div>
   );
@@ -545,7 +549,11 @@ function CampaignSummary({ campaign }: { campaign: NonNullable<AnalyticsSnapshot
         <div><strong>{formatPercent(campaign.completionRate)}</strong><span>{campaign.checkedCount} de {campaign.targetCount} conferidos</span></div>
         <span className={campaign.overdue ? "is-overdue" : ""}>{campaign.overdue ? "Prazo vencido" : campaign.dueAt ? `Prazo ${formatDate(campaign.dueAt)}` : "Sem prazo definido"}</span>
       </div>
-      <progress value={campaign.checkedCount} max={Math.max(1, campaign.targetCount)}>{formatPercent(campaign.completionRate)}</progress>
+      <progress
+        aria-label={`Inventário conferido: ${numberFormatter.format(campaign.checkedCount)} de ${numberFormatter.format(campaign.targetCount)}`}
+        value={campaign.checkedCount}
+        max={Math.max(1, campaign.targetCount)}
+      >{formatPercent(campaign.completionRate)}</progress>
       {resultTotal ? (
         <dl className="dashboard-campaign-results">
           {resultEntries.map(([label, value, tone]) => (
@@ -573,7 +581,12 @@ function MaintenanceAging({ maintenance }: { maintenance: AnalyticsSnapshot["mai
       {buckets.map(([label, value], index) => (
         <div key={label}>
           <span>{label}</span>
-          <progress className={index >= 2 ? "is-critical" : ""} value={value} max={maximum}>{value}</progress>
+          <progress
+            className={index >= 2 ? "is-critical" : ""}
+            aria-label={`${label}: ${numberFormatter.format(value)} ordens`}
+            value={value}
+            max={maximum}
+          >{value}</progress>
           <strong>{numberFormatter.format(value)}</strong>
         </div>
       ))}

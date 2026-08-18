@@ -983,3 +983,27 @@ test("o dashboard abre pelos números, não pelos controles", () => {
   // E os filtros seguem imediatamente acima dos gráficos, que é o que filtram.
   assert.ok(filtros < primeiroGrafico, "os filtros vêm antes dos gráficos");
 });
+
+test("toda barra do dashboard diz de que ela é", () => {
+  // Quatro das onze não tinham nome: o leitor de tela anunciava "barra de
+  // progresso, 26%" sem dizer de quê, e o total só existia dentro do elemento.
+  // Janela a partir de cada `<progress`, e nao regex ate o primeiro `>`: em JSX
+  // multilinha esse `>` cai dentro de `{index >= 2 ? ...}` e corta a tag antes
+  // do atributo. Foi assim que a primeira versao deste teste acusou falso.
+  const aberturas = [...dashboardView.matchAll(/<progress/g)].map((m) => m.index ?? 0);
+  assert.ok(aberturas.length >= 5, "esperava as barras do painel");
+  for (const inicio of aberturas) {
+    const janela = dashboardView.slice(inicio, inicio + 400);
+    const corpo = janela.slice(0, janela.indexOf("</progress>") + 1 || 400);
+    assert.match(corpo, /aria-label=/, `barra sem nome acessível perto de: ${janela.slice(0, 60)}`);
+  }
+
+  // `<progress>` fica de propósito: a CSP deste app bloqueia estilo embutido,
+  // então uma barra em `div` não teria como receber a largura do dado.
+  assert.doesNotMatch(dashboardView, /style=\{\{/);
+
+  // Altura e ponta iguais em todos os painéis: a cobertura desenhava 6px
+  // contra os 7px dos demais, no mesmo painel de indicadores.
+  assert.match(glassCss, /\.dashboard-view progress,\s*\.dashboard-coverage-row > progress \{\s*height: 7px;/);
+  assert.match(glassCss, /progress::-webkit-progress-value \{\s*border-radius: 999px;/);
+});
