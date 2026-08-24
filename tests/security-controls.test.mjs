@@ -68,6 +68,24 @@ test("migração LGPD mantém tabelas protegidas e funções restritas ao servic
   assert.match(migration, /patrimonio_authorize_operation/);
 });
 
+test("função privilegiada fixa um search path sem o schema público", () => {
+  const migration = read(
+    "supabase/migrations/20260824123000_harden_sabium_import_search_path.sql",
+  );
+  assert.match(
+    migration,
+    /alter function public\.patrimonio_import_sabium_assets\(jsonb, text, text\)[\s\S]*set search_path = pg_catalog, pg_temp/,
+  );
+  assert.match(
+    migration,
+    /revoke all on function public\.patrimonio_import_sabium_assets\(jsonb, text, text\)[\s\S]*from public, anon, authenticated/,
+  );
+  assert.match(
+    migration,
+    /grant execute on function public\.patrimonio_import_sabium_assets\(jsonb, text, text\)[\s\S]*to service_role/,
+  );
+});
+
 test("login oferece aviso de privacidade e a página informa os direitos", () => {
   const login = read("app/login/page.tsx");
   const privacy = read("app/privacidade/page.tsx");

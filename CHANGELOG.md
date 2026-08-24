@@ -3,6 +3,18 @@
 Todas as alterações relevantes do Patrimônio Ops Control são registradas neste arquivo.
 O formato segue Keep a Changelog e as versões usam Semantic Versioning.
 
+## [0.9.1] - 2026-08-24
+
+### Segurança
+
+- Next.js atualizado para `16.3.2`, React para `19.2.8` e dependências transitivas vulneráveis substituídas por versões corrigidas; `pnpm audit --prod` não aponta vulnerabilidades conhecidas.
+- A função privilegiada de importação do Sabium deixa de resolver objetos pelo schema `public` e passa a usar somente `pg_catalog` e `pg_temp` no `search_path`.
+- A integração contínua passa a bloquear alterações com vulnerabilidades de produção de severidade alta ou crítica.
+
+### Corrigido
+
+- A versão do pacote volta a acompanhar o changelog, que já estava na série `0.9.x` enquanto o `package.json` permanecia em `0.6.0`.
+
 ## [0.9.0] - 2026-08-06
 
 ### Adicionado
