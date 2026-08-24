@@ -3,6 +3,82 @@
 Todas as alterações relevantes do Patrimônio Ops Control são registradas neste arquivo.
 O formato segue Keep a Changelog e as versões usam Semantic Versioning.
 
+## [0.9.1] - 2026-08-24
+
+### Segurança
+
+- Next.js atualizado para `16.3.2`, React para `19.2.8` e dependências transitivas vulneráveis substituídas por versões corrigidas; `pnpm audit --prod` não aponta vulnerabilidades conhecidas.
+- A função privilegiada de importação do Sabium deixa de resolver objetos pelo schema `public` e passa a usar somente `pg_catalog` e `pg_temp` no `search_path`.
+- A integração contínua passa a bloquear alterações com vulnerabilidades de produção de severidade alta ou crítica.
+
+### Corrigido
+
+- A versão do pacote volta a acompanhar o changelog, que já estava na série `0.9.x` enquanto o `package.json` permanecia em `0.6.0`.
+
+## [0.9.0] - 2026-08-06
+
+### Adicionado
+
+- **Manter conectado** no login por senha: estende a sessão de 8 horas para 30 dias. Não a torna permanente — a autorização continua sendo reconsultada a cada requisição e a versão de sessão continua invalidando o cookie a cada alteração de acesso.
+- Link **Esqueci minha senha** na tela de login. O destino ainda não existe: aponta para `?mode=reset`, que não tem tratamento.
+
+### Alterado
+
+- Tela de login redesenhada a partir de referência aprovada: avatar decorativo com réguas laterais, campos com bloco de ícone, botão em caixa alta e linha de opções. O avatar não é foto de perfil — antes do login não há usuário conhecido.
+- O fundo passa a ser um degradê da rampa azul Gazin e o cartão desaparece: o formulário assenta direto sobre o fundo. É a única exceção à regra de superfície chapada, e o teste passa a permitir gradiente exclusivamente em `app/login/login.css`.
+- O amarelo `#FFC400` assume a ação primária no login, papel que na referência cabia ao rosa.
+
+### Corrigido
+
+- `--brand-700` não clareava no tema escuro em `login.css`, o que deixava o anel do avatar em 1,17:1. Passa a ter valor próprio por tema.
+- Bloco de ícone dos campos media 1,55:1 no tema escuro em cinza; passa a usar o azul institucional.
+
+## [0.8.0] - 2026-08-06
+
+### Alterado
+
+- Acabamento visual unificado: um único raio de 3px no lugar de oito valores diferentes, e 65 sombras decorativas removidas das superfícies em fluxo. Sombra permanece apenas onde tem função — camada sobreposta e anel de foco (22 ocorrências).
+- Tipografia trocada de Inter para IBM Plex Sans, com IBM Plex Mono e figuras tabulares em identificadores e colunas numéricas. As fontes são servidas pelo próprio domínio via `next/font`, porque a CSP restringe `font-src` a 'self'.
+- Status deixa de ser cápsula com fundo e passa a ser marca vertical com texto colorido: em tabela densa a cápsula criava uma segunda camada de caixas competindo com a linha.
+- Títulos das telas passam a ser o nome da visão, sem legenda explicativa. Software corporativo não se apresenta em toda tela.
+- Cor institucional passa a ser o azul da própria logo Gazin (`#0B109F`), extraído da imagem. O cobalto `#0055A5` documentado era uma aproximação, e o azul acinzentado `#315f87` que de fato renderizava não vinha da marca.
+- Cores de status recuperam saturação: o conjunto de tokens que vencia era dessaturado (`#607f83`, `#5e7f74`, `#b45d64`) e não comunicava urgência.
+- Hierarquia tipográfica: quatro pesos no lugar de dezesseis — havia valores como 620, 680 e 850, que nenhuma fonte tem e o navegador sintetizava — e escala sem valores fracionários, com os 85 rótulos pequenos fora do negrito.
+- O amarelo `#FFC400` passa a marcar exclusivamente o que está ativo: linha selecionada e aba aberta.
+
+### Corrigido
+
+- `next/image` gravava `style="color:transparent"` no elemento, que a CSP da aplicação bloqueia por não permitir atributo `style` inline. As imagens — logos estáticas, ícones de tipo e QR gerado localmente — passam a usar `<img>`, eliminando a violação sem afrouxar a política.
+
+## [0.7.1] - 2026-08-05
+
+### Corrigido
+
+- Verificação de mesma origem no login por senha e no autocadastro passa a usar `Sec-Fetch-Site`, com `Origin` e host encaminhado como alternativa. Duas causas se somavam: atrás do proxy da Vercel a URL interna não corresponde ao domínio público, e o próprio `Referrer-Policy: no-referrer` faz o navegador omitir `Origin` no envio de formulário. O resultado era recusar toda requisição legítima com "Origem da solicitação inválida". Envios de outro site continuam recusados.
+
+### Alterado
+
+- Autocadastro pede apenas nome, e-mail, senha e confirmação. O nome de usuário é derivado da parte local do e-mail, com sufixo numérico em caso de homônimo, e os campos de nome de usuário e justificativa saíram do formulário público.
+
+## [0.7.0] - 2026-08-05
+
+### Alterado
+
+- Ambiente de execução migrado do Cloudflare Workers para a Vercel, trocando o runtime vinext pelo Next.js 16 que o código-fonte já usava.
+- Cabeçalhos de segurança e CSP com nonce migrados do Worker para `proxy.ts`; o nonce agora viaja no cabeçalho da requisição e dispensa a reescrita de HTML por `HTMLRewriter`.
+- Otimização de imagem e entrega de estáticos passam a usar os recursos nativos do Next.js, no lugar dos bindings `IMAGES` e `ASSETS`.
+- Endereço de rede do cliente lido de `x-real-ip` e `x-forwarded-for`, no lugar de `cf-connecting-ip`.
+
+### Removido
+
+- `worker/index.ts`, `wrangler.jsonc`, `vite.config.ts`, `cloudflare-env.d.ts` e o script de publicação da Cloudflare.
+- Dependências `wrangler`, `vinext`, `vite`, `@cloudflare/*`, `@vitejs/*` e `react-server-dom-webpack`.
+
+### Segurança
+
+- A permissão `unsafe-eval`, exigida pelo React apenas em desenvolvimento, nunca entra na política de produção.
+- As páginas passam a ser renderizadas sob demanda porque o nonce é gerado por requisição; HTML pré-renderizado carregaria um nonce vencido.
+
 ## [0.6.0] - 2026-08-04
 
 ### Adicionado

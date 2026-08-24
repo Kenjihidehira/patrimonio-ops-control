@@ -1,65 +1,66 @@
 :root {
   color-scheme: light;
-  --brand-950: #06315F;
-  --brand-900: #064A8F;
-  --brand-700: #315F87;
-  --brand-100: #E7F1FB;
+  --brand-950: #05073F;
+  --brand-900: #080B73;
+  --brand-700: #0B109F;
+  --brand-100: #E9EAFC;
   --ink: #172235;
   --muted: #5F6F82;
   --line: #DCE4EE;
   --surface: #ffffff;
   --surface-soft: #F4F7FA;
   --yellow: #FFC400;
-  --teal: #718F92;
+  --teal: #A9ADEB;
   --coral: #C93B48;
   --coral-soft: #FDECEE;
-  --login-canvas: #E8EDF2;
-  --login-canvas-deep: #DDE4EA;
+  --login-canvas: #080B73;
+  --login-canvas-deep: #05073F;
   --login-grid: rgba(62, 82, 100, 0.1);
   --login-glow-blue: transparent;
   --login-glow-teal: transparent;
-  --login-card: #F7F9FA;
+  --login-card: #FFFFFF;
   --login-card-deep: #F1F4F6;
-  --login-card-border: #B8C4CE;
+  --login-card-border: rgba(255, 255, 255, 0.4);
   --login-card-highlight: transparent;
   --login-text: #172235;
   --login-muted: #5F6F82;
   --login-divider: rgba(6, 74, 143, 0.14);
-  --login-shadow: rgba(32, 47, 61, 0.18);
-  --login-button-start: #315F87;
-  --login-button-end: #284F72;
+  --login-shadow: rgba(0, 0, 0, 0.36);
+  --login-button-start: #0B109F;
+  --login-button-end: #080B73;
   --login-button-text: #FFFFFF;
-  --login-brand-start: #234B68;
-  --login-brand-end: #1D405A;
+  --login-brand-start: #080B73;
+  --login-brand-end: #05073F;
   --login-error-border: #E5A99F;
   --login-error-bg: #FDECEE;
   --login-error-text: #743226;
   --login-success-border: #9CBFA8;
   --login-success-bg: #ECF6F0;
   --login-success-text: #1F5138;
-  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family: var(--font-plex-sans), "Segoe UI", ui-sans-serif, system-ui, sans-serif;
   font-synthesis: none;
 }
 
 :root[data-theme="dark"] {
-  --login-canvas: #18232D;
-  --login-canvas-deep: #131E27;
+  --brand-700: #A3A8FF;
+  --login-canvas: #070A3A;
+  --login-canvas-deep: #04061F;
   --login-grid: rgba(164, 178, 190, 0.08);
   --login-glow-blue: transparent;
   --login-glow-teal: transparent;
-  --login-card: #22313E;
-  --login-card-deep: #1D2B37;
+  --login-card: #2A3C4F;
+  --login-card-deep: #223243;
   --login-card-border: #465967;
   --login-card-highlight: transparent;
   --login-text: #F0F2F4;
   --login-muted: #B5BEC6;
   --login-divider: #40515F;
-  --login-shadow: rgba(0, 0, 0, 0.3);
-  --login-button-start: #587B96;
-  --login-button-end: #496B85;
+  --login-shadow: rgba(0, 0, 0, 0.5);
+  --login-button-start: #3A43DC;
+  --login-button-end: #2029C4;
   --login-button-text: #F5F7F8;
-  --login-brand-start: #263F52;
-  --login-brand-end: #203747;
+  --login-brand-start: #0A0C56;
+  --login-brand-end: #070A3A;
   --login-error-border: #9F5360;
   --login-error-bg: #3A2029;
   --login-error-text: #FFD7DC;
@@ -90,9 +91,14 @@ a {
   -webkit-tap-highlight-color: transparent;
 }
 
+/* Anel de foco de duas camadas. O anterior era azul-escuro translucido e media
+   1,03:1 sobre a caixa — invisivel, contra os 3:1 que a WCAG 2.4.11 pede.
+   Nenhuma cor unica resolve: a caixa e escura e a barra de abas e clara. Com
+   um nucleo escuro e um halo claro, um dos lados sempre contrasta. */
 :focus-visible {
-  outline: 3px solid rgba(49, 95, 135, 0.42);
-  outline-offset: 3px;
+  outline: 2px solid var(--brand-950);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 5px var(--yellow);
 }
 
 .login-shell {
@@ -101,9 +107,28 @@ a {
   display: grid;
   overflow: hidden;
   min-height: 100dvh;
-  padding: clamp(24px, 5vw, 64px);
+  padding: clamp(16px, 3vw, 32px);
   place-items: center;
-  background: var(--login-canvas);
+  /* Recriacao em CSS do fundo institucional: brilho no alto, feixes de luz
+     diagonais e a base azul escurecendo. Sem imagem: nada a carregar, e o
+     desenho acompanha o tema. */
+  background:
+    radial-gradient(120% 78% at 50% -8%, rgba(255, 255, 255, 0.07) 0%, rgba(255, 255, 255, 0) 58%),
+    repeating-linear-gradient(
+      104deg,
+      rgba(255, 255, 255, 0.05) 0px,
+      rgba(255, 255, 255, 0.05) 2px,
+      rgba(255, 255, 255, 0) 2px,
+      rgba(255, 255, 255, 0) 74px
+    ),
+    repeating-linear-gradient(
+      98deg,
+      rgba(255, 255, 255, 0.032) 0px,
+      rgba(255, 255, 255, 0.032) 26px,
+      rgba(255, 255, 255, 0) 26px,
+      rgba(255, 255, 255, 0) 168px
+    ),
+    linear-gradient(163deg, #0F2E86 0%, #0B1C6E 24%, #0A0C56 52%, #070A3A 76%, #04061F 100%);
 }
 
 .login-shell::before {
@@ -116,12 +141,12 @@ a {
 
 .login-card {
   position: relative;
-  width: min(100%, 600px);
+  width: 100%;
   overflow: hidden;
-  border: 1px solid var(--login-card-border);
-  border-radius: 22px;
-  background: var(--login-card);
-  box-shadow: 0 18px 44px var(--login-shadow);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 18px 44px rgba(2, 4, 26, 0.42);
 }
 
 .login-card::before {
@@ -136,11 +161,18 @@ a {
   pointer-events: none;
 }
 
+/* Largura fluida: acompanha a janela em vez de ficar presa a um valor. O piso
+   protege o celular e o teto impede que o formulario estique a ponto de os
+   campos perderem relacao com o texto. */
+.login-stack {
+  width: min(100%, clamp(340px, 62vw, 560px));
+}
+
+/* A marca mora dentro da caixa, encostada na faixa amarela do topo. O recuo
+   lateral acompanha o de `.login-content` para a logo alinhar com os campos. */
 .login-brand {
-  position: relative;
-  overflow: hidden;
-  padding: 32px clamp(32px, 6vw, 48px) 30px;
-  background: var(--login-brand-start);
+  padding: clamp(20px, 2.8vw, 24px) clamp(20px, 4.4vw, 40px) clamp(14px, 2vw, 18px);
+  background: transparent;
 }
 
 .login-brand::before,
@@ -208,7 +240,7 @@ a {
 
 .login-content {
   position: relative;
-  padding: clamp(38px, 6vw, 50px) clamp(38px, 6vw, 52px) clamp(42px, 6vw, 54px);
+  padding: clamp(24px, 3.6vw, 32px) clamp(38px, 6vw, 52px) clamp(26px, 3.6vw, 34px);
 }
 
 .eyebrow {
@@ -230,7 +262,7 @@ a {
 
 .login-description {
   max-width: 450px;
-  margin: 12px 0 32px;
+  margin: 10px 0 22px;
   color: var(--login-muted);
   font-size: 15px;
 }
@@ -261,16 +293,20 @@ a {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 6px;
-  margin-bottom: 18px;
+  margin-bottom: 14px;
   padding: 4px;
   border: 1px solid var(--login-card-border);
   border-radius: 9px;
   background: var(--login-card-deep);
 }
 
+/* 44px e o alvo de toque minimo. As abas mediam 36px. */
 .login-mode {
+  display: grid;
+  min-height: 44px;
   padding: 9px 12px;
   border-radius: 6px;
+  place-items: center;
   color: var(--login-muted);
   font-size: 12px;
   font-weight: 750;
@@ -289,13 +325,13 @@ a {
 }
 
 .login-mode:focus-visible {
-  outline: 2px solid var(--brand-700);
+  outline: 2px solid var(--brand-950);
   outline-offset: 2px;
 }
 
 .credential-form {
   display: grid;
-  gap: 16px;
+  gap: 14px;
 }
 
 .login-field-help {
@@ -319,11 +355,17 @@ a {
 .login-field textarea:focus {
   border-color: var(--brand-700);
   outline: 0;
-  box-shadow: 0 0 0 3px rgba(49, 95, 135, 0.16);
+  box-shadow: 0 0 0 3px rgba(11, 16, 159, 0.15);
 }
 
+/* `align-content: start` e o que alinha os dois campos de senha. Sem ele, o
+   campo fica esticado pela linha da grade — a altura vem do vizinho, que tem
+   uma linha a mais para o texto de ajuda — e as linhas `auto` absorvem a sobra:
+   medido, o input de "Confirmar senha" ia a 55px contra 43px do "Senha" e
+   comecava 12px mais abaixo. */
 .login-field {
   display: grid;
+  align-content: start;
   gap: 7px;
 }
 
@@ -335,7 +377,7 @@ a {
 
 .login-field input {
   width: 100%;
-  min-height: 48px;
+  min-height: 44px;
   padding: 11px 13px;
   border: 1px solid var(--login-card-border);
   border-radius: 8px;
@@ -348,7 +390,7 @@ a {
 .login-field input:focus {
   border-color: var(--brand-700);
   outline: 0;
-  box-shadow: 0 0 0 3px rgba(49, 95, 135, 0.16);
+  box-shadow: 0 0 0 3px rgba(11, 16, 159, 0.15);
 }
 
 .credential-submit {
@@ -559,4 +601,750 @@ a {
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+/* A logo e azul sobre transparente; num fundo azul ela sumiria. A placa branca
+   devolve o contraste sem precisar de uma segunda versao do arquivo. */
+/* Sem placa: o losango azul se funde ao fundo e as letras brancas da logo
+   e que fazem a leitura. */
+.login-brand-plate {
+  display: inline-grid;
+  place-items: center;
+}
+
+.login-brand-copy strong {
+  color: #FFFFFF;
+}
+
+/* ---------------------------------------------------------------------------
+   Avatar, campos com icone e linha de opcoes
+
+   O avatar e decorativo: antes do login o sistema nao sabe quem e a pessoa,
+   entao nao existe foto de perfil para exibir. Ele funciona como marcador de
+   "area de acesso", com as reguas laterais da referencia.
+   --------------------------------------------------------------------------- */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.login-avatar {
+  display: grid;
+  padding: 30px 0 4px;
+  place-items: center;
+}
+
+.login-avatar::before,
+.login-avatar::after {
+  width: 84px;
+  height: 1px;
+  grid-row: 1;
+  background: var(--login-card-border);
+  content: "";
+}
+
+.login-avatar::before {
+  grid-column: 1;
+  justify-self: end;
+  margin-right: 18px;
+}
+
+.login-avatar-ring {
+  display: grid;
+  width: 84px;
+  height: 84px;
+  grid-column: 1;
+  grid-row: 1;
+  place-items: center;
+  border: 2px solid var(--brand-700);
+  border-radius: 50%;
+  color: var(--brand-700);
+}
+
+.login-avatar::after {
+  grid-column: 1;
+  justify-self: start;
+  margin-left: 18px;
+}
+
+.login-avatar-ring svg {
+  width: 40px;
+  height: 40px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-width: 1.5;
+}
+
+.login-field-icon {
+  position: relative;
+  gap: 0;
+}
+
+.login-field-icon .field-icon {
+  position: absolute;
+  top: 1px;
+  bottom: 1px;
+  left: 1px;
+  display: grid;
+  width: 46px;
+  place-items: center;
+  border-radius: 8px 0 0 8px;
+  background: var(--brand-700);
+  color: var(--login-card);
+  pointer-events: none;
+}
+
+.login-field-icon .field-icon svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-width: 1.6;
+}
+
+.login-field-icon input {
+  padding-left: 60px;
+}
+
+.login-options {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 2px;
+}
+
+.remember-me {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  gap: 8px;
+  color: var(--login-text);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.remember-me input {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  accent-color: var(--brand-700);
+}
+
+.forgot-link {
+  color: var(--login-muted);
+  font-size: 12px;
+  text-decoration: none;
+}
+
+.forgot-link:hover {
+  color: var(--brand-700);
+  text-decoration: underline;
+}
+
+/* ---------------------------------------------------------------------------
+   Sobre o degrade
+
+   Sem cartao, tudo assenta direto no fundo: o texto fica claro, os campos sao
+   placas semitransparentes e o amarelo da marca assume o papel de acao
+   primaria — que na referencia cabia ao rosa.
+   --------------------------------------------------------------------------- */
+.login-content {
+  padding: 0 clamp(20px, 4.4vw, 40px) clamp(24px, 3.6vw, 34px);
+}
+
+.login-content h1,
+.login-description,
+.eyebrow {
+  text-align: center;
+}
+
+.login-content h1 {
+  color: #FFFFFF;
+  font-size: 22px;
+}
+
+.login-description {
+  max-width: none;
+  margin: 8px 0 22px;
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 13px;
+}
+
+.eyebrow {
+  color: var(--yellow);
+}
+
+.login-avatar {
+  padding: 0 0 22px;
+}
+
+.login-avatar::before,
+.login-avatar::after {
+  width: 74px;
+  background: rgba(255, 255, 255, 0.34);
+}
+
+.login-avatar-ring {
+  border-color: rgba(255, 255, 255, 0.72);
+  color: #FFFFFF;
+}
+
+.login-field input,
+.login-field textarea {
+  border: 0;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.9);
+  color: #16203A;
+}
+
+.login-field input::placeholder {
+  color: #5A6478;
+}
+
+.login-field input:hover,
+.login-field textarea:hover {
+  background: rgba(255, 255, 255, 0.97);
+}
+
+.login-field input:focus,
+.login-field textarea:focus {
+  outline: 0;
+  box-shadow: none;
+}
+
+.login-field input:focus-visible,
+.login-field textarea:focus-visible {
+  outline: 2px solid var(--brand-950);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 5px var(--yellow);
+}
+
+.login-field-icon .field-icon {
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 44px;
+  border-radius: 4px 0 0 4px;
+  background: rgba(9, 13, 74, 0.24);
+  color: #FFFFFF;
+}
+
+.login-field-icon input {
+  padding-left: 58px;
+}
+
+/* O amarelo da marca assume o papel que na referencia era do rosa. */
+.credential-submit {
+  grid-template-columns: minmax(0, 1fr);
+  justify-items: center;
+  min-height: 46px;
+  border: 0;
+  border-radius: 4px;
+  background: var(--yellow);
+  color: #05073F;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.credential-submit:hover {
+  background: #E5B000;
+}
+
+.credential-submit .provider-arrow {
+  display: none;
+}
+
+.remember-me {
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.remember-me input {
+  accent-color: var(--yellow);
+}
+
+.forgot-link {
+  color: rgba(255, 255, 255, 0.72);
+  font-style: italic;
+}
+
+.forgot-link:hover {
+  color: #FFFFFF;
+}
+
+.login-modes {
+  border: 0;
+  background: transparent;
+}
+
+.login-mode {
+  color: rgba(255, 255, 255, 0.66);
+}
+
+.login-mode:hover {
+  color: #FFFFFF;
+}
+
+.login-mode-active {
+  background: rgba(255, 255, 255, 0.16);
+  color: #FFFFFF;
+}
+
+.provider-divider {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.provider-divider::before,
+.provider-divider::after {
+  background: rgba(255, 255, 255, 0.24);
+}
+
+.provider-button {
+  border: 1px solid rgba(255, 255, 255, 0.42);
+  border-radius: 4px;
+  background: transparent;
+  color: #FFFFFF;
+}
+
+.provider-button:hover {
+  border-color: #FFFFFF;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.security-copy {
+  border-top: 1px solid rgba(255, 255, 255, 0.24);
+  color: rgba(255, 255, 255, 0.74);
+}
+
+.security-icon {
+  background: rgba(255, 255, 255, 0.14);
+  color: #FFFFFF;
+}
+
+.login-legal a {
+  color: rgba(255, 255, 255, 0.66);
+}
+
+.login-legal a:hover {
+  color: #FFFFFF;
+}
+
+/* Com largura sobrando, o cadastro usa duas colunas: quatro campos empilhados
+   num cartao largo desperdicam a metade direita e alongam demais a tela. */
+@media (min-width: 760px) {
+  .login-avatar-ring {
+    width: 92px;
+    height: 92px;
+  }
+
+  .login-avatar::before,
+  .login-avatar::after {
+    width: 92px;
+  }
+
+  .login-content h1 {
+    font-size: 25px;
+  }
+
+  .credential-form {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 14px;
+  }
+
+  /* Nome e e-mail ocupam a linha inteira; senha e confirmacao ficam lado a
+     lado, que e o par que se le junto. */
+  .credential-form > .login-field:nth-of-type(-n + 2),
+  .credential-form > .credential-submit,
+  .credential-form > .login-options,
+  .credential-form > input[type="hidden"] {
+    grid-column: 1 / -1;
+  }
+
+  /* Com a marca ao lado, o avatar divide o eixo vertical com o formulario:
+     encolhe para caber sem sumir. */
+  .login-avatar {
+    padding: 14px 0 2px;
+  }
+
+  .login-avatar-ring {
+    width: 54px;
+    height: 54px;
+  }
+
+  .login-avatar::before,
+  .login-avatar::after {
+    width: 54px;
+  }
+
+  .login-avatar-ring svg {
+    width: 26px;
+    height: 26px;
+  }
+
+  .provider-button {
+    min-height: 44px;
+  }
+
+  .login-content {
+    padding-bottom: 20px;
+  }
+}
+
+/* Senha e confirmacao dividem a linha ja no celular. E o par que se le junto, o
+   conteudo e mascarado — nao precisa de largura para ser conferido — e a linha
+   economizada e o que tira a rolagem do cadastro em tela de telefone. */
+@media (min-width: 340px) {
+  .credential-form {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 12px;
+  }
+
+  .credential-form > .login-field:nth-of-type(-n + 2),
+  .credential-form > .credential-submit,
+  .credential-form > .login-options,
+  .credential-form > input[type="hidden"] {
+    grid-column: 1 / -1;
+  }
+
+  /* No login sao so dois campos: manter em coluna unica evita um formulario
+     largo e raso, que fica estranho ao lado de um botao de largura inteira. */
+  form[action="/api/auth/credentials/login"] .login-field {
+    grid-column: 1 / -1;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Altura, nao so largura
+
+   Celular deitado, netbook e janela encolhida tem largura de sobra e altura
+   escassa. Ai o que precisa encolher e o espaco vertical — e o que pode sair
+   e o que nao participa de entrar.
+   --------------------------------------------------------------------------- */
+@media (max-height: 720px) {
+  .login-shell {
+    padding: 18px clamp(16px, 4vw, 40px);
+    align-content: start;
+  }
+
+  .login-brand {
+    padding-bottom: 12px;
+  }
+
+  .login-brand-logo {
+    width: 88px;
+    height: 46px;
+  }
+
+  .login-avatar {
+    padding: 16px 0 4px;
+  }
+
+  .login-avatar-ring {
+    width: 62px;
+    height: 62px;
+  }
+
+  .login-avatar::before,
+  .login-avatar::after {
+    width: 62px;
+  }
+
+  .login-avatar-ring svg {
+    width: 30px;
+    height: 30px;
+  }
+
+  .login-content {
+    padding-bottom: clamp(18px, 2.4vw, 26px);
+  }
+
+  .login-content h1 {
+    font-size: 20px;
+  }
+
+  .login-description {
+    margin-bottom: 16px;
+  }
+
+  .credential-form {
+    gap: 12px;
+  }
+
+  /* Nao desce de 44px: e o alvo de toque minimo, e a altura economizada aqui
+     sai de margens, nao de area clicavel. */
+  .login-field input,
+  .login-field textarea {
+    min-height: 44px;
+  }
+
+  .provider-divider {
+    margin: 14px 0;
+  }
+
+  .security-copy {
+    margin-top: 16px;
+    padding-top: 14px;
+  }
+}
+
+@media (max-height: 560px) {
+  /* O avatar e decorativo: numa faixa dessas ele custa altura que o formulario
+     precisa. A nota de seguranca continua acessivel na pagina de privacidade. */
+  .login-avatar,
+  .security-copy,
+  .login-description {
+    display: none;
+  }
+
+  /* O titulo ja diz "Entrar" ou "Solicitar acesso": a descricao repete o que a
+     tela mostra, e nessa faixa cada linha custa uma rolagem. */
+  .provider-button {
+    min-height: 44px;
+    padding: 8px 14px;
+  }
+
+  .login-modes {
+    margin-bottom: 12px;
+    padding: 3px;
+  }
+
+  .login-mode {
+    padding: 6px 10px;
+  }
+
+  .provider-divider {
+    margin: 10px 0;
+  }
+
+  .login-brand {
+    padding-bottom: 10px;
+  }
+
+  .login-content {
+    padding-top: 18px;
+  }
+
+  .login-content h1 {
+    font-size: 18px;
+  }
+
+  .login-description {
+    margin: 6px 0 14px;
+    font-size: 12px;
+  }
+
+  .login-legal {
+    margin-top: 12px;
+  }
+}
+
+/* Telas muito estreitas: o respiro lateral vira largura util para o campo. */
+@media (max-width: 380px) {
+  .login-shell {
+    padding-inline: 12px;
+  }
+
+  .login-content {
+    padding-inline: 16px;
+  }
+
+  .login-options {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+}
+
+/* Faixa de notebook: altura apertada mas nao critica. Sai a nota de seguranca,
+   cujo conteudo permanece integral no aviso de privacidade, linkado abaixo. */
+@media (max-height: 760px) {
+  .security-copy {
+    display: none;
+  }
+
+  .login-legal {
+    margin-top: 14px;
+  }
+}
+
+/* A logo fica no topo da caixa em qualquer tela. Em altura de notebook o que
+   sai e o avatar: ele e decorativo, e com a logo logo acima vira um segundo
+   simbolo disputando o mesmo lugar. As duas colunas do cadastro continuam. */
+@media (max-height: 820px) and (min-width: 900px) {
+  .login-avatar {
+    display: none;
+  }
+
+  .login-brand {
+    padding-top: 18px;
+    padding-bottom: 12px;
+  }
+
+  /* Em altura de notebook a logo encolhe em vez de sair: ela e a ancora da
+     caixa, e o que sobra de espaco vem de margens, nao de conteudo. */
+  .login-brand-logo {
+    width: 104px;
+    height: 54px;
+  }
+
+  .login-content {
+    padding-top: 16px;
+    padding-bottom: 20px;
+  }
+
+  .login-description {
+    margin-bottom: 14px;
+  }
+
+  .login-modes {
+    margin-bottom: 12px;
+  }
+
+  .provider-divider {
+    margin-top: 14px;
+    margin-bottom: 14px;
+  }
+
+  .login-legal {
+    margin-top: 10px;
+  }
+
+  .provider-button {
+    min-height: 44px;
+  }
+
+  .credential-form {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 14px;
+  }
+
+  .credential-form > .login-field:nth-of-type(-n + 2),
+  .credential-form > .credential-submit,
+  .credential-form > .login-options,
+  .credential-form > input[type="hidden"] {
+    grid-column: 1 / -1;
+  }
+}
+
+/* Telefone: a caixa tem de caber sem rolagem. Sai o que e decorativo ou de
+   apoio — o avatar e a nota de seguranca — e o restante aperta. Os campos, os
+   rotulos e o botao ficam: sao a funcao da tela. */
+@media (max-width: 760px) {
+  .login-avatar {
+    display: none;
+  }
+
+  .security-copy {
+    display: none;
+  }
+
+  .login-brand {
+    padding: 16px 20px 12px;
+  }
+
+  .login-content {
+    padding: 20px 20px 22px;
+  }
+
+  .login-description {
+    margin-bottom: 12px;
+  }
+
+  .login-modes {
+    margin-bottom: 10px;
+  }
+
+  .credential-form {
+    gap: 12px;
+  }
+
+  .login-field input {
+    min-height: 44px;
+  }
+}
+
+/* Telefone baixo (360x640 e afins): o texto de apoio sai para o formulario
+   caber inteiro. O titulo permanece — e ele que diz em que tela se esta. */
+@media (max-width: 760px) and (max-height: 720px) {
+  .login-description {
+    display: none;
+  }
+
+  .login-brand {
+    padding: 12px 20px 10px;
+  }
+
+  .login-brand-logo {
+    width: 104px;
+    height: 54px;
+  }
+
+  .login-content {
+    padding: 16px 20px 18px;
+  }
+
+  .login-modes {
+    margin-bottom: 4px;
+    padding: 3px;
+  }
+
+  .login-legal {
+    margin-top: 8px;
+  }
+
+  .login-shell {
+    padding: 10px 12px;
+  }
+
+  .login-content h1 {
+    font-size: 20px;
+  }
+
+  .login-legal {
+    margin-top: 10px;
+  }
+
+  /* O sobretitulo e decorativo e o h1 logo abaixo ja nomeia a tela. */
+  .eyebrow {
+    display: none;
+  }
+
+  .login-brand-logo {
+    width: 88px;
+    height: 46px;
+  }
+
+  .credential-form {
+    gap: 10px;
+  }
+
+  .login-field input {
+    min-height: 44px;
+  }
+}
+
+/* Janela baixa: o texto de apoio sai para o cadastro caber sem rolagem. Sao 61px
+   com a margem — o cadastro passava 32px em 1366x625 e 52px em 1536x730. O
+   limite acompanha o da faixa que ja tira o avatar por falta de altura. */
+@media (max-height: 820px) {
+  .login-description {
+    display: none;
+  }
+}
+
+/* Alvo de toque de 44px onde o texto sozinho nao chega la. O aviso legal fica
+   de fora de proposito: sao links dentro de uma frase corrida, caso que a
+   WCAG 2.5.8 dispensa — aumenta-los quebraria o paragrafo. */
+.forgot-link {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
 }

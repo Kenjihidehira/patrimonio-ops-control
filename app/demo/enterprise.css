@@ -1,17 +1,17 @@
 :root {
   --enterprise-sidebar-width: 232px;
-  --brand-950: #021d3a;
-  --brand-900: #052b52;
-  --brand-700: #315f87;
-  --brand-100: #eaf3ff;
-  --sidebar-bg: #183b59;
-  --action-bg: #315f87;
-  --action-hover: #284f72;
+  --brand-950: #05073F;
+  --brand-900: #080B73;
+  --brand-700: #0B109F;
+  --brand-100: #E9EAFC;
+  --sidebar-bg: #080B73;
+  --action-bg: #0B109F;
+  --action-hover: #05073F;
   --ink: #18263a;
   --heading-text: #0f1d30;
-  --emphasis-text: #315f87;
+  --emphasis-text: #0B109F;
   --muted: #66758a;
-  --icon-accent: #486f90;
+  --icon-accent: #0B109F;
   --icon-muted: #718198;
   --line: #dbe3ed;
   --line-strong: #c8d3e0;
@@ -19,45 +19,45 @@
   --surface-soft: #f5f8fc;
   --surface-raised: #ffffff;
   --canvas: #f7f9fc;
-  --yellow: #f7b500;
+  --yellow: #FFC400;
   --yellow-soft: #fff7dc;
-  --coral: #b45d64;
-  --coral-soft: #fff0f1;
-  --blue: #607f83;
-  --blue-soft: #e9f8f4;
-  --success: #5e7f74;
-  --success-soft: #eaf8f1;
+  --coral: #E34D59;
+  --coral-soft: #FDECEE;
+  --blue: #118A9C;
+  --blue-soft: #E3F5F7;
+  --success: #0A8074;
+  --success-soft: #E7F7F5;
   --table-line: #e6ebf2;
-  --table-head: #f8fafc;
+  --table-head: #F1F1FB;
   --table-head-text: #526177;
   --table-text: #24344a;
   --surface-hover: #f7faff;
-  --surface-selected: #eaf3ff;
+  --surface-selected: #E9EAFC;
   --surface-inset: #f9fbfd;
-  --focus-ring: rgba(7, 95, 207, 0.17);
+  --focus-ring: rgba(11, 16, 159, 0.22);
   --shadow: 0 18px 42px rgba(21, 48, 82, 0.12);
   --shadow-soft: 0 4px 14px rgba(21, 48, 82, 0.07);
   --shadow-panel: 0 8px 24px rgba(21, 48, 82, 0.08);
-  font-family: Inter, "Segoe UI Variable", "Segoe UI", ui-sans-serif, system-ui, sans-serif;
+  font-family: var(--font-plex-sans), "Segoe UI", ui-sans-serif, system-ui, sans-serif;
 }
 
 :root[data-theme="dark"] {
-  --brand-950: #172c3e;
-  --brand-900: #284b67;
-  --brand-700: #8faec8;
-  --brand-100: #263e52;
-  --sidebar-bg: #142d42;
-  --action-bg: #3b6688;
-  --action-hover: #477595;
+  --brand-950: #0A0C56;
+  --brand-900: #141BB0;
+  --brand-700: #A3A8FF;
+  --brand-100: #1B1E5C;
+  --sidebar-bg: #070A3A;
+  --action-bg: #2029C4;
+  --action-hover: #3A43DC;
   --ink: #e7ebef;
   --heading-text: #f1f3f5;
   --emphasis-text: #b5c9da;
   --muted: #aeb8c1;
   --icon-accent: #92aabd;
   --icon-muted: #b9c2ca;
-  --blue: #849fa3;
-  --success: #7ca397;
-  --coral: #c9858a;
+  --blue: #5DCAA5;
+  --success: #5DCAA5;
+  --coral: #FF8A8A;
   --line: #3b4b5b;
   --line-strong: #506273;
   --surface: #182634;
@@ -97,7 +97,6 @@ body {
   border: 0;
   background: var(--sidebar-bg);
   color: #ffffff;
-  box-shadow: 10px 0 30px rgba(1, 24, 49, 0.1);
 }
 
 .app-header::after {
@@ -122,7 +121,7 @@ body {
   justify-items: start;
   gap: 10px;
   border: 0;
-  border-radius: 0;
+  border-radius: 3px;
 }
 
 .app-brand:hover {
@@ -145,14 +144,14 @@ body {
 
 .app-brand strong {
   font-size: 17px;
-  font-weight: 760;
+  font-weight: 700;
   letter-spacing: -0.015em;
 }
 
 .app-brand small {
   margin-top: 5px;
   color: #66dbe2;
-  font-size: 9px;
+  font-size: 11px;
   letter-spacing: 0.09em;
 }
 
@@ -167,8 +166,8 @@ body {
 
 .sidebar-department span {
   color: #8ba8c3;
-  font-size: 9px;
-  font-weight: 750;
+  font-size: 11px;
+  font-weight: 500;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
@@ -177,7 +176,7 @@ body {
   overflow: hidden;
   color: #62dce3;
   font-size: 13px;
-  font-weight: 720;
+  font-weight: 700;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -190,7 +189,7 @@ body {
   justify-self: auto;
   gap: 6px;
   border: 0;
-  border-radius: 0;
+  border-radius: 3px;
   background: transparent;
 }
 
@@ -199,10 +198,10 @@ body {
   min-height: 48px;
   padding: 11px 14px;
   border: 0;
-  border-radius: 8px;
+  border-radius: 3px;
   color: #d6e2ee;
   font-size: 13px;
-  font-weight: 640;
+  font-weight: 600;
   text-align: left;
 }
 
@@ -232,7 +231,6 @@ body {
   border: 0;
   background: #075fcf;
   color: #ffffff;
-  box-shadow: 0 9px 22px rgba(0, 71, 158, 0.32);
 }
 
 .nav-item.is-active .nav-item-icon {
@@ -253,7 +251,7 @@ body {
 
 .sidebar-footer a {
   color: #b9cce0;
-  font-weight: 680;
+  font-weight: 700;
   text-underline-offset: 3px;
 }
 
@@ -277,7 +275,6 @@ body {
   gap: 13px 24px;
   border-bottom: 1px solid var(--line);
   background: color-mix(in srgb, var(--surface) 96%, transparent);
-  box-shadow: 0 8px 24px rgba(21, 48, 82, 0.04);
   backdrop-filter: blur(16px);
 }
 
@@ -295,7 +292,7 @@ body {
   flex: 0 0 42px;
   place-items: center;
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: 3px;
   background: var(--surface);
   color: var(--heading-text);
   cursor: pointer;
@@ -308,7 +305,7 @@ body {
 
 .page-heading h1 {
   font-size: clamp(24px, 2vw, 29px);
-  font-weight: 750;
+  font-weight: 700;
   line-height: 1.12;
   letter-spacing: -0.035em;
 }
@@ -316,7 +313,7 @@ body {
 .page-heading > p:last-child {
   max-width: 720px;
   margin-top: 5px;
-  font-size: 12.5px;
+  font-size: 13px;
 }
 
 .header-actions {
@@ -340,7 +337,7 @@ body {
 }
 
 .department-switcher > span {
-  font-size: 8px;
+  font-size: 10px;
   letter-spacing: 0.08em;
 }
 
@@ -348,8 +345,7 @@ body {
 .theme-toggle,
 .session-control {
   min-height: 40px;
-  border-radius: 8px;
-  box-shadow: none;
+  border-radius: 3px;
 }
 
 .theme-toggle {
@@ -365,16 +361,15 @@ body {
 }
 
 .session-avatar {
-  border-radius: 9px;
+  border-radius: 3px;
 }
 
 .button {
   min-height: 40px;
   padding: 8px 13px;
-  border-radius: 8px;
+  border-radius: 3px;
   font-size: 12px;
-  font-weight: 680;
-  box-shadow: none;
+  font-weight: 500;
 }
 
 .button svg {
@@ -383,7 +378,6 @@ body {
 }
 
 .button-primary {
-  box-shadow: 0 7px 16px rgba(7, 95, 207, 0.2);
 }
 
 .view-section {
@@ -403,13 +397,11 @@ body {
   gap: 14px;
   border: 1px solid var(--line);
   border-top: 1px solid var(--line);
-  border-radius: 10px;
-  box-shadow: none;
+  border-radius: 3px;
 }
 
 .kpi-item:hover {
   border-color: color-mix(in srgb, var(--kpi-accent) 36%, var(--line));
-  box-shadow: var(--shadow-soft);
   transform: translateY(-1px);
 }
 
@@ -428,7 +420,7 @@ body {
 
 .kpi-content > span {
   font-size: 11px;
-  font-weight: 620;
+  font-weight: 600;
   text-transform: none;
 }
 
@@ -441,16 +433,15 @@ body {
 
 .kpi-content small {
   margin-top: 3px;
-  font-size: 9px;
+  font-size: 11px;
 }
 
 .filter-band {
   margin-bottom: 14px;
   padding: 15px 16px 13px;
   border: 1px solid var(--line);
-  border-radius: 10px;
+  border-radius: 3px;
   background: var(--surface);
-  box-shadow: none;
 }
 
 .filter-heading {
@@ -460,7 +451,7 @@ body {
 .filter-heading h2,
 .panel-heading h2 {
   font-size: 14px;
-  font-weight: 720;
+  font-weight: 700;
 }
 
 .filter-grid {
@@ -471,7 +462,7 @@ body {
 .field select,
 .field textarea,
 .inventory-search-control {
-  border-radius: 8px;
+  border-radius: 3px;
 }
 
 .quick-filters {
@@ -482,8 +473,8 @@ body {
 .quick-filter {
   min-height: 31px;
   padding: 6px 10px;
-  border-radius: 7px;
-  font-size: 10.5px;
+  border-radius: 3px;
+  font-size: 11px;
 }
 
 .inventory-layout {
@@ -492,17 +483,15 @@ body {
   gap: 0;
   overflow: hidden;
   border: 1px solid var(--line);
-  border-radius: 11px;
+  border-radius: 3px;
   background: var(--surface);
-  box-shadow: var(--shadow-panel);
 }
 
 .table-panel,
 .detail-panel {
   border: 0;
-  border-radius: 0;
+  border-radius: 3px;
   background: var(--surface);
-  box-shadow: none;
 }
 
 .table-panel {
@@ -520,7 +509,7 @@ body {
 }
 
 .revision-badge {
-  border-radius: 6px;
+  border-radius: 3px;
 }
 
 .table-scroll {
@@ -535,7 +524,7 @@ body {
   height: 43px;
   padding: 10px 12px;
   background: var(--table-head);
-  font-size: 9px;
+  font-size: 11px;
   letter-spacing: 0.045em;
 }
 
@@ -558,8 +547,8 @@ body {
 }
 
 .status-badge {
-  border-radius: 6px;
-  font-weight: 680;
+  border-radius: 0;
+  font-weight: 500;
 }
 
 .pagination {
@@ -570,7 +559,7 @@ body {
 
 .pagination-button,
 .icon-button {
-  border-radius: 7px;
+  border-radius: 3px;
 }
 
 .inventory-asset-detail {
@@ -600,13 +589,12 @@ body {
 .environment-panel,
 .import-run,
 .audit-item {
-  border-radius: 10px;
-  box-shadow: none;
+  border-radius: 3px;
 }
 
 .demo-notice {
   max-width: 1640px;
-  border-radius: 8px;
+  border-radius: 3px;
 }
 
 .app-footer {
@@ -725,16 +713,14 @@ body {
     display: block;
     overflow: visible;
     border: 0;
-    border-radius: 0;
+    border-radius: 3px;
     background: transparent;
-    box-shadow: none;
   }
 
   .table-panel {
     overflow: hidden;
     border: 1px solid var(--line);
-    border-radius: 10px;
-    box-shadow: var(--shadow-panel);
+    border-radius: 3px;
   }
 
   .detail-panel {
@@ -847,9 +833,8 @@ body {
   .mobile-asset-card {
     border: 0;
     border-bottom: 1px solid var(--line);
-    border-radius: 0;
+    border-radius: 3px;
     background: var(--surface);
-    box-shadow: none;
   }
 
   .mobile-asset-card.is-selected {
@@ -862,7 +847,7 @@ body {
   }
 
   .detail-panel {
-    border-radius: 15px 15px 0 0;
+    border-radius: 3px;
   }
 
   .app-footer {
@@ -898,7 +883,7 @@ body {
   padding: 5px 7px;
   flex-basis: 104px;
   border: 0;
-  border-radius: 0;
+  border-radius: 3px;
   background: transparent;
   object-fit: contain;
   object-position: center;
@@ -917,7 +902,7 @@ body {
   gap: 14px;
   padding: 12px;
   border: 1px solid var(--line);
-  border-radius: 6px;
+  border-radius: 3px;
   background: #ffffff;
   color: #10263a;
 }
@@ -988,7 +973,7 @@ body {
   gap: 2px;
   overflow-x: auto;
   border: 1px solid var(--line);
-  border-radius: 6px;
+  border-radius: 3px;
   background: var(--surface-raised);
   scrollbar-width: thin;
 }
@@ -1002,12 +987,12 @@ body {
   justify-content: center;
   gap: 7px;
   border: 0;
-  border-radius: 4px;
+  border-radius: 3px;
   background: transparent;
   color: var(--muted);
   font: inherit;
   font-size: 11px;
-  font-weight: 700;
+  font-weight: 500;
   letter-spacing: 0;
   cursor: pointer;
 }
@@ -1043,8 +1028,7 @@ body {
 .operations-overview-grid > .operational-panel {
   min-width: 0;
   overflow: hidden;
-  border-radius: 6px;
-  box-shadow: none;
+  border-radius: 3px;
 }
 
 .operation-form-panel .operational-panel-toolbar,
@@ -1072,7 +1056,7 @@ body {
 .operations-overview-grid .operational-panel-toolbar p {
   max-width: 680px;
   margin-top: 4px;
-  font-size: 10.5px;
+  font-size: 11px;
   line-height: 1.45;
 }
 
@@ -1116,10 +1100,10 @@ body {
   margin: 0;
   padding: 9px 10px;
   border: 1px solid color-mix(in srgb, var(--coral) 45%, var(--line));
-  border-radius: 5px;
+  border-radius: 3px;
   background: var(--coral-soft);
   color: var(--coral);
-  font-size: 10.5px;
+  font-size: 11px;
   line-height: 1.4;
 }
 
@@ -1130,11 +1114,11 @@ body {
   align-items: center;
   justify-content: center;
   border: 1px solid var(--line-strong);
-  border-radius: 999px;
+  border-radius: 3px;
   background: var(--surface-soft);
   color: var(--muted);
-  font-size: 9px;
-  font-weight: 800;
+  font-size: 11px;
+  font-weight: 500;
   letter-spacing: 0;
   line-height: 1.2;
   white-space: nowrap;
@@ -1173,15 +1157,15 @@ body {
   min-width: min(280px, 100%);
   gap: 4px;
   color: var(--muted);
-  font-size: 9px;
-  font-weight: 750;
+  font-size: 11px;
+  font-weight: 500;
 }
 
 .operation-toolbar-select select {
   min-height: 38px;
   padding: 7px 30px 7px 10px;
   border: 1px solid var(--line-strong);
-  border-radius: 5px;
+  border-radius: 3px;
   background: var(--surface-inset);
   color: var(--table-text);
   font: inherit;
@@ -1249,7 +1233,7 @@ body {
   margin-top: 7px;
   overflow: hidden;
   border: 0;
-  border-radius: 999px;
+  border-radius: 3px;
   background: var(--line-strong);
   accent-color: var(--success);
 }
@@ -1339,7 +1323,7 @@ body {
   margin-top: 3px;
   overflow: hidden;
   color: var(--table-text);
-  font-size: 10.5px;
+  font-size: 11px;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -1348,7 +1332,7 @@ body {
 .operation-record-meta {
   margin-top: 4px;
   color: var(--muted);
-  font-size: 9.5px;
+  font-size: 11px;
   line-height: 1.35;
 }
 
@@ -1377,12 +1361,12 @@ body {
   align-items: center;
   gap: 5px;
   border: 1px solid var(--line-strong);
-  border-radius: 5px;
+  border-radius: 3px;
   background: var(--surface);
   color: var(--muted);
   font: inherit;
-  font-size: 9px;
-  font-weight: 750;
+  font-size: 11px;
+  font-weight: 500;
   cursor: pointer;
 }
 
@@ -1439,7 +1423,7 @@ body {
 
 .tracking-battery {
   color: var(--muted);
-  font-size: 9.5px;
+  font-size: 11px;
   white-space: nowrap;
 }
 
@@ -1483,7 +1467,7 @@ body {
 .tracking-tag-card > span,
 .tracking-tag-card > small {
   color: var(--muted);
-  font-size: 9.5px;
+  font-size: 11px;
   line-height: 1.4;
 }
 
@@ -1499,7 +1483,7 @@ body {
   grid-template-columns: repeat(4, minmax(0, 1fr));
   overflow: hidden;
   border: 1px solid var(--line);
-  border-radius: 6px;
+  border-radius: 3px;
   background: var(--surface-raised);
 }
 
@@ -1536,8 +1520,8 @@ body {
 }
 
 .decision-indicators span {
-  font-size: 9px;
-  font-weight: 750;
+  font-size: 11px;
+  font-weight: 500;
 }
 
 .decision-indicators strong {
@@ -1549,7 +1533,7 @@ body {
 
 .decision-indicators small {
   margin-top: 3px;
-  font-size: 8.5px;
+  font-size: 10px;
 }
 
 .decision-indicators button.has-risk strong,
@@ -1605,7 +1589,7 @@ body {
 
 .operations-alert-list small {
   margin-top: 4px;
-  font-size: 9.5px;
+  font-size: 11px;
 }
 
 .operations-alert-indicator {
@@ -1680,7 +1664,7 @@ body {
   display: block;
   margin-top: 4px;
   color: var(--muted);
-  font-size: 8.5px;
+  font-size: 10px;
   text-align: right;
 }
 
@@ -1703,7 +1687,6 @@ body {
   border: 2px solid var(--surface);
   border-radius: 50%;
   background: var(--blue);
-  box-shadow: 0 0 0 1px var(--blue);
 }
 
 .operations-timeline strong,
@@ -1716,13 +1699,13 @@ body {
 
 .operations-timeline strong {
   color: var(--heading-text);
-  font-size: 10.5px;
+  font-size: 11px;
 }
 
 .operations-timeline small {
   margin-top: 3px;
   color: var(--muted);
-  font-size: 9px;
+  font-size: 11px;
 }
 
 @media (max-width: 1180px) {
@@ -1946,7 +1929,7 @@ body {
   max-height: calc(100dvh - 40px);
   overflow: auto;
   border: 1px solid var(--line-strong);
-  border-radius: 8px;
+  border-radius: 3px;
   background: var(--surface-raised);
   box-shadow: var(--shadow);
 }
@@ -1999,7 +1982,7 @@ body {
   align-items: center;
   justify-content: center;
   border: 1px solid var(--line);
-  border-radius: 5px;
+  border-radius: 3px;
   background: var(--surface-soft);
   color: var(--muted);
   font: inherit;
@@ -2029,8 +2012,7 @@ body {
   width: min(58%, 250px);
   aspect-ratio: 1;
   border: 2px solid #ffffff;
-  border-radius: 6px;
-  box-shadow: 0 0 0 999px rgba(3, 15, 27, 0.28);
+  border-radius: 3px;
   transform: translate(-50%, -50%);
   pointer-events: none;
 }
@@ -2074,7 +2056,7 @@ body {
     border-right: 0;
     border-bottom: 0;
     border-left: 0;
-    border-radius: 8px 8px 0 0;
+    border-radius: 3px;
   }
 
   .qr-scanner-dialog > footer {
@@ -2106,7 +2088,7 @@ body {
   gap: 3px;
   overflow-x: auto;
   border: 1px solid var(--line);
-  border-radius: 6px;
+  border-radius: 3px;
   background: var(--surface-inset);
   scrollbar-width: thin;
 }
@@ -2120,12 +2102,12 @@ body {
   justify-content: center;
   gap: 7px;
   border: 0;
-  border-radius: 4px;
+  border-radius: 3px;
   background: transparent;
   color: var(--muted);
   font: inherit;
-  font-size: 10.5px;
-  font-weight: 700;
+  font-size: 11px;
+  font-weight: 500;
   letter-spacing: 0;
   cursor: pointer;
 }
@@ -2137,10 +2119,10 @@ body {
   padding: 0 5px;
   align-items: center;
   justify-content: center;
-  border-radius: 999px;
+  border-radius: 3px;
   background: var(--line);
   color: var(--table-text);
-  font-size: 8.5px;
+  font-size: 10px;
   font-variant-numeric: tabular-nums;
 }
 
@@ -2152,7 +2134,6 @@ body {
 .operation-subtabs button.is-active {
   background: var(--surface-raised);
   color: var(--emphasis-text);
-  box-shadow: 0 1px 3px rgba(21, 48, 82, 0.12);
 }
 
 .operation-subtabs button.is-active strong {
@@ -2168,7 +2149,7 @@ body {
   display: grid;
   overflow: hidden;
   border: 1px solid var(--line);
-  border-radius: 5px;
+  border-radius: 3px;
 }
 
 .data-source-row {
@@ -2196,8 +2177,8 @@ body {
 .data-source-header {
   background: var(--surface-soft);
   color: var(--muted);
-  font-size: 9px;
-  font-weight: 800;
+  font-size: 11px;
+  font-weight: 500;
   letter-spacing: 0.055em;
   text-transform: uppercase;
 }
@@ -2221,7 +2202,7 @@ body {
 
 .data-source-domain details {
   color: var(--muted);
-  font-size: 9.5px;
+  font-size: 11px;
 }
 
 .data-source-domain summary {
@@ -2251,7 +2232,7 @@ body {
   .data-source-row {
     grid-template-columns: minmax(0, 1fr) minmax(150px, 0.55fr);
     border: 1px solid var(--line);
-    border-radius: 5px;
+    border-radius: 3px;
   }
 
   .data-source-row:last-child {
@@ -2280,7 +2261,7 @@ body {
   padding: 0;
   overflow: hidden;
   border: 1px solid var(--line-strong);
-  border-radius: 5px;
+  border-radius: 3px;
 }
 
 .asset-checklist legend {
@@ -2289,8 +2270,8 @@ body {
   border-bottom: 1px solid var(--line);
   background: var(--surface-soft);
   color: var(--muted);
-  font-size: 9.5px;
-  font-weight: 750;
+  font-size: 11px;
+  font-weight: 500;
 }
 
 .asset-checklist legend span {
@@ -2347,13 +2328,13 @@ body {
 
 .asset-checklist label strong {
   color: var(--heading-text);
-  font-size: 10.5px;
+  font-size: 11px;
 }
 
 .asset-checklist label small {
   margin-top: 2px;
   color: var(--muted);
-  font-size: 8.5px;
+  font-size: 10px;
 }
 
 .operation-record-expanded {
@@ -2373,11 +2354,11 @@ body {
   padding: 3px 7px;
   align-items: center;
   border: 1px solid var(--line);
-  border-radius: 4px;
+  border-radius: 3px;
   background: var(--surface-soft);
   color: var(--table-text);
-  font-size: 8.5px;
-  font-weight: 750;
+  font-size: 10px;
+  font-weight: 500;
   line-height: 1.2;
 }
 
@@ -2424,7 +2405,7 @@ body {
 .offboarding-case > header span {
   margin-top: 3px;
   color: var(--muted);
-  font-size: 9px;
+  font-size: 11px;
 }
 
 .offboarding-case > footer {
@@ -2456,13 +2437,13 @@ body {
 
 .offboarding-assets strong {
   color: var(--heading-text);
-  font-size: 10.5px;
+  font-size: 11px;
 }
 
 .offboarding-assets small {
   margin-top: 3px;
   color: var(--muted);
-  font-size: 8.5px;
+  font-size: 10px;
 }
 
 .offboarding-asset-actions {
@@ -2476,10 +2457,10 @@ body {
   min-height: 32px;
   padding: 5px 8px;
   border: 1px solid var(--line-strong);
-  border-radius: 4px;
+  border-radius: 3px;
   background: var(--surface-inset);
   color: var(--table-text);
-  font-size: 9px;
+  font-size: 11px;
 }
 
 .offboarding-asset-actions button {
@@ -2490,12 +2471,12 @@ body {
   align-items: center;
   justify-content: center;
   border: 1px solid var(--line-strong);
-  border-radius: 4px;
+  border-radius: 3px;
   background: var(--surface);
   color: var(--muted);
   font: inherit;
   font-size: 14px;
-  font-weight: 800;
+  font-weight: 700;
   cursor: pointer;
 }
 
@@ -2537,11 +2518,11 @@ body {
   align-items: center;
   justify-content: center;
   border: 1px solid var(--line-strong);
-  border-radius: 5px;
+  border-radius: 3px;
   background: var(--surface-soft);
   color: var(--emphasis-text);
-  font-size: 8px;
-  font-weight: 850;
+  font-size: 10px;
+  font-weight: 500;
 }
 
 .document-card-main {
@@ -2566,7 +2547,7 @@ body {
 .document-card-main small {
   margin-top: 4px;
   color: var(--muted);
-  font-size: 8.5px;
+  font-size: 10px;
 }
 
 .document-card-actions {
@@ -2594,7 +2575,7 @@ body {
 
 .accounting-value small {
   color: var(--muted);
-  font-size: 8.5px;
+  font-size: 10px;
 }
 
 .accounting-value strong {
@@ -2611,7 +2592,7 @@ body {
   align-items: center;
   gap: 8px;
   border: 1px solid var(--line);
-  border-radius: 5px;
+  border-radius: 3px;
   background: var(--surface-soft);
   color: var(--table-text);
   font-size: 10px;
@@ -2705,7 +2686,7 @@ body {
   justify-content: space-between;
   gap: 18px;
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: 3px;
   background: var(--surface-raised);
 }
 
@@ -2718,7 +2699,7 @@ body {
 .dashboard-context-label {
   color: var(--field-label);
   font-size: 10px;
-  font-weight: 760;
+  font-weight: 500;
   letter-spacing: 0.07em;
   text-transform: uppercase;
 }
@@ -2727,7 +2708,7 @@ body {
   overflow: hidden;
   color: var(--heading-text);
   font-size: 15px;
-  font-weight: 750;
+  font-weight: 700;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -2747,7 +2728,7 @@ body {
   padding: 13px 16px 15px;
   gap: 11px;
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: 3px;
   background: var(--surface-raised);
 }
 
@@ -2763,7 +2744,7 @@ body {
   margin: 0;
   color: var(--heading-text);
   font-size: 12px;
-  font-weight: 750;
+  font-weight: 500;
 }
 
 .dashboard-filters-heading > span {
@@ -2789,7 +2770,7 @@ body {
 .dashboard-filter-field > span {
   color: var(--field-label);
   font-size: 10px;
-  font-weight: 720;
+  font-weight: 500;
 }
 
 .dashboard-filter-field select {
@@ -2798,7 +2779,7 @@ body {
   min-height: 36px;
   padding: 7px 30px 7px 9px;
   border: 1px solid var(--line-strong);
-  border-radius: 6px;
+  border-radius: 3px;
   background: var(--surface);
   color: var(--ink);
   font-size: 11px;
@@ -2830,7 +2811,7 @@ body {
   grid-template-columns: repeat(6, minmax(0, 1fr));
   overflow: hidden;
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: 3px;
   background: var(--surface-raised);
 }
 
@@ -2895,14 +2876,14 @@ body {
 .dashboard-kpi > span {
   color: var(--field-label);
   font-size: 11px;
-  font-weight: 680;
+  font-weight: 500;
 }
 
 .dashboard-kpi > strong {
   color: var(--heading-text);
   font-size: clamp(22px, 1.8vw, 29px);
   font-variant-numeric: tabular-nums;
-  font-weight: 790;
+  font-weight: 700;
   letter-spacing: -0.035em;
   line-height: 1.12;
 }
@@ -2945,7 +2926,7 @@ body {
   min-width: 0;
   padding: 18px;
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: 3px;
   background: var(--surface-raised);
 }
 
@@ -2970,7 +2951,7 @@ body {
 .dashboard-panel-heading h2 {
   color: var(--heading-text);
   font-size: 14px;
-  font-weight: 760;
+  font-weight: 700;
   letter-spacing: -0.01em;
 }
 
@@ -2985,7 +2966,7 @@ body {
   flex: 0 0 auto;
   color: var(--muted);
   font-size: 10px;
-  font-weight: 680;
+  font-weight: 500;
 }
 
 .dashboard-panel-heading > button {
@@ -2997,7 +2978,7 @@ body {
   color: var(--emphasis-text);
   cursor: pointer;
   font-size: 10px;
-  font-weight: 720;
+  font-weight: 500;
 }
 
 .dashboard-panel-heading > button:hover {
@@ -3008,7 +2989,7 @@ body {
   display: inline-block;
   width: 7px;
   height: 7px;
-  border-radius: 2px;
+  border-radius: 3px;
 }
 
 .dashboard-view progress {
@@ -3016,7 +2997,7 @@ body {
   width: 100%;
   height: 7px;
   border: 0;
-  border-radius: 2px;
+  border-radius: 3px;
   background: var(--surface-soft);
   color: var(--brand-700);
   appearance: none;
@@ -3052,7 +3033,7 @@ body {
 .dashboard-movement-bars span {
   color: var(--muted);
   font-size: 10px;
-  font-weight: 680;
+  font-weight: 500;
 }
 
 .dashboard-status-row > strong,
@@ -3111,7 +3092,7 @@ body {
 .dashboard-attention-indicator {
   width: 3px;
   height: 25px;
-  border-radius: 2px;
+  border-radius: 3px;
   background: var(--brand-700);
 }
 
@@ -3139,19 +3120,19 @@ body {
 .dashboard-attention-copy strong {
   color: var(--heading-text);
   font-size: 11px;
-  font-weight: 710;
+  font-weight: 500;
 }
 
 .dashboard-attention-copy small {
   color: var(--muted);
-  font-size: 9px;
+  font-size: 11px;
 }
 
 .dashboard-attention-value {
   color: var(--heading-text);
   font-size: 15px;
   font-variant-numeric: tabular-nums;
-  font-weight: 760;
+  font-weight: 700;
 }
 
 .dashboard-attention-arrow {
@@ -3216,12 +3197,12 @@ body {
 .dashboard-horizontal-row > div:first-child strong {
   color: var(--flow-text);
   font-size: 10px;
-  font-weight: 680;
+  font-weight: 500;
 }
 
 .dashboard-horizontal-row > div:first-child small {
   color: var(--muted);
-  font-size: 8px;
+  font-size: 10px;
 }
 
 .dashboard-horizontal-row > strong {
@@ -3261,12 +3242,12 @@ body {
 .dashboard-progress-heading > div span,
 .dashboard-progress-heading > span {
   color: var(--muted);
-  font-size: 9px;
+  font-size: 11px;
 }
 
 .dashboard-progress-heading > span {
   padding-top: 5px;
-  font-weight: 680;
+  font-weight: 700;
 }
 
 .dashboard-progress-heading > span.is-overdue {
@@ -3299,14 +3280,14 @@ body {
   align-items: center;
   gap: 5px;
   color: var(--muted);
-  font-size: 9px;
+  font-size: 11px;
 }
 
 .dashboard-campaign-results dd {
   color: var(--heading-text);
   font-size: 11px;
   font-variant-numeric: tabular-nums;
-  font-weight: 720;
+  font-weight: 500;
 }
 
 .dashboard-campaign-results i.is-confirmed {
@@ -3336,7 +3317,7 @@ body {
 
 .dashboard-aging-chart > div > span {
   color: var(--muted);
-  font-size: 9px;
+  font-size: 11px;
 }
 
 .dashboard-aging-chart progress.is-critical {
@@ -3355,7 +3336,7 @@ body {
   padding-top: 12px;
   border-top: 1px solid var(--line);
   color: var(--muted);
-  font-size: 9px;
+  font-size: 11px;
 }
 
 .dashboard-coverage-list {
@@ -3377,13 +3358,13 @@ body {
 
 .dashboard-coverage-row > div:first-child strong {
   color: var(--flow-text);
-  font-size: 9px;
-  font-weight: 680;
+  font-size: 11px;
+  font-weight: 500;
 }
 
 .dashboard-coverage-row > div:first-child span {
   color: var(--muted);
-  font-size: 8px;
+  font-size: 10px;
   font-variant-numeric: tabular-nums;
   text-align: right;
 }
@@ -3398,7 +3379,7 @@ body {
   padding-top: 12px;
   border-top: 1px solid var(--line);
   color: var(--muted);
-  font-size: 9px;
+  font-size: 11px;
 }
 
 .dashboard-coverage-note strong {
@@ -3596,7 +3577,6 @@ body {
   height: auto;
   color: #ffffff;
   background: var(--sidebar-bg);
-  box-shadow: 0 8px 24px rgba(2, 24, 47, 0.18);
 }
 
 .app-header::after {
@@ -3625,7 +3605,7 @@ body {
   justify-items: initial;
   gap: 10px;
   border: 0;
-  border-radius: 8px;
+  border-radius: 3px;
 }
 
 .app-brand:hover {
@@ -3651,7 +3631,7 @@ body {
 .app-brand small {
   margin-top: 3px;
   color: #7eb3b8;
-  font-size: 8px;
+  font-size: 10px;
 }
 
 .primary-nav {
@@ -3674,9 +3654,9 @@ body {
   justify-content: center;
   gap: 5px;
   border: 0;
-  border-radius: 7px;
+  border-radius: 3px;
   color: #d6e2ee;
-  font-size: 10.5px;
+  font-size: 11px;
   text-align: center;
 }
 
@@ -3691,8 +3671,8 @@ body {
 }
 
 .nav-item.is-active {
-  background: rgba(13, 108, 219, 0.28);
-  box-shadow: inset 0 -3px 0 #6baeb4;
+  background: rgba(255, 255, 255, 0.1);
+  box-shadow: inset 0 -3px 0 var(--yellow);
 }
 
 .nav-item.is-active .nav-item-icon {
@@ -3723,11 +3703,23 @@ body {
   border-color: rgba(255, 255, 255, 0.18);
   background: rgba(255, 255, 255, 0.055);
   color: #ffffff;
-  box-shadow: none;
 }
 
 .app-header .department-switcher select {
   color-scheme: dark;
+}
+
+/* O switcher e um grid, e todo item de grid tem `min-width: auto`: o `select`
+   nao encolhe abaixo da opcao mais longa e escapa da propria caixa, indo parar
+   por cima do botao de tema. Com `min-width: 0` ele acompanha a label e corta o
+   texto sozinho — o nome completo continua na lista aberta. */
+.app-header .department-switcher select {
+  width: 100%;
+  min-width: 0;
+  /* Um nome maior que a caixa termina em reticencias em vez de ser cortado no
+     meio da palavra: "Atendiment" parece defeito, "Atendimento ao Clien…"
+     parece o que e. */
+  text-overflow: ellipsis;
 }
 
 .app-header .theme-toggle:hover {
@@ -3779,6 +3771,66 @@ body {
   display: none;
 }
 
+/* Notebook: 1366 e 1440 ficavam entre a faixa de 1260px e o tamanho cheio, e o
+   header nao cabia. A nav e flex centralizada dentro de uma trilha `1fr`, entao
+   o excesso nao rolava nem quebrava: vazava simetricamente para os dois lados e
+   caia por cima da marca e das acoes.
+   O espaco sai de tudo que e repeticao — o nome ao lado da logo, o nome do
+   usuario ao lado da inicial, o nome inteiro do departamento — e nao dos
+   rotulos da nav, que sao a funcao do header. */
+@media (min-width: 1341px) and (max-width: 1619px) {
+  .app-header-inner {
+    padding-inline: clamp(14px, 1.4vw, 22px);
+    gap: 12px;
+  }
+
+  /* Medido em 1366: apertar recuos e gaps rende ~22px, e faltavam 90. A logo
+     Gazin sozinha ja identifica o produto. */
+  .app-brand-copy {
+    display: none;
+  }
+
+  /* Precisa repetir a classe: `.app-brand-logo.app-brand-logo--gazin` fixa 104px
+     e vence um seletor de classe unica, mesmo dentro desta media query. */
+  .app-brand-logo.app-brand-logo--gazin {
+    width: 84px;
+    flex-basis: 84px;
+  }
+
+  /* O bloco de sessao reserva 174px para 133px de conteudo. O piso existe para o
+     nome nao dancar a cada troca de usuario; nesta largura ele cede. */
+  .app-header .session-control {
+    min-width: 134px;
+  }
+
+  .nav-item {
+    padding-inline: 7px;
+    font-size: 10.5px;
+  }
+
+  /* O seletor cresce com o nome do departamento ("Atendimento ao Cliente" leva
+     183px). Com teto, o proprio `select` corta o texto — o nome completo segue
+     na lista aberta — e a nav fica com a largura de que precisa. */
+  .app-header .department-switcher {
+    min-width: 128px;
+    max-width: 142px;
+  }
+}
+
+/* Rede de seguranca: sem isto, o excesso da nav nao rola nem quebra — vaza da
+   trilha e se sobrepoe a marca e as acoes, que foi o defeito original. Rolar na
+   horizontal e feio, mas e reversivel pelo usuario; sobrepor esconde conteudo.
+   Com o conteudo cabendo nas faixas acima isto nao chega a aparecer. */
+.primary-nav {
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.primary-nav::-webkit-scrollbar {
+  display: none;
+}
+
 @media (max-width: 1260px) {
   .app-header-inner {
     gap: 10px;
@@ -3801,7 +3853,13 @@ body {
   }
 }
 
-@media (max-width: 1020px) {
+/* Onde a nav horizontal deixa de caber ela recolhe no menu, em vez de se
+   sobrepor. Medido com os 8 itens ja compactados: 1280px sobrepoe 30px, 1366px
+   sobra 7px, 1440px sobra 39px — o limite fica por volta de 1350px. Este bloco
+   valia so a partir de 1020px, entao a faixa 1021–1340 exibia a nav inteira sem
+   ter largura para ela. O espacamento de conteudo continua em 1020px, mais
+   abaixo: e assunto de tablet, nao do header. */
+@media (max-width: 1340px) {
   .app-header {
     position: sticky;
     inset: auto;
@@ -3857,12 +3915,17 @@ body {
     display: none;
   }
 
+  .topbar {
+    top: 76px;
+  }
+}
+
+@media (max-width: 1020px) {
   .main-content {
     padding-inline: 22px;
   }
 
   .topbar {
-    top: 76px;
     margin-inline: -22px;
     padding-inline: 22px;
   }
@@ -3912,18 +3975,25 @@ body {
     grid-column: 2;
   }
 
+  /* No celular as acoes acompanham a navegacao dentro do menu, em vez de
+     ocuparem uma faixa permanente: o cabecalho fechado devolve essa altura
+     ao conteudo, que e escasso nessa largura. */
   .header-actions {
-    display: grid;
+    display: none;
     grid-column: 1 / -1;
-    grid-row: 2;
+    grid-row: 3;
     grid-template-columns: minmax(0, 1fr) auto auto;
     width: 100%;
     padding-top: 8px;
     border-top: 1px solid rgba(255, 255, 255, 0.1);
   }
 
+  .app-header.is-open .header-actions {
+    display: grid;
+  }
+
   .primary-nav {
-    grid-row: 3;
+    grid-row: 2;
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
@@ -4005,9 +4075,9 @@ body {
 }
 
 .scanner-asset-type-icon {
-  width: 64px;
-  height: 64px;
-  flex-basis: 64px;
+  width: 54px;
+  height: 54px;
+  flex-basis: 54px;
   padding: 5px;
   border-color: var(--line);
   background: var(--surface-soft);
@@ -4042,13 +4112,12 @@ body {
 /* Enterprise SaaS application shell and nuclei directory */
 :root {
   --saas-content-max: 1520px;
-  --saas-radius: 6px;
+  --saas-radius: 3px;
 }
 
 .app-header {
   border-bottom: 1px solid rgba(144, 177, 207, 0.18);
   background: var(--sidebar-bg);
-  box-shadow: none;
 }
 
 .app-header::after {
@@ -4091,8 +4160,8 @@ body {
 }
 
 .nav-item.is-active {
-  background: rgba(106, 132, 153, 0.22);
-  box-shadow: inset 0 -2px 0 #8ca5a8;
+  background: rgba(255, 255, 255, 0.1);
+  box-shadow: inset 0 -3px 0 var(--yellow);
 }
 
 .button,
@@ -4104,7 +4173,6 @@ textarea {
 }
 
 .button-primary {
-  box-shadow: none;
 }
 
 .topbar {
@@ -4112,7 +4180,6 @@ textarea {
   padding-top: 14px;
   padding-bottom: 13px;
   background: var(--surface);
-  box-shadow: none;
   backdrop-filter: none;
 }
 
@@ -4130,24 +4197,21 @@ textarea {
   max-width: var(--saas-content-max);
 }
 
+/* Sobrou daqui so o que e posicao. Recuo, alinhamento, borda e tamanho de texto
+   saem: eram do desenho antigo, quando esta faixa era uma tira chapada com
+   linha embaixo. Agora ela e um cartao de vidro, e quem manda nisso e
+   `glass.css`. O `border-bottom: 0` daqui chegava a apagar a borda inferior do
+   cartao, deixando-o com tres lados. Como o seletor tem ID, vencia qualquer
+   regra de classe da camada de sistema — nao adiantava escrever la. */
 #nuclei-view > .section-toolbar {
   min-height: 0;
   margin-bottom: 18px;
-  padding-bottom: 0;
-  align-items: end;
-  border-bottom: 0;
 }
 
 #nuclei-view > .section-toolbar h2 {
   color: var(--heading-text);
-  font-size: 20px;
   line-height: 1.2;
   letter-spacing: -0.02em;
-}
-
-#nuclei-view > .section-toolbar p {
-  margin-top: 5px;
-  font-size: 12px;
 }
 
 .nuclei-overview {
@@ -4167,9 +4231,8 @@ textarea {
   padding: 16px 20px;
   border: 0;
   border-right: 1px solid var(--line);
-  border-radius: 0;
+  border-radius: 3px;
   background: transparent;
-  box-shadow: none;
   transition: background-color 140ms ease;
 }
 
@@ -4180,14 +4243,13 @@ textarea {
 .nuclei-overview .operational-metric:hover {
   border-color: var(--line);
   background: var(--surface-hover);
-  box-shadow: none;
   transform: none;
 }
 
 .nuclei-overview .operational-metric-icon {
   width: 40px;
   height: 40px;
-  border-radius: 5px;
+  border-radius: 3px;
   border-color: var(--line-strong);
   background: var(--surface-soft);
   color: var(--muted);
@@ -4199,7 +4261,7 @@ textarea {
 }
 
 .nuclei-overview .operational-metric-content > span {
-  font-size: 9px;
+  font-size: 11px;
   letter-spacing: 0.045em;
 }
 
@@ -4215,7 +4277,6 @@ textarea {
 
 .nuclei-directory {
   border-radius: var(--saas-radius);
-  box-shadow: none;
 }
 
 .nuclei-list-toolbar {
@@ -4280,12 +4341,12 @@ textarea {
   min-height: 32px;
   padding: 6px 12px;
   border: 0;
-  border-radius: 4px;
+  border-radius: 3px;
   background: transparent;
   color: var(--muted);
   font: inherit;
   font-size: 11px;
-  font-weight: 700;
+  font-weight: 500;
   cursor: pointer;
 }
 
@@ -4333,8 +4394,8 @@ textarea {
 .nuclei-table thead th {
   height: 42px;
   color: var(--table-head-text);
-  font-size: 9px;
-  font-weight: 800;
+  font-size: 11px;
+  font-weight: 500;
   letter-spacing: 0.055em;
   text-transform: uppercase;
   white-space: nowrap;
@@ -4392,11 +4453,11 @@ textarea {
   min-height: 30px;
   place-items: center;
   border: 1px solid var(--line-strong);
-  border-radius: 5px;
+  border-radius: 3px;
   background: var(--surface-soft);
   color: var(--muted);
   font-size: 10px;
-  font-weight: 800;
+  font-weight: 500;
   letter-spacing: 0;
 }
 
@@ -4421,22 +4482,22 @@ textarea {
   height: 5px;
   overflow: hidden;
   border: 0;
-  border-radius: 999px;
+  border-radius: 3px;
   background: var(--line-strong);
 }
 
 .nucleus-progress::-webkit-progress-bar {
-  border-radius: 999px;
+  border-radius: 3px;
   background: var(--line-strong);
 }
 
 .nucleus-progress::-webkit-progress-value {
-  border-radius: 999px;
+  border-radius: 3px;
   background: #77999d;
 }
 
 .nucleus-progress::-moz-progress-bar {
-  border-radius: 999px;
+  border-radius: 3px;
   background: #77999d;
 }
 
@@ -4446,11 +4507,11 @@ textarea {
   align-items: center;
   padding: 5px 9px;
   border: 1px solid color-mix(in srgb, var(--success) 52%, var(--line));
-  border-radius: 999px;
+  border-radius: 3px;
   background: color-mix(in srgb, var(--success) 10%, var(--surface));
   color: var(--success);
-  font-size: 9px;
-  font-weight: 800;
+  font-size: 11px;
+  font-weight: 500;
   white-space: nowrap;
 }
 
@@ -4475,7 +4536,7 @@ textarea {
   color: var(--emphasis-text);
   font: inherit;
   font-size: 11px;
-  font-weight: 750;
+  font-weight: 500;
   white-space: nowrap;
   cursor: pointer;
 }
@@ -4662,8 +4723,8 @@ textarea {
   .nucleus-mobile-metrics span {
     margin-top: 3px;
     color: var(--muted);
-    font-size: 9px;
-    font-weight: 800;
+    font-size: 11px;
+    font-weight: 500;
     letter-spacing: 0.04em;
     text-transform: uppercase;
   }
@@ -4718,11 +4779,20 @@ textarea {
     display: none;
   }
 
+  /* Uma regra anterior oculta o formulario de saida; reexibi-lo aqui e o que
+     faz o botao existir no celular, ja que o avatar e o nome ficam ocultos. */
+  .app-header .session-control form {
+    display: block;
+    width: 100%;
+  }
+
   .app-header .session-sign-out {
-    display: inline-flex;
-    min-height: 32px;
+    display: flex;
+    width: 100%;
+    min-height: 36px;
     align-items: center;
-    padding-inline: 6px;
+    justify-content: center;
+    padding-inline: 4px;
     font-size: 10px;
   }
 

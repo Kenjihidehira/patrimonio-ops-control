@@ -12,11 +12,10 @@ const APP_PATH = "/demo";
 const MAX_FORM_BYTES = 8 * 1024;
 
 export async function completeCredentialLogin(request: Request): Promise<Response> {
-  const requestUrl = new URL(request.url);
   let returnTo = APP_PATH;
 
   try {
-    if (!isSameOriginPost(request, requestUrl)) {
+    if (!isSameOriginPost(request)) {
       return Response.json(
         { error: "Origem da solicitação inválida." },
         { status: 403, headers: { "cache-control": "no-store" } },
@@ -47,6 +46,7 @@ export async function completeCredentialLogin(request: Request): Promise<Respons
     const form = new URLSearchParams(body);
     const login = String(form.get("login") ?? "").trim().toLowerCase().slice(0, 254);
     const password = String(form.get("password") ?? "");
+    const remember = form.get("remember") === "on";
     returnTo = safeRelativeReturnPath(String(form.get("return_to") ?? APP_PATH));
     if (!login || !password) {
       return authFailureResponse(request, "credentials", "invalid_credentials", returnTo);
@@ -68,6 +68,7 @@ export async function completeCredentialLogin(request: Request): Promise<Respons
         sessionVersion: identity.sessionVersion,
       },
       returnTo,
+      remember,
     );
   } catch (error) {
     if (error instanceof SupabaseError) {
@@ -85,14 +86,32 @@ export async function completeCredentialLogin(request: Request): Promise<Respons
   }
 }
 
-function isSameOriginPost(request: Request, requestUrl: URL): boolean {
+// A origem é conferida contra o host efetivamente servido, e não contra
+// `request.url`: atrás de um proxy, a URL interna não corresponde ao domínio
+// público e toda requisição legítima seria recusada.
+function isSameOriginPost(request: Request): boolean {
   if (request.method !== "POST") return false;
-  return request.headers.get("origin") === requestUrl.origin;
+
+  // Sob `Referrer-Policy: no-referrer` o navegador omite o cabecalho `Origin`
+  // no envio de formulario, entao `Sec-Fetch-Site` e a fonte confiavel: uma
+  // submissao de outro site chega como `cross-site` e continua recusada.
+  const fetchSite = request.headers.get("sec-fetch-site");
+  if (fetchSite) return fetchSite === "same-origin";
+
+  // Navegadores sem `Sec-Fetch-Site` ainda enviam `Origin`.
+  const origin = request.headers.get("origin");
+  const host = request.headers.get("x-forwarded-host") ?? request.headers.get("host");
+  if (!origin || !host) return false;
+  try {
+    return new URL(origin).host === host;
+  } catch {
+    return false;
+  }
 }
 
 function clientAddress(request: Request): string {
-  const cloudflareAddress = request.headers.get("cf-connecting-ip")?.trim();
-  if (cloudflareAddress) return cloudflareAddress;
+  const realAddress = request.headers.get("x-real-ip")?.trim();
+  if (realAddress) return realAddress;
   return request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
 }
 

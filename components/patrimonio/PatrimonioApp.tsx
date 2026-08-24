@@ -8,7 +8,6 @@ import {
   useRef,
   useState,
 } from "react";
-import Image from "next/image";
 import {
   isFleetPatrimonyId,
   isOfficialPatrimonyId,
@@ -44,39 +43,17 @@ import {
   formValue,
 } from "./ui";
 
-const viewCopy: Record<ViewId, { title: string; description: string }> = {
-  dashboard: {
-    title: "Acompanhamento patrimonial",
-    description: "Indicadores executivos, pendências e cobertura dos controles do departamento.",
-  },
-  inventory: {
-    title: "Controle de patrimônios",
-    description: "Localize ativos, acompanhe responsáveis e trate divergências por núcleo.",
-  },
-  operations: {
-    title: "Centro de operações patrimoniais",
-    description: "Execute inventários, custódia, manutenção e rastreamento em um único fluxo auditável.",
-  },
-  nuclei: {
-    title: "Responsabilidade por núcleo",
-    description: "Acompanhe concentração, alocação e alertas em cada área da empresa.",
-  },
-  audit: {
-    title: "Histórico de movimentações",
-    description: "Consulte alterações de posse, status e cadastro registradas pela operação.",
-  },
-  imports: {
-    title: "Carga e conciliação de planilhas",
-    description: "Pré-valide arquivos XLSX e acompanhe o resultado das importações.",
-  },
-  collaborators: {
-    title: "Responsáveis pelos patrimônios",
-    description: "Consulte e ajuste os perfis derivados dos responsáveis presentes na base.",
-  },
-  environments: {
-    title: "Ambientes e acessos",
-    description: "Controle departamentos, usuários autorizados e transferências entre ambientes.",
-  },
+// Sem legenda sob o título: quem abre o Inventário sabe o que é inventário.
+// Contexto que importa vira número no cabeçalho da tela, não frase.
+const viewCopy: Record<ViewId, { title: string }> = {
+  dashboard: { title: "Dashboard" },
+  inventory: { title: "Inventário" },
+  operations: { title: "Operações" },
+  nuclei: { title: "Núcleos" },
+  audit: { title: "Auditoria" },
+  imports: { title: "Importações" },
+  collaborators: { title: "Colaboradores" },
+  environments: { title: "Ambientes" },
 };
 
 export default function PatrimonioApp() {
@@ -104,6 +81,7 @@ export default function PatrimonioApp() {
   const [mutationError, setMutationError] = useState<string | null>(null);
   const scannerUpdateRef = useRef<(state: "ready" | "reading" | "success" | "error", label: string) => void>(() => undefined);
   const lastProcessedScanRef = useRef<string | null>(null);
+  const campoDeLeituraRef = useRef<HTMLInputElement | null>(null);
   const scanSequenceRef = useRef(0);
   const debouncedSearch = useDebouncedValue(filterDraft.search, 280);
   const apiFilters = useMemo(
@@ -210,7 +188,16 @@ export default function PatrimonioApp() {
     refresh,
     showToast,
   ]);
-  const scanner = useBarcodeScanner(handleScan);
+  // O leitor fisico digita no campo do header quando ele esta com foco, e o
+  // gancho consome o Enter antes do formulario — entao o codigo lido ficaria
+  // parado la depois da consulta. O campo e nao controlado de proposito: um
+  // leitor dispara uma tecla a cada ~10ms, e controlar o valor renderizaria o
+  // app inteiro a cada caractere da rajada.
+  const escanearELimpar = useCallback(async (identifier: string) => {
+    if (campoDeLeituraRef.current) campoDeLeituraRef.current.value = "";
+    await handleScan(identifier);
+  }, [handleScan]);
+  const scanner = useBarcodeScanner(escanearELimpar);
   useEffect(() => {
     scannerUpdateRef.current = scanner.updateState;
   }, [scanner.updateState]);
@@ -307,8 +294,6 @@ export default function PatrimonioApp() {
   const visibleViews = (Object.keys(viewCopy) as ViewId[]).filter(
     (item) => item !== "environments" || environment?.isAdmin,
   );
-  const gazinLogBrand = environment?.activeDepartment.slug === "gazin-log";
-
   return (
     <div className="app-shell">
       <header className={`app-header ${mobileNavigationOpen ? "is-open" : ""}`}>
@@ -316,26 +301,25 @@ export default function PatrimonioApp() {
           <button
             className="app-brand"
             type="button"
-            aria-label={`${gazinLogBrand ? "Gazin" : "Dados CX"} Patrimônio Ops, abrir dashboard`}
+            aria-label="Gazin Patrimônio Ops, abrir dashboard"
             onClick={() => {
               setView("dashboard");
               setMobileNavigationOpen(false);
             }}
           >
-            <Image
-              className={`app-brand-logo ${gazinLogBrand ? "app-brand-logo--gazin" : ""}`.trim()}
-              src={gazinLogBrand ? "/brand/gazin-logo.png" : "/brand/cx-mark-header.png"}
+            <img
+              className="app-brand-logo app-brand-logo--gazin"
+              src="/brand/gazin-logo.png"
               alt=""
-              width={gazinLogBrand ? 800 : 440}
-              height={gazinLogBrand ? 200 : 230}
-              priority
+              width={800}
+              height={200}
             />
             <span className="app-brand-copy"><strong>Patrimônio Ops</strong><small>Gestão empresarial</small></span>
           </button>
           <button
             className="mobile-menu-toggle"
             type="button"
-            aria-label={mobileNavigationOpen ? "Fechar navegação" : "Abrir navegação"}
+            aria-label={mobileNavigationOpen ? "Fechar seções" : "Abrir seções"}
             aria-expanded={mobileNavigationOpen}
             onClick={() => setMobileNavigationOpen((isOpen) => !isOpen)}
           >
@@ -346,7 +330,44 @@ export default function PatrimonioApp() {
                 <path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
               )}
             </svg>
+            <span className="mobile-menu-label">Seções</span>
           </button>
+
+          {/* O leitor fisico ja alimenta `handleScan` de qualquer tela, por um
+              escutador global de teclado — mas so quem tem o leitor alcanca
+              isso. Este campo da rosto aquela funcao para quem digita.
+              `data-inventory-search` e o que faz o escutador tolerar digitacao
+              aqui em vez de engolir as teclas: sem ele, o leitor fisico para de
+              funcionar quando o foco esta neste campo. */}
+          <form
+            className="header-scan"
+            role="search"
+            onSubmit={(event) => {
+              event.preventDefault();
+              const alvo = new FormData(event.currentTarget).get("identifier");
+              const identificador = String(alvo ?? "").trim();
+              if (!identificador) return;
+              void handleScan(identificador);
+              event.currentTarget.reset();
+            }}
+          >
+            <span className="header-scan-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none">
+                <circle cx="11" cy="11" r="6.5" stroke="currentColor" strokeWidth="1.9" />
+                <path d="m16 16 4.5 4.5" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
+              </svg>
+            </span>
+            <input
+              ref={campoDeLeituraRef}
+              name="identifier"
+              type="search"
+              inputMode="numeric"
+              autoComplete="off"
+              data-inventory-search
+              aria-label="Ler ou buscar patrimônio"
+              placeholder="Ler ou buscar patrimônio…"
+            />
+          </form>
           <nav className="primary-nav" aria-label="Navegação principal">
             {visibleViews.map((item) => (
               <button
@@ -373,6 +394,7 @@ export default function PatrimonioApp() {
               </button>
             ))}
           </nav>
+
           <div className="header-actions">
             {environment?.departments.length ? (
               <label className="department-switcher">
@@ -428,7 +450,6 @@ export default function PatrimonioApp() {
           <div className="topbar-main">
             <div className="page-heading">
               <h1>{copy.title}</h1>
-              <p>{copy.description}</p>
             </div>
           </div>
           <div className="data-actions">

@@ -96,6 +96,49 @@ export function DashboardView({
         </button>
       </div>
 
+      <section className="dashboard-kpis" aria-label="Indicadores executivos">
+        <KpiButton
+          label="Ativos ativos"
+          value={numberFormatter.format(analytics.assets.total)}
+          detail={`${numberFormatter.format(analytics.assets.available)} disponíveis · ${numberFormatter.format(analytics.assets.retired)} baixados`}
+          onClick={() => onNavigate("inventory")}
+        />
+        <KpiButton
+          label="Taxa de alocação"
+          value={formatPercent(analytics.assets.allocationRate)}
+          detail={`${numberFormatter.format(analytics.assets.allocated)} ativos em uso`}
+          onClick={() => onNavigate("inventory")}
+        />
+        <KpiButton
+          label="Divergências"
+          value={formatPercent(analytics.assets.discrepancyRate)}
+          detail={`${numberFormatter.format(analytics.assets.discrepancies)} exigem conferência`}
+          tone={analytics.assets.discrepancies ? "danger" : "success"}
+          onClick={() => onNavigate("inventory")}
+        />
+        <KpiButton
+          label="Inventário vigente"
+          value={campaign ? formatPercent(campaign.completionRate) : "—"}
+          detail={campaign ? `${numberFormatter.format(campaign.checkedCount)} de ${numberFormatter.format(campaign.targetCount)} conferidos` : "Nenhuma campanha cadastrada"}
+          tone={campaign?.overdue ? "danger" : campaign ? "neutral" : "warning"}
+          onClick={() => onNavigate("operations")}
+        />
+        <KpiButton
+          label="Custódia formalizada"
+          value={analytics.custody.coverageRate === null ? "—" : formatPercent(analytics.custody.coverageRate)}
+          detail={`${numberFormatter.format(analytics.custody.formalizedAssets)} de ${numberFormatter.format(analytics.custody.allocatedAssets)} alocados`}
+          tone={analytics.custody.pendingTerms ? "warning" : "neutral"}
+          onClick={() => onNavigate("operations")}
+        />
+        <KpiButton
+          label="Manutenções vencidas"
+          value={numberFormatter.format(analytics.maintenance.overdue)}
+          detail={`${numberFormatter.format(analytics.maintenance.open)} ordens abertas`}
+          tone={analytics.maintenance.overdue ? "danger" : "success"}
+          onClick={() => onNavigate("operations")}
+        />
+      </section>
+
       <section className="dashboard-filters" aria-labelledby="dashboard-filters-title">
         <header className="dashboard-filters-heading">
           <h2 id="dashboard-filters-title">Filtros do dashboard</h2>
@@ -166,49 +209,6 @@ export function DashboardView({
             Limpar filtros
           </button>
         </div>
-      </section>
-
-      <section className="dashboard-kpis" aria-label="Indicadores executivos">
-        <KpiButton
-          label="Ativos ativos"
-          value={numberFormatter.format(analytics.assets.total)}
-          detail={`${numberFormatter.format(analytics.assets.available)} disponíveis · ${numberFormatter.format(analytics.assets.retired)} baixados`}
-          onClick={() => onNavigate("inventory")}
-        />
-        <KpiButton
-          label="Taxa de alocação"
-          value={formatPercent(analytics.assets.allocationRate)}
-          detail={`${numberFormatter.format(analytics.assets.allocated)} ativos em uso`}
-          onClick={() => onNavigate("inventory")}
-        />
-        <KpiButton
-          label="Divergências"
-          value={formatPercent(analytics.assets.discrepancyRate)}
-          detail={`${numberFormatter.format(analytics.assets.discrepancies)} exigem conferência`}
-          tone={analytics.assets.discrepancies ? "danger" : "success"}
-          onClick={() => onNavigate("inventory")}
-        />
-        <KpiButton
-          label="Inventário vigente"
-          value={campaign ? formatPercent(campaign.completionRate) : "—"}
-          detail={campaign ? `${numberFormatter.format(campaign.checkedCount)} de ${numberFormatter.format(campaign.targetCount)} conferidos` : "Nenhuma campanha cadastrada"}
-          tone={campaign?.overdue ? "danger" : campaign ? "neutral" : "warning"}
-          onClick={() => onNavigate("operations")}
-        />
-        <KpiButton
-          label="Custódia formalizada"
-          value={analytics.custody.coverageRate === null ? "—" : formatPercent(analytics.custody.coverageRate)}
-          detail={`${numberFormatter.format(analytics.custody.formalizedAssets)} de ${numberFormatter.format(analytics.custody.allocatedAssets)} alocados`}
-          tone={analytics.custody.pendingTerms ? "warning" : "neutral"}
-          onClick={() => onNavigate("operations")}
-        />
-        <KpiButton
-          label="Manutenções vencidas"
-          value={numberFormatter.format(analytics.maintenance.overdue)}
-          detail={`${numberFormatter.format(analytics.maintenance.open)} ordens abertas`}
-          tone={analytics.maintenance.overdue ? "danger" : "success"}
-          onClick={() => onNavigate("operations")}
-        />
       </section>
 
       <div className="dashboard-grid dashboard-grid-primary">
@@ -383,25 +383,137 @@ function StatusBar({
   return (
     <div className={`dashboard-status-row is-${tone}`}>
       <span>{label}</span>
-      <progress value={value} max={Math.max(1, total)}>{value} de {total}</progress>
+      <progress
+        aria-label={`${label}: ${numberFormatter.format(value)} de ${numberFormatter.format(total)}`}
+        value={value}
+        max={Math.max(1, total)}
+      >{value} de {total}</progress>
       <strong>{numberFormatter.format(value)}</strong>
     </div>
   );
 }
 
+// Seis meses de contagem e mudanca no tempo, e mudanca no tempo se le em linha:
+// a inclinacao entre dois pontos e a propria variacao. Em barras, comparar dois
+// meses exige medir dois comprimentos e subtrair de cabeca.
+const TENDENCIA = { largura: 640, altura: 190, margemX: 34, margemTopo: 22, margemBase: 30 };
+
 function MovementTrend({ data }: { data: AnalyticsSnapshot["movementTrend"] }) {
-  const maximum = Math.max(1, ...data.map((item) => item.count));
+  const [ativo, setAtivo] = useState<number | null>(null);
   const total = data.reduce((sum, item) => sum + item.count, 0);
   if (!total) return <PanelEmpty message="Nenhuma movimentação foi registrada nos últimos seis meses." />;
+
+  const { largura, altura, margemX, margemTopo, margemBase } = TENDENCIA;
+  const maximo = Math.max(1, ...data.map((item) => item.count));
+  const alturaUtil = altura - margemTopo - margemBase;
+  const passo = data.length > 1 ? (largura - margemX * 2) / (data.length - 1) : 0;
+  const pontos = data.map((item, indice) => ({
+    ...item,
+    x: margemX + passo * indice,
+    y: margemTopo + alturaUtil * (1 - item.count / maximo),
+  }));
+  const linha = pontos.map((p, i) => `${i ? "L" : "M"}${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join(" ");
+  const area = `${linha} L${pontos[pontos.length - 1].x.toFixed(1)} ${margemTopo + alturaUtil} L${pontos[0].x.toFixed(1)} ${margemTopo + alturaUtil} Z`;
+  const pico = pontos.reduce((maior, p) => (p.count > maior.count ? p : maior), pontos[0]);
+  const ultimo = pontos[pontos.length - 1];
+  // Rotulo direto so no pico e no ultimo mes: numero em todo ponto vira ruido,
+  // e esses dois sao os que respondem "qual foi o maior" e "como estamos agora".
+  const rotulados = new Set([pico.key, ultimo.key]);
+  const emFoco = ativo === null ? null : pontos[ativo];
+
   return (
-    <div className="dashboard-movement-bars" role="img" aria-label={`Movimentações por mês: ${data.map((item) => `${item.label} ${item.count}`).join(", ")}`}>
-      {data.map((item) => (
-        <div key={item.key}>
-          <span>{item.label}</span>
-          <progress value={item.count} max={maximum}>{item.count}</progress>
-          <strong>{numberFormatter.format(item.count)}</strong>
-        </div>
-      ))}
+    <div className="dashboard-trend">
+      <svg
+        className="dashboard-trend-plot"
+        viewBox={`0 0 ${largura} ${altura}`}
+        role="img"
+        aria-label={`Movimentações por mês: ${data.map((item) => `${item.label}, ${item.count}`).join("; ")}.`}
+        onPointerLeave={() => setAtivo(null)}
+        onPointerMove={(evento) => {
+          const caixa = evento.currentTarget.getBoundingClientRect();
+          const x = ((evento.clientX - caixa.left) / caixa.width) * largura;
+          let maisPerto = 0;
+          pontos.forEach((p, i) => {
+            if (Math.abs(p.x - x) < Math.abs(pontos[maisPerto].x - x)) maisPerto = i;
+          });
+          setAtivo(maisPerto);
+        }}
+      >
+        {/* Grade recessiva: tres linhas bastam para dar escala sem competir. */}
+        {[0, 0.5, 1].map((fracao) => (
+          <line
+            key={fracao}
+            className="dashboard-trend-grid"
+            x1={margemX}
+            x2={largura - margemX}
+            y1={margemTopo + alturaUtil * fracao}
+            y2={margemTopo + alturaUtil * fracao}
+          />
+        ))}
+
+        <path className="dashboard-trend-area" d={area} />
+        <path className="dashboard-trend-line" d={linha} vectorEffect="non-scaling-stroke" />
+
+        {emFoco ? (
+          <line
+            className="dashboard-trend-crosshair"
+            x1={emFoco.x}
+            x2={emFoco.x}
+            y1={margemTopo}
+            y2={margemTopo + alturaUtil}
+            vectorEffect="non-scaling-stroke"
+          />
+        ) : null}
+
+        {pontos.map((ponto, indice) => (
+          <circle
+            key={ponto.key}
+            className={`dashboard-trend-dot ${ativo === indice ? "is-active" : ""} ${ponto.key === ultimo.key ? "is-last" : ""}`}
+            cx={ponto.x}
+            cy={ponto.y}
+            r={ativo === indice ? 6 : 4}
+          />
+        ))}
+
+        {pontos.map((ponto) => (
+          <text key={ponto.key} className="dashboard-trend-month" x={ponto.x} y={altura - 10}>
+            {ponto.label}
+          </text>
+        ))}
+
+        {pontos.filter((ponto) => rotulados.has(ponto.key)).map((ponto) => (
+          <text
+            key={ponto.key}
+            className="dashboard-trend-value"
+            x={ponto.x}
+            y={ponto.y - 11}
+          >
+            {numberFormatter.format(ponto.count)}
+          </text>
+        ))}
+      </svg>
+
+      {emFoco ? (
+        <p className="dashboard-trend-readout" aria-hidden="true">
+          <strong>{numberFormatter.format(emFoco.count)}</strong>
+          <span>{emFoco.label}</span>
+        </p>
+      ) : null}
+
+      {/* O grafico e uma imagem para quem le a tela; a tabela e onde os numeros
+          ficam disponiveis um a um, sem depender de passar o ponteiro. */}
+      <table className="sr-only">
+        <caption>Movimentações registradas por mês</caption>
+        <thead><tr><th scope="col">Mês</th><th scope="col">Movimentações</th></tr></thead>
+        <tbody>
+          {data.map((item) => (
+            <tr key={item.key}>
+              <th scope="row">{item.label}</th>
+              <td>{numberFormatter.format(item.count)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }
@@ -437,7 +549,11 @@ function CampaignSummary({ campaign }: { campaign: NonNullable<AnalyticsSnapshot
         <div><strong>{formatPercent(campaign.completionRate)}</strong><span>{campaign.checkedCount} de {campaign.targetCount} conferidos</span></div>
         <span className={campaign.overdue ? "is-overdue" : ""}>{campaign.overdue ? "Prazo vencido" : campaign.dueAt ? `Prazo ${formatDate(campaign.dueAt)}` : "Sem prazo definido"}</span>
       </div>
-      <progress value={campaign.checkedCount} max={Math.max(1, campaign.targetCount)}>{formatPercent(campaign.completionRate)}</progress>
+      <progress
+        aria-label={`Inventário conferido: ${numberFormatter.format(campaign.checkedCount)} de ${numberFormatter.format(campaign.targetCount)}`}
+        value={campaign.checkedCount}
+        max={Math.max(1, campaign.targetCount)}
+      >{formatPercent(campaign.completionRate)}</progress>
       {resultTotal ? (
         <dl className="dashboard-campaign-results">
           {resultEntries.map(([label, value, tone]) => (
@@ -465,7 +581,12 @@ function MaintenanceAging({ maintenance }: { maintenance: AnalyticsSnapshot["mai
       {buckets.map(([label, value], index) => (
         <div key={label}>
           <span>{label}</span>
-          <progress className={index >= 2 ? "is-critical" : ""} value={value} max={maximum}>{value}</progress>
+          <progress
+            className={index >= 2 ? "is-critical" : ""}
+            aria-label={`${label}: ${numberFormatter.format(value)} ordens`}
+            value={value}
+            max={maximum}
+          >{value}</progress>
           <strong>{numberFormatter.format(value)}</strong>
         </div>
       ))}

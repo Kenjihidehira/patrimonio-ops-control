@@ -4,8 +4,8 @@ import test from "node:test";
 
 const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
 
-test("worker aplica cabeçalhos de segurança e CSP com nonce", () => {
-  const worker = read("worker/index.ts");
+test("middleware aplica cabeçalhos de segurança e CSP com nonce", () => {
+  const middleware = read("proxy.ts");
   for (const header of [
     "content-security-policy",
     "strict-transport-security",
@@ -14,15 +14,43 @@ test("worker aplica cabeçalhos de segurança e CSP com nonce", () => {
     "referrer-policy",
     "permissions-policy",
   ]) {
-    assert.match(worker, new RegExp(header));
+    assert.match(middleware, new RegExp(header));
   }
-  assert.match(worker, /HTMLRewriter/);
-  assert.match(worker, /new NonceElementHandler\(nonce, true\)/);
-  assert.match(worker, /this\.inlineOnly && element\.getAttribute\("src"\)/);
-  assert.match(worker, /camera=\(self\)/);
-  assert.match(worker, /geolocation=\(self\)/);
-  assert.match(worker, /microphone=\(\)/);
+  // O nonce viaja no cabeçalho da requisição para que o Next.js o aplique aos
+  // scripts que injeta, no lugar da reescrita de HTML feita pelo Worker.
+  assert.match(middleware, /requestHeaders\.set\("x-nonce", nonce\)/);
+  assert.match(middleware, /requestHeaders\.set\("content-security-policy", contentSecurityPolicy\)/);
+  assert.match(middleware, /script-src 'self' 'nonce-\$\{nonce\}'/);
+  assert.match(middleware, /style-src 'self' 'nonce-\$\{nonce\}'/);
+  assert.match(middleware, /frame-ancestors 'none'/);
+  assert.match(middleware, /object-src 'none'/);
+  assert.match(middleware, /camera=\(self\)/);
+  assert.match(middleware, /geolocation=\(self\)/);
+  assert.match(middleware, /microphone=\(\)/);
   assert.doesNotMatch(read("app/layout.tsx"), /dangerouslySetInnerHTML/);
+});
+
+test("permissão de eval fica restrita ao desenvolvimento", () => {
+  const middleware = read("proxy.ts");
+  assert.match(middleware, /process\.env\.NODE_ENV === "development" \? " 'unsafe-eval'" : ""/);
+  // A política de produção nunca recebe a permissão literalmente.
+  assert.doesNotMatch(middleware, /script-src 'self' 'nonce-\$\{nonce\}' 'unsafe-eval'/);
+});
+
+test("aplicação não depende mais de APIs exclusivas da Cloudflare", () => {
+  for (const file of [
+    "app/auth.ts",
+    "lib/supabase.ts",
+    "app/credential-auth.ts",
+    "app/register-auth.ts",
+  ]) {
+    const source = read(file);
+    assert.doesNotMatch(source, /cloudflare:workers/);
+    assert.doesNotMatch(source, /cf-connecting-ip/);
+  }
+  assert.match(read("app/auth.ts"), /process\.env\[name\]/);
+  assert.match(read("package.json"), /"build": "next build"/);
+  assert.doesNotMatch(read("package.json"), /wrangler|vinext|@cloudflare/);
 });
 
 test("migração LGPD mantém tabelas protegidas e funções restritas ao service role", () => {
@@ -38,6 +66,24 @@ test("migração LGPD mantém tabelas protegidas e funções restritas ao servic
   assert.match(migration, /security invoker/g);
   assert.match(migration, /patrimonio_save_user_access_v2/);
   assert.match(migration, /patrimonio_authorize_operation/);
+});
+
+test("função privilegiada fixa um search path sem o schema público", () => {
+  const migration = read(
+    "supabase/migrations/20260824123000_harden_sabium_import_search_path.sql",
+  );
+  assert.match(
+    migration,
+    /alter function public\.patrimonio_import_sabium_assets\(jsonb, text, text\)[\s\S]*set search_path = pg_catalog, pg_temp/,
+  );
+  assert.match(
+    migration,
+    /revoke all on function public\.patrimonio_import_sabium_assets\(jsonb, text, text\)[\s\S]*from public, anon, authenticated/,
+  );
+  assert.match(
+    migration,
+    /grant execute on function public\.patrimonio_import_sabium_assets\(jsonb, text, text\)[\s\S]*to service_role/,
+  );
 });
 
 test("login oferece aviso de privacidade e a página informa os direitos", () => {

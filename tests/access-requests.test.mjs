@@ -100,7 +100,8 @@ test("login distingue cadastro pendente de credencial inválida após conferir a
 test("rota pública de cadastro repete as proteções do login por senha", () => {
   assert.match(registerRoute, /export async function POST/);
   assert.doesNotMatch(registerRoute, /export const GET/);
-  assert.match(registerAuth, /request\.headers\.get\("origin"\) === requestUrl\.origin/);
+  assert.match(registerAuth, /fetchSite === "same-origin"/);
+  assert.match(registerAuth, /new URL\(origin\)\.host === host/);
   assert.match(registerAuth, /application\/x-www-form-urlencoded/);
   assert.match(registerAuth, /new TextEncoder\(\)\.encode\(body\)\.length > MAX_FORM_BYTES/);
   assert.match(registerAuth, /safeRelativeReturnPath/);
@@ -111,16 +112,28 @@ test("rota pública de cadastro repete as proteções do login por senha", () =>
   assert.match(serverApi, /"register_access_request",\s*\n?\s*\{ request, clientAddress \}/);
 });
 
-test("tela de login oferece cadastro sem expor a lista de departamentos", () => {
+test("cadastro pede apenas nome, e-mail e senha", () => {
   assert.match(loginPage, /action="\/api\/auth\/register" method="post"/);
-  assert.match(loginPage, /name="identifier"/);
-  assert.match(loginPage, /name="username"[\s\S]*pattern="\[a-z0-9\]/);
-  assert.match(loginPage, /name="password_confirmation"/);
-  assert.match(loginPage, /name="justification"/);
+  for (const field of ["display_name", "identifier", "password", "password_confirmation"]) {
+    assert.match(loginPage, new RegExp(`name="${field}"`));
+  }
   assert.match(loginPage, /Criar cadastro/);
   assert.match(loginPage, /registration_duplicate/);
   assert.match(loginPage, /Um administrador precisa aprovar a solicitação/);
+  // O que o servidor resolve sozinho não é pedido a quem se cadastra.
+  assert.doesNotMatch(loginPage, /name="username"/);
+  assert.doesNotMatch(loginPage, /name="justification"/);
   assert.doesNotMatch(loginPage, /name="department_slug"/);
+  assert.doesNotMatch(registerAuth, /form\.get\("username"\)/);
+});
+
+test("nome de usuário é derivado do e-mail e resolve homônimos", () => {
+  assert.match(gateway, /async function deriveAvailableUsername/);
+  assert.match(gateway, /const username = await deriveAvailableUsername\(identifier\)/);
+  assert.match(gateway, /String\(identifier\)\.split\("@"\)\[0\]/);
+  assert.match(gateway, /patrimonio_resolve_pending_access_request/);
+  assert.match(gateway, /attempt === 0 \? "" : String\(attempt \+ 1\)/);
+  assert.match(gateway, /usernamePattern\.test\(candidate\)/);
 });
 
 test("painel administrativo aprova, recusa e registra parecer", () => {

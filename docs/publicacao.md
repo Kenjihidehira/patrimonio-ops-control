@@ -16,29 +16,33 @@ O esquema habilita RLS e nega acesso direto aos papéis `anon` e `authenticated`
 No Google Cloud Console, crie um cliente OAuth do tipo Aplicativo da Web com a URL de retorno exata:
 
 ```text
-https://patrimonio-ops-control.kenjihidehira999.workers.dev/api/auth/google/callback
+https://patrimonio-ops-control.vercel.app/api/auth/google/callback
 ```
 
 Mantenha a tabela de usuários e associações por departamento como lista fechada. Não autorize automaticamente todo o domínio `gmail.com`.
 
 Defina `GOOGLE_WORKSPACE_DOMAIN` somente depois de confirmar que todas as contas autorizadas pertencem ao Google Workspace corporativo. A validação do claim `hd` bloqueará contas Gmail externas.
 
-O login por senha não exige segredos adicionais no Worker. Depois da publicação, um administrador autenticado configura ou redefine a credencial em **Ambientes > Usuários e acessos**. Entregue a senha inicial por canal seguro; ela não pode ser recuperada ou exibida pelo Patrimônio Ops.
+O login por senha não exige segredos adicionais na aplicação. Depois da publicação, um administrador autenticado configura ou redefine a credencial em **Ambientes > Usuários e acessos**. Entregue a senha inicial por canal seguro; ela não pode ser recuperada ou exibida pelo Patrimônio Ops.
 
-## 3. Configurar o Cloudflare Worker
+## 3. Configurar o projeto na Vercel
 
-O projeto usa Vinext e possui configuração nativa em `wrangler.jsonc`.
+O projeto é Next.js padrão: a Vercel o reconhece sem configuração adicional. Não há `vercel.json`, e o build é o `next build`.
 
-Autentique o Wrangler e confirme a conta antes da primeira publicação:
+Autentique a interface de linha de comando e vincule o diretório:
 
 ```bash
-pnpm exec wrangler login
-pnpm exec wrangler whoami
+pnpm dlx vercel login
 ```
 
-`SUPABASE_GATEWAY_URL` fica em `wrangler.jsonc`. Cadastre as credenciais e os segredos diretamente no Worker:
+```bash
+pnpm dlx vercel link
+```
+
+Cadastre as variáveis de ambiente no projeto, em **Settings > Environment Variables**, para os ambientes de produção e de pré-visualização:
 
 ```text
+SUPABASE_GATEWAY_URL=https://SEU_PROJETO.supabase.co/functions/v1/patrimonio-gateway
 SUPABASE_GATEWAY_KEY=O_MESMO_SEGREDO_DA_EDGE_FUNCTION
 GOOGLE_CLIENT_ID=CLIENT_ID_DO_GOOGLE
 GOOGLE_CLIENT_SECRET=CLIENT_SECRET_DO_GOOGLE
@@ -46,7 +50,9 @@ AUTH_SESSION_SECRET=SEGREDO_ALEATORIO_COM_PELO_MENOS_64_CARACTERES
 GOOGLE_WORKSPACE_DOMAIN=DOMINIO_WORKSPACE_CONFIRMADO_OU_VAZIO
 ```
 
-Use `pnpm exec wrangler secret put NOME_DA_VARIAVEL` para cada valor. Não grave segredos no `wrangler.jsonc`, no Git ou em variáveis com prefixos `NEXT_PUBLIC_` ou `VITE_`.
+Nenhum desses valores pode usar os prefixos `NEXT_PUBLIC_`: eles seriam expostos ao navegador. Também não devem ser gravados no Git — apenas em `.env.local`, ignorado pelo versionamento, para o ambiente local.
+
+Os cabeçalhos de segurança e o Content Security Policy com nonce por requisição são aplicados em [`proxy.ts`](../proxy.ts), executado pela Vercel em toda requisição que renderiza HTML.
 
 ## 4. Validar e publicar
 
@@ -57,25 +63,28 @@ pnpm lint
 pnpm typecheck
 pnpm build
 pnpm audit --prod
-pnpm deploy:cloudflare
 ```
 
-O endereço de produção é `https://patrimonio-ops-control.kenjihidehira999.workers.dev`.
+```bash
+pnpm dlx vercel deploy --prod
+```
+
+Cada envio à branch `main` também dispara a publicação automática quando o repositório está conectado ao projeto na Vercel.
 
 ## Verificações após a publicação
 
 ```bash
-curl -I https://patrimonio-ops-control.kenjihidehira999.workers.dev/demo
-curl -I https://patrimonio-ops-control.kenjihidehira999.workers.dev/login
-curl https://patrimonio-ops-control.kenjihidehira999.workers.dev/api/state
-curl -I "https://patrimonio-ops-control.kenjihidehira999.workers.dev/api/auth/google/login?return_to=%2Fdemo"
-curl -i -X POST https://patrimonio-ops-control.kenjihidehira999.workers.dev/api/auth/credentials/login \
-  -H "origin: https://patrimonio-ops-control.kenjihidehira999.workers.dev" \
+curl -I https://patrimonio-ops-control.vercel.app/demo
+curl -I https://patrimonio-ops-control.vercel.app/login
+curl https://patrimonio-ops-control.vercel.app/api/state
+curl -I "https://patrimonio-ops-control.vercel.app/api/auth/google/login?return_to=%2Fdemo"
+curl -i -X POST https://patrimonio-ops-control.vercel.app/api/auth/credentials/login \
+  -H "origin: https://patrimonio-ops-control.vercel.app" \
   -H "content-type: application/x-www-form-urlencoded" \
   --data-urlencode "login=conta-inexistente" \
   --data-urlencode "password=senha-invalida"
-curl -I https://patrimonio-ops-control.kenjihidehira999.workers.dev/api/export
-curl -i -X POST https://patrimonio-ops-control.kenjihidehira999.workers.dev/api/state \
+curl -I https://patrimonio-ops-control.vercel.app/api/export
+curl -i -X POST https://patrimonio-ops-control.vercel.app/api/state \
   -H "content-type: application/json" \
   -d '{"type":"update_status","expectedRevision":0}'
 ```
@@ -96,7 +105,7 @@ Resultados esperados:
 
 1. Gere um novo valor.
 2. Prepare uma versão temporária da Função Edge que aceite assinaturas com as duas chaves.
-3. Atualize `SUPABASE_GATEWAY_KEY` e publique o Cloudflare Worker.
+3. Atualize `SUPABASE_GATEWAY_KEY` na Vercel e republique a aplicacao.
 4. Verifique leitura, escrita e auditoria autenticadas.
 5. Atualize `PATRIMONIO_GATEWAY_KEY` e publique a Função Edge aceitando somente a nova chave.
 6. Remova imediatamente a compatibilidade temporária.
@@ -105,9 +114,9 @@ Não mantenha hash ou chave anterior no código.
 
 ## Domínio personalizado
 
-Para usar um domínio próprio, adicione-o em **Workers e Pages > patrimonio-ops-control > Domínios** e atualize a URL de retorno do Google antes de remover a URL `workers.dev`. Não aceite identidade enviada pelo cliente e não exponha os segredos na interface.
+Para usar um domínio próprio, adicione-o em **Settings > Domains** no projeto da Vercel e atualize a URL de retorno do Google antes de remover a URL `vercel.app`. Não aceite identidade enviada pelo cliente e não exponha os segredos na interface.
 
-GitHub Pages não substitui o Worker neste projeto. O serviço `github.io` publica arquivos estáticos, mas não executa as rotas `/api`, não emite cookies `HttpOnly` e não pode guardar os segredos do Supabase ou do aplicativo OAuth. Dividir a interface em `github.io` e a API em `workers.dev` também criaria uma sessão entre sites dependente de cookies de terceiros. Por isso, o GitHub permanece como repositório e integração contínua (CI); o ambiente de execução fica no Worker.
+GitHub Pages não substitui esta hospedagem. O serviço `github.io` publica arquivos estáticos, mas não executa as rotas `/api`, não emite cookies `HttpOnly` e não pode guardar os segredos do Supabase ou do aplicativo OAuth. Dividir a interface em `github.io` e a API em outro domínio também criaria uma sessão entre sites dependente de cookies de terceiros. Por isso, o GitHub permanece como repositório e integração contínua (CI); o ambiente de execução fica na Vercel.
 
 ## Checklist de produção
 

@@ -173,8 +173,13 @@ test("interface Gazin contém identificação Sabium, logo e geração de etique
   const tracking = readSource("components/patrimonio/operations/TrackingOperations.tsx");
   const hooks = readSource("components/patrimonio/hooks.ts");
 
-  assert.match(app, /activeDepartment\.slug === "gazin-log"/);
+  // O tipo Frota continua restrito ao ambiente Gazin LOG; a marca, não: a mesma
+  // logo Gazin identifica o produto em todos os departamentos.
+  const dialogs = readSource("components/patrimonio/Dialogs.tsx");
+  assert.match(dialogs, /activeDepartmentSlug === "gazin-log"/);
+  assert.match(app, /activeDepartment\.slug !== "gazin-log"/);
   assert.match(app, /\/brand\/gazin-logo\.png/);
+  assert.doesNotMatch(app, /cx-mark-header/);
   assert.match(app, /sourceIdentifier === identifier/);
   assert.match(ui, /asset\.sourceSystem === "sabium"/);
   assert.match(ui, /Inc\. \$\{asset\.incorporation\}/);

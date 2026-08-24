@@ -1,0 +1,968 @@
+/* Camada vidromorfica do sistema.
+ *
+ * Carrega depois de `patrimonio.css` e `enterprise.css` de proposito. Aqueles
+ * dois trazem 118 blocos de topo redundantes — a familia do header aparece 3x e
+ * `.primary-nav` 4x —, entao qualquer regra escrita no meio deles pode nascer
+ * inerte, o que ja aconteceu varias vezes nesta base. Aqui a ordem resolve: e a
+ * ultima palavra sobre superficie, e nao depende de especificidade inflada.
+ *
+ * A fusao daqueles blocos continua pendente. E mecanica, mas so e segura com
+ * comparacao de estilo computado antes e depois; feita no olho, troca um
+ * problema invisivel por outro.
+ *
+ * O texto nao e redefinido aqui: sai de `--heading-text` e `--muted`, que o
+ * tema ja resolve. Impor cor propria foi o que quebrou o tema claro na primeira
+ * tentativa — 43 de 100 textos abaixo de 4,5:1, alguns em 1,04:1.
+ */
+
+:root {
+  /* Tema claro. O degrade mantem a familia do azul Gazin, mas alto o
+     suficiente para o texto escuro do tema continuar legivel por cima. */
+  /* A mesma ideia na versao alta: um so tom claro com o brilho azul no mesmo
+     canto, na mesma posicao, para os dois temas serem a mesma tela. */
+  --glass-canvas:
+    radial-gradient(90% 60% at 82% 0%, rgba(11, 16, 159, 0.14) 0%, rgba(11, 16, 159, 0) 62%),
+    #F4F6FB;
+
+  --glass-surface: rgba(255, 255, 255, 0.66);
+  --glass-surface-raised: rgba(255, 255, 255, 0.82);
+  --glass-surface-hover: rgba(255, 255, 255, 0.78);
+  --glass-solid: #F7F9FC;
+  --glass-border: rgba(23, 34, 53, 0.22);
+  --glass-border-strong: rgba(23, 34, 53, 0.38);
+  --glass-blur: 18px;
+  --glass-shadow: 0 14px 34px rgba(23, 34, 53, 0.12);
+  --glass-blur-raised: 26px;
+  --glass-shadow-raised: 0 24px 56px rgba(23, 34, 53, 0.2);
+
+  /* O header segue escuro nos dois temas. O texto dele e branco fixo em
+     `enterprise.css` — a barra sempre foi azul —, e clarea-la no tema claro
+     levou 42 de 100 textos abaixo do minimo, alguns a 1,02:1. Manter escuro
+     preserva o branco, a identidade da marca e o contraste. */
+  /* Mais opaco no tema claro: com 0,72 a tela clara atravessava e levantava o
+     fundo do header para rgb(86, 89, 119), derrubando o texto secundario a
+     2,99:1. Com 0,92 o fundo volta a rgb(27, 32, 72). */
+  --glass-header: rgba(9, 14, 56, 0.92);
+  --glass-header-solid: #0A0E38;
+  --glass-header-border: rgba(255, 255, 255, 0.16);
+
+  /* O vidro claro fica um fio abaixo do branco puro, e isso derrubou o texto
+     secundario de 4,69:1 para 4,46:1 em 26 lugares — abaixo do minimo de 4,5.
+     O tom tambem cobre o pior fundo do tema claro, que nao e o vidro: e a linha
+     selecionada da tabela, em `--brand-100`. La o tom antigo dava 4,0:1 e ja
+     reprovava antes deste trabalho; este da 4,76:1. */
+  --muted: #5C6878;
+
+  /* Cores de estado usadas como texto. Medidas nos dois piores fundos claros —
+     o vidro (248,249,252) e a linha selecionada (233,234,252) — os tons
+     originais davam 4,58/4,05 no sucesso e 3,65/3,22 no coral. Estes passam nos
+     dois. So o tema claro muda: no escuro os tons originais ja passam. */
+  --success: #097268;
+  --coral: #BE3543;
+
+  /* Tinta do cabecalho fixo da tabela: opaca o bastante para as linhas
+     passarem por baixo sem borrar a leitura. */
+  --glass-head: #EEF1F7;
+
+  /* A luz na borda de cima e o que faz a superficie ler como vidro e nao como
+     um retangulo translucido: simula a espessura pegando a luz. */
+  --glass-highlight: rgba(255, 255, 255, 0.85);
+}
+
+:root[data-theme="dark"] {
+  /* Quase preto com um brilho azul entrando por um canto so. O vidro fica mais
+     evidente aqui do que sobre o degrade antigo, porque a diferenca entre
+     painel e chao e a maior das opcoes que comparamos.
+     Ganho lateral: o fundo e praticamente uniforme, entao a leitura do vidro
+     nao muda mais conforme a pagina rola — no degrade anterior, o mesmo painel
+     tinha fundo diferente no topo e no rodape. */
+  --glass-canvas:
+    radial-gradient(90% 60% at 82% 0%, rgba(11, 16, 159, 0.55) 0%, rgba(11, 16, 159, 0) 62%),
+    #080B14;
+
+  --glass-surface: rgba(255, 255, 255, 0.07);
+  --glass-surface-raised: rgba(255, 255, 255, 0.12);
+  --glass-surface-hover: rgba(255, 255, 255, 0.11);
+  --glass-solid: #0C1240;
+  --glass-border: rgba(255, 255, 255, 0.22);
+  --glass-border-strong: rgba(255, 255, 255, 0.4);
+  --glass-shadow: 0 16px 40px rgba(2, 4, 26, 0.38);
+  --glass-shadow-raised: 0 26px 64px rgba(2, 4, 26, 0.5);
+  --glass-header: rgba(9, 14, 56, 0.72);
+  --glass-head: #1A2148;
+  --glass-highlight: rgba(255, 255, 255, 0.22);
+}
+
+/* O degrade fica numa camada fixa propria em vez de
+   `background-attachment: fixed`. Sao quatro camadas de fundo: presas ao
+   viewport, o navegador repinta as quatro a cada quadro de rolagem. Assim ele
+   pinta uma vez e so compoe. */
+.app-shell {
+  position: relative;
+  isolation: isolate;
+}
+
+.app-shell::before {
+  position: fixed;
+  z-index: -1;
+  inset: 0;
+  background: var(--glass-canvas);
+  content: "";
+  pointer-events: none;
+}
+
+/* O conteudo rola sobre o degrade em vez de trazer a propria cor: e o que
+   deixa o desfoque ter o que desfocar. */
+.main-content,
+.view-section {
+  background: transparent;
+}
+
+/* Queda sem `backdrop-filter`: cor solida, nao o vidro sem desfoque. Com 7% de
+   opacidade e sem desfoque, o texto ficaria sobre o degrade cru. */
+.topbar,
+.dashboard-panel,
+.app-footer,
+.detail-panel,
+.section-toolbar {
+  border: 1px solid var(--glass-border);
+  background: var(--glass-solid);
+  box-shadow: var(--glass-shadow);
+}
+
+.app-header {
+  border-bottom: 1px solid var(--glass-header-border);
+  background: var(--glass-header-solid);
+  box-shadow: var(--glass-shadow);
+}
+
+@supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+  .topbar,
+  .dashboard-panel,
+  .app-footer,
+  .detail-panel,
+  .section-toolbar {
+    background: var(--glass-surface);
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(140%);
+    backdrop-filter: blur(var(--glass-blur)) saturate(140%);
+  }
+
+  .app-header {
+    background: var(--glass-header);
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(140%);
+    backdrop-filter: blur(var(--glass-blur)) saturate(140%);
+  }
+}
+
+.dashboard-panel,
+.detail-panel {
+  border-radius: 14px;
+}
+
+
+.topbar {
+  border-top: 0;
+  border-radius: 0 0 14px 14px;
+}
+
+/* Movimento: so o suficiente para a superficie parecer material. */
+.dashboard-panel {
+  transition: background-color 160ms ease, border-color 160ms ease, transform 160ms ease;
+}
+
+.dashboard-panel:hover {
+  border-color: var(--glass-border-strong);
+  background: var(--glass-surface-hover);
+  transform: translateY(-2px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dashboard-panel {
+    transition: none;
+  }
+
+  .dashboard-panel:hover {
+    transform: none;
+  }
+}
+
+/* Alvo de toque de 44px. Medido no laboratorio, 13 de 29 controles ficavam
+   abaixo: os `select` entre 36 e 42px, o interruptor de tema em 42, os botoes
+   em 40 e o "Sair" em 27x30 — o menor da tela e o de acao mais definitiva.
+   Fica nesta camada porque e a ultima a falar sobre a barra e os paineis. */
+/* Precisa de `.department-switcher` no meio: `.app-header .department-switcher
+   select` fixa 42px e vence um seletor de duas classes. */
+.app-header .department-switcher select,
+.app-header .theme-toggle,
+.app-header .session-sign-out,
+.dashboard-filters select,
+.section-toolbar select,
+.app-shell .button,
+.app-shell .button-small {
+  min-height: 44px;
+}
+
+.app-header .session-sign-out,
+.app-header .theme-toggle {
+  min-width: 44px;
+}
+
+/* Os 44px de largura no "Sair" comeram a folga do header, que caiu de 31 para
+   1,6px em 1366. A largura volta do seletor de departamento: o nome completo
+   segue na lista aberta, e a barra nao pode voltar a se sobrepor. */
+/* O teto subiu de 1619 para 1699: os 44px de alvo de toque engordaram o "Sair"
+   e o interruptor, e o header em tamanho cheio — que ainda mostra o nome do
+   produto ao lado da logo — deixou de caber com folga antes disso. Medido:
+   1635 dava 5,8px de folga, 1720 da 33,9. */
+@media (min-width: 1341px) and (max-width: 1699px) {
+  /* O nome do departamento vinha cortado em "Atendiment": a caixa tinha 124px
+     e o texto pede 163 com o recuo. A largura sai da nav, que ocupa 808px, e
+     do proprio recuo do seletor — nao do texto, que e o que se le. */
+  .app-header .department-switcher {
+    min-width: 150px;
+    max-width: 172px;
+  }
+
+  .app-header .department-switcher select {
+    padding-right: 26px;
+  }
+
+  .nav-item {
+    padding-inline: 5px;
+  }
+}
+
+/* Botoes de texto dentro dos paineis: 21px de altura medidos. Sao controles
+   autonomos, nao links no meio de uma frase, entao valem os 44px. */
+.dashboard-panel button:not(.dashboard-kpi) {
+  min-height: 44px;
+  padding-block: 10px;
+}
+
+/* ---------------------------------------------------------------------------
+   Tabela, modal e controles.
+   --------------------------------------------------------------------------- */
+
+/* O vidro fica no contêiner externo. `.table-panel` fica dentro de
+   `.inventory-layout`: se as duas desfocassem, opacidade e desfoque se somariam
+   e o painel viraria uma chapa leitosa. */
+.inventory-layout,
+.nucleus-card,
+.kpi-item {
+  border: 1px solid var(--glass-border);
+  background: var(--glass-solid);
+  box-shadow: var(--glass-shadow);
+}
+
+.table-panel {
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+@supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+  .inventory-layout,
+  .nucleus-card {
+    background: var(--glass-surface);
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(140%);
+    backdrop-filter: blur(var(--glass-blur)) saturate(140%);
+  }
+
+  /* O KPI vive dentro de um painel que ja desfoca. Desfocar de novo custa outra
+     camada e ainda embaca o que ja estava embacado. Tinta resolve. */
+  .kpi-item {
+    background: var(--glass-surface-raised);
+  }
+}
+
+.inventory-layout,
+.nucleus-card,
+.kpi-item {
+  border-radius: 14px;
+}
+
+/* O cabeçalho da tabela precisa continuar legível enquanto as linhas passam por
+   baixo dele; por isso ganha desfoque próprio em vez de opacidade. */
+/* O cabecalho e fixo e fica sobre um painel que ja desfoca. Dar desfoque
+   proprio a ele custa uma recomposicao por quadro de rolagem para desfocar um
+   fundo ja desfocado — o resultado visual e o mesmo de uma tinta mais densa. */
+.table-panel thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--glass-head);
+}
+
+/* Modal: superfície elevada, desfoque maior, e o fundo da página desfocado
+   atrás dela — é o que separa o que está em foco do resto. */
+.modal-content {
+  border: 1px solid var(--glass-border-strong);
+  background: var(--glass-solid);
+  box-shadow: var(--glass-shadow-raised, var(--glass-shadow));
+}
+
+@supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+  .modal-content {
+    background: var(--glass-surface-raised);
+    -webkit-backdrop-filter: blur(var(--glass-blur-raised, 26px)) saturate(150%);
+    backdrop-filter: blur(var(--glass-blur-raised, 26px)) saturate(150%);
+  }
+
+  .modal::backdrop {
+    -webkit-backdrop-filter: blur(3px);
+    backdrop-filter: blur(3px);
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Estados dos controles: padrão, foco, hover, pressionado, desativado e
+   carregando. O desativado não conta para contraste na WCAG, mas ainda precisa
+   parecer desativado; o carregando precisa dizer isso a quem não vê a tela.
+   --------------------------------------------------------------------------- */
+
+.app-shell .button,
+.app-shell .pagination-button,
+.app-shell .field input,
+.app-shell .field select,
+.app-shell .field textarea {
+  transition: background-color 140ms ease, border-color 140ms ease, box-shadow 140ms ease;
+}
+
+.app-shell .button:hover:not(:disabled),
+.app-shell .pagination-button:hover:not(:disabled) {
+  border-color: var(--glass-border-strong);
+}
+
+/* Pressionado: afunda em vez de crescer. Cresce dá a impressão de que o clique
+   não pegou. */
+.app-shell .button:active:not(:disabled),
+.app-shell .pagination-button:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.app-shell .field input:focus-visible,
+.app-shell .field select:focus-visible,
+.app-shell .field textarea:focus-visible {
+  border-color: var(--brand-700);
+}
+
+.app-shell .button:disabled,
+.app-shell .pagination-button:disabled,
+.app-shell .field input:disabled,
+.app-shell .field select:disabled {
+  opacity: 0.55;
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
+/* Carregando: `aria-busy` é o que o leitor de tela anuncia, então o desenho
+   segue o mesmo atributo em vez de uma classe à parte — assim os dois não têm
+   como divergir. */
+.app-shell [aria-busy="true"] {
+  cursor: progress;
+}
+
+.app-shell .button[aria-busy="true"] {
+  opacity: 0.7;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-shell .button,
+  .app-shell .pagination-button,
+  .app-shell .field input,
+  .app-shell .field select,
+  .app-shell .field textarea {
+    transition: none;
+  }
+
+  .app-shell .button:active:not(:disabled),
+  .app-shell .pagination-button:active:not(:disabled) {
+    transform: none;
+  }
+}
+
+/* Alvo de toque nas demais telas. Os controles autonomos vao a 44px. Os que
+   vivem dentro da linha da tabela — `.asset-id-button` e
+   `.collaborator-name-button`, 29 no total — ficam como estao: elevar cada um a
+   44px somaria mais de 400px de altura numa tabela de 25 linhas e destruiria a
+   densidade de que a tela depende. Eles ficam entre 26 e 35px, acima do piso de
+   24x24 da WCAG 2.5.8, e a linha inteira continua clicavel. */
+.app-shell .quick-filter,
+.app-shell .icon-button,
+.app-shell .nucleus-inventory-link,
+.app-shell .pagination-button,
+.app-shell input[type="search"],
+.app-shell select {
+  min-height: 44px;
+}
+
+.app-shell .icon-button {
+  min-width: 44px;
+}
+
+/* A caixa de marcacao continua com 16px desenhados; o que cresce e a area
+   sensivel, por um pseudo-elemento. Aumentar a caixa em si deixaria a lista
+   desalinhada. */
+.app-shell input[type="checkbox"] {
+  position: relative;
+}
+
+.app-shell input[type="checkbox"]::after {
+  position: absolute;
+  inset: -14px;
+  content: "";
+}
+
+/* Os que sobraram, cada um vencido por um seletor mais especifico do que
+   `.app-shell .button`: as acoes do painel de detalhe e do formulario de
+   status, as abas de Operacoes e os filtros de Nucleos. */
+.app-shell .detail-actions .button,
+.app-shell .status-form .button,
+.app-shell .operations-tabs button,
+.app-shell .nuclei-health-filter button {
+  min-height: 44px;
+}
+
+/* O numero do patrimonio e o botao mais repetido do sistema — 25 por pagina de
+   tabela — e media 18px, abaixo do piso de 24x24 da WCAG 2.5.8. Sobe para 24
+   por recuo, sem alterar a altura da linha, que e dada pela celula. */
+.app-shell .asset-id-button {
+  min-height: 24px;
+  padding-block: 3px;
+}
+
+/* Uma linha de luz no topo, por dentro da borda: e o que separa vidro de
+   retangulo translucido. Custa nada — e sombra, nao filtro.
+   Fica no fim do arquivo porque as regras de superficie mais abaixo definem
+   `box-shadow` e sobrescreveriam a luz se ela viesse antes. */
+.topbar,
+.dashboard-panel,
+.detail-panel,
+.section-toolbar,
+.inventory-layout,
+.nucleus-card {
+  box-shadow: inset 0 1px 0 var(--glass-highlight), var(--glass-shadow);
+}
+
+.modal-content {
+  box-shadow: inset 0 1px 0 var(--glass-highlight), var(--glass-shadow-raised);
+}
+
+/* Acima de 1619 a faixa de notebook nao vale, e la o seletor cresce ate 198px.
+   Somado a largura que os 44px de alvo cobraram do "Sair" e do interruptor, a
+   nav voltava a se sobrepor aos vizinhos — medido em 1635: -5,3px de folga.
+   O teto vale em qualquer largura; a faixa de notebook so aperta mais. */
+.app-header .department-switcher {
+  max-width: 176px;
+}
+
+/* ---------------------------------------------------------------------------
+   Leitura no centro (modelo escolhido).
+
+   O centro da barra deixa de ser navegacao e passa a ser a acao principal do
+   sistema. Nao e invencao de tela: `useBarcodeScanner` ja escuta o teclado em
+   qualquer pagina e chama `handleScan`, entao um leitor fisico ja funcionava de
+   qualquer lugar — so que sem nada na tela dizendo isso. Quem nao tem leitor
+   precisava ir ao Inventario e digitar na busca de la.
+
+   As secoes recolhem no menu, que ja existia para o celular e agora vale em
+   qualquer largura. Custa um clique a mais para navegar; os atalhos abaixo da
+   barra devolvem esse clique para as secoes mais procuradas.
+   --------------------------------------------------------------------------- */
+.app-header-inner {
+  grid-template-columns: auto auto minmax(0, 1fr) auto;
+}
+
+.app-brand {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+.mobile-menu-toggle {
+  display: flex;
+  grid-column: 2;
+  grid-row: 1;
+  gap: 8px;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 13px;
+  border: 1px solid var(--glass-header-border);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.07);
+  color: #FFFFFF;
+  font: inherit;
+  font-size: 12.5px;
+}
+
+.mobile-menu-toggle svg {
+  width: 17px;
+  height: 17px;
+}
+
+.header-scan {
+  display: flex;
+  grid-column: 3;
+  grid-row: 1;
+  width: min(460px, 100%);
+  align-items: center;
+  gap: 10px;
+  justify-self: center;
+  min-height: 44px;
+  padding: 0 14px;
+  border: 1px solid rgba(255, 255, 255, 0.26);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.header-scan:focus-within {
+  border-color: var(--yellow);
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.header-scan-icon {
+  display: grid;
+  flex: none;
+  place-items: center;
+  color: var(--yellow);
+}
+
+.header-scan-icon svg {
+  width: 17px;
+  height: 17px;
+}
+
+.header-scan input {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  background: none;
+  color: #FFFFFF;
+  font: inherit;
+  font-size: 13px;
+}
+
+.header-scan input::placeholder {
+  color: #A9BDD4;
+}
+
+.header-scan input:focus {
+  outline: 0;
+}
+
+.header-actions {
+  grid-column: 4;
+  grid-row: 1;
+}
+
+/* A nav vira painel: escondida ate o menu abrir, em qualquer largura. */
+.primary-nav {
+  display: none;
+  grid-column: 1 / -1;
+  grid-row: 2;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  width: 100%;
+  padding: 10px 0 4px;
+  border-top: 1px solid var(--glass-header-border);
+}
+
+.app-header.is-open .primary-nav {
+  display: grid;
+}
+
+/* Atalhos: devolvem em um clique as secoes mais procuradas. Quais sao elas
+   veio da maquete aprovada, nao de medicao de uso — trocar e uma linha. */
+.header-shortcuts {
+  display: flex;
+  gap: 5px;
+  grid-column: 1 / -1;
+  grid-row: 3;
+  padding-top: 8px;
+}
+
+.header-shortcut {
+  /* 44 e nao os 32 da maquete: recusei 36px no modelo anterior por causa do
+     alvo de toque, e aplicar 32 aqui seria usar dois pesos e duas medidas. */
+  min-height: 44px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.07);
+  color: #D6E2EE;
+  font: inherit;
+  font-size: 11.5px;
+  cursor: pointer;
+}
+
+.header-shortcut:hover {
+  background: rgba(255, 255, 255, 0.13);
+  color: #FFFFFF;
+}
+
+.header-shortcut.is-active {
+  background: var(--yellow);
+  color: #0A0E38;
+  font-weight: 640;
+}
+
+/* Sem espaco para o campo no centro: ele desce para uma linha propria, em vez
+   de espremer a marca e as acoes. */
+@media (max-width: 900px) {
+  .app-header-inner {
+    grid-template-columns: auto auto minmax(0, 1fr);
+  }
+
+  .header-scan {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    width: 100%;
+  }
+
+  .header-actions {
+    grid-column: 3;
+    grid-row: 1;
+  }
+
+  .primary-nav {
+    grid-row: 3;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .header-shortcuts {
+    grid-row: 4;
+    overflow-x: auto;
+  }
+
+  .mobile-menu-label {
+    display: none;
+  }
+}
+
+/* Ajustes medidos depois de montar o modelo.
+
+   1. A barra tinha 138px. A linha da nav, mesmo escondida, existia por causa do
+      `grid-row: 3` dos atalhos, e cobrava um segundo gap de 12px. Com
+      `row-gap: 0` o espaco passa a vir do recuo de cada faixa, que so existe
+      quando a faixa existe.
+   2. Os rotulos empilhados sobre o seletor e sobre o nome do usuario levavam a
+      primeira linha a 62px — os mesmos 18px que ja me travaram antes.
+   3. Centralizar o campo dentro da coluna nao o centraliza na barra: a direita
+      tem 440px contra 134 da esquerda, e ele ficava 147px fora de centro. Em vez
+      de fingir simetria que nao existe, o campo ocupa a folga do meio. */
+.app-header-inner {
+  row-gap: 0;
+}
+
+.app-header .department-switcher > span,
+.app-header .session-text small {
+  display: none;
+}
+
+.app-header .department-switcher,
+.app-header .session-control {
+  min-height: 44px;
+  align-items: center;
+}
+
+.app-header .session-control {
+  padding-block: 0;
+}
+
+.header-scan {
+  width: auto;
+  justify-self: stretch;
+}
+
+/* ---------------------------------------------------------------------------
+   As oito secoes voltam a aparecer em linha.
+
+   O menu recolhido resolvia a largura, mas escondia a navegacao inteira atras
+   de um clique e deixava uma fileira solta de atalhos embaixo — duas faixas
+   dizendo a mesma coisa, desalinhadas entre si. Agora a linha de baixo e a
+   navegacao completa, e os atalhos sairam por redundancia.
+
+   A leitura de patrimonio continua no centro da linha de cima: e o que o
+   modelo escolhido tinha de proprio, e nao disputa espaco com as abas porque
+   as duas coisas moram em linhas diferentes.
+   --------------------------------------------------------------------------- */
+@media (min-width: 1041px) {
+  .app-header-inner {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    row-gap: 0;
+  }
+
+  .app-brand { grid-column: 1; grid-row: 1; }
+  .header-scan { grid-column: 2; grid-row: 1; }
+  .header-actions { grid-column: 3; grid-row: 1; }
+
+  /* O botao existia para abrir o que agora esta sempre a vista. */
+  .mobile-menu-toggle {
+    display: none;
+  }
+
+  /* Linha unica, em sequencia, alinhada a esquerda com a logo — nao centrada,
+     para o inicio da fila bater com o inicio da marca. */
+  .primary-nav {
+    display: flex;
+    grid-column: 1 / -1;
+    grid-row: 2;
+    width: 100%;
+    padding: 6px 0 0;
+    gap: 2px;
+    justify-content: flex-start;
+    border-top: 0;
+    overflow: visible;
+  }
+
+  .nav-item {
+    min-height: 44px;
+    padding-inline: 12px;
+    flex-direction: row;
+    gap: 7px;
+    border-radius: 8px 8px 0 0;
+    font-size: 12px;
+  }
+
+  .nav-item-icon {
+    display: grid;
+  }
+
+  .nav-item-icon,
+  .nav-item-icon svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  /* O ativo se prende a borda de baixo da barra, apontando para o conteudo que
+     ele abre — em vez de flutuar como pastilha solta. */
+  .nav-item.is-active {
+    background: rgba(255, 255, 255, 0.14);
+    box-shadow: inset 0 3px 0 var(--yellow);
+    color: #FFFFFF;
+    font-weight: 630;
+  }
+
+  /* Com a nav em linha propria, sobra largura na linha de cima: o nome do
+     departamento volta a caber inteiro em vez de virar "Atendimento ao Cli…". */
+  .app-header .department-switcher {
+    max-width: 208px;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   As superficies que ficaram de fora.
+
+   O vidro foi aplicado tela a tela — Dashboard e Inventario — e por isso seis
+   conteineres de outras telas continuaram chapados, com canto de 3px, no meio
+   de um sistema de 14px. Em Nucleos isso saltava: a fileira de indicadores e o
+   painel "Areas cadastradas" eram brancos solidos enquanto a barra e a topbar
+   ao redor eram vidro.
+
+   Aqui a lista e por tela, nao por caso: Nucleos, Inventario, Auditoria,
+   Importacoes, Colaboradores, Ambientes e Operacoes.
+   --------------------------------------------------------------------------- */
+.nuclei-overview,
+.nuclei-directory,
+.filter-band,
+.operational-panel,
+.environment-card,
+.decision-indicators {
+  border: 1px solid var(--glass-border);
+  border-radius: 14px;
+  background: var(--glass-solid);
+  box-shadow: inset 0 1px 0 var(--glass-highlight), var(--glass-shadow);
+}
+
+@supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+  .nuclei-overview,
+  .nuclei-directory,
+  .filter-band,
+  .operational-panel,
+  .environment-card,
+  .decision-indicators {
+    background: var(--glass-surface);
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(140%);
+    backdrop-filter: blur(var(--glass-blur)) saturate(140%);
+  }
+}
+
+/* Estes dois moram dentro dos de cima. Desfocar de novo custaria outra camada
+   por quadro e embacaria o que ja estava embacado — tinta basta. */
+.nuclei-overview .operational-metric {
+  border-color: var(--glass-border);
+  background: var(--glass-surface-raised);
+}
+
+.operational-panel .operational-filters {
+  border-color: var(--glass-border);
+  background: transparent;
+}
+
+/* ---------------------------------------------------------------------------
+   A faixa de titulo da secao.
+
+   Ela ja recebia vidro, borda e luz, mas tinha ficado com canto 0 e recuo 0:
+   uma tira de canto vivo no meio de paineis de 14px, com o texto encostado na
+   borda. Media 1239x48 sem um pixel de respiro.
+
+   Tambem estava com `align-items: end`, que colava titulo, descricao e botao na
+   base da caixa em vez de centraliza-los na altura.
+   --------------------------------------------------------------------------- */
+.section-toolbar {
+  align-items: center;
+  padding: 15px 18px;
+  border-radius: 14px;
+}
+
+/* O titulo repete o nome da tela, que a topbar ja mostra logo acima — "Nucleos"
+   e depois "Nucleos da empresa". Baixar o peso tira a competicao entre os dois
+   sem esconder informacao: o que carrega sentido aqui e a descricao. */
+.section-toolbar > div > h2 {
+  font-size: 16px;
+  font-weight: 640;
+  letter-spacing: -0.01em;
+}
+
+.section-toolbar > div > p {
+  margin-top: 3px;
+  max-width: 68ch;
+  font-size: 12.5px;
+}
+
+/* O botao e a unica acao da faixa: nao deve encolher quando a descricao cresce. */
+.section-toolbar > .button {
+  flex: none;
+}
+
+/* O rodape tinha o mesmo defeito da faixa de titulo: recebeu vidro e borda nos
+   quatro lados, mas ficou com canto 0 e recuo horizontal 0 — o texto encostava
+   a 1px da borda esquerda e o link a 1px da direita. O recuo vertical ainda era
+   torto, 18px em cima contra 4px embaixo. */
+.app-footer {
+  align-items: center;
+  padding: 13px 18px;
+  border-radius: 14px;
+}
+
+/* ---------------------------------------------------------------------------
+   Tendencia de movimentacoes: linha, nao barras.
+
+   Seis meses de contagem e mudanca no tempo, e mudanca no tempo se le em
+   linha: a inclinacao entre dois pontos e a propria variacao. Em barras,
+   comparar dois meses exigia medir dois comprimentos e subtrair de cabeca.
+
+   Os textos usam tokens de texto, nao a cor da serie: quem carrega identidade
+   e a marca desenhada, nao o rotulo ao lado dela.
+   --------------------------------------------------------------------------- */
+.dashboard-trend {
+  position: relative;
+  display: grid;
+  gap: 6px;
+}
+
+.dashboard-trend-plot {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.dashboard-trend-grid {
+  stroke: var(--line);
+  stroke-width: 1;
+  opacity: 0.5;
+}
+
+.dashboard-trend-area {
+  fill: var(--brand-700);
+  opacity: 0.12;
+}
+
+.dashboard-trend-line {
+  fill: none;
+  stroke: var(--brand-700);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.dashboard-trend-crosshair {
+  stroke: var(--muted);
+  stroke-width: 1;
+  stroke-dasharray: 3 3;
+}
+
+.dashboard-trend-dot {
+  fill: var(--surface);
+  stroke: var(--brand-700);
+  stroke-width: 2;
+}
+
+/* O ultimo mes e o "agora": ganha peso sem precisar de rotulo extra. */
+.dashboard-trend-dot.is-last {
+  fill: var(--brand-700);
+}
+
+.dashboard-trend-month {
+  fill: var(--muted);
+  font-size: 11px;
+  text-anchor: middle;
+}
+
+.dashboard-trend-value {
+  fill: var(--heading-text);
+  font-size: 12px;
+  font-weight: 640;
+  text-anchor: middle;
+}
+
+.dashboard-trend-readout {
+  display: flex;
+  gap: 7px;
+  align-items: baseline;
+  margin: 0;
+  min-height: 20px;
+}
+
+.dashboard-trend-readout strong {
+  color: var(--heading-text);
+  font-size: 15px;
+  font-weight: 660;
+}
+
+.dashboard-trend-readout span {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+
+/* ---------------------------------------------------------------------------
+   Barras do dashboard.
+
+   Ficam em `<progress>` de proposito, e nao por descuido: a CSP deste app
+   bloqueia estilo embutido, entao uma barra em `div` nao teria como receber a
+   largura do dado. Os atributos `value` e `max` resolvem isso sem estilo
+   inline. Trocar por `div` quebraria em producao.
+
+   O que faltava era consistencia: a cobertura desenhava 6px e os demais
+   paineis 7px, no mesmo painel de indicadores.
+   --------------------------------------------------------------------------- */
+.dashboard-view progress,
+.dashboard-coverage-row > progress {
+  height: 7px;
+  border-radius: 999px;
+}
+
+/* Ponta arredondada tambem no fim do dado. A trilha ja arredondava por recorte,
+   entao so a ponta esquerda ficava redonda e a direita — que e onde o dado
+   termina e o olho mede — saia quadrada. */
+.dashboard-view progress::-webkit-progress-bar {
+  border-radius: 999px;
+}
+
+.dashboard-view progress::-webkit-progress-value {
+  border-radius: 999px;
+}
+
+.dashboard-view progress::-moz-progress-bar {
+  border-radius: 999px;
+}

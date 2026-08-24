@@ -1,4 +1,3 @@
-import { env } from "cloudflare:workers";
 import { cookies } from "next/headers";
 import { jwtVerify, SignJWT } from "jose";
 import {
@@ -39,43 +38,76 @@ const SESSION_ISSUER = "patrimonio-ops-control";
 const SESSION_AUDIENCE = "patrimonio-ops-control-web";
 const OAUTH_AUDIENCE = "patrimonio-ops-control-oauth";
 const SESSION_SECONDS = 8 * 60 * 60;
+// "Lembrar de mim" estende a sessao, nao a torna permanente: a autorizacao
+// continua sendo reconsultada a cada requisicao e a revogacao continua imediata.
+const REMEMBERED_SESSION_SECONDS = 30 * 24 * 60 * 60;
 const OAUTH_SECONDS = 10 * 60;
 
-export async function getAuthenticatedUser(): Promise<AuthenticatedUser | null> {
-  try {
-    const cookieStore = await cookies();
-    const token =
-      cookieStore.get(SECURE_SESSION_COOKIE)?.value ??
-      cookieStore.get(SESSION_COOKIE)?.value;
-    if (!token) return null;
+// Toda recusa desabava no mesmo `return null`, e o `catch` vazio ainda
+// transformava uma falha de rede do gateway em logout silencioso: sem cookie,
+// token adulterado, acesso revogado e Supabase fora do ar produziam exatamente
+// a mesma tela. Isto nao muda o comportamento — recusa continua sendo recusa —,
+// so nomeia o motivo no log do servidor.
+//
+// O motivo nao acompanha identificador nem token: quem depura precisa do ramo
+// que disparou, nao de quem tentou entrar.
+function recusarSessao(motivo:
+  | "sem_cookie"
+  | "token_invalido"
+  | "conteudo_inesperado"
+  | "acesso_revogado"
+  | "gateway_indisponivel"): null {
+  console.warn(`Sessao recusada: ${motivo}`);
+  return null;
+}
 
-    const { payload } = await jwtVerify(token, sessionSecret(), {
+export async function getAuthenticatedUser(): Promise<AuthenticatedUser | null> {
+  const cookieStore = await cookies();
+  const token =
+    cookieStore.get(SECURE_SESSION_COOKIE)?.value ??
+    cookieStore.get(SESSION_COOKIE)?.value;
+  if (!token) return recusarSessao("sem_cookie");
+
+  let payload;
+  try {
+    ({ payload } = await jwtVerify(token, sessionSecret(), {
       algorithms: ["HS256"],
       issuer: SESSION_ISSUER,
       audience: SESSION_AUDIENCE,
-    });
-    if (
-      payload.kind !== "session" ||
-      !isAuthProvider(payload.provider) ||
-      typeof payload.name !== "string" ||
-      typeof payload.identifier !== "string" ||
-      typeof payload.uid !== "string" ||
-      typeof payload.sv !== "number"
-    ) {
-      return null;
-    }
-
-    const identity: SessionIdentity = {
-      provider: payload.provider,
-      displayName: payload.name,
-      identifier: payload.identifier,
-      subject: payload.uid,
-      actor: `${payload.provider}:${payload.identifier}`,
-      sessionVersion: payload.sv,
-    };
-    return await isIdentityStillAuthorized(identity) ? identity : null;
+    }));
   } catch {
-    return null;
+    // Assinatura, emissor, audiencia ou validade: o cookie existe e nao serve.
+    return recusarSessao("token_invalido");
+  }
+
+  if (
+    payload.kind !== "session" ||
+    !isAuthProvider(payload.provider) ||
+    typeof payload.name !== "string" ||
+    typeof payload.identifier !== "string" ||
+    typeof payload.uid !== "string" ||
+    typeof payload.sv !== "number"
+  ) {
+    return recusarSessao("conteudo_inesperado");
+  }
+
+  const identity: SessionIdentity = {
+    provider: payload.provider,
+    displayName: payload.name,
+    identifier: payload.identifier,
+    subject: payload.uid,
+    actor: `${payload.provider}:${payload.identifier}`,
+    sessionVersion: payload.sv,
+  };
+
+  try {
+    // Separado do resto de proposito: aqui a recusa pode nao ser recusa, e sim
+    // o gateway indisponivel. O usuario continua barrado — negar acesso quando
+    // nao da para confirmar a autorizacao e o lado certo de errar —, mas o log
+    // passa a distinguir "perdeu o acesso" de "nao deu para perguntar".
+    return await isIdentityStillAuthorized(identity) ? identity : recusarSessao("acesso_revogado");
+  } catch {
+    return recusarSessao("gateway_indisponivel");
   }
 }
 
@@ -158,7 +190,9 @@ export async function createSessionResponse(
   request: Request,
   identity: SessionIdentity,
   returnTo: string,
+  remember = false,
 ): Promise<Response> {
+  const lifetime = remember ? REMEMBERED_SESSION_SECONDS : SESSION_SECONDS;
   const session = await new SignJWT({
     kind: "session",
     provider: identity.provider,
@@ -172,7 +206,7 @@ export async function createSessionResponse(
     .setAudience(SESSION_AUDIENCE)
     .setSubject(`${identity.provider}:${identity.subject}`)
     .setIssuedAt()
-    .setExpirationTime(`${SESSION_SECONDS}s`)
+    .setExpirationTime(`${lifetime}s`)
     .sign(sessionSecret());
 
   const response = redirectResponse(
@@ -181,7 +215,7 @@ export async function createSessionResponse(
   );
   response.headers.append(
     "set-cookie",
-    serializeCookie(cookieName(SESSION_COOKIE, request), session, SESSION_SECONDS, request),
+    serializeCookie(cookieName(SESSION_COOKIE, request), session, lifetime, request),
   );
   appendClearedOAuthCookies(response, request);
   return response;
@@ -259,8 +293,8 @@ export function redirectResponse(location: string, status: 302 | 303 = 302): Res
   });
 }
 
-export function runtimeValue(name: keyof Cloudflare.Env): string {
-  return String(env[name] ?? process.env[name] ?? "").trim();
+export function runtimeValue(name: keyof NodeJS.ProcessEnv): string {
+  return String(process.env[name] ?? "").trim();
 }
 
 async function isIdentityStillAuthorized(identity: SessionIdentity): Promise<boolean> {
