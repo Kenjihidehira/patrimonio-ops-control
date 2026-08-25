@@ -1,0 +1,47 @@
+name: Manter Supabase acordado
+
+# Por que existe: o plano Free do Supabase pausa o projeto apos 7 dias sem
+# atividade. Este cron toca /api/health a cada 3 dias — que faz um SELECT no
+# banco — reiniciando o contador com folga larga dentro da janela de 7.
+#
+# Duas coisas que decidem se ele funciona:
+#  1. Workflow agendado so dispara na branch DEFAULT (main). Enquanto o codigo
+#     nao estiver na main, so o disparo manual (workflow_dispatch) roda.
+#  2. A URL aponta para o alias estavel de producao, nao para a URL de um
+#     deploy especifico (que muda a cada publicacao).
+
+on:
+  schedule:
+    # 06:00 UTC nos dias 1, 4, 7, ... — no maximo ~3-4 dias entre pings.
+    - cron: "0 6 */3 * *"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+concurrency:
+  group: keep-alive
+  cancel-in-progress: false
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Tocar o banco via /api/health
+        run: |
+          URL="${KEEPALIVE_URL:-https://patrimonio-ops-control.vercel.app/api/health}"
+          echo "Pingando $URL"
+          # -sS mostra erro sem barra de progresso; --max-time cobre um cold start
+          # do gateway; guardamos corpo e status para o log e para a decisao.
+          code=$(curl -sS --max-time 30 -o resposta.json -w "%{http_code}" "$URL" || echo "000")
+          echo "HTTP $code"
+          echo "Resposta: $(cat resposta.json 2>/dev/null || echo '<vazia>')"
+          if [ "$code" != "200" ]; then
+            echo "::error::Health check falhou (HTTP $code) — o banco pode estar pausado ou o gateway fora."
+            exit 1
+          fi
+        env:
+          # Opcional: defina a variavel KEEPALIVE_URL no repositorio para
+          # apontar para outro ambiente sem editar este arquivo.
+          KEEPALIVE_URL: ${{ vars.KEEPALIVE_URL }}
