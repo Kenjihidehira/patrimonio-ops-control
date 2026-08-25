@@ -1,83 +1,8 @@
-:root {
-  --enterprise-sidebar-width: 232px;
-  --brand-950: #05073F;
-  --brand-900: #080B73;
-  --brand-700: #0B109F;
-  --brand-100: #E9EAFC;
-  --sidebar-bg: #080B73;
-  --action-bg: #0B109F;
-  --action-hover: #05073F;
-  --ink: #18263a;
-  --heading-text: #0f1d30;
-  --emphasis-text: #0B109F;
-  --muted: #66758a;
-  --icon-accent: #0B109F;
-  --icon-muted: #718198;
-  --line: #dbe3ed;
-  --line-strong: #c8d3e0;
-  --surface: #ffffff;
-  --surface-soft: #f5f8fc;
-  --surface-raised: #ffffff;
-  --canvas: #f7f9fc;
-  --yellow: #FFC400;
-  --yellow-soft: #fff7dc;
-  --coral: #E34D59;
-  --coral-soft: #FDECEE;
-  --blue: #118A9C;
-  --blue-soft: #E3F5F7;
-  --success: #0A8074;
-  --success-soft: #E7F7F5;
-  --table-line: #e6ebf2;
-  --table-head: #F1F1FB;
-  --table-head-text: #526177;
-  --table-text: #24344a;
-  --surface-hover: #f7faff;
-  --surface-selected: #E9EAFC;
-  --surface-inset: #f9fbfd;
-  --focus-ring: rgba(11, 16, 159, 0.22);
-  --shadow: 0 18px 42px rgba(21, 48, 82, 0.12);
-  --shadow-soft: 0 4px 14px rgba(21, 48, 82, 0.07);
-  --shadow-panel: 0 8px 24px rgba(21, 48, 82, 0.08);
-  font-family: var(--font-plex-sans), "Segoe UI", ui-sans-serif, system-ui, sans-serif;
-}
 
-:root[data-theme="dark"] {
-  --brand-950: #0A0C56;
-  --brand-900: #141BB0;
-  --brand-700: #A3A8FF;
-  --brand-100: #1B1E5C;
-  --sidebar-bg: #070A3A;
-  --action-bg: #2029C4;
-  --action-hover: #3A43DC;
-  --ink: #e7ebef;
-  --heading-text: #f1f3f5;
-  --emphasis-text: #b5c9da;
-  --muted: #aeb8c1;
-  --icon-accent: #92aabd;
-  --icon-muted: #b9c2ca;
-  --blue: #5DCAA5;
-  --success: #5DCAA5;
-  --coral: #FF8A8A;
-  --line: #3b4b5b;
-  --line-strong: #506273;
-  --surface: #182634;
-  --surface-soft: #14212d;
-  --surface-raised: #1d2e3e;
-  --canvas: #111d29;
-  --table-head: #243646;
-  --table-head-text: #bdc5cc;
-  --table-text: #dfe4e8;
-  --surface-hover: #26394a;
-  --surface-selected: #2a465d;
-  --surface-inset: #172532;
-  --shadow: 0 16px 38px rgba(0, 0, 0, 0.28);
-  --shadow-soft: 0 4px 14px rgba(0, 0, 0, 0.18);
-  --shadow-panel: 0 8px 24px rgba(0, 0, 0, 0.2);
-}
 
 body {
   background: var(--canvas);
-  font-size: 14px;
+  font-size: var(--texto-base);
 }
 
 .app-shell {
@@ -151,7 +76,7 @@ body {
 .app-brand small {
   margin-top: 5px;
   color: #66dbe2;
-  font-size: 11px;
+  font-size: var(--texto-xs);
   letter-spacing: 0.09em;
 }
 
@@ -166,7 +91,7 @@ body {
 
 .sidebar-department span {
   color: #8ba8c3;
-  font-size: 11px;
+  font-size: var(--texto-xs);
   font-weight: 500;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -175,7 +100,7 @@ body {
 .sidebar-department strong {
   overflow: hidden;
   color: #62dce3;
-  font-size: 13px;
+  font-size: var(--texto-md);
   font-weight: 700;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -200,7 +125,7 @@ body {
   border: 0;
   border-radius: 3px;
   color: #d6e2ee;
-  font-size: 13px;
+  font-size: var(--texto-md);
   font-weight: 600;
   text-align: left;
 }
@@ -246,7 +171,7 @@ body {
   justify-content: space-between;
   gap: 12px;
   color: #8ba8c3;
-  font-size: 10px;
+  font-size: var(--texto-2xs);
 }
 
 .sidebar-footer a {
@@ -313,7 +238,7 @@ body {
 .page-heading > p:last-child {
   max-width: 720px;
   margin-top: 5px;
-  font-size: 13px;
+  font-size: var(--texto-md);
 }
 
 .header-actions {
@@ -337,7 +262,7 @@ body {
 }
 
 .department-switcher > span {
-  font-size: 10px;
+  font-size: var(--texto-2xs);
   letter-spacing: 0.08em;
 }
 
@@ -368,7 +293,7 @@ body {
   min-height: 40px;
   padding: 8px 13px;
   border-radius: 3px;
-  font-size: 12px;
+  font-size: var(--texto-sm);
   font-weight: 500;
 }
 
@@ -419,7 +344,7 @@ body {
 }
 
 .kpi-content > span {
-  font-size: 11px;
+  font-size: var(--texto-xs);
   font-weight: 600;
   text-transform: none;
 }
@@ -433,7 +358,7 @@ body {
 
 .kpi-content small {
   margin-top: 3px;
-  font-size: 11px;
+  font-size: var(--texto-xs);
 }
 
 .filter-band {
@@ -450,7 +375,7 @@ body {
 
 .filter-heading h2,
 .panel-heading h2 {
-  font-size: 14px;
+  font-size: var(--texto-base);
   font-weight: 700;
 }
 
@@ -474,7 +399,7 @@ body {
   min-height: 31px;
   padding: 6px 10px;
   border-radius: 3px;
-  font-size: 11px;
+  font-size: var(--texto-xs);
 }
 
 .inventory-layout {
@@ -517,14 +442,14 @@ body {
 }
 
 .table-scroll table {
-  font-size: 12px;
+  font-size: var(--texto-sm);
 }
 
 .table-scroll th {
   height: 43px;
   padding: 10px 12px;
   background: var(--table-head);
-  font-size: 11px;
+  font-size: var(--texto-xs);
   letter-spacing: 0.045em;
 }
 
@@ -544,11 +469,6 @@ body {
 
 .asset-id-button {
   color: var(--brand-700);
-}
-
-.status-badge {
-  border-radius: 0;
-  font-weight: 500;
 }
 
 .pagination {
@@ -606,9 +526,6 @@ body {
 }
 
 @media (max-width: 1260px) {
-  :root {
-    --enterprise-sidebar-width: 212px;
-  }
 
   .app-brand-logo {
     width: 106px;
@@ -616,7 +533,7 @@ body {
   }
 
   .app-brand strong {
-    font-size: 15px;
+    font-size: var(--texto-lg);
   }
 
   .nav-item {
@@ -740,7 +657,7 @@ body {
   }
 
   .page-heading h1 {
-    font-size: 22px;
+    font-size: var(--texto-4xl);
   }
 
   .page-heading > p:last-child {
@@ -817,7 +734,7 @@ body {
   }
 
   .filter-heading h2 {
-    font-size: 13px;
+    font-size: var(--texto-md);
   }
 
   .quick-filters {
@@ -864,7 +781,7 @@ body {
   }
 
   .page-heading h1 {
-    font-size: 20px;
+    font-size: var(--texto-3xl);
   }
 
   .theme-toggle {
@@ -921,12 +838,12 @@ body {
 }
 
 .qr-label-preview span {
-  font-size: 11px;
+  font-size: var(--texto-xs);
 }
 
 .qr-label-preview small {
   color: #52687c;
-  font-size: 10px;
+  font-size: var(--texto-2xs);
 }
 
 .qr-label-preview .button {
@@ -991,7 +908,7 @@ body {
   background: transparent;
   color: var(--muted);
   font: inherit;
-  font-size: 11px;
+  font-size: var(--texto-xs);
   font-weight: 500;
   letter-spacing: 0;
   cursor: pointer;
@@ -1006,6 +923,15 @@ body {
   background: var(--surface-selected);
   color: var(--emphasis-text);
   box-shadow: inset 0 -2px 0 var(--action-bg);
+}
+
+/* `box-shadow` nao acumula entre regras: declarar so o sublinhado apagaria o
+   halo do anel de foco, e declarar so o halo apagaria o sublinhado que diz qual
+   aba esta aberta. Os dois juntos. Mesmo caso de `.nav-item.is-active` em
+   `glass.css` — sempre que uma sombra carregar significado, ela precisa
+   recompor o halo no foco. */
+.operations-tabs button.is-active:focus-visible {
+  box-shadow: inset 0 -2px 0 var(--action-bg), 0 0 0 5px var(--foco-halo);
 }
 
 .operations-tabs svg {
@@ -1045,7 +971,7 @@ body {
 .tracking-history-panel .operational-panel-toolbar h2,
 .tracking-tags-panel .operational-panel-toolbar h2,
 .operations-overview-grid .operational-panel-toolbar h2 {
-  font-size: 14px;
+  font-size: var(--texto-base);
   letter-spacing: 0;
 }
 
@@ -1056,7 +982,7 @@ body {
 .operations-overview-grid .operational-panel-toolbar p {
   max-width: 680px;
   margin-top: 4px;
-  font-size: 11px;
+  font-size: var(--texto-xs);
   line-height: 1.45;
 }
 
@@ -1103,7 +1029,7 @@ body {
   border-radius: 3px;
   background: var(--coral-soft);
   color: var(--coral);
-  font-size: 11px;
+  font-size: var(--texto-xs);
   line-height: 1.4;
 }
 
@@ -1117,7 +1043,7 @@ body {
   border-radius: 3px;
   background: var(--surface-soft);
   color: var(--muted);
-  font-size: 11px;
+  font-size: var(--texto-xs);
   font-weight: 500;
   letter-spacing: 0;
   line-height: 1.2;
@@ -1157,7 +1083,7 @@ body {
   min-width: min(280px, 100%);
   gap: 4px;
   color: var(--muted);
-  font-size: 11px;
+  font-size: var(--texto-xs);
   font-weight: 500;
 }
 
@@ -1169,7 +1095,7 @@ body {
   background: var(--surface-inset);
   color: var(--table-text);
   font: inherit;
-  font-size: 11px;
+  font-size: var(--texto-xs);
 }
 
 .campaign-progress-block {
@@ -1199,7 +1125,7 @@ body {
 .campaign-progress-heading strong {
   overflow: hidden;
   color: var(--heading-text);
-  font-size: 13px;
+  font-size: var(--texto-md);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -1208,7 +1134,7 @@ body {
 .campaign-progress-copy,
 .campaign-mini-metrics {
   color: var(--muted);
-  font-size: 10px;
+  font-size: var(--texto-2xs);
 }
 
 .campaign-progress-heading span {
@@ -1272,7 +1198,7 @@ body {
 .operation-list-filters input,
 .operation-list-filters select {
   min-height: 38px;
-  font-size: 11px;
+  font-size: var(--texto-xs);
 }
 
 .operation-record-list {
@@ -1313,7 +1239,7 @@ body {
 .operation-record-main strong {
   overflow: hidden;
   color: var(--heading-text);
-  font-size: 12px;
+  font-size: var(--texto-sm);
   line-height: 1.35;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -1323,7 +1249,7 @@ body {
   margin-top: 3px;
   overflow: hidden;
   color: var(--table-text);
-  font-size: 11px;
+  font-size: var(--texto-xs);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -1332,7 +1258,7 @@ body {
 .operation-record-meta {
   margin-top: 4px;
   color: var(--muted);
-  font-size: 11px;
+  font-size: var(--texto-xs);
   line-height: 1.35;
 }
 
@@ -1365,7 +1291,7 @@ body {
   background: var(--surface);
   color: var(--muted);
   font: inherit;
-  font-size: 11px;
+  font-size: var(--texto-xs);
   font-weight: 500;
   cursor: pointer;
 }
@@ -1376,7 +1302,7 @@ body {
   height: 17px;
   align-items: center;
   justify-content: center;
-  font-size: 14px;
+  font-size: var(--texto-base);
   line-height: 1;
 }
 
@@ -1423,7 +1349,7 @@ body {
 
 .tracking-battery {
   color: var(--muted);
-  font-size: 11px;
+  font-size: var(--texto-xs);
   white-space: nowrap;
 }
 
@@ -1461,13 +1387,13 @@ body {
 
 .tracking-tag-card > strong {
   color: var(--heading-text);
-  font-size: 12px;
+  font-size: var(--texto-sm);
 }
 
 .tracking-tag-card > span,
 .tracking-tag-card > small {
   color: var(--muted);
-  font-size: 11px;
+  font-size: var(--texto-xs);
   line-height: 1.4;
 }
 
@@ -1520,20 +1446,20 @@ body {
 }
 
 .decision-indicators span {
-  font-size: 11px;
+  font-size: var(--texto-xs);
   font-weight: 500;
 }
 
 .decision-indicators strong {
   margin-top: 3px;
   color: var(--heading-text);
-  font-size: 22px;
+  font-size: var(--texto-4xl);
   font-variant-numeric: tabular-nums;
 }
 
 .decision-indicators small {
   margin-top: 3px;
-  font-size: 10px;
+  font-size: var(--texto-2xs);
 }
 
 .decision-indicators button.has-risk strong,
@@ -1584,12 +1510,12 @@ body {
 
 .operations-alert-list strong {
   color: var(--heading-text);
-  font-size: 11px;
+  font-size: var(--texto-xs);
 }
 
 .operations-alert-list small {
   margin-top: 4px;
-  font-size: 11px;
+  font-size: var(--texto-xs);
 }
 
 .operations-alert-indicator {
@@ -1631,11 +1557,11 @@ body {
 
 .operations-clear-state strong {
   color: var(--heading-text);
-  font-size: 13px;
+  font-size: var(--texto-md);
 }
 
 .operations-clear-state span {
-  font-size: 10px;
+  font-size: var(--texto-2xs);
 }
 
 .operations-coverage {
@@ -1652,7 +1578,7 @@ body {
   justify-content: space-between;
   gap: 12px;
   color: var(--table-text);
-  font-size: 10px;
+  font-size: var(--texto-2xs);
 }
 
 .coverage-row > div strong {
@@ -1664,7 +1590,7 @@ body {
   display: block;
   margin-top: 4px;
   color: var(--muted);
-  font-size: 10px;
+  font-size: var(--texto-2xs);
   text-align: right;
 }
 
@@ -1699,13 +1625,13 @@ body {
 
 .operations-timeline strong {
   color: var(--heading-text);
-  font-size: 11px;
+  font-size: var(--texto-xs);
 }
 
 .operations-timeline small {
   margin-top: 3px;
   color: var(--muted);
-  font-size: 11px;
+  font-size: var(--texto-xs);
 }
 
 @media (max-width: 1180px) {
@@ -1964,13 +1890,13 @@ body {
 
 .qr-scanner-dialog h2 {
   color: var(--heading-text);
-  font-size: 15px;
+  font-size: var(--texto-lg);
 }
 
 .qr-scanner-dialog p {
   margin-top: 4px;
   color: var(--muted);
-  font-size: 10px;
+  font-size: var(--texto-2xs);
 }
 
 .qr-scanner-dialog > header > button {
@@ -1986,7 +1912,7 @@ body {
   background: var(--surface-soft);
   color: var(--muted);
   font: inherit;
-  font-size: 22px;
+  font-size: var(--texto-4xl);
   cursor: pointer;
 }
 
@@ -2106,7 +2032,7 @@ body {
   background: transparent;
   color: var(--muted);
   font: inherit;
-  font-size: 11px;
+  font-size: var(--texto-xs);
   font-weight: 500;
   letter-spacing: 0;
   cursor: pointer;
@@ -2122,7 +2048,7 @@ body {
   border-radius: 3px;
   background: var(--line);
   color: var(--table-text);
-  font-size: 10px;
+  font-size: var(--texto-2xs);
   font-variant-numeric: tabular-nums;
 }
 
@@ -2177,7 +2103,7 @@ body {
 .data-source-header {
   background: var(--surface-soft);
   color: var(--muted);
-  font-size: 11px;
+  font-size: var(--texto-xs);
   font-weight: 500;
   letter-spacing: 0.055em;
   text-transform: uppercase;
@@ -2196,13 +2122,13 @@ body {
 .data-source-domain small,
 .data-source-row > span {
   color: var(--muted);
-  font-size: 10px;
+  font-size: var(--texto-2xs);
   line-height: 1.55;
 }
 
 .data-source-domain details {
   color: var(--muted);
-  font-size: 11px;
+  font-size: var(--texto-xs);
 }
 
 .data-source-domain summary {
@@ -2270,7 +2196,7 @@ body {
   border-bottom: 1px solid var(--line);
   background: var(--surface-soft);
   color: var(--muted);
-  font-size: 11px;
+  font-size: var(--texto-xs);
   font-weight: 500;
 }
 
@@ -2328,13 +2254,13 @@ body {
 
 .asset-checklist label strong {
   color: var(--heading-text);
-  font-size: 11px;
+  font-size: var(--texto-xs);
 }
 
 .asset-checklist label small {
   margin-top: 2px;
   color: var(--muted);
-  font-size: 10px;
+  font-size: var(--texto-2xs);
 }
 
 .operation-record-expanded {
@@ -2357,7 +2283,7 @@ body {
   border-radius: 3px;
   background: var(--surface-soft);
   color: var(--table-text);
-  font-size: 10px;
+  font-size: var(--texto-2xs);
   font-weight: 500;
   line-height: 1.2;
 }
@@ -2397,7 +2323,7 @@ body {
 .offboarding-case > header strong {
   overflow: hidden;
   color: var(--heading-text);
-  font-size: 12px;
+  font-size: var(--texto-sm);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -2405,7 +2331,7 @@ body {
 .offboarding-case > header span {
   margin-top: 3px;
   color: var(--muted);
-  font-size: 11px;
+  font-size: var(--texto-xs);
 }
 
 .offboarding-case > footer {
@@ -2437,13 +2363,13 @@ body {
 
 .offboarding-assets strong {
   color: var(--heading-text);
-  font-size: 11px;
+  font-size: var(--texto-xs);
 }
 
 .offboarding-assets small {
   margin-top: 3px;
   color: var(--muted);
-  font-size: 10px;
+  font-size: var(--texto-2xs);
 }
 
 .offboarding-asset-actions {
@@ -2460,7 +2386,7 @@ body {
   border-radius: 3px;
   background: var(--surface-inset);
   color: var(--table-text);
-  font-size: 11px;
+  font-size: var(--texto-xs);
 }
 
 .offboarding-asset-actions button {
@@ -2475,7 +2401,7 @@ body {
   background: var(--surface);
   color: var(--muted);
   font: inherit;
-  font-size: 14px;
+  font-size: var(--texto-base);
   font-weight: 700;
   cursor: pointer;
 }
@@ -2521,7 +2447,7 @@ body {
   border-radius: 3px;
   background: var(--surface-soft);
   color: var(--emphasis-text);
-  font-size: 10px;
+  font-size: var(--texto-2xs);
   font-weight: 500;
 }
 
@@ -2540,14 +2466,14 @@ body {
 
 .document-card-main strong {
   color: var(--heading-text);
-  font-size: 11px;
+  font-size: var(--texto-xs);
 }
 
 .document-card-main span,
 .document-card-main small {
   margin-top: 4px;
   color: var(--muted);
-  font-size: 10px;
+  font-size: var(--texto-2xs);
 }
 
 .document-card-actions {
@@ -2559,7 +2485,7 @@ body {
 
 .accounting-total {
   color: var(--heading-text);
-  font-size: 16px;
+  font-size: var(--texto-xl);
   font-variant-numeric: tabular-nums;
 }
 
@@ -2575,13 +2501,13 @@ body {
 
 .accounting-value small {
   color: var(--muted);
-  font-size: 10px;
+  font-size: var(--texto-2xs);
 }
 
 .accounting-value strong {
   margin-top: 3px;
   color: var(--heading-text);
-  font-size: 12px;
+  font-size: var(--texto-sm);
   font-variant-numeric: tabular-nums;
 }
 
@@ -2595,7 +2521,7 @@ body {
   border-radius: 3px;
   background: var(--surface-soft);
   color: var(--table-text);
-  font-size: 10px;
+  font-size: var(--texto-2xs);
   cursor: pointer;
 }
 
@@ -2698,7 +2624,7 @@ body {
 
 .dashboard-context-label {
   color: var(--field-label);
-  font-size: 10px;
+  font-size: var(--texto-2xs);
   font-weight: 500;
   letter-spacing: 0.07em;
   text-transform: uppercase;
@@ -2707,7 +2633,7 @@ body {
 .dashboard-context strong {
   overflow: hidden;
   color: var(--heading-text);
-  font-size: 15px;
+  font-size: var(--texto-lg);
   font-weight: 700;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -2715,7 +2641,7 @@ body {
 
 .dashboard-context small {
   color: var(--muted);
-  font-size: 11px;
+  font-size: var(--texto-xs);
 }
 
 .dashboard-context .button svg {
@@ -2743,13 +2669,13 @@ body {
 .dashboard-filters-heading h2 {
   margin: 0;
   color: var(--heading-text);
-  font-size: 12px;
+  font-size: var(--texto-sm);
   font-weight: 500;
 }
 
 .dashboard-filters-heading > span {
   color: var(--muted);
-  font-size: 10px;
+  font-size: var(--texto-2xs);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
@@ -2769,7 +2695,7 @@ body {
 
 .dashboard-filter-field > span {
   color: var(--field-label);
-  font-size: 10px;
+  font-size: var(--texto-2xs);
   font-weight: 500;
 }
 
@@ -2782,14 +2708,17 @@ body {
   border-radius: 3px;
   background: var(--surface);
   color: var(--ink);
-  font-size: 11px;
+  font-size: var(--texto-xs);
 }
 
 .dashboard-filter-field select:hover {
   border-color: var(--field-hover);
 }
 
-.dashboard-filter-field select:focus {
+/* Mesma razao do anel suave em `patrimonio.css`: so vale para foco que nao veio
+   do teclado. O `outline: 0` daqui zerava o anel global e deixava o select com
+   1,59:1 de indicador. */
+.dashboard-filter-field select:focus:not(:focus-visible) {
   border-color: var(--brand-700);
   box-shadow: 0 0 0 3px var(--focus-ring);
   outline: 0;
@@ -2875,7 +2804,7 @@ body {
 
 .dashboard-kpi > span {
   color: var(--field-label);
-  font-size: 11px;
+  font-size: var(--texto-xs);
   font-weight: 500;
 }
 
@@ -2892,6 +2821,27 @@ body {
   color: var(--status-danger-text);
 }
 
+/* Os seis modulos pesavam igual em qualquer estado: o `tone` so trocava a cor
+   de uma barra de 2px e do numero. Numa fileira de seis medidas identicas, a
+   que exige acao ocupa o mesmo espaco que a que so informa quanto existe.
+   Agora o estado conduz o peso. A hierarquia vem do dado e nao da posicao —
+   reordenar os KPIs nao muda quem manda, e numa base saudavel a fileira volta a
+   ler como seis medidas equivalentes, que e a verdade naquele dia. Cresce so o
+   `danger`: se o `warning` crescesse junto, a fileira teria dois pesos altos e
+   nenhum destaque. */
+.dashboard-kpi.is-danger {
+  background: var(--coral-soft);
+}
+
+.dashboard-kpi.is-danger::before {
+  height: 3px;
+  opacity: 1;
+}
+
+.dashboard-kpi.is-danger > strong {
+  font-size: clamp(26px, 2.15vw, 34px);
+}
+
 .dashboard-kpi.is-warning > strong {
   color: var(--status-warning-text);
 }
@@ -2899,7 +2849,7 @@ body {
 .dashboard-kpi > small {
   overflow: hidden;
   color: var(--muted);
-  font-size: 10px;
+  font-size: var(--texto-2xs);
   line-height: 1.35;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -2950,7 +2900,7 @@ body {
 
 .dashboard-panel-heading h2 {
   color: var(--heading-text);
-  font-size: 14px;
+  font-size: var(--texto-base);
   font-weight: 700;
   letter-spacing: -0.01em;
 }
@@ -2958,14 +2908,14 @@ body {
 .dashboard-panel-heading p {
   margin-top: 3px;
   color: var(--muted);
-  font-size: 10px;
+  font-size: var(--texto-2xs);
   line-height: 1.45;
 }
 
 .dashboard-panel-heading > span {
   flex: 0 0 auto;
   color: var(--muted);
-  font-size: 10px;
+  font-size: var(--texto-2xs);
   font-weight: 500;
 }
 
@@ -2977,7 +2927,7 @@ body {
   background: transparent;
   color: var(--emphasis-text);
   cursor: pointer;
-  font-size: 10px;
+  font-size: var(--texto-2xs);
   font-weight: 500;
 }
 
@@ -3032,14 +2982,14 @@ body {
 .dashboard-status-row > span,
 .dashboard-movement-bars span {
   color: var(--muted);
-  font-size: 10px;
+  font-size: var(--texto-2xs);
   font-weight: 500;
 }
 
 .dashboard-status-row > strong,
 .dashboard-movement-bars strong {
   color: var(--heading-text);
-  font-size: 11px;
+  font-size: var(--texto-xs);
   font-variant-numeric: tabular-nums;
   text-align: right;
 }
@@ -3119,25 +3069,25 @@ body {
 
 .dashboard-attention-copy strong {
   color: var(--heading-text);
-  font-size: 11px;
+  font-size: var(--texto-xs);
   font-weight: 500;
 }
 
 .dashboard-attention-copy small {
   color: var(--muted);
-  font-size: 11px;
+  font-size: var(--texto-xs);
 }
 
 .dashboard-attention-value {
   color: var(--heading-text);
-  font-size: 15px;
+  font-size: var(--texto-lg);
   font-variant-numeric: tabular-nums;
   font-weight: 700;
 }
 
 .dashboard-attention-arrow {
   color: var(--muted);
-  font-size: 18px;
+  font-size: var(--texto-2xl);
 }
 
 .dashboard-clear-state {
@@ -3161,12 +3111,12 @@ body {
 
 .dashboard-clear-state strong {
   color: var(--heading-text);
-  font-size: 12px;
+  font-size: var(--texto-sm);
 }
 
 .dashboard-clear-state span {
   color: var(--muted);
-  font-size: 10px;
+  font-size: var(--texto-2xs);
 }
 
 .dashboard-horizontal-bars {
@@ -3196,18 +3146,18 @@ body {
 
 .dashboard-horizontal-row > div:first-child strong {
   color: var(--flow-text);
-  font-size: 10px;
+  font-size: var(--texto-2xs);
   font-weight: 500;
 }
 
 .dashboard-horizontal-row > div:first-child small {
   color: var(--muted);
-  font-size: 10px;
+  font-size: var(--texto-2xs);
 }
 
 .dashboard-horizontal-row > strong {
   color: var(--heading-text);
-  font-size: 11px;
+  font-size: var(--texto-xs);
   font-variant-numeric: tabular-nums;
   text-align: right;
 }
@@ -3235,14 +3185,14 @@ body {
 
 .dashboard-progress-heading > div strong {
   color: var(--heading-text);
-  font-size: 25px;
+  font-size: var(--texto-5xl);
   letter-spacing: -0.035em;
 }
 
 .dashboard-progress-heading > div span,
 .dashboard-progress-heading > span {
   color: var(--muted);
-  font-size: 11px;
+  font-size: var(--texto-xs);
 }
 
 .dashboard-progress-heading > span {
@@ -3280,12 +3230,12 @@ body {
   align-items: center;
   gap: 5px;
   color: var(--muted);
-  font-size: 11px;
+  font-size: var(--texto-xs);
 }
 
 .dashboard-campaign-results dd {
   color: var(--heading-text);
-  font-size: 11px;
+  font-size: var(--texto-xs);
   font-variant-numeric: tabular-nums;
   font-weight: 500;
 }
@@ -3317,7 +3267,7 @@ body {
 
 .dashboard-aging-chart > div > span {
   color: var(--muted);
-  font-size: 11px;
+  font-size: var(--texto-xs);
 }
 
 .dashboard-aging-chart progress.is-critical {
@@ -3326,7 +3276,7 @@ body {
 
 .dashboard-aging-chart > div > strong {
   color: var(--heading-text);
-  font-size: 10px;
+  font-size: var(--texto-2xs);
   font-variant-numeric: tabular-nums;
   text-align: right;
 }
@@ -3336,7 +3286,7 @@ body {
   padding-top: 12px;
   border-top: 1px solid var(--line);
   color: var(--muted);
-  font-size: 11px;
+  font-size: var(--texto-xs);
 }
 
 .dashboard-coverage-list {
@@ -3358,13 +3308,13 @@ body {
 
 .dashboard-coverage-row > div:first-child strong {
   color: var(--flow-text);
-  font-size: 11px;
+  font-size: var(--texto-xs);
   font-weight: 500;
 }
 
 .dashboard-coverage-row > div:first-child span {
   color: var(--muted);
-  font-size: 10px;
+  font-size: var(--texto-2xs);
   font-variant-numeric: tabular-nums;
   text-align: right;
 }
@@ -3379,7 +3329,7 @@ body {
   padding-top: 12px;
   border-top: 1px solid var(--line);
   color: var(--muted);
-  font-size: 11px;
+  font-size: var(--texto-xs);
 }
 
 .dashboard-coverage-note strong {
@@ -3393,7 +3343,7 @@ body {
   align-items: center;
   justify-content: center;
   color: var(--muted);
-  font-size: 10px;
+  font-size: var(--texto-2xs);
   line-height: 1.5;
   text-align: center;
 }
@@ -3624,14 +3574,14 @@ body {
 }
 
 .app-brand strong {
-  font-size: 15px;
+  font-size: var(--texto-lg);
   color: #ffffff;
 }
 
 .app-brand small {
   margin-top: 3px;
   color: #7eb3b8;
-  font-size: 10px;
+  font-size: var(--texto-2xs);
 }
 
 .primary-nav {
@@ -3656,7 +3606,7 @@ body {
   border: 0;
   border-radius: 3px;
   color: #d6e2ee;
-  font-size: 11px;
+  font-size: var(--texto-xs);
   text-align: center;
 }
 
@@ -3964,7 +3914,7 @@ body {
   }
 
   .app-brand strong {
-    font-size: 13px;
+    font-size: var(--texto-md);
   }
 
   .app-brand small {
@@ -4110,10 +4060,6 @@ body {
 }
 
 /* Enterprise SaaS application shell and nuclei directory */
-:root {
-  --saas-content-max: 1520px;
-  --saas-radius: 3px;
-}
 
 .app-header {
   border-bottom: 1px solid rgba(144, 177, 207, 0.18);
@@ -4143,7 +4089,7 @@ body {
 }
 
 .app-brand strong {
-  font-size: 14px;
+  font-size: var(--texto-base);
 }
 
 .primary-nav {
@@ -4156,7 +4102,7 @@ body {
   flex-direction: row;
   gap: 6px;
   border-radius: var(--saas-radius);
-  font-size: 11px;
+  font-size: var(--texto-xs);
 }
 
 .nav-item.is-active {
@@ -4190,7 +4136,7 @@ textarea {
 
 .page-heading > p:last-child {
   margin-top: 4px;
-  font-size: 12px;
+  font-size: var(--texto-sm);
 }
 
 .view-section {
@@ -4261,18 +4207,18 @@ textarea {
 }
 
 .nuclei-overview .operational-metric-content > span {
-  font-size: 11px;
+  font-size: var(--texto-xs);
   letter-spacing: 0.045em;
 }
 
 .nuclei-overview .operational-metric-content > strong {
   margin-top: 2px;
-  font-size: 25px;
+  font-size: var(--texto-5xl);
 }
 
 .nuclei-overview .operational-metric-content > small {
   margin-top: 3px;
-  font-size: 10px;
+  font-size: var(--texto-2xs);
 }
 
 .nuclei-directory {
@@ -4291,14 +4237,14 @@ textarea {
 }
 
 .nuclei-list-toolbar h2 {
-  font-size: 16px;
+  font-size: var(--texto-xl);
   line-height: 1.25;
 }
 
 .nuclei-list-toolbar p {
   margin: 4px 0 0;
   color: var(--muted);
-  font-size: 11px;
+  font-size: var(--texto-xs);
 }
 
 .nuclei-directory-controls {
@@ -4318,7 +4264,7 @@ textarea {
   padding-left: 39px;
   border-color: var(--line-strong);
   background: var(--surface-inset);
-  font-size: 12px;
+  font-size: var(--texto-sm);
   font-weight: 500;
 }
 
@@ -4345,7 +4291,7 @@ textarea {
   background: transparent;
   color: var(--muted);
   font: inherit;
-  font-size: 11px;
+  font-size: var(--texto-xs);
   font-weight: 500;
   cursor: pointer;
 }
@@ -4375,7 +4321,7 @@ textarea {
   min-width: 1110px;
   border-collapse: collapse;
   color: var(--table-text);
-  font-size: 12px;
+  font-size: var(--texto-sm);
   text-align: left;
 }
 
@@ -4394,7 +4340,7 @@ textarea {
 .nuclei-table thead th {
   height: 42px;
   color: var(--table-head-text);
-  font-size: 11px;
+  font-size: var(--texto-xs);
   font-weight: 500;
   letter-spacing: 0.055em;
   text-transform: uppercase;
@@ -4456,7 +4402,7 @@ textarea {
   border-radius: 3px;
   background: var(--surface-soft);
   color: var(--muted);
-  font-size: 10px;
+  font-size: var(--texto-2xs);
   font-weight: 500;
   letter-spacing: 0;
 }
@@ -4510,7 +4456,7 @@ textarea {
   border-radius: 3px;
   background: color-mix(in srgb, var(--success) 10%, var(--surface));
   color: var(--success);
-  font-size: 11px;
+  font-size: var(--texto-xs);
   font-weight: 500;
   white-space: nowrap;
 }
@@ -4535,7 +4481,7 @@ textarea {
   background: transparent;
   color: var(--emphasis-text);
   font: inherit;
-  font-size: 11px;
+  font-size: var(--texto-xs);
   font-weight: 500;
   white-space: nowrap;
   cursor: pointer;
@@ -4655,7 +4601,7 @@ textarea {
     margin: 0;
     overflow: hidden;
     color: var(--heading-text);
-    font-size: 14px;
+    font-size: var(--texto-base);
     line-height: 1.25;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -4672,7 +4618,7 @@ textarea {
     min-width: 0;
     margin: 12px 0 0 44px;
     color: var(--muted);
-    font-size: 11px;
+    font-size: var(--texto-xs);
   }
 
   .nucleus-mobile-context span {
@@ -4716,14 +4662,14 @@ textarea {
 
   .nucleus-mobile-metrics strong {
     color: var(--heading-text);
-    font-size: 18px;
+    font-size: var(--texto-2xl);
     font-variant-numeric: tabular-nums;
   }
 
   .nucleus-mobile-metrics span {
     margin-top: 3px;
     color: var(--muted);
-    font-size: 11px;
+    font-size: var(--texto-xs);
     font-weight: 500;
     letter-spacing: 0.04em;
     text-transform: uppercase;
@@ -4793,7 +4739,7 @@ textarea {
     align-items: center;
     justify-content: center;
     padding-inline: 4px;
-    font-size: 10px;
+    font-size: var(--texto-2xs);
   }
 
   #nuclei-view > .section-toolbar {
@@ -4808,11 +4754,11 @@ textarea {
   }
 
   #nuclei-view > .section-toolbar h2 {
-    font-size: 18px;
+    font-size: var(--texto-2xl);
   }
 
   #nuclei-view > .section-toolbar p {
-    font-size: 11px;
+    font-size: var(--texto-xs);
   }
 
   #nuclei-view > .section-toolbar .button {
@@ -4845,7 +4791,7 @@ textarea {
   }
 
   .nuclei-overview .operational-metric-content > strong {
-    font-size: 22px;
+    font-size: var(--texto-4xl);
   }
 
   .nuclei-list-toolbar {

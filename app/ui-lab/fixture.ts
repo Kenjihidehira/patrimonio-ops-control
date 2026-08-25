@@ -57,6 +57,11 @@ const assets = Array.from({ length: 48 }, (_, indice) => {
   return {
     // Patrimonio oficial: exatamente seis digitos.
     id: String(104800 + indice),
+    // Sem esta data, `normalizeAsset` carimba `new Date()`. A ordenacao padrao
+    // da tabela cai em `createdAt` para os ativos sem movimentacao, entao a
+    // ordem das linhas passava a depender do milissegundo da construcao e o
+    // laboratorio mostrava uma tela diferente a cada carga.
+    createdAt: `2025-${String(1 + (indice % 12)).padStart(2, "0")}-${String(1 + (indice % 28)).padStart(2, "0")}T09:00:00.000Z`,
     type: tipos[indice % tipos.length],
     status: estados[indice % estados.length],
     nucleusId: nucleo.id,

@@ -1,0 +1,262 @@
+/*
+ * tokens.css — a unica fonte de verdade das variaveis do sistema.
+ *
+ * Antes deste arquivo, `:root` estava declarado em quatro lugares
+ * (patrimonio.css:1, enterprise.css:1, enterprise.css:4113, glass.css:18) e
+ * `:root[data-theme="dark"]` em tres. Vinte e tantos tokens tinham valor
+ * diferente em cada um, e o que aparecia na tela era sempre o do arquivo
+ * carregado por ultimo. Mudar uma cor no lugar errado nao fazia nada.
+ *
+ * Os valores abaixo nao foram escolhidos de novo: sao os que ja venciam a
+ * cascata, lidos do navegador com `getComputedStyle` nas oito telas, nos dois
+ * temas. Consolidar aqui nao mudou um pixel — mudou o numero de lugares onde
+ * se mexe para mudar um pixel, de quatro para um.
+ *
+ * Carrega PRIMEIRO. As tres folhas seguintes so consomem.
+ */
+
+:root {
+  color-scheme: light;
+
+  /* Marca Gazin. O azul e o unico ponto de cor forte da interface. */
+  --brand-950: #05073F;
+  --brand-900: #080B73;
+  --brand-700: #0B109F;
+  --brand-100: #E9EAFC;
+  --sidebar-bg: #080B73;
+  --action-bg: #0B109F;
+  --action-hover: #05073F;
+  --on-action: #FFFFFF;
+
+  /* Tinta: do texto corrido ao rotulo de campo, em ordem de peso. */
+  --ink: #1C2127;
+  --heading-text: #14171C;
+  --emphasis-text: #0B109F;
+  --flow-text: #2B313A;
+  --field-label: #454C56;
+  --muted: #4E555F;
+  --subtle-text: #5A626D;
+  --form-error-text: #81392D;
+
+  --icon-accent: #0B109F;
+  --icon-muted: #616872;
+
+  /* Superficies, do fundo da pagina ao cartao levantado. */
+  --canvas: #DDE1E8;
+  --surface: #F7F8FA;
+  --surface-raised: #FFFFFF;
+  --surface-soft: #E9ECF1;
+  --surface-inset: #EFF1F5;
+  --surface-hover: #EDF0F5;
+  --surface-selected: #E9EAFC;
+
+  /* Limites e foco. */
+  --line: #C9CFD8;
+  --line-strong: #A9B2BE;
+  --field-hover: #9FAFC2;
+  --focus-ring: rgba(11, 16, 159, 0.22);
+
+  /* Anel de foco do teclado, em duas camadas. Nenhuma cor unica serve: o
+     sistema tem chapa clara no corpo e barra azul-escura no topo, e o amarelo
+     que funciona la em cima mede 1,50:1 sobre a chapa. Com nucleo escuro e halo
+     claro, um dos dois sempre contrasta — o padrao ja usado no `login.css`.
+     Medido: nucleo 17,8:1 sobre a chapa clara, halo 10,3:1 sobre a escura e
+     11,6:1 sobre a barra. Os dois valores sao iguais nos dois temas de
+     proposito: quem muda e qual das camadas faz o trabalho. */
+  --foco-nucleo: #05073F;
+  --foco-halo: #FFC400;
+
+  /* Cores de significado. O par forte/suave se repete em todas. */
+  --yellow: #FFC400;
+  --yellow-soft: #FFF7DC;
+  --coral: #BE3543;
+  --coral-soft: #FDECEE;
+  --blue: #118A9C;
+  --blue-soft: #E3F5F7;
+  --success: #097268;
+  --success-soft: #E7F7F5;
+
+  /* Estados nomeados: borda e texto de cada etiqueta de situacao. */
+  --status-blue-border: #BFD5EF;
+  --status-blue-text: #20578F;
+  --status-success-border: #A7DDD5;
+  --status-warning-border: #EAD28A;
+  --status-warning-text: #725B13;
+  --status-danger-border: #EDBCB2;
+  --status-danger-text: #914233;
+  --notice-border: #EAD28A;
+  --notice-text: #6A5B29;
+  --toast-success-bg: #E7F7F5;
+  --toast-success-text: #075C55;
+  --toast-success-border: #A7D9D2;
+  --toast-error-bg: #FFF0ED;
+  --toast-error-text: #81392D;
+  --toast-error-border: #E5B0A5;
+
+  /* Etiqueta de alarme: a unica preenchida do sistema. Existe para que a
+     divergencia seja a primeira coisa que o olho acha numa tabela de 25 linhas.
+     Se um dia outra etiqueta ganhar preenchimento, ela deixa de funcionar. */
+  --alarme-bg: #BE3543;
+  --alarme-text: #FFFFFF;
+
+  /* Tabela: e a tela mais densa do sistema e tem paleta propria. */
+  --table-line: #D5DAE2;
+  --table-head: #E4E7ED;
+  --table-head-text: #454C56;
+  --table-text: #23282F;
+
+  /* Profundidade. */
+  --shadow: none;
+  --shadow-soft: none;
+  --shadow-panel: none;
+  --modal-shadow: 0 18px 48px rgba(20, 23, 28, 0.28);
+  --overlay: rgba(6, 31, 59, 0.66);
+  --loading-bg: #E5EBF2;
+
+  /* Vidro: a camada que decide superficie. Ver o cabecalho de glass.css. */
+  /* Sem degrade: o fundo e mesa, nao ceu. O brilho azul no canto era o
+     unico lugar do sistema onde a cor da marca aparecia sem significar nada. */
+  --placa-mesa: #DDE1E8;
+  --placa-folha: #F7F8FA;
+  --placa-folha-hover: #FFFFFF;
+  --placa-folha-alta: #FFFFFF;
+  --placa-solida: #F7F8FA;
+  --placa-fio: #C9CFD8;
+  --placa-fio-forte: #98A2B0;
+  --placa-luz: rgba(255, 255, 255, 0.9);
+  --placa-cabecalho: #E4E7ED;
+  --placa-raio: 2px;
+  --placa-raio-alto: 3px;
+  --placa-sombra: none;
+  --placa-sombra-alta: 0 18px 48px rgba(20, 23, 28, 0.28);
+  /* A barra sempre foi azul, nos dois temas: e a assinatura da Gazin. */
+  --glass-header: rgba(9, 14, 56, 0.92);
+  --glass-header-solid: #0A0E38;
+  --glass-header-border: rgba(255, 255, 255, 0.16);
+  /* Proprios, para o header nao seguir a chapa quando ela perdeu os dois. */
+  --glass-header-blur: 18px;
+  --glass-header-shadow: 0 14px 34px rgba(23, 34, 53, 0.12);
+
+  /* Escala tipografica. Os valores nao foram reescolhidos: sao os que ja
+     estavam em uso, agora com degrau nomeado e um dono so. A distribuicao
+     medida mostra que a interface tem tres tamanhos de trabalho — 11px em 129
+     lugares, 10px em 101 e 12px em 40, tres quartos de tudo — e uma cauda de 22
+     valores orfaos com uma ou duas ocorrencias cada, que existem porque alguem
+     empurrou um numero. A cauda continua literal de proposito: encaixa-la no
+     degrau vizinho mexe em pixel e e decisao de desenho, nao de script. */
+  --texto-2xs: 10px;
+  --texto-xs: 11px;
+  --texto-sm: 12px;
+  --texto-md: 13px;
+  --texto-base: 14px;
+  --texto-lg: 15px;
+  --texto-xl: 16px;
+  --texto-2xl: 18px;
+  --texto-3xl: 20px;
+  --texto-4xl: 22px;
+  --texto-5xl: 25px;
+
+  /* Medidas de layout. */
+  --enterprise-sidebar-width: 232px;
+  --saas-radius: 3px;
+  --saas-content-max: 1520px;
+
+  font-family: var(--font-plex-sans), "Segoe UI", ui-sans-serif, system-ui, sans-serif;
+  font-synthesis: none;
+}
+
+/*
+ * Tema escuro. So os tokens que mudam — o resto herda do bloco acima, que e o
+ * motivo de nao repetir aqui as medidas de layout nem as fontes.
+ */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  --brand-950: #0A0C56;
+  --brand-900: #141BB0;
+  --brand-700: #A3A8FF;
+  --brand-100: #1B1E5C;
+  --sidebar-bg: #070A3A;
+  --action-bg: #2029C4;
+  --action-hover: #3A43DC;
+
+  --ink: #E7EBEF;
+  --heading-text: #F1F3F5;
+  --emphasis-text: #B5C9DA;
+  --flow-text: #D7E2EE;
+  --field-label: #B3C2D2;
+  --muted: #AEB8C1;
+  --subtle-text: #8FA1B5;
+  --form-error-text: #FFC1C6;
+
+  --icon-accent: #92AABD;
+  --icon-muted: #B9C2CA;
+
+  --canvas: #14171C;
+  --surface: #1B1F26;
+  --surface-raised: #22272F;
+  --surface-soft: #171A20;
+  --surface-inset: #191D23;
+  --surface-hover: #262C35;
+  --surface-selected: #2A465D;
+
+  --line: #333941;
+  --line-strong: #4B535E;
+  --field-hover: #607792;
+  --focus-ring: rgba(105, 184, 255, 0.2);
+
+  --yellow-soft: #352C0D;
+  --coral: #FF8A8A;
+  --coral-soft: #3B171D;
+  --blue: #5DCAA5;
+  --blue-soft: #102D47;
+  --success: #5DCAA5;
+  --success-soft: #0D322F;
+
+  --status-blue-border: #315D87;
+  --status-blue-text: #9FD1FF;
+  --status-success-border: #2D6A63;
+  --status-warning-border: #706022;
+  --status-warning-text: #F3D77A;
+  --status-danger-border: #7B3941;
+  --status-danger-text: #FFB4BA;
+  --notice-border: #73611D;
+  --notice-text: #F3D77A;
+  --toast-success-bg: #10362F;
+  --toast-success-text: #A1E8DE;
+  --toast-success-border: #2F7066;
+  --toast-error-bg: #3B1A20;
+  --toast-error-text: #FFC1C6;
+  --toast-error-border: #80414A;
+
+  /* No escuro o preenchimento inverte: fundo claro, texto do fundo da pagina.
+     Um vermelho escuro sobre painel escuro nao chamaria atencao nenhuma. */
+  --alarme-bg: #FF8A8A;
+  --alarme-text: #111D29;
+
+  --table-line: #2B313A;
+  --table-head: #232830;
+  --table-head-text: #BDC5CC;
+  --table-text: #DFE4E8;
+
+  --shadow: none;
+  --shadow-soft: none;
+  --shadow-panel: none;
+  --modal-shadow: 0 20px 54px rgba(0, 0, 0, 0.6);
+  --overlay: rgba(2, 8, 16, 0.78);
+  --loading-bg: #26374C;
+
+  --placa-mesa: #14171C;
+  --placa-folha: #1B1F26;
+  --placa-folha-hover: #22272F;
+  --placa-folha-alta: #22272F;
+  --placa-solida: #1B1F26;
+  --placa-fio: #333941;
+  --placa-fio-forte: #5A626D;
+  --placa-luz: rgba(255, 255, 255, 0.06);
+  --placa-cabecalho: #232830;
+  --placa-sombra: none;
+  --placa-sombra-alta: 0 20px 54px rgba(0, 0, 0, 0.6);
+  --glass-header: rgba(9, 14, 56, 0.72);
+  --glass-header-shadow: 0 16px 40px rgba(2, 4, 26, 0.38);
+}

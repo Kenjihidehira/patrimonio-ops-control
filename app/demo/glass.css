@@ -1,102 +1,33 @@
-/* Camada vidromorfica do sistema.
+/* Camada de superficie do sistema: a chapa.
+ *
+ * Aqui morava o vidro. Saiu inteiro — desfoque, translucidez, degrade e sombra
+ * grande —, e o motivo nao foi so estetico: `backdrop-filter` recompoe a cada
+ * quadro de rolagem, e uma tabela de 25 linhas rola muito. Sobrou um unico
+ * desfoque no sistema, no `.modal::backdrop`, que nao e superficie e sim a
+ * separacao entre o que esta em foco e o resto.
+ *
+ * O material agora e chapa opaca sobre mesa: 1px de fio, raio de 2px, um fio de
+ * luz na borda de cima e sombra nenhuma. Sem sombra, a unica coisa que separa
+ * um painel do fundo e a diferenca de valor — e o risco assumido deste desenho.
+ * O degrau que faz um cartao existir dentro de um painel virou `--placa-folha-alta`.
+ *
+ * O header e a excecao, preservada por pedido: mantem cor, desfoque e sombra do
+ * desenho anterior, com tokens `--glass-header-*` proprios para nao seguir a
+ * chapa quando ela mudar. Medido: 79 elementos do header, 0 diferencas.
  *
  * Carrega depois de `patrimonio.css` e `enterprise.css` de proposito. Aqueles
- * dois trazem 118 blocos de topo redundantes — a familia do header aparece 3x e
+ * dois trazem blocos de topo redundantes — a familia do header aparece 3x e
  * `.primary-nav` 4x —, entao qualquer regra escrita no meio deles pode nascer
- * inerte, o que ja aconteceu varias vezes nesta base. Aqui a ordem resolve: e a
- * ultima palavra sobre superficie, e nao depende de especificidade inflada.
- *
- * A fusao daqueles blocos continua pendente. E mecanica, mas so e segura com
- * comparacao de estilo computado antes e depois; feita no olho, troca um
- * problema invisivel por outro.
+ * inerte, o que ja aconteceu varias vezes nesta base. Aqui a ordem resolve.
  *
  * O texto nao e redefinido aqui: sai de `--heading-text` e `--muted`, que o
  * tema ja resolve. Impor cor propria foi o que quebrou o tema claro na primeira
  * tentativa — 43 de 100 textos abaixo de 4,5:1, alguns em 1,04:1.
  */
 
-:root {
-  /* Tema claro. O degrade mantem a familia do azul Gazin, mas alto o
-     suficiente para o texto escuro do tema continuar legivel por cima. */
-  /* A mesma ideia na versao alta: um so tom claro com o brilho azul no mesmo
-     canto, na mesma posicao, para os dois temas serem a mesma tela. */
-  --glass-canvas:
-    radial-gradient(90% 60% at 82% 0%, rgba(11, 16, 159, 0.14) 0%, rgba(11, 16, 159, 0) 62%),
-    #F4F6FB;
-
-  --glass-surface: rgba(255, 255, 255, 0.66);
-  --glass-surface-raised: rgba(255, 255, 255, 0.82);
-  --glass-surface-hover: rgba(255, 255, 255, 0.78);
-  --glass-solid: #F7F9FC;
-  --glass-border: rgba(23, 34, 53, 0.22);
-  --glass-border-strong: rgba(23, 34, 53, 0.38);
-  --glass-blur: 18px;
-  --glass-shadow: 0 14px 34px rgba(23, 34, 53, 0.12);
-  --glass-blur-raised: 26px;
-  --glass-shadow-raised: 0 24px 56px rgba(23, 34, 53, 0.2);
-
-  /* O header segue escuro nos dois temas. O texto dele e branco fixo em
-     `enterprise.css` — a barra sempre foi azul —, e clarea-la no tema claro
-     levou 42 de 100 textos abaixo do minimo, alguns a 1,02:1. Manter escuro
-     preserva o branco, a identidade da marca e o contraste. */
-  /* Mais opaco no tema claro: com 0,72 a tela clara atravessava e levantava o
-     fundo do header para rgb(86, 89, 119), derrubando o texto secundario a
-     2,99:1. Com 0,92 o fundo volta a rgb(27, 32, 72). */
-  --glass-header: rgba(9, 14, 56, 0.92);
-  --glass-header-solid: #0A0E38;
-  --glass-header-border: rgba(255, 255, 255, 0.16);
-
-  /* O vidro claro fica um fio abaixo do branco puro, e isso derrubou o texto
-     secundario de 4,69:1 para 4,46:1 em 26 lugares — abaixo do minimo de 4,5.
-     O tom tambem cobre o pior fundo do tema claro, que nao e o vidro: e a linha
-     selecionada da tabela, em `--brand-100`. La o tom antigo dava 4,0:1 e ja
-     reprovava antes deste trabalho; este da 4,76:1. */
-  --muted: #5C6878;
-
-  /* Cores de estado usadas como texto. Medidas nos dois piores fundos claros —
-     o vidro (248,249,252) e a linha selecionada (233,234,252) — os tons
-     originais davam 4,58/4,05 no sucesso e 3,65/3,22 no coral. Estes passam nos
-     dois. So o tema claro muda: no escuro os tons originais ja passam. */
-  --success: #097268;
-  --coral: #BE3543;
-
-  /* Tinta do cabecalho fixo da tabela: opaca o bastante para as linhas
-     passarem por baixo sem borrar a leitura. */
-  --glass-head: #EEF1F7;
-
-  /* A luz na borda de cima e o que faz a superficie ler como vidro e nao como
-     um retangulo translucido: simula a espessura pegando a luz. */
-  --glass-highlight: rgba(255, 255, 255, 0.85);
-}
-
-:root[data-theme="dark"] {
-  /* Quase preto com um brilho azul entrando por um canto so. O vidro fica mais
-     evidente aqui do que sobre o degrade antigo, porque a diferenca entre
-     painel e chao e a maior das opcoes que comparamos.
-     Ganho lateral: o fundo e praticamente uniforme, entao a leitura do vidro
-     nao muda mais conforme a pagina rola — no degrade anterior, o mesmo painel
-     tinha fundo diferente no topo e no rodape. */
-  --glass-canvas:
-    radial-gradient(90% 60% at 82% 0%, rgba(11, 16, 159, 0.55) 0%, rgba(11, 16, 159, 0) 62%),
-    #080B14;
-
-  --glass-surface: rgba(255, 255, 255, 0.07);
-  --glass-surface-raised: rgba(255, 255, 255, 0.12);
-  --glass-surface-hover: rgba(255, 255, 255, 0.11);
-  --glass-solid: #0C1240;
-  --glass-border: rgba(255, 255, 255, 0.22);
-  --glass-border-strong: rgba(255, 255, 255, 0.4);
-  --glass-shadow: 0 16px 40px rgba(2, 4, 26, 0.38);
-  --glass-shadow-raised: 0 26px 64px rgba(2, 4, 26, 0.5);
-  --glass-header: rgba(9, 14, 56, 0.72);
-  --glass-head: #1A2148;
-  --glass-highlight: rgba(255, 255, 255, 0.22);
-}
-
-/* O degrade fica numa camada fixa propria em vez de
-   `background-attachment: fixed`. Sao quatro camadas de fundo: presas ao
-   viewport, o navegador repinta as quatro a cada quadro de rolagem. Assim ele
-   pinta uma vez e so compoe. */
+/* A mesa fica numa camada fixa propria em vez de `background-attachment: fixed`,
+   que prenderia o fundo ao viewport e o faria repintar a cada quadro de
+   rolagem. Assim o navegador pinta uma vez e depois so compoe. */
 .app-shell {
   position: relative;
   isolation: isolate;
@@ -106,63 +37,56 @@
   position: fixed;
   z-index: -1;
   inset: 0;
-  background: var(--glass-canvas);
+  background: var(--placa-mesa);
   content: "";
   pointer-events: none;
 }
 
-/* O conteudo rola sobre o degrade em vez de trazer a propria cor: e o que
-   deixa o desfoque ter o que desfocar. */
+/* O conteudo rola sobre a mesa em vez de trazer a propria cor: e o que faz a
+   pagina inteira ler como uma superficie so, com folhas apoiadas nela. */
 .main-content,
 .view-section {
   background: transparent;
 }
 
-/* Queda sem `backdrop-filter`: cor solida, nao o vidro sem desfoque. Com 7% de
-   opacidade e sem desfoque, o texto ficaria sobre o degrade cru. */
+/* Chapa opaca. Nao ha queda a declarar porque nao ha mais nada condicional:
+   a superficie e a mesma com ou sem suporte a filtro. */
 .topbar,
 .dashboard-panel,
 .app-footer,
 .detail-panel,
 .section-toolbar {
-  border: 1px solid var(--glass-border);
-  background: var(--glass-solid);
-  box-shadow: var(--glass-shadow);
+  border: 1px solid var(--placa-fio);
+  background: var(--placa-solida);
+  box-shadow: var(--placa-sombra);
 }
 
+/* O header e o unico sobrevivente do vidro, e de proposito: ele foi
+   preservado por pedido. Por isso tem sombra e desfoque proprios em vez de
+   herdar os da chapa — quando o resto do sistema perdeu os dois, ele perdeu
+   junto, e a barra ficou chapada contra a pagina. */
 .app-header {
   border-bottom: 1px solid var(--glass-header-border);
   background: var(--glass-header-solid);
-  box-shadow: var(--glass-shadow);
+  box-shadow: var(--glass-header-shadow);
 }
 
 @supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
-  .topbar,
-  .dashboard-panel,
-  .app-footer,
-  .detail-panel,
-  .section-toolbar {
-    background: var(--glass-surface);
-    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(140%);
-    backdrop-filter: blur(var(--glass-blur)) saturate(140%);
-  }
-
   .app-header {
     background: var(--glass-header);
-    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(140%);
-    backdrop-filter: blur(var(--glass-blur)) saturate(140%);
+    -webkit-backdrop-filter: blur(var(--glass-header-blur)) saturate(140%);
+    backdrop-filter: blur(var(--glass-header-blur)) saturate(140%);
   }
 }
 
 .dashboard-panel,
 .detail-panel {
-  border-radius: 14px;
+  border-radius: var(--placa-raio);
 }
-
 
 .topbar {
   border-top: 0;
-  border-radius: 0 0 14px 14px;
+  border-radius: 0 0 var(--placa-raio) var(--placa-raio);
 }
 
 /* Movimento: so o suficiente para a superficie parecer material. */
@@ -171,8 +95,8 @@
 }
 
 .dashboard-panel:hover {
-  border-color: var(--glass-border-strong);
-  background: var(--glass-surface-hover);
+  border-color: var(--placa-fio-forte);
+  background: var(--placa-folha-hover);
   transform: translateY(-2px);
 }
 
@@ -249,9 +173,9 @@
 .inventory-layout,
 .nucleus-card,
 .kpi-item {
-  border: 1px solid var(--glass-border);
-  background: var(--glass-solid);
-  box-shadow: var(--glass-shadow);
+  border: 1px solid var(--placa-fio);
+  background: var(--placa-solida);
+  box-shadow: var(--placa-sombra);
 }
 
 .table-panel {
@@ -260,25 +184,10 @@
   box-shadow: none;
 }
 
-@supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
-  .inventory-layout,
-  .nucleus-card {
-    background: var(--glass-surface);
-    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(140%);
-    backdrop-filter: blur(var(--glass-blur)) saturate(140%);
-  }
-
-  /* O KPI vive dentro de um painel que ja desfoca. Desfocar de novo custa outra
-     camada e ainda embaca o que ja estava embacado. Tinta resolve. */
-  .kpi-item {
-    background: var(--glass-surface-raised);
-  }
-}
-
 .inventory-layout,
 .nucleus-card,
 .kpi-item {
-  border-radius: 14px;
+  border-radius: var(--placa-raio);
 }
 
 /* O cabeçalho da tabela precisa continuar legível enquanto as linhas passam por
@@ -290,24 +199,20 @@
   position: sticky;
   top: 0;
   z-index: 1;
-  background: var(--glass-head);
+  background: var(--placa-cabecalho);
 }
 
 /* Modal: superfície elevada, desfoque maior, e o fundo da página desfocado
    atrás dela — é o que separa o que está em foco do resto. */
 .modal-content {
-  border: 1px solid var(--glass-border-strong);
-  background: var(--glass-solid);
-  box-shadow: var(--glass-shadow-raised, var(--glass-shadow));
+  border: 1px solid var(--placa-fio-forte);
+  background: var(--placa-solida);
+  box-shadow: var(--placa-sombra-alta, var(--placa-sombra));
 }
 
 @supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
-  .modal-content {
-    background: var(--glass-surface-raised);
-    -webkit-backdrop-filter: blur(var(--glass-blur-raised, 26px)) saturate(150%);
-    backdrop-filter: blur(var(--glass-blur-raised, 26px)) saturate(150%);
-  }
-
+  /* O unico desfoque que sobrou no sistema. Nao e superficie: e a
+     separacao entre o que esta em foco e o resto da pagina. */
   .modal::backdrop {
     -webkit-backdrop-filter: blur(3px);
     backdrop-filter: blur(3px);
@@ -330,7 +235,7 @@
 
 .app-shell .button:hover:not(:disabled),
 .app-shell .pagination-button:hover:not(:disabled) {
-  border-color: var(--glass-border-strong);
+  border-color: var(--placa-fio-forte);
 }
 
 /* Pressionado: afunda em vez de crescer. Cresce dá a impressão de que o clique
@@ -441,11 +346,11 @@
 .section-toolbar,
 .inventory-layout,
 .nucleus-card {
-  box-shadow: inset 0 1px 0 var(--glass-highlight), var(--glass-shadow);
+  box-shadow: inset 0 1px 0 var(--placa-luz), var(--placa-sombra);
 }
 
 .modal-content {
-  box-shadow: inset 0 1px 0 var(--glass-highlight), var(--glass-shadow-raised);
+  box-shadow: inset 0 1px 0 var(--placa-luz), var(--placa-sombra-alta);
 }
 
 /* Acima de 1619 a faixa de notebook nao vale, e la o seletor cresce ate 198px.
@@ -538,7 +443,7 @@
   background: none;
   color: #FFFFFF;
   font: inherit;
-  font-size: 13px;
+  font-size: var(--texto-md);
 }
 
 .header-scan input::placeholder {
@@ -719,7 +624,7 @@
     flex-direction: row;
     gap: 7px;
     border-radius: 8px 8px 0 0;
-    font-size: 12px;
+    font-size: var(--texto-sm);
   }
 
   .nav-item-icon {
@@ -739,6 +644,16 @@
     box-shadow: inset 0 3px 0 var(--yellow);
     color: #FFFFFF;
     font-weight: 630;
+  }
+
+  /* Os dois precisam coexistir. A barra amarela diz em que tela voce esta e o
+     halo diz onde o teclado esta; declarar so um apaga o outro, porque
+     `box-shadow` nao acumula entre regras. Sem esta composicao, a aba ativa
+     focada ficava com 1,92:1 — o unico controle que sobrava reprovando depois
+     da correcao do anel. Sobre a barra azul quem carrega o contraste e o halo:
+     o nucleo escuro do anel nao se separa do azul-marinho. */
+  .nav-item.is-active:focus-visible {
+    box-shadow: inset 0 3px 0 var(--yellow), 0 0 0 5px var(--foco-halo);
   }
 
   /* Com a nav em linha propria, sobra largura na linha de cima: o nome do
@@ -766,34 +681,21 @@
 .operational-panel,
 .environment-card,
 .decision-indicators {
-  border: 1px solid var(--glass-border);
-  border-radius: 14px;
-  background: var(--glass-solid);
-  box-shadow: inset 0 1px 0 var(--glass-highlight), var(--glass-shadow);
-}
-
-@supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
-  .nuclei-overview,
-  .nuclei-directory,
-  .filter-band,
-  .operational-panel,
-  .environment-card,
-  .decision-indicators {
-    background: var(--glass-surface);
-    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(140%);
-    backdrop-filter: blur(var(--glass-blur)) saturate(140%);
-  }
+  border: 1px solid var(--placa-fio);
+  border-radius: var(--placa-raio);
+  background: var(--placa-solida);
+  box-shadow: inset 0 1px 0 var(--placa-luz), var(--placa-sombra);
 }
 
 /* Estes dois moram dentro dos de cima. Desfocar de novo custaria outra camada
    por quadro e embacaria o que ja estava embacado — tinta basta. */
 .nuclei-overview .operational-metric {
-  border-color: var(--glass-border);
-  background: var(--glass-surface-raised);
+  border-color: var(--placa-fio);
+  background: var(--placa-folha-alta);
 }
 
 .operational-panel .operational-filters {
-  border-color: var(--glass-border);
+  border-color: var(--placa-fio);
   background: transparent;
 }
 
@@ -810,14 +712,14 @@
 .section-toolbar {
   align-items: center;
   padding: 15px 18px;
-  border-radius: 14px;
+  border-radius: var(--placa-raio);
 }
 
 /* O titulo repete o nome da tela, que a topbar ja mostra logo acima — "Nucleos"
    e depois "Nucleos da empresa". Baixar o peso tira a competicao entre os dois
    sem esconder informacao: o que carrega sentido aqui e a descricao. */
 .section-toolbar > div > h2 {
-  font-size: 16px;
+  font-size: var(--texto-xl);
   font-weight: 640;
   letter-spacing: -0.01em;
 }
@@ -840,7 +742,7 @@
 .app-footer {
   align-items: center;
   padding: 13px 18px;
-  border-radius: 14px;
+  border-radius: var(--placa-raio);
 }
 
 /* ---------------------------------------------------------------------------
@@ -904,13 +806,13 @@
 
 .dashboard-trend-month {
   fill: var(--muted);
-  font-size: 11px;
+  font-size: var(--texto-xs);
   text-anchor: middle;
 }
 
 .dashboard-trend-value {
   fill: var(--heading-text);
-  font-size: 12px;
+  font-size: var(--texto-sm);
   font-weight: 640;
   text-anchor: middle;
 }
@@ -925,15 +827,14 @@
 
 .dashboard-trend-readout strong {
   color: var(--heading-text);
-  font-size: 15px;
+  font-size: var(--texto-lg);
   font-weight: 660;
 }
 
 .dashboard-trend-readout span {
   color: var(--muted);
-  font-size: 12px;
+  font-size: var(--texto-sm);
 }
-
 
 /* ---------------------------------------------------------------------------
    Barras do dashboard.
@@ -965,4 +866,51 @@
 
 .dashboard-view progress::-moz-progress-bar {
   border-radius: 999px;
+}
+
+
+/* ---------------------------------------------------------------------------
+   Ajustes que a troca de material exigiu, medidos.
+   --------------------------------------------------------------------------- */
+
+/* As setas de paginacao sao texto, nao icone: «‹›» sao glifos e valem os
+   4,5:1 da WCAG, nao os 3:1 de grafico. Em `--icon-muted` davam 3,73 sobre a
+   chapa clara — passavam raspando no branco anterior e reprovaram quando a
+   folha escureceu de #FFFFFF para #F7F8FA. */
+.app-shell .pagination-button {
+  color: var(--muted);
+}
+
+/* Numero de patrimonio e identificador, nao prosa. Em monoespacada os digitos
+   tem a mesma largura, as 25 linhas alinham coluna com coluna e a lista fica
+   conferivel de cima a baixo — que e literalmente o que alguem faz com ela,
+   de prancheta na mao. E o unico lugar do sistema com fonte diferente. */
+.app-shell .asset-id-button {
+  font-family: var(--font-plex-mono), ui-monospace, "Cascadia Mono", monospace;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.01em;
+}
+
+/* Superficie elevada: o cartao que vive DENTRO de um painel.
+   Estas regras moravam nos blocos `@supports` que sairam com o vidro, e sumiram
+   junto. A auditoria de contraste nao pegaria: `.kpi-item` sobre `.topbar` com a
+   mesma tinta continua perfeitamente legivel — so deixa de existir como cartao.
+   No claro a folha alta e branca sobre a folha #F7F8FA; no escuro, #22272F
+   sobre #1B1F26. Um degrau de valor, que e tudo que um cartao precisa quando
+   nao ha sombra para dar a ele. */
+.app-shell .kpi-item,
+.nuclei-overview .operational-metric {
+  background: var(--placa-folha-alta);
+}
+
+/* A luz na borda superior e o que faz a chapa ler como material e nao como
+   retangulo pintado. Custa nada: e sombra, nao filtro. */
+.dashboard-panel,
+.detail-panel,
+.section-toolbar,
+.inventory-layout,
+.nucleus-card,
+.app-shell .kpi-item,
+.modal-content {
+  box-shadow: inset 0 1px 0 var(--placa-luz);
 }

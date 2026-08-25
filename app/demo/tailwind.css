@@ -1,0 +1,65 @@
+/*
+ * Entrada do Tailwind para as telas internas.
+ *
+ * NAO importa `tailwindcss` inteiro. O import completo traz o `preflight`, que
+ * e um reset: zera margem de titulo e paragrafo, tira o estilo de lista, poe
+ * `border-style: solid; border-width: 0` em todo elemento e faz `img` virar
+ * `display: block`. Isto aqui nao e um projeto novo — sao 11.900 linhas de CSS
+ * escritas contra o estilo padrao do navegador, entao o reset nao chega
+ * limpando: chega brigando.
+ *
+ * Importando so `theme` e `utilities`, as classes utilitarias ficam
+ * disponiveis e nada do que ja existe muda. Medido no laboratorio.
+ *
+ * As utilitarias entram SEM camada, de proposito. Estilo sem camada vence
+ * qualquer `@layer`, independente da ordem — entao importar em
+ * `layer(utilities)` colocaria as 11.900 linhas existentes, que tambem nao tem
+ * camada, acima de toda utilitaria do Tailwind. Foi o que aconteceu na primeira
+ * tentativa: `.tracking-\[0px\] { letter-spacing: 0px }` era gerada, aparecia na
+ * folha, e o elemento computava `normal` assim mesmo.
+ *
+ * Sem camada, quem decide e a ordem de import — e este arquivo entra por
+ * ultimo. O `theme` continua em camada porque so declara variaveis.
+ */
+@layer theme;
+
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css";
+
+/*
+ * O Tailwind v4 so gera a classe que encontra escrita no codigo, e procura a
+ * partir da pasta deste arquivo. Como ele mora em `app/demo/`, nao enxergava
+ * `components/` — as classes saiam no HTML e nenhuma regra era gerada, o que
+ * na tela parece "o Tailwind nao funciona" em vez de "ele nao leu o arquivo".
+ */
+@source "../../components";
+@source "../../app";
+
+/*
+ * As cores do sistema entram no Tailwind como tema, entao `bg-surface`,
+ * `text-muted` e `border-line` passam a existir e apontam para os mesmos
+ * tokens que o CSS semantico usa. Sem isto, usar Tailwind aqui significaria
+ * escrever `bg-[#182634]` — uma segunda paleta, fora do tema, que nao
+ * acompanha a troca de tema. Era o problema que acabamos de resolver.
+ */
+@theme inline {
+  --color-canvas: var(--canvas);
+  --color-surface: var(--surface);
+  --color-surface-raised: var(--surface-raised);
+  --color-surface-soft: var(--surface-soft);
+  --color-surface-hover: var(--surface-hover);
+  --color-ink: var(--ink);
+  --color-heading: var(--heading-text);
+  --color-muted: var(--muted);
+  --color-subtle: var(--subtle-text);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-brand: var(--brand-700);
+  --color-brand-deep: var(--brand-900);
+  --color-success: var(--success);
+  --color-coral: var(--coral);
+  --color-yellow: var(--yellow);
+
+  --radius-sistema: var(--saas-radius);
+  --shadow-painel: var(--shadow-panel);
+}

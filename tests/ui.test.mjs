@@ -19,6 +19,8 @@ const [
   hooks,
   ui,
   types,
+  demoLayout,
+  tokensCss,
   css,
   enterpriseCss,
   glassCss,
@@ -59,6 +61,8 @@ const [
   read("components/patrimonio/hooks.ts"),
   read("components/patrimonio/ui.tsx"),
   read("components/patrimonio/types.ts"),
+  read("app/demo/layout.tsx"),
+  read("app/demo/tokens.css"),
   read("app/demo/patrimonio.css"),
   read("app/demo/enterprise.css"),
   read("app/demo/glass.css"),
@@ -456,21 +460,188 @@ test("tema escuro é acessível e persiste somente a preferência em cookie", ()
   assert.match(hooks, /document\.documentElement\.dataset\.theme = theme/);
   assert.match(layout, /\/theme-init\.js/);
   assert.match(themeInit, /prefers-color-scheme: dark/);
-  assert.match(css, /:root\[data-theme="dark"\]/);
-  assert.match(css, /--heading-text:\s*#FFFFFF/i);
-  // Azul institucional derivado da logo Gazin, clareado para o tema escuro.
-  assert.match(css, /--icon-accent:\s*#AEB3FF/i);
+  assert.match(tokensCss, /:root\[data-theme="dark"\]/);
+  // Estes dois valores mudaram quando os quatro blocos `:root` viraram um.
+  // Nao foram reescolhidos: `patrimonio.css` dizia #FFFFFF e #AEB3FF, mas
+  // carregava primeiro e perdia — a tela sempre mostrou os de baixo. O teste
+  // afirmava um valor que ninguem chegou a ver.
+  assert.match(tokensCss, /--heading-text:\s*#F1F3F5/i);
+  assert.match(tokensCss, /--icon-accent:\s*#92AABD/i);
   assert.doesNotMatch(reactUi, /localStorage|sessionStorage/);
 });
 
+test("só a divergência é etiqueta preenchida", () => {
+  // O desenho das etiquetas de status e uma escala de urgencia, nao de
+  // categoria: quatro estados sao barra vertical e um so — divergencia, o achado
+  // que exige acao — e preenchido, para ser o que o olho encontra primeiro numa
+  // tabela de 25 linhas. Um segundo preenchido esvazia a excecao.
+  const mapa = ui.match(/const ESTILO_DO_ESTADO[\s\S]*?\n\};/);
+  assert.ok(mapa, "o mapa de estilos da etiqueta sumiu de ui.tsx");
+  const preenchidos = mapa[0].split("\n").filter((l) => /\bbg-\[/.test(l));
+  assert.equal(preenchidos.length, 1, `preenchidas: ${preenchidos.length}`);
+  assert.match(preenchidos[0], /discrepancy|--alarme-bg/);
+
+  // "Baixado" dividia a cor de perigo com "Divergencia" — fim de ciclo de vida
+  // e achado a apurar nao sao a mesma coisa e nao podem ser a mesma cor.
+  assert.match(mapa[0], /retired:[\s\S]*?text-\[var\(--muted\)\]/);
+  assert.doesNotMatch(mapa[0], /retired:[\s\S]*?--status-danger-text/);
+
+  // A classe semantica sobrevive: duas regras contextuais dependem dela e
+  // nenhuma renderiza no laboratorio, entao sumiriam sem gerar diferenca medida.
+  assert.match(ui, /"status-badge inline-flex/);
+  assert.match(css, /\.scanner-asset-detail \.status-badge/);
+});
+
+test("a escala tipográfica tem um dono só", () => {
+  // Antes havia 359 `font-size` literais espalhados por três folhas, sem degrau
+  // declarado: mudar o tamanho base da interface era editar 129 lugares. A
+  // distribuição medida mostrava três tamanhos de trabalho — 11px em 129
+  // lugares, 10px em 101 e 12px em 40, três quartos de tudo.
+  //
+  // A conversão não mexeu em pixel: cada token vale o tamanho que já estava no
+  // lugar, e o laboratório mediu 3.347 elementos nos dois temas com zero
+  // diferença de tamanho computado.
+  for (const degrau of ["--texto-2xs: 10px", "--texto-xs: 11px", "--texto-sm: 12px"]) {
+    assert.match(tokensCss, new RegExp(degrau.replace(/([-:])/g, "\\$1")));
+  }
+
+  // Os três tamanhos de trabalho não podem voltar a ser literais: é neles que
+  // uma edição solta some no meio de centenas de números.
+  const semComentarios = (folha) => folha.replace(/\/\*[\s\S]*?\*\//g, "");
+  for (const [nome, folha] of [
+    ["patrimonio.css", css],
+    ["enterprise.css", enterpriseCss],
+    ["glass.css", glassCss],
+  ]) {
+    assert.doesNotMatch(
+      semComentarios(folha),
+      /font-size:\s*1[012]px/,
+      `${nome} voltou a usar tamanho literal; os degraus vivem em tokens.css`,
+    );
+  }
+
+  // A cauda de valores órfãos continua literal DE PROPÓSITO: encaixá-la no
+  // degrau vizinho mexe em pixel e é decisão de desenho, não de script. Este
+  // número é o marcador dela — se subir, alguém inventou um tamanho novo.
+  const orfaos = [css, enterpriseCss, glassCss]
+    .map(semComentarios)
+    .join("\n")
+    .match(/font-size:\s*[0-9.]+px/g) || [];
+  assert.equal(orfaos.length, 21, `tamanhos fora da escala: ${orfaos.length}`);
+});
+
+test("na fileira de indicadores só o estado crítico ganha peso", () => {
+  // Os seis módulos tinham anatomia idêntica: o `tone` só trocava a cor de uma
+  // barra de 2px e do número, então "Divergências" ocupava o mesmo espaço que
+  // "Ativos ativos" — uma exige ação, a outra só informa quanto existe. Era o
+  // padrão C2 do catálogo: prioridades diferentes com a mesma anatomia.
+  //
+  // A hierarquia agora vem do estado e não da posição: reordenar os KPIs não
+  // muda quem manda, e numa base saudável a fileira volta a ler como seis
+  // medidas equivalentes — que é a verdade naquele dia.
+  assert.match(enterpriseCss, /\.dashboard-kpi\.is-danger \{[\s\S]{0,80}background: var\(--coral-soft\)/);
+  assert.match(enterpriseCss, /\.dashboard-kpi\.is-danger > strong \{[\s\S]{0,120}font-size: clamp\(26px/);
+
+  // Só o `danger` cresce. Se o `warning` crescesse junto, a fileira teria dois
+  // pesos altos e nenhum destaque — o mesmo motivo pelo qual só a divergência é
+  // etiqueta preenchida na tabela.
+  const cresceram = (enterpriseCss.match(/\.dashboard-kpi\.is-\w+ > strong \{[^}]*font-size/g) || []);
+  assert.equal(cresceram.length, 1, `variantes que aumentam o número: ${cresceram.length}`);
+  assert.match(cresceram[0], /is-danger/);
+});
+
+test("o anel de foco do teclado é um só e vem de token", () => {
+  // Este teste existe porque o anterior deu falsa garantia. Havia
+  // `assert.doesNotMatch(tokensCss, /#0055A5/i)`, mas ele olhava um arquivo e
+  // uma notação — e a mesma cor abandonada sobreviveu em outros dois arquivos e
+  // em outras DUAS notações: `rgba(0, 85, 165, 0.38)` no anel global e
+  // `rgb(0 85 165 / 24%)` no botão de colaborador. Resultado medido: 139 dos
+  // 157 controles focáveis com indicador abaixo dos 3:1 da WCAG 2.4.11, nos
+  // dois temas, com pior caso em 1,07:1.
+  //
+  // Agora a proibição cobre as três folhas e as três notações. Comentários são
+  // removidos antes de casar: eles citam a cor proibida justamente para
+  // explicar por que ela é proibida.
+  const semComentarios = (folha) => folha.replace(/\/\*[\s\S]*?\*\//g, "");
+  // Quatro notações da mesma cor foram encontradas em folhas diferentes:
+  // `rgba(0, 85, 165, 0.38)`, `rgb(0 85 165 / 24%)`, `#0055a5` e `#315f87`.
+  // Cada busca anterior pegava uma e deixava as outras passarem.
+  const cobaltoAbandonado =
+    /#0055A5|#315f87|0\s*,\s*85\s*,\s*165|\b0\s+85\s+165\b|49\s*,\s*95\s*,\s*135/i;
+  for (const [nome, folha] of [
+    ["tokens.css", tokensCss],
+    ["patrimonio.css", css],
+    ["enterprise.css", enterpriseCss],
+    ["glass.css", glassCss],
+    ["login.css", loginCss],
+    ["privacy.css", privacyCss],
+  ]) {
+    assert.doesNotMatch(
+      semComentarios(folha),
+      cobaltoAbandonado,
+      `${nome} voltou a usar o cobalto abandonado; o anel de foco sai de --foco-nucleo`,
+    );
+  }
+
+  // O anel é de duas camadas de propósito: nenhuma cor única passa nos 3:1
+  // sobre a chapa clara E sobre a barra azul-escura ao mesmo tempo.
+  assert.match(tokensCss, /--foco-nucleo: #05073F;/);
+  assert.match(tokensCss, /--foco-halo: #FFC400;/);
+  assert.match(
+    css,
+    /:focus-visible \{[\s\S]{0,160}outline: 2px solid var\(--foco-nucleo\)[\s\S]{0,160}box-shadow: 0 0 0 5px var\(--foco-halo\)/,
+  );
+
+  // `box-shadow` não acumula entre regras: onde uma sombra carrega significado,
+  // a regra de foco precisa recompor as duas, senão uma apaga a outra.
+  assert.match(glassCss, /\.nav-item\.is-active:focus-visible \{[\s\S]{0,120}var\(--foco-halo\)/);
+  assert.match(enterpriseCss, /\.operations-tabs button\.is-active:focus-visible \{[\s\S]{0,120}var\(--foco-halo\)/);
+
+  // A página de privacidade é uma ilha sem tokens: os links dela não tinham
+  // variante escura e mediam 1,80:1 sobre o fundo escuro. O par claro/escuro
+  // precisa existir, senão o tema escuro fica sem contraste de novo.
+  assert.match(privacyCss, /\.privacy-content a,[\s\S]{0,80}color: #0B109F;/);
+  assert.match(privacyCss, /data-theme="dark"\] \.privacy-content a,[\s\S]{0,120}color: #A3A8FF;/);
+
+  // Anel suave de mouse não pode vencer o de teclado por especificidade.
+  assert.doesNotMatch(css, /\.field input:focus,/);
+  assert.match(css, /\.field input:focus:not\(:focus-visible\)/);
+});
+
+test("as variáveis do sistema têm um dono só", () => {
+  // Este teste existe porque o contrário custou caro: com `:root` declarado em
+  // quatro arquivos, mudar uma cor no lugar errado não fazia nada, e valores
+  // escolhidos com cuidado em `patrimonio.css` nunca chegaram à tela porque
+  // duas folhas carregavam depois. O laboratório mediu 3.347 elementos nos dois
+  // temas antes e depois da fusão: zero diferenças. Nenhum pixel mudou — mudou
+  // o número de lugares onde se mexe para mudar um pixel.
+  const rootDeTopo = /(^|\n)\s*:root(\[[^\]]*\])?\s*\{/;
+  for (const [nome, folha] of [
+    ["patrimonio.css", css],
+    ["enterprise.css", enterpriseCss],
+    ["glass.css", glassCss],
+  ]) {
+    assert.doesNotMatch(
+      folha,
+      rootDeTopo,
+      `${nome} voltou a declarar :root; as variáveis pertencem a tokens.css`,
+    );
+  }
+  assert.match(tokensCss, rootDeTopo);
+
+  // A ordem de carga é parte do contrato: tokens antes de quem os consome.
+  assert.match(demoLayout, /tokens\.css[\s\S]*patrimonio\.css/);
+});
+
 test("a paleta institucional vem do azul da logo Gazin", () => {
-  // O bloco de tokens do enterprise.css carrega depois e é o que vale.
-  assert.match(enterpriseCss, /--brand-700: #0B109F;/);
-  assert.match(enterpriseCss, /--sidebar-bg: #080B73;/);
-  assert.match(enterpriseCss, /--action-bg: #0B109F;/);
+  // Um lugar so: `tokens.css` carrega antes das tres folhas e e o unico
+  // arquivo que declara `:root`. Antes eram quatro blocos concorrentes.
+  assert.match(tokensCss, /--brand-700: #0B109F;/);
+  assert.match(tokensCss, /--sidebar-bg: #080B73;/);
+  assert.match(tokensCss, /--action-bg: #0B109F;/);
   assert.match(loginCss, /--brand-700: #0B109F;/);
   // O cobalto anterior não era a cor da marca e não deve voltar.
-  assert.doesNotMatch(enterpriseCss, /#315f87|#0055A5/i);
+  assert.doesNotMatch(tokensCss, /#315f87|#0055A5/i);
 });
 
 test("visual empresarial permanece plano e sem efeitos neon", () => {
@@ -485,10 +656,13 @@ test("visual empresarial permanece plano e sem efeitos neon", () => {
   assert.match(loginCss, /linear-gradient\(163deg, #0F2E86/);
   assert.match(loginCss, /repeating-linear-gradient\(/);
   assert.doesNotMatch(loginCss, /data-theme="dark"\] \.login-shell/);
-  assert.match(enterpriseCss, /--canvas: #111d29/);
+  assert.match(tokensCss, /--canvas:\s*#14171C/i);
   // O azul da marca toma a tela; o cartão claro é o único ponto de foco.
-  assert.match(loginCss, /--login-canvas: #080B73;/);
-  assert.match(loginCss, /--login-canvas: #070A3A;/);
+  // O campo do login e o mesmo azul do header do sistema, e nao um segundo
+  // azul: a tela e a barra ampliada, com uma chapa apoiada nela. Por isso a
+  // cor e igual nos dois temas — assinatura de marca nao segue tema.
+  assert.match(loginCss, /--login-canvas: #0A0E38;/);
+  assert.match(tokensCss, /--glass-header-solid: #0A0E38;/);
   assert.match(loginCss, /\.credential-submit \{[\s\S]*?background: var\(--login-button-start\)/);
   // Entrar é a ação primária e o Google é alternativa: dois botões sólidos na
   // mesma cor obrigam a ler os dois para descobrir qual é qual.
@@ -539,7 +713,7 @@ test("os controles do login respeitam alvo de toque e foco visivel", () => {
     /\.login-field input:focus-visible,\s*\.login-field textarea:focus-visible \{\s*outline: 2px solid var\(--brand-950\);/,
   );
   // O formulario volta a ter caixa, translucida para o fundo atravessar.
-  assert.match(loginCss, /\.login-card \{[\s\S]*?background: rgba\(255, 255, 255, 0\.08\)/);
+  assert.match(loginCss, /\.login-card \{[\s\S]*?background: var\(--login-card\)/);
   assert.match(loginCss, /\.credential-submit \{[\s\S]*?background: var\(--yellow\)/);
   assert.match(loginCss, /\.login-mode-active \{\s*background: var\(--login-button-start\);/);
 });
@@ -597,8 +771,16 @@ test("tela React de login oferece credenciais e Google com navegação responsiv
 test("autenticação Google preserva PKCE, autorização por departamento e sessão protegida", () => {
   assert.match(googleAuth, /code_challenge_method: "S256"/);
   assert.match(googleAuth, /openid profile email/);
-  assert.match(googleAuth, /payload\.email_verified !== true/);
+  // A regra de recusa saiu daqui para `lib/google-login-decision.js`, onde
+  // `tests/google-login-decision.test.mjs` a executa ramo a ramo em vez de
+  // procurar o texto dela. O que este teste ainda garante e o vinculo: que o
+  // fluxo delega a decisao em vez de reimplementa-la aqui.
+  assert.match(googleAuth, /motivoDaRecusaGoogle\(\{/);
+  assert.doesNotMatch(googleAuth, /payload\.email_verified !== true/);
   assert.match(googleAuth, /getSystemAccess/);
+  // O codigo de erro do Google precisa chegar ao log: sem ele, segredo
+  // errado e URI nao registrada viram a mesma frase.
+  assert.match(googleAuth, /Google token exchange failed: \$\{causa\}/);
   assert.match(sharedAuth, /getSystemAccess/);
   assert.match(sharedAuth, /HttpOnly/i);
   assert.match(sharedAuth, /SameSite=|sameSite/i);
@@ -737,25 +919,27 @@ test("camada de vidro responde ao tema e degrada sem backdrop-filter", () => {
   // no topo e no rodape da pagina, e a leitura do vidro mudava conforme a
   // rolagem. Uniforme, o vidro le igual em qualquer posicao — e medir contraste
   // deixa de exigir amostrar a cor do fundo elemento por elemento.
-  assert.match(glassCss, /radial-gradient\(90% 60% at 82% 0%, rgba\(11, 16, 159, 0\.55\)/);
-  assert.doesNotMatch(glassCss, /linear-gradient\(163deg, #0F2E86/);
+  // O fundo agora e mesa chapada, sem degrade: o brilho azul no canto era o
+  // unico lugar do sistema onde a cor da marca aparecia sem significar nada.
+  assert.match(tokensCss, /--placa-mesa: #14171C;/);
+  assert.doesNotMatch([glassCss, tokensCss].join("\n"), /radial-gradient|linear-gradient/);
 
   // Cada tema tem sua superfície. Impor cor de texto própria aqui foi o que
   // quebrou o tema claro na primeira tentativa — 43 de 100 textos abaixo de
   // 4,5:1, alguns em 1,04:1 —, então o texto continua saindo dos tokens do tema.
-  assert.match(glassCss, /:root\[data-theme="dark"\][\s\S]*?--glass-surface:/);
+  assert.match(tokensCss, /:root\[data-theme="dark"\][\s\S]*?--placa-folha:/);
   assert.doesNotMatch(glassCss, /\.app-shell \{[^}]*\bcolor:/);
 
   // O header fica escuro nos dois temas: o texto dele é branco fixo em
   // `enterprise.css`, e clarear a barra no tema claro levou 42 textos abaixo do
   // mínimo, alguns a 1,02:1.
-  assert.match(glassCss, /--glass-header:/);
+  assert.match(tokensCss, /--glass-header:/);
 
   // Sem `backdrop-filter` a queda é para cor sólida, não para o vidro sem
   // desfoque: a 7% de opacidade e sem desfoque, o texto ficaria sobre o degradê
   // cru.
   assert.match(glassCss, /@supports \(backdrop-filter: blur\(1px\)\)/);
-  assert.match(glassCss, /--glass-solid:/);
+  assert.match(tokensCss, /--placa-solida:/);
 
   // O movimento é enfeite e o desenho não depende dele.
   assert.match(glassCss, /@media \(prefers-reduced-motion: reduce\)[\s\S]*?transform: none;/);
@@ -776,7 +960,7 @@ test("vidro cobre tabela, modal e controles com estados definidos", () => {
   assert.match(glassCss, /\.table-panel \{\s*border: 0;\s*background: transparent;/);
 
   // O modal é superfície elevada e desfoca o que está atrás dele.
-  assert.match(glassCss, /\.modal-content \{[\s\S]*?--glass-border-strong/);
+  assert.match(glassCss, /\.modal-content \{[\s\S]*?--placa-fio-forte/);
   assert.match(glassCss, /\.modal::backdrop \{[\s\S]*?backdrop-filter: blur/);
 
   // Estados: foco, pressionado, desativado e carregando. O carregando segue
@@ -790,8 +974,8 @@ test("vidro cobre tabela, modal e controles com estados definidos", () => {
   // Cores de estado usadas como texto: os tons originais reprovavam sobre o
   // vidro claro e sobre a linha selecionada (4,58/4,05 no sucesso e 3,65/3,22
   // no coral). Só o tema claro muda.
-  assert.match(glassCss, /--success: #097268;/);
-  assert.match(glassCss, /--coral: #BE3543;/);
+  assert.match(tokensCss, /--success: #097268;/);
+  assert.match(tokensCss, /--coral: #BE3543;/);
 
   // O número do patrimônio é o botão mais repetido do sistema e media 18px,
   // abaixo do piso de 24x24. Não vai a 44px de propósito: seriam mais de 400px
@@ -820,14 +1004,14 @@ test("vidro nao cobra desfoque por quadro de rolagem", () => {
   // `[^}]*` e não `[\s\S]*?`: o segundo atravessa o fecho da regra e casa com
   // um `backdrop-filter` de qualquer bloco mais abaixo.
   assert.doesNotMatch(semComentarios, /thead th \{[^}]*backdrop-filter/);
-  assert.match(glassCss, /--glass-head:/);
+  assert.match(tokensCss, /--placa-cabecalho:/);
 
   // Mesma razão para o KPI, que vive dentro de um painel de vidro.
-  assert.match(glassCss, /\.kpi-item \{\s*background: var\(--glass-surface-raised\);\s*\}/);
+  assert.match(glassCss, /\.kpi-item,[\s\S]{0,60}background: var\(--placa-folha-alta\);/);
 
   // A luz na borda é sombra, não filtro: é o que faz a superfície ler como
   // vidro sem custar composição.
-  assert.match(glassCss, /box-shadow: inset 0 1px 0 var\(--glass-highlight\)/);
+  assert.match(glassCss, /box-shadow: inset 0 1px 0 var\(--placa-luz\)/);
 });
 
 test("recusa de sessão nomeia o motivo sem vazar quem tentou entrar", () => {
@@ -914,14 +1098,14 @@ test("o vidro cobre todas as telas, não só as duas primeiras", () => {
   // Os dois que moram dentro de outros recebem tinta, não desfoque próprio:
   // desfocar de novo custa outra camada por quadro e embaça o que já estava
   // embaçado.
-  assert.match(glassCss, /\.nuclei-overview \.operational-metric \{[^}]*background: var\(--glass-surface-raised\)/);
+  assert.match(glassCss, /\.nuclei-overview \.operational-metric \{[^}]*background: var\(--placa-folha-alta\)/);
   assert.match(glassCss, /\.operational-panel \.operational-filters \{[^}]*background: transparent/);
 });
 
 test("a faixa de título da seção é um cartão, não uma tira", () => {
   // Ela recebia vidro, borda e luz, mas ficou com canto 0 e recuo 0: uma tira
   // de canto vivo entre painéis de 14px, com o texto encostado na borda.
-  assert.match(glassCss, /\.section-toolbar \{[\s\S]*?border-radius: 14px;/);
+  assert.match(glassCss, /\.section-toolbar \{[\s\S]*?border-radius: var\(--placa-raio\);/);
   assert.match(glassCss, /\.section-toolbar \{[\s\S]*?padding: 15px 18px;/);
 
   // Um bloco com ID vencia qualquer regra de classe da camada de sistema, então
@@ -933,12 +1117,12 @@ test("a faixa de título da seção é um cartão, não uma tira", () => {
 
   // O título repetia o nome da tela que a topbar mostra logo acima, no mesmo
   // peso: "Núcleos" e depois "Núcleos da empresa" a 20px contra 21,6px.
-  assert.match(glassCss, /\.section-toolbar > div > h2 \{[\s\S]*?font-size: 16px;/);
+  assert.match(glassCss, /\.section-toolbar > div > h2 \{[\s\S]*?font-size: var\(--texto-xl\);/);
 
   // O rodape tinha o mesmo defeito: vidro e borda nos quatro lados, canto 0 e
   // recuo horizontal 0 — texto a 1px da borda esquerda, link a 1px da direita,
   // e o vertical torto em 18/4.
-  assert.match(glassCss, /\.app-footer \{[\s\S]*?padding: 13px 18px;[\s\S]*?border-radius: 14px;/);
+  assert.match(glassCss, /\.app-footer \{[\s\S]*?padding: 13px 18px;[\s\S]*?border-radius: var\(--placa-raio\);/);
 });
 
 test("movimentações viram linha, não barras", () => {

@@ -124,6 +124,39 @@ export function ModalFooter({
   );
 }
 
+// A etiqueta de status, em Tailwind. `status-badge` continua no comeco da lista
+// mas ja nao pinta nada: e gancho para as duas regras contextuais que dependem
+// dela — `.scanner-asset-detail .status-badge` e `.profile-asset-item
+// .status-badge`. Nenhuma das duas renderiza no laboratorio, entao teriam
+// sumido sem gerar uma unica diferenca medida.
+const BASE = "status-badge inline-flex items-center min-h-5 py-px text-[11px] tracking-[0px]";
+
+// A barra vertical, e nao a capsula, continua sendo a forma da familia. O
+// motivo esta na folha que isto substituiu: em tabela densa a capsula cria uma
+// segunda camada de caixas competindo com a linha, e a barra colore sem encher.
+//
+// O que muda e que os cinco estados nao pesam igual, e ate aqui pesavam — os
+// cinco eram texto colorido com a mesma barra. Pior: "Baixado" e "Divergencia"
+// dividiam a cor de perigo, sendo que um e fim de ciclo de vida e o outro e o
+// achado que exige acao.
+//
+// Divergencia e a unica preenchida, justamente porque competir com a linha e o
+// objetivo dela: numa tabela de 25 linhas tem que ser o que o olho acha
+// primeiro. Se um segundo estado ganhar preenchimento, a excecao deixa de
+// significar. Baixado sai de cena — barra cinza, texto cinza, peso normal.
+const ESTILO_DO_ESTADO: Record<AssetStatus, string> = {
+  available: "pl-2 border-l-[3px] border-l-current font-medium text-success",
+  allocated: "pl-2 border-l-[3px] border-l-current font-medium text-[var(--status-blue-text)]",
+  maintenance:
+    "pl-2 border-l-[3px] border-l-current font-medium text-[var(--status-warning-text)]",
+  discrepancy:
+    "px-2 rounded-[2px] font-semibold bg-[var(--alarme-bg)] text-[var(--alarme-text)]",
+  // A barra segue `currentColor` como as outras: com `--line-strong` ela dava
+  // 1,52:1 sobre o fundo claro e sumia, e "Baixado" virava texto solto sem a
+  // marca que os outros quatro tem. O rebaixamento vem da cor e do peso.
+  retired: "pl-2 border-l-[3px] border-l-current font-normal text-[var(--muted)]",
+};
+
 export function StatusBadge({
   status,
   labels,
@@ -131,7 +164,9 @@ export function StatusBadge({
   status: AssetStatus;
   labels: Dashboard["options"]["statuses"];
 }) {
-  return <span className={`status-badge status-${status}`}>{labels[status]}</span>;
+  return (
+    <span className={`${BASE} ${ESTILO_DO_ESTADO[status]}`}>{labels[status]}</span>
+  );
 }
 
 export function AssetTypeIcon({
