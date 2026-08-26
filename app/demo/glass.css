@@ -798,6 +798,318 @@
 }
 
 /* ---------------------------------------------------------------------------
+   Comandos rápidos.
+
+   A paleta concentra navegação e ações sem esconder a interface atrás dela:
+   abre por Ctrl/Command+K, filtra pelo teclado e usa as mesmas permissões dos
+   botões da tela. O amarelo fica só no item ativo, como no restante do sistema.
+   --------------------------------------------------------------------------- */
+.quick-command-trigger {
+  gap: 8px;
+}
+
+.quick-command-trigger-icon {
+  display: grid;
+  width: 17px;
+  height: 17px;
+  place-items: center;
+}
+
+.quick-command-trigger-icon svg {
+  width: 17px;
+  height: 17px;
+}
+
+.quick-command-trigger kbd,
+.quick-command-header kbd,
+.quick-command-footer kbd {
+  border: 1px solid var(--glass-border-strong);
+  border-radius: 5px;
+  background: var(--glass-surface-raised);
+  color: var(--muted);
+  font: 600 10px/1 var(--font-plex-mono), ui-monospace, monospace;
+  box-shadow: inset 0 -1px 0 var(--glass-border);
+}
+
+.quick-command-trigger kbd {
+  padding: 4px 6px;
+  margin-left: 2px;
+}
+
+.view-stage {
+  animation: view-stage-enter 160ms ease-out;
+}
+
+@keyframes view-stage-enter {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.quick-command-dialog {
+  width: min(680px, calc(100vw - 32px));
+  max-height: min(720px, calc(100vh - 32px));
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid var(--glass-border-strong);
+  border-radius: 16px;
+  background: var(--glass-solid);
+  color: var(--heading-text);
+  box-shadow: inset 0 1px 0 var(--glass-highlight), var(--glass-shadow-raised);
+}
+
+.quick-command-dialog::backdrop {
+  background: rgba(3, 6, 28, 0.58);
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+}
+
+@supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+  .quick-command-dialog {
+    background: var(--glass-surface-raised);
+    -webkit-backdrop-filter: blur(var(--glass-blur-raised)) saturate(150%);
+    backdrop-filter: blur(var(--glass-blur-raised)) saturate(150%);
+  }
+}
+
+.quick-command-surface {
+  display: grid;
+  max-height: min(720px, calc(100vh - 32px));
+  grid-template-rows: auto minmax(0, 1fr) auto;
+}
+
+.quick-command-header {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  min-height: 66px;
+  padding: 10px 14px;
+  align-items: center;
+  gap: 11px;
+  border-bottom: 1px solid var(--glass-border);
+  background: color-mix(in srgb, var(--glass-surface-raised) 82%, transparent);
+}
+
+.quick-command-search-icon {
+  display: grid;
+  width: 22px;
+  height: 22px;
+  place-items: center;
+  color: var(--brand-700);
+}
+
+.quick-command-search-icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+.quick-command-header input {
+  width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--heading-text);
+  font: inherit;
+  font-size: 16px;
+}
+
+.quick-command-header input::placeholder {
+  color: var(--muted);
+}
+
+.quick-command-header:focus-within {
+  box-shadow: inset 0 -2px 0 var(--brand-700);
+}
+
+.quick-command-header > kbd {
+  padding: 5px 7px;
+}
+
+.quick-command-results {
+  display: grid;
+  max-height: min(520px, calc(100vh - 170px));
+  padding: 8px;
+  align-content: start;
+  gap: 3px;
+  overflow-y: auto;
+}
+
+.quick-command-item {
+  position: relative;
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr) auto 24px;
+  min-height: 62px;
+  padding: 8px 10px;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--heading-text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.quick-command-item::before {
+  position: absolute;
+  top: 11px;
+  bottom: 11px;
+  left: 0;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  background: transparent;
+  content: "";
+}
+
+.quick-command-item:hover,
+.quick-command-item.is-active {
+  border-color: var(--glass-border);
+  background: var(--glass-surface-hover);
+}
+
+.quick-command-item.is-active::before {
+  background: var(--yellow);
+}
+
+.quick-command-icon {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  place-items: center;
+  border: 1px solid var(--glass-border);
+  border-radius: 9px;
+  background: var(--glass-surface-raised);
+  color: var(--brand-700);
+}
+
+.quick-command-icon svg {
+  width: 19px;
+  height: 19px;
+}
+
+.quick-command-copy {
+  display: grid;
+  min-width: 0;
+  gap: 3px;
+}
+
+.quick-command-copy strong,
+.quick-command-copy small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.quick-command-copy strong {
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.quick-command-copy small,
+.quick-command-group {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.quick-command-group {
+  padding: 4px 7px;
+  border: 1px solid var(--glass-border);
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.quick-command-arrow {
+  color: var(--muted);
+  font-size: 14px;
+  text-align: center;
+}
+
+.quick-command-empty {
+  display: grid;
+  min-height: 170px;
+  place-content: center;
+  gap: 5px;
+  color: var(--muted);
+  text-align: center;
+}
+
+.quick-command-empty strong {
+  color: var(--heading-text);
+  font-size: 14px;
+}
+
+.quick-command-empty span {
+  font-size: 12px;
+}
+
+.quick-command-footer {
+  display: flex;
+  min-height: 42px;
+  padding: 8px 14px;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 16px;
+  border-top: 1px solid var(--glass-border);
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.quick-command-footer span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.quick-command-footer kbd {
+  min-width: 21px;
+  padding: 4px;
+  text-align: center;
+}
+
+@media (max-width: 640px) {
+  .quick-command-trigger kbd {
+    display: none;
+  }
+
+  .quick-command-dialog {
+    width: calc(100vw - 18px);
+    max-height: calc(100vh - 18px);
+    border-radius: 13px;
+  }
+
+  .quick-command-item {
+    grid-template-columns: 36px minmax(0, 1fr) 20px;
+  }
+
+  .quick-command-icon {
+    width: 36px;
+    height: 36px;
+  }
+
+  .quick-command-group {
+    display: none;
+  }
+
+  .quick-command-footer {
+    justify-content: center;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .view-stage {
+    animation: none;
+  }
+}
+
+/* ---------------------------------------------------------------------------
    A faixa de titulo da secao.
 
    Ela ja recebia vidro, borda e luz, mas tinha ficado com canto 0 e recuo 0:
