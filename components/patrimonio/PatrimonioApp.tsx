@@ -7,6 +7,7 @@ import {
   useMemo,
   useRef,
   useState,
+  useTransition,
 } from "react";
 import {
   isFleetPatrimonyId,
@@ -28,6 +29,10 @@ import { InventoryView } from "./InventoryView";
 import { NucleiView } from "./NucleiView";
 import { OperationsCenterView } from "./OperationsCenterView";
 import { AuditView, ImportsView } from "./OperationalViews";
+import {
+  type QuickCommand,
+  QuickCommandPalette,
+} from "./QuickCommandPalette";
 import type {
   Asset,
   InventoryFilters,
@@ -56,9 +61,33 @@ const viewCopy: Record<ViewId, { title: string }> = {
   environments: { title: "Ambientes" },
 };
 
+const viewLabels: Record<ViewId, string> = {
+  dashboard: "Dashboard",
+  inventory: "Inventário",
+  operations: "Operações",
+  nuclei: "Núcleos",
+  audit: "Auditoria",
+  imports: "Importações",
+  collaborators: "Colaboradores",
+  environments: "Ambientes",
+};
+
+const viewDescriptions: Record<ViewId, string> = {
+  dashboard: "Visão executiva e indicadores do patrimônio",
+  inventory: "Consultar ativos, responsáveis e situações",
+  operations: "Inventários, manutenção, termos e integrações",
+  nuclei: "Estrutura, áreas e distribuição dos ativos",
+  audit: "Histórico e rastreabilidade das alterações",
+  imports: "Cargas de dados e resultados de processamento",
+  collaborators: "Pessoas, custódias e vínculos patrimoniais",
+  environments: "Departamentos, acessos e configurações",
+};
+
 export default function PatrimonioApp() {
   const [view, setView] = useState<ViewId>("dashboard");
+  const [isNavigating, startNavigationTransition] = useTransition();
   const [mobileNavigationOpen, setMobileNavigationOpen] = useState(false);
+  const [quickCommandsOpen, setQuickCommandsOpen] = useState(false);
   const [departmentSlug, setDepartmentSlug] = useState<string | null>(() => {
     if (typeof window === "undefined") return null;
     return new URLSearchParams(window.location.search).get("department");
@@ -93,6 +122,24 @@ export default function PatrimonioApp() {
     departmentSlug,
   );
   const { theme, setTheme } = useTheme();
+
+  const navigateTo = useCallback((nextView: ViewId) => {
+    startNavigationTransition(() => setView(nextView));
+    setMobileNavigationOpen(false);
+  }, []);
+
+  const closeQuickCommands = useCallback(() => setQuickCommandsOpen(false), []);
+
+  useEffect(() => {
+    const openQuickCommands = (event: KeyboardEvent) => {
+      if (!(event.ctrlKey || event.metaKey) || event.altKey || event.key.toLowerCase() !== "k") return;
+      if (modal.kind !== "closed") return;
+      event.preventDefault();
+      setQuickCommandsOpen((isOpen) => !isOpen);
+    };
+    document.addEventListener("keydown", openQuickCommands);
+    return () => document.removeEventListener("keydown", openQuickCommands);
+  }, [modal.kind]);
 
   const showToast = useCallback((message: string, isError = false) => {
     setToast({ message, error: isError });
@@ -294,6 +341,62 @@ export default function PatrimonioApp() {
   const visibleViews = (Object.keys(viewCopy) as ViewId[]).filter(
     (item) => item !== "environments" || environment?.isAdmin,
   );
+  const quickCommands: QuickCommand[] = [
+    ...visibleViews.map((item): QuickCommand => ({
+      id: `view-${item}`,
+      label: `Abrir ${viewLabels[item]}`,
+      description: viewDescriptions[item],
+      group: "Navegação",
+      icon: item,
+      keywords: `${viewLabels[item]} seção módulo`,
+      onSelect: () => navigateTo(item),
+    })),
+    {
+      id: "focus-scan",
+      label: "Ler ou buscar patrimônio",
+      description: "Levar o foco ao campo de leitura por código",
+      group: "Ações",
+      icon: "scan",
+      keywords: "scanner código etiqueta localizar buscar",
+      onSelect: () => window.requestAnimationFrame(() => campoDeLeituraRef.current?.focus()),
+    },
+    ...(dashboard ? [{
+      id: "refresh-dashboard",
+      label: "Atualizar dados",
+      description: "Sincronizar os indicadores e registros do departamento",
+      group: "Ações" as const,
+      icon: "refresh" as const,
+      keywords: "sincronizar recarregar",
+      onSelect: () => { void refresh({ quiet: true, background: true }); },
+    }] : []),
+    ...(permissions.canWrite ? [{
+      id: "create-asset",
+      label: "Cadastrar novo patrimônio",
+      description: "Abrir o formulário de cadastro de ativo",
+      group: "Ações" as const,
+      icon: "create" as const,
+      keywords: "novo criar adicionar ativo",
+      onSelect: () => setModal({ kind: "create-asset" }),
+    }] : []),
+    ...(permissions.canImport ? [{
+      id: "import-workbook",
+      label: "Importar planilha",
+      description: "Abrir a carga controlada de arquivo XLSX",
+      group: "Ações" as const,
+      icon: "import" as const,
+      keywords: "xlsx carga arquivo sabium",
+      onSelect: () => setModal({ kind: "import" }),
+    }] : []),
+    ...(permissions.canExport ? [{
+      id: "export-inventory",
+      label: "Exportar inventário",
+      description: "Baixar o relatório operacional em XLSX",
+      group: "Ações" as const,
+      icon: "export" as const,
+      keywords: "xlsx baixar relatório operacional",
+      onSelect: () => { void handleExport("operational"); },
+    }] : []),
+  ];
   return (
     <div className="app-shell">
       <header className={`app-header ${mobileNavigationOpen ? "is-open" : ""}`}>
@@ -303,8 +406,7 @@ export default function PatrimonioApp() {
             type="button"
             aria-label="Gazin Patrimônio Ops, abrir dashboard"
             onClick={() => {
-              setView("dashboard");
-              setMobileNavigationOpen(false);
+              navigateTo("dashboard");
             }}
           >
             <img
@@ -376,21 +478,11 @@ export default function PatrimonioApp() {
                 type="button"
                 aria-current={view === item ? "page" : undefined}
                 onClick={() => {
-                  setView(item);
-                  setMobileNavigationOpen(false);
+                  navigateTo(item);
                 }}
               >
                 <span className="nav-item-icon"><NavigationIcon view={item} /></span>
-                <span>{{
-                  dashboard: "Dashboard",
-                  inventory: "Inventário",
-                  operations: "Operações",
-                  nuclei: "Núcleos",
-                  audit: "Auditoria",
-                  imports: "Importações",
-                  collaborators: "Colaboradores",
-                  environments: "Ambientes",
-                }[item]}</span>
+                <span>{viewLabels[item]}</span>
               </button>
             ))}
           </nav>
@@ -445,7 +537,7 @@ export default function PatrimonioApp() {
         </div>
       </header>
 
-      <main className="main-content" id="main-content">
+      <main className="main-content" id="main-content" aria-busy={isNavigating}>
         <header className="topbar">
           <div className="topbar-main">
             <div className="page-heading">
@@ -453,6 +545,19 @@ export default function PatrimonioApp() {
             </div>
           </div>
           <div className="data-actions">
+            <button
+              className="button button-secondary quick-command-trigger"
+              type="button"
+              aria-haspopup="dialog"
+              aria-keyshortcuts="Control+K Meta+K"
+              onClick={() => setQuickCommandsOpen(true)}
+            >
+              <span className="quick-command-trigger-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none"><path d="M5 7h14M5 12h14M5 17h8" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" /><path d="m16 16 2 2 3-4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>
+              </span>
+              Comandos
+              <kbd>Ctrl K</kbd>
+            </button>
             {view !== "dashboard" ? (
               <>
                 <button className="button button-secondary" type="button" disabled={!permissions.canImport} onClick={() => setModal({ kind: "import" })}>
@@ -476,6 +581,7 @@ export default function PatrimonioApp() {
           </div>
         </header>
 
+        <div className="view-stage" key={view} data-view={view}>
         {dashboard && !authenticated ? (
           <div className="demo-notice">
             <div><strong>Acesso protegido</strong><span>Entre com uma conta autorizada para acessar exclusivamente os dados da planilha empresarial.</span></div>
@@ -500,7 +606,7 @@ export default function PatrimonioApp() {
             key={dashboard.environment.activeDepartment.slug}
             dashboard={dashboard}
             lastSyncAt={lastSyncAt}
-            onNavigate={setView}
+            onNavigate={navigateTo}
             onRefresh={() => { void refresh({ quiet: true, background: true }); }}
           />
         ) : null}
@@ -564,6 +670,7 @@ export default function PatrimonioApp() {
             ? <LoadingState label="Carregando módulo..." />
             : <EmptyState title="Módulo indisponível" description={error ?? "Não foi possível carregar os dados."} />
         ) : null}
+        </div>
         <footer className="app-footer">
           <span>Uso interno · Dados pessoais protegidos</span>
           <a href="/privacidade">Privacidade e direitos do titular</a>
@@ -581,6 +688,11 @@ export default function PatrimonioApp() {
           onToast={showToast}
         />
       ) : null}
+      <QuickCommandPalette
+        open={quickCommandsOpen}
+        commands={quickCommands}
+        onClose={closeQuickCommands}
+      />
       {toast ? (
         <Toast
           message={toast.message}

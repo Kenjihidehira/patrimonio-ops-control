@@ -3,6 +3,17 @@
 Todas as alterações relevantes do Patrimônio Ops Control são registradas neste arquivo.
 O formato segue Keep a Changelog e as versões usam Semantic Versioning.
 
+## [0.10.0] - 2026-08-26
+
+### Adicionado
+
+- Paleta de comandos rápidos acessível pelo botão **Comandos** ou pelo atalho `Ctrl+K`/`Command+K`, com busca sem distinção de acentos, navegação por teclado e acesso aos módulos e ações autorizadas para cada perfil.
+- Ações rápidas para leitura de patrimônio, atualização dos dados, cadastro, importação e exportação, exibidas somente quando a permissão correspondente está disponível.
+
+### Alterado
+
+- Trocas de módulo passam a usar transição não bloqueante do React e um feedback visual curto, respeitando a preferência de redução de movimento do sistema operacional.
+
 ## [0.9.1] - 2026-08-24
 
 ### Segurança

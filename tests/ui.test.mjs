@@ -18,6 +18,7 @@ const [
   dialogs,
   hooks,
   ui,
+  quickCommandPalette,
   types,
   demoLayout,
   tokensCss,
@@ -60,6 +61,7 @@ const [
   read("components/patrimonio/Dialogs.tsx"),
   read("components/patrimonio/hooks.ts"),
   read("components/patrimonio/ui.tsx"),
+  read("components/patrimonio/QuickCommandPalette.tsx"),
   read("components/patrimonio/types.ts"),
   read("app/demo/layout.tsx"),
   read("app/demo/tokens.css"),
@@ -101,6 +103,7 @@ const reactUi = [
   dialogs,
   hooks,
   ui,
+  quickCommandPalette,
   types,
   operationsCenter,
   inventoryOperations,
@@ -1194,4 +1197,36 @@ test("toda barra do dashboard diz de que ela é", () => {
   // contra os 7px dos demais, no mesmo painel de indicadores.
   assert.match(glassCss, /\.dashboard-view progress,\s*\.dashboard-coverage-row > progress \{\s*height: 7px;/);
   assert.match(glassCss, /progress::-webkit-progress-value \{\s*border-radius: 999px;/);
+});
+
+test("comandos rápidos tornam módulos e ações acessíveis pelo teclado", () => {
+  // O atalho usa modificador, então o leitor físico ignora o evento antes de
+  // montar seu buffer. A paleta não abre sobre um formulário/modal existente.
+  assert.match(app, /event\.ctrlKey \|\| event\.metaKey/);
+  assert.match(app, /event\.key\.toLowerCase\(\) !== "k"/);
+  assert.match(app, /modal\.kind !== "closed"/);
+  assert.match(app, /aria-keyshortcuts="Control\+K Meta\+K"/);
+
+  // Combobox e listbox mantêm foco no campo, enquanto setas mudam o resultado
+  // ativo e Enter executa o comando sem exigir mouse.
+  assert.match(quickCommandPalette, /role="combobox"/);
+  assert.match(quickCommandPalette, /role="listbox"/);
+  assert.match(quickCommandPalette, /event\.key === "ArrowDown"/);
+  assert.match(quickCommandPalette, /event\.key === "ArrowUp"/);
+  assert.match(quickCommandPalette, /event\.key === "Enter"/);
+  assert.match(quickCommandPalette, /event\.key === "Escape"/);
+  assert.match(quickCommandPalette, /normalize\("NFD"\)/);
+
+  // Ações sensíveis só entram na coleção quando a permissão correspondente
+  // existe; esconder o botão e deixar o comando seria um desvio de autorização.
+  assert.match(app, /permissions\.canWrite \? \[\{/);
+  assert.match(app, /permissions\.canImport \? \[\{/);
+  assert.match(app, /permissions\.canExport \? \[\{/);
+
+  // A transição é curta e some por completo quando o sistema pede menos
+  // movimento. `aria-busy` comunica a troca para tecnologia assistiva.
+  assert.match(app, /useTransition\(\)/);
+  assert.match(app, /aria-busy=\{isNavigating\}/);
+  assert.match(glassCss, /\.view-stage \{\s*animation: view-stage-enter 160ms ease-out;/);
+  assert.match(glassCss, /@media \(prefers-reduced-motion: reduce\)[\s\S]*?\.view-stage \{\s*animation: none;/);
 });
