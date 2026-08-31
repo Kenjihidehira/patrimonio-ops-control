@@ -521,13 +521,14 @@ test("a escala tipográfica tem um dono só", () => {
   }
 
   // A cauda de valores órfãos continua literal DE PROPÓSITO: encaixá-la no
-  // degrau vizinho mexe em pixel e é decisão de desenho, não de script. Este
-  // número é o marcador dela — se subir, alguém inventou um tamanho novo.
+  // degrau vizinho mexe em pixel e é decisão de desenho, não de script. O teto
+  // desce quando código morto é removido (a varredura tirou os tamanhos únicos
+  // de `.metric-*`), mas subir significa que alguém inventou um tamanho novo.
   const orfaos = [css, enterpriseCss, glassCss]
     .map(semComentarios)
     .join("\n")
     .match(/font-size:\s*[0-9.]+px/g) || [];
-  assert.equal(orfaos.length, 21, `tamanhos fora da escala: ${orfaos.length}`);
+  assert.ok(orfaos.length <= 19, `tamanhos fora da escala: ${orfaos.length}`);
 });
 
 test("na fileira de indicadores só o estado crítico ganha peso", () => {
@@ -927,7 +928,10 @@ test("camada de vidro responde ao tema e degrada sem backdrop-filter", () => {
   // Cada tema tem sua superfície. Impor cor de texto própria aqui foi o que
   // quebrou o tema claro na primeira tentativa — 43 de 100 textos abaixo de
   // 4,5:1, alguns em 1,04:1 —, então o texto continua saindo dos tokens do tema.
-  assert.match(tokensCss, /:root\[data-theme="dark"\][\s\S]*?--placa-folha:/);
+  // `--placa-solida` é o token de superfície de fato (o `--placa-folha` genérico
+  // era morto e a varredura o removeu); serve de marca de que o bloco escuro
+  // define as superfícies da chapa.
+  assert.match(tokensCss, /:root\[data-theme="dark"\][\s\S]*?--placa-solida:/);
   assert.doesNotMatch(glassCss, /\.app-shell \{[^}]*\bcolor:/);
 
   // O header fica escuro nos dois temas: o texto dele é branco fixo em

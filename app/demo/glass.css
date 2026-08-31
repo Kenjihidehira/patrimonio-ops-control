@@ -171,7 +171,6 @@
    `.inventory-layout`: se as duas desfocassem, opacidade e desfoque se somariam
    e o painel viraria uma chapa leitosa. */
 .inventory-layout,
-.nucleus-card,
 .kpi-item {
   border: 1px solid var(--placa-fio);
   background: var(--placa-solida);
@@ -185,7 +184,6 @@
 }
 
 .inventory-layout,
-.nucleus-card,
 .kpi-item {
   border-radius: var(--placa-raio);
 }
@@ -344,8 +342,7 @@
 .dashboard-panel,
 .detail-panel,
 .section-toolbar,
-.inventory-layout,
-.nucleus-card {
+.inventory-layout {
   box-shadow: inset 0 1px 0 var(--placa-luz), var(--placa-sombra);
 }
 
@@ -476,38 +473,6 @@
 
 /* Atalhos: devolvem em um clique as secoes mais procuradas. Quais sao elas
    veio da maquete aprovada, nao de medicao de uso — trocar e uma linha. */
-.header-shortcuts {
-  display: flex;
-  gap: 5px;
-  grid-column: 1 / -1;
-  grid-row: 3;
-  padding-top: 8px;
-}
-
-.header-shortcut {
-  /* 44 e nao os 32 da maquete: recusei 36px no modelo anterior por causa do
-     alvo de toque, e aplicar 32 aqui seria usar dois pesos e duas medidas. */
-  min-height: 44px;
-  padding: 0 12px;
-  border: 0;
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.07);
-  color: #D6E2EE;
-  font: inherit;
-  font-size: 11.5px;
-  cursor: pointer;
-}
-
-.header-shortcut:hover {
-  background: rgba(255, 255, 255, 0.13);
-  color: #FFFFFF;
-}
-
-.header-shortcut.is-active {
-  background: var(--yellow);
-  color: #0A0E38;
-  font-weight: 640;
-}
 
 /* Sem espaco para o campo no centro: ele desce para uma linha propria, em vez
    de espremer a marca e as acoes. */
@@ -530,11 +495,6 @@
   .primary-nav {
     grid-row: 3;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .header-shortcuts {
-    grid-row: 4;
-    overflow-x: auto;
   }
 
   .mobile-menu-label {
@@ -868,7 +828,6 @@
   border-radius: 999px;
 }
 
-
 /* ---------------------------------------------------------------------------
    Ajustes que a troca de material exigiu, medidos.
    --------------------------------------------------------------------------- */
@@ -909,7 +868,6 @@
 .detail-panel,
 .section-toolbar,
 .inventory-layout,
-.nucleus-card,
 .app-shell .kpi-item,
 .modal-content {
   box-shadow: inset 0 1px 0 var(--placa-luz);

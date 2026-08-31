@@ -80,32 +80,6 @@ body {
   letter-spacing: 0.09em;
 }
 
-.sidebar-department {
-  display: grid;
-  gap: 3px;
-  margin: 0 12px 22px;
-  padding: 13px 0 15px;
-  border-top: 1px solid rgba(255, 255, 255, 0.13);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.13);
-}
-
-.sidebar-department span {
-  color: #8ba8c3;
-  font-size: var(--texto-xs);
-  font-weight: 500;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.sidebar-department strong {
-  overflow: hidden;
-  color: #62dce3;
-  font-size: var(--texto-md);
-  font-weight: 700;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
 .primary-nav {
   display: grid;
   width: 100%;
@@ -160,24 +134,6 @@ body {
 
 .nav-item.is-active .nav-item-icon {
   color: #ffffff;
-}
-
-.sidebar-footer {
-  display: flex;
-  margin-top: auto;
-  padding: 18px 12px 0;
-  border-top: 1px solid rgba(255, 255, 255, 0.11);
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  color: #8ba8c3;
-  font-size: var(--texto-2xs);
-}
-
-.sidebar-footer a {
-  color: #b9cce0;
-  font-weight: 700;
-  text-underline-offset: 3px;
 }
 
 .main-content {
@@ -504,9 +460,7 @@ body {
 
 .operational-panel,
 .nuclei-overview article,
-.nucleus-card,
 .people-panel,
-.environment-panel,
 .import-run,
 .audit-item {
   border-radius: 3px;
@@ -519,10 +473,6 @@ body {
 
 .app-footer {
   max-width: 1640px;
-}
-
-.navigation-scrim {
-  display: none;
 }
 
 @media (max-width: 1260px) {
@@ -575,16 +525,6 @@ body {
 
   .mobile-menu-toggle {
     display: grid;
-  }
-
-  .navigation-scrim {
-    position: fixed;
-    z-index: 55;
-    inset: 0;
-    display: block;
-    border: 0;
-    background: rgba(3, 18, 35, 0.64);
-    cursor: pointer;
   }
 
   .main-content {
@@ -2965,29 +2905,25 @@ body {
   background: currentColor;
 }
 
-.dashboard-status-bars,
-.dashboard-movement-bars {
+.dashboard-status-bars {
   display: grid;
   gap: 13px;
 }
 
-.dashboard-status-row,
-.dashboard-movement-bars > div {
+.dashboard-status-row {
   display: grid;
   grid-template-columns: 92px minmax(0, 1fr) 40px;
   align-items: center;
   gap: 10px;
 }
 
-.dashboard-status-row > span,
-.dashboard-movement-bars span {
+.dashboard-status-row > span {
   color: var(--muted);
   font-size: var(--texto-2xs);
   font-weight: 500;
 }
 
-.dashboard-status-row > strong,
-.dashboard-movement-bars strong {
+.dashboard-status-row > strong {
   color: var(--heading-text);
   font-size: var(--texto-xs);
   font-variant-numeric: tabular-nums;
@@ -3004,10 +2940,6 @@ body {
 
 .dashboard-status-row.is-discrepancy progress {
   color: var(--coral);
-}
-
-.dashboard-movement-bars span {
-  text-transform: capitalize;
 }
 
 .dashboard-attention-list {
@@ -3717,10 +3649,6 @@ body {
   border-top: 0;
 }
 
-.navigation-scrim {
-  display: none;
-}
-
 /* Notebook: 1366 e 1440 ficavam entre a faixa de 1260px e o tamanho cheio, e o
    header nao cabia. A nav e flex centralizada dentro de uma trilha `1fr`, entao
    o excesso nao rolava nem quebrava: vazava simetricamente para os dois lados e
@@ -3859,10 +3787,6 @@ body {
     grid-column: 2;
     grid-row: 1;
     justify-self: end;
-  }
-
-  .navigation-scrim {
-    display: none;
   }
 
   .topbar {
@@ -4011,8 +3935,7 @@ body {
 .table-item-icon svg,
 .profile-asset-icon svg,
 .scanner-asset-type-icon svg,
-.nucleus-inventory-item svg,
-.nucleus-inventory-button-icon svg {
+.nucleus-inventory-item svg {
   display: none;
 }
 
@@ -4040,12 +3963,6 @@ body {
   padding: 3px;
   border-color: var(--line);
   background: var(--surface-soft);
-}
-
-.nucleus-inventory-button-icon {
-  width: 25px;
-  height: 25px;
-  padding: 2px;
 }
 
 :root[data-theme="dark"] .asset-type-image {

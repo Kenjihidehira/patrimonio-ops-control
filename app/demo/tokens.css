@@ -107,7 +107,6 @@
 
   /* Profundidade. */
   --shadow: none;
-  --shadow-soft: none;
   --shadow-panel: none;
   --modal-shadow: 0 18px 48px rgba(20, 23, 28, 0.28);
   --overlay: rgba(6, 31, 59, 0.66);
@@ -117,7 +116,6 @@
   /* Sem degrade: o fundo e mesa, nao ceu. O brilho azul no canto era o
      unico lugar do sistema onde a cor da marca aparecia sem significar nada. */
   --placa-mesa: #DDE1E8;
-  --placa-folha: #F7F8FA;
   --placa-folha-hover: #FFFFFF;
   --placa-folha-alta: #FFFFFF;
   --placa-solida: #F7F8FA;
@@ -126,7 +124,6 @@
   --placa-luz: rgba(255, 255, 255, 0.9);
   --placa-cabecalho: #E4E7ED;
   --placa-raio: 2px;
-  --placa-raio-alto: 3px;
   --placa-sombra: none;
   --placa-sombra-alta: 0 18px 48px rgba(20, 23, 28, 0.28);
   /* A barra sempre foi azul, nos dois temas: e a assinatura da Gazin. */
@@ -240,14 +237,12 @@
   --table-text: #DFE4E8;
 
   --shadow: none;
-  --shadow-soft: none;
   --shadow-panel: none;
   --modal-shadow: 0 20px 54px rgba(0, 0, 0, 0.6);
   --overlay: rgba(2, 8, 16, 0.78);
   --loading-bg: #26374C;
 
   --placa-mesa: #14171C;
-  --placa-folha: #1B1F26;
   --placa-folha-hover: #22272F;
   --placa-folha-alta: #22272F;
   --placa-solida: #1B1F26;

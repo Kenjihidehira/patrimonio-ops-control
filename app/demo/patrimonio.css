@@ -1676,45 +1676,6 @@ tbody tr:last-child td {
   width: min(360px, 100%);
 }
 
-.nuclei-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 16px;
-}
-
-.nucleus-card {
-  position: relative;
-  display: flex;
-  min-height: 258px;
-  min-width: 0;
-  padding: 18px;
-  flex-direction: column;
-  overflow: hidden;
-  border: 1px solid var(--line);
-  border-radius: 3px;
-  background: var(--surface);
-  transition: border-color 150ms ease, box-shadow 150ms ease, transform 150ms ease;
-}
-
-.nucleus-card:hover {
-  border-color: var(--line-strong);
-  transform: translateY(-2px);
-}
-
-.nucleus-card::before {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 3px;
-  height: 100%;
-  content: "";
-  background: var(--brand-700);
-}
-
-.nucleus-card.has-alerts::before {
-  background: var(--coral);
-}
-
 .nucleus-code {
   display: inline-grid;
   min-width: 36px;
@@ -1726,13 +1687,6 @@ tbody tr:last-child td {
   color: var(--emphasis-text);
   font-size: var(--texto-2xs);
   font-weight: 500;
-}
-
-.nucleus-identity {
-  display: flex;
-  min-width: 0;
-  align-items: center;
-  gap: 8px;
 }
 
 .nucleus-health {
@@ -1755,75 +1709,10 @@ tbody tr:last-child td {
   color: var(--status-danger-text);
 }
 
-.nucleus-card-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  min-height: 30px;
-}
-
 .nucleus-edit {
   width: 32px;
   height: 32px;
   min-height: 32px;
-}
-
-.nucleus-card h3 {
-  min-height: 42px;
-  margin: 14px 0 0;
-  color: var(--heading-text);
-  font-size: var(--texto-xl);
-  line-height: 1.3;
-}
-
-.nucleus-meta {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: 14px;
-  margin-top: 13px;
-  padding: 13px 0;
-  border-top: 1px solid var(--line);
-  border-bottom: 1px solid var(--line);
-}
-
-.nucleus-meta span,
-.nucleus-meta strong {
-  display: block;
-}
-
-.nucleus-meta span {
-  color: var(--muted);
-  font-size: var(--texto-2xs);
-  font-weight: 500;
-  text-transform: uppercase;
-}
-
-.nucleus-meta strong {
-  margin-top: 3px;
-  overflow-wrap: anywhere;
-  color: var(--ink);
-  font-size: var(--texto-2xs);
-  font-weight: 600;
-  line-height: 1.35;
-}
-
-.nucleus-allocation {
-  margin-top: 13px;
-}
-
-.nucleus-allocation > div:first-child {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  color: var(--muted);
-  font-size: var(--texto-xs);
-}
-
-.nucleus-allocation strong {
-  color: var(--ink);
-  font-size: var(--texto-2xs);
 }
 
 .nucleus-progress {
@@ -1847,38 +1736,6 @@ tbody tr:last-child td {
 .nucleus-progress::-moz-progress-bar {
   border-radius: inherit;
   background: var(--blue);
-}
-
-.nucleus-metrics {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
-  margin-top: auto;
-  padding-top: 16px;
-}
-
-.nucleus-metrics span,
-.nucleus-metrics strong {
-  display: block;
-}
-
-.nucleus-inventory-button {
-  width: 100%;
-  margin-top: 14px;
-  justify-content: space-between;
-}
-
-.nucleus-inventory-button-icon {
-  display: inline-grid;
-  width: 24px;
-  height: 24px;
-  place-items: center;
-  color: var(--icon-accent);
-}
-
-.nucleus-inventory-button-icon svg {
-  width: 18px;
-  height: 18px;
 }
 
 .nucleus-inventory-dialog {
@@ -2502,14 +2359,6 @@ tbody tr:last-child td {
   --asset-accent: var(--blue);
 }
 
-.profile-asset-item-chair {
-  --asset-accent: var(--yellow);
-}
-
-.profile-asset-item-notebook {
-  --asset-accent: var(--success);
-}
-
 .profile-asset-icon {
   --profile-icon-accent: var(--asset-accent, var(--brand-700));
   display: grid;
@@ -2568,19 +2417,6 @@ tbody tr:last-child td {
 
 .preview-metrics-six {
   grid-template-columns: repeat(3, minmax(0, 1fr));
-}
-
-.nucleus-metrics span {
-  color: var(--muted);
-  font-size: var(--texto-2xs);
-  text-transform: uppercase;
-}
-
-.nucleus-metrics strong {
-  margin-top: 3px;
-  color: var(--heading-text);
-  font-size: var(--texto-3xl);
-  line-height: 1;
 }
 
 .audit-list {
@@ -4034,10 +3870,6 @@ tbody tr:last-child td {
     grid-template-columns: minmax(0, 1fr) 370px;
   }
 
-  .nuclei-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
   .people-filters {
     grid-template-columns: repeat(2, minmax(160px, 1fr));
   }
@@ -4490,10 +4322,6 @@ tbody tr:last-child td {
     top: 0;
   }
 
-  .nuclei-grid {
-    grid-template-columns: 1fr;
-  }
-
   .people-filters {
     grid-template-columns: 1fr;
   }
@@ -4745,19 +4573,6 @@ tbody tr:last-child td {
 
   .advanced-filters {
     grid-template-columns: 1fr;
-  }
-
-  .nucleus-card {
-    min-height: 0;
-  }
-
-  .nucleus-card h3 {
-    min-height: 0;
-  }
-
-  .nucleus-meta {
-    grid-template-columns: 1fr;
-    gap: 10px;
   }
 
   .data-actions .button {
@@ -5105,17 +4920,6 @@ tbody tr:last-child td {
   font-size: var(--texto-2xs);
 }
 
-.nucleus-card {
-  min-height: 274px;
-  padding: 20px;
-  background: var(--surface-raised);
-}
-
-.nucleus-card h3 {
-  margin-top: 16px;
-  font-size: 17px;
-}
-
 .nucleus-code {
   min-width: 40px;
   min-height: 30px;
@@ -5125,12 +4929,6 @@ tbody tr:last-child td {
   min-height: 26px;
   padding-right: 9px;
   padding-left: 9px;
-}
-
-.nucleus-inventory-button {
-  min-height: 44px;
-  border-color: var(--line-strong);
-  background: var(--surface-inset);
 }
 
 .audit-filters {
@@ -5803,14 +5601,8 @@ tbody tr:last-child td {
 .nucleus-code,
 .nucleus-inventory-code,
 .scanner-missing-identifier,
-.data-table td:first-child,
-.metric-value,
 .record-count {
   font-family: var(--font-plex-mono), ui-monospace, "Cascadia Mono", monospace;
-  font-variant-numeric: tabular-nums;
-}
-
-.data-table {
   font-variant-numeric: tabular-nums;
 }
 
@@ -5830,8 +5622,7 @@ th {
 .eyebrow,
 .privacy-eyebrow,
 .record-count,
-.operational-metric-label,
-.metric-label {
+.operational-metric-label {
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }

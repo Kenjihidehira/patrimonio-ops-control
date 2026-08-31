@@ -16,27 +16,19 @@
   /* O mesmo azul do header do sistema, e nao um segundo azul. O login e a
      barra em tela cheia, com uma chapa apoiada nela. */
   --login-canvas: #0A0E38;
-  --login-canvas-deep: #05073F;
-  --login-grid: rgba(62, 82, 100, 0.1);
-  --login-glow-blue: transparent;
-  --login-glow-teal: transparent;
   /* Grafite nos dois temas, e nao papel: o cartao fica sobre o campo azul da
      marca e o texto dele sempre foi claro. Chapa escura sobre campo escuro
      separa pelo fio e pelo degrau de valor, como no resto do sistema. */
   --login-card: #1B1F26;
   --login-card-deep: #22272F;
   --login-card-border: #3D444E;
-  --login-card-highlight: transparent;
   --login-text: #172235;
   --login-muted: #5F6F82;
   --login-divider: rgba(6, 74, 143, 0.14);
-  --login-shadow: rgba(0, 0, 0, 0.36);
   --login-raio: 2px;
   --login-button-start: #0B109F;
   --login-button-end: #080B73;
   --login-button-text: #FFFFFF;
-  --login-brand-start: #080B73;
-  --login-brand-end: #05073F;
   --login-error-border: #E5A99F;
   --login-error-bg: #FDECEE;
   --login-error-text: #743226;
@@ -51,23 +43,15 @@
   --brand-700: #A3A8FF;
   /* O campo azul nao segue o tema: e assinatura de marca, igual ao header. */
   --login-canvas: #0A0E38;
-  --login-canvas-deep: #05073F;
-  --login-grid: rgba(164, 178, 190, 0.08);
-  --login-glow-blue: transparent;
-  --login-glow-teal: transparent;
   --login-card: #1B1F26;
   --login-card-deep: #22272F;
   --login-card-border: #333941;
-  --login-card-highlight: transparent;
   --login-text: #F0F2F4;
   --login-muted: #B5BEC6;
   --login-divider: #333941;
-  --login-shadow: rgba(0, 0, 0, 0.5);
   --login-button-start: #3A43DC;
   --login-button-end: #2029C4;
   --login-button-text: #F5F7F8;
-  --login-brand-start: #0A0C56;
-  --login-brand-end: #070A3A;
   --login-error-border: #9F5360;
   --login-error-bg: #3A2029;
   --login-error-text: #FFD7DC;

@@ -36,30 +36,14 @@
 @source "../../app";
 
 /*
- * As cores do sistema entram no Tailwind como tema, entao `bg-surface`,
- * `text-muted` e `border-line` passam a existir e apontam para os mesmos
- * tokens que o CSS semantico usa. Sem isto, usar Tailwind aqui significaria
- * escrever `bg-[#182634]` — uma segunda paleta, fora do tema, que nao
- * acompanha a troca de tema. Era o problema que acabamos de resolver.
+ * Só o token que uma classe realmente usa. A ideia era expor a paleta inteira
+ * como tema (`bg-surface`, `text-muted`, `border-line`), mas na prática um único
+ * componente adotou Tailwind — a etiqueta de status, que usa `text-success`. Os
+ * outros 17 mapeamentos geravam utilitárias que nenhum markup aplicava. Como é
+ * `@theme inline`, o que não vira classe não emite CSS, então isto não muda a
+ * saída — só para de declarar API que ninguém consome. Se um componente novo
+ * precisar de `bg-surface`, o mapeamento volta com ele.
  */
 @theme inline {
-  --color-canvas: var(--canvas);
-  --color-surface: var(--surface);
-  --color-surface-raised: var(--surface-raised);
-  --color-surface-soft: var(--surface-soft);
-  --color-surface-hover: var(--surface-hover);
-  --color-ink: var(--ink);
-  --color-heading: var(--heading-text);
-  --color-muted: var(--muted);
-  --color-subtle: var(--subtle-text);
-  --color-line: var(--line);
-  --color-line-strong: var(--line-strong);
-  --color-brand: var(--brand-700);
-  --color-brand-deep: var(--brand-900);
   --color-success: var(--success);
-  --color-coral: var(--coral);
-  --color-yellow: var(--yellow);
-
-  --radius-sistema: var(--saas-radius);
-  --shadow-painel: var(--shadow-panel);
 }
