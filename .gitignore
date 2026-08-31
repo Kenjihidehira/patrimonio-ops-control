@@ -13,3 +13,8 @@ tmp/
 
 .vercel
 .env*
+
+# Skills instaladas localmente (npx skills add) — nao versionar no repo do produto
+/.agents/
+/.claude/skills/
+/skills-lock.json
