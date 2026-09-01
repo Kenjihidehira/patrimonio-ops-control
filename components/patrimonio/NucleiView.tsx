@@ -5,6 +5,7 @@ import type { Dashboard } from "./types";
 import {
   EditIcon,
   EmptyState,
+  NucleusIcon,
   OperationalMetric,
   SearchIcon,
   normalizedText,
@@ -151,7 +152,7 @@ export function NucleiView({
                       <tr key={nucleus.id}>
                         <th scope="row">
                           <span className="nucleus-table-identity">
-                            <span className="nucleus-code">{nucleus.code}</span>
+                            <span className="nucleus-code" title={nucleus.code}><NucleusIcon name={nucleus.name} /></span>
                             <strong>{nucleus.name}</strong>
                           </span>
                         </th>
@@ -205,7 +206,7 @@ export function NucleiView({
                 return (
                   <article key={nucleus.id} className="nucleus-mobile-card">
                     <div className="nucleus-mobile-heading">
-                      <span className="nucleus-code">{nucleus.code}</span>
+                      <span className="nucleus-code" title={nucleus.code}><NucleusIcon name={nucleus.name} /></span>
                       <h3>{nucleus.name}</h3>
                       <NucleusHealth alerts={nucleus.alerts} />
                       <button

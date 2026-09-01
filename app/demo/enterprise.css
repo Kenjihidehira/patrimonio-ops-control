@@ -4324,6 +4324,15 @@ textarea {
   letter-spacing: 0;
 }
 
+/* O badge agora carrega um ícone do setor no lugar da sigla. O SVG herda a cor
+   (`--muted`) e ganha tamanho fixo — sem isto, um <svg> sem width/height cai no
+   tamanho intrínseco padrão e estoura a caixa de 34px. */
+.nuclei-table .nucleus-code svg,
+.nucleus-mobile-card .nucleus-code svg {
+  width: 18px;
+  height: 18px;
+}
+
 .nucleus-location {
   max-width: 300px;
   color: var(--muted);

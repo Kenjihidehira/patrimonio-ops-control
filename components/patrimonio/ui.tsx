@@ -13,6 +13,7 @@ import type {
   Dashboard,
   Movement,
 } from "./types";
+import { nucleusGlyph } from "@/lib/nucleus-glyph.js";
 
 export function Modal({
   open,
@@ -680,6 +681,100 @@ export function OperationalIcon({ name }: { name: OperationalIconName }) {
     <svg {...common}>
       <circle cx="9" cy="8" r="3" stroke="currentColor" strokeWidth="1.8" />
       <path d="M3.5 19c.7-3.2 2.5-4.8 5.5-4.8s4.8 1.6 5.5 4.8m1-7 2 2 3.5-4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+// Ícone do núcleo, no lugar da sigla. A sigla distinguia cada núcleo por letras
+// derivadas do nome; o ícone faz o mesmo por significado. A decisão nome->glifo
+// vive em `lib/nucleus-glyph.js` (pura e testada); aqui só se desenha o SVG.
+export function NucleusIcon({ name }: { name: string }) {
+  const glyph = nucleusGlyph(name);
+  const common = { "aria-hidden": true, viewBox: "0 0 24 24", fill: "none" } as const;
+  const t = { stroke: "currentColor", strokeWidth: "1.7", strokeLinecap: "round", strokeLinejoin: "round" } as const;
+
+  if (glyph === "bank") {
+    return (
+      <svg {...common}>
+        <path d="M4 10 12 5l8 5M5 10v8m4-8v8m6-8v8m4-8v8M3.5 18.5h17" {...t} />
+      </svg>
+    );
+  }
+  if (glyph === "cart") {
+    return (
+      <svg {...common}>
+        <path d="M3.5 5H6l1.8 9.5h9L18.5 8H7" {...t} />
+        <circle cx="9.2" cy="18.5" r="1.3" fill="currentColor" />
+        <circle cx="16" cy="18.5" r="1.3" fill="currentColor" />
+      </svg>
+    );
+  }
+  if (glyph === "headset") {
+    return (
+      <svg {...common}>
+        <path d="M5 13.5v-1.5a7 7 0 0 1 14 0v1.5" {...t} />
+        <rect x="3.5" y="13" width="3.5" height="6" rx="1.5" {...t} />
+        <rect x="17" y="13" width="3.5" height="6" rx="1.5" {...t} />
+        <path d="M19 19v.5a3 3 0 0 1-3 3h-3" {...t} />
+      </svg>
+    );
+  }
+  if (glyph === "boxes") {
+    return (
+      <svg {...common}>
+        <rect x="3.5" y="12.5" width="7" height="7" rx="1" {...t} />
+        <rect x="13.5" y="12.5" width="7" height="7" rx="1" {...t} />
+        <rect x="8.5" y="4.5" width="7" height="7" rx="1" {...t} />
+      </svg>
+    );
+  }
+  if (glyph === "coins") {
+    return (
+      <svg {...common}>
+        <ellipse cx="9" cy="7.5" rx="5" ry="2.4" {...t} />
+        <path d="M4 7.5v4c0 1.3 2.2 2.4 5 2.4s5-1.1 5-2.4v-4" {...t} />
+        <path d="M14 12.2c2.6.2 4.5 1.2 4.5 2.4 0 1.3-2.2 2.4-5 2.4-1.4 0-2.6-.3-3.5-.7" {...t} />
+      </svg>
+    );
+  }
+  if (glyph === "broadcast") {
+    return (
+      <svg {...common}>
+        <circle cx="12" cy="12" r="1.8" fill="currentColor" />
+        <path d="M8.6 8.6a5 5 0 0 0 0 6.8m6.8-6.8a5 5 0 0 1 0 6.8M6 6a9 9 0 0 0 0 12M18 6a9 9 0 0 1 0 12" {...t} />
+      </svg>
+    );
+  }
+  if (glyph === "truck") {
+    return (
+      <svg {...common}>
+        <rect x="2.5" y="7" width="11" height="9" rx="1" {...t} />
+        <path d="M13.5 10h3.8l3.2 3.2V16h-7" {...t} />
+        <circle cx="7" cy="18" r="1.6" {...t} />
+        <circle cx="17" cy="18" r="1.6" {...t} />
+      </svg>
+    );
+  }
+  if (glyph === "chip") {
+    return (
+      <svg {...common}>
+        <rect x="7" y="7" width="10" height="10" rx="1.5" {...t} />
+        <path d="M10 7V4m4 3V4m-4 19v-3m4 3v-3M7 10H4m3 4H4m19-4h-3m3 4h-3" {...t} />
+      </svg>
+    );
+  }
+  if (glyph === "compass") {
+    return (
+      <svg {...common}>
+        <circle cx="12" cy="12" r="8" {...t} />
+        <path d="m15.5 8.5-2.2 4.8L8.5 15.5l2.2-4.8z" {...t} />
+      </svg>
+    );
+  }
+  // building — a reserva
+  return (
+    <svg {...common}>
+      <path d="M5 21V5.5L12 3v18M12 8h7v13M8 8h1m-1 4h1m-1 4h1m7-4h1m-1 4h1M3 21h18" {...t} />
     </svg>
   );
 }
