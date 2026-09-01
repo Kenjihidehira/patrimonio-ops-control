@@ -17,6 +17,9 @@ test("os departamentos reais mapeiam para ícones coerentes", () => {
     "E-COMMERCE": "cart",
     "GAZINBANK": "bank",
     "GERENTE DO ATENDIMENTO AO CLIENTE": "headset",
+    // A família de atendimento se divide para não repetir o mesmo headset:
+    "SUPORTE & ASSISTÊNCIA": "lifebuoy",
+    "TELEATENDIMENTO": "phone",
   };
   for (const [nome, glifo] of Object.entries(esperado)) {
     assert.equal(nucleusGlyph(nome), glifo, `${nome} deveria ser ${glifo}`);
@@ -46,4 +49,10 @@ test("a ordem resolve ambiguidade a favor do mais específico", () => {
   assert.equal(nucleusGlyph("Coordenadoria de E-commerce"), "cart");
   // "Banco" vence qualquer coisa: é a primeira regra.
   assert.equal(nucleusGlyph("GazinBank Financeiro"), "bank");
+  // "Teleatendimento" contém "atend", mas a regra do telefone vem antes do
+  // headset genérico — senão os quatro núcleos de atendimento repetiriam o mesmo
+  // ícone. É o motivo de a família ser dividida.
+  assert.equal(nucleusGlyph("Teleatendimento"), "phone");
+  assert.equal(nucleusGlyph("Suporte & Assistência"), "lifebuoy");
+  assert.notEqual(nucleusGlyph("Teleatendimento"), nucleusGlyph("Customer Experience"));
 });

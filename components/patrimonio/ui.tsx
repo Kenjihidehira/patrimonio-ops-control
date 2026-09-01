@@ -719,6 +719,22 @@ export function NucleusIcon({ name }: { name: string }) {
       </svg>
     );
   }
+  if (glyph === "phone") {
+    return (
+      <svg {...common}>
+        <path d="M7 3.5c.9 0 1.7.6 1.9 1.5l.6 2.4c.2.8-.1 1.6-.7 2.1l-1.1.9a11 11 0 0 0 4.4 4.4l.9-1.1c.5-.6 1.3-.9 2.1-.7l2.4.6c.9.2 1.5 1 1.5 1.9v2.2c0 1.1-.9 2-2 1.9A15.5 15.5 0 0 1 3.1 6.5c-.1-1.1.8-2 1.9-2z" {...t} />
+      </svg>
+    );
+  }
+  if (glyph === "lifebuoy") {
+    return (
+      <svg {...common}>
+        <circle cx="12" cy="12" r="8.2" {...t} />
+        <circle cx="12" cy="12" r="3.2" {...t} />
+        <path d="m6.6 6.6 3.1 3.1m4.6 0 3.1-3.1m0 10.8-3.1-3.1m-4.6 0-3.1 3.1" {...t} />
+      </svg>
+    );
+  }
   if (glyph === "boxes") {
     return (
       <svg {...common}>
