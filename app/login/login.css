@@ -4,33 +4,31 @@
   --brand-900: #080B73;
   --brand-700: #0B109F;
   --brand-100: #E9EAFC;
-  --ink: #172235;
-  --muted: #5F6F82;
-  --line: #DCE4EE;
-  --surface: #ffffff;
-  --surface-soft: #F4F7FA;
+  --ink: #18263A;
+  --muted: #5C6878;
+  --line: #C9CFD8;
+  --surface: #F7F8FA;
+  --surface-soft: #E9ECF1;
   --yellow: #FFC400;
   --teal: #A9ADEB;
   --coral: #C93B48;
   --coral-soft: #FDECEE;
-  --login-canvas: #080B73;
-  --login-canvas-deep: #05073F;
-  --login-grid: rgba(62, 82, 100, 0.1);
-  --login-glow-blue: transparent;
-  --login-glow-teal: transparent;
-  --login-card: #FFFFFF;
-  --login-card-deep: #F1F4F6;
-  --login-card-border: rgba(255, 255, 255, 0.4);
-  --login-card-highlight: transparent;
+  /* O mesmo azul do header do sistema, e nao um segundo azul. O login e a
+     barra em tela cheia, com uma chapa apoiada nela. */
+  --login-canvas: #0A0E38;
+  /* Grafite nos dois temas, e nao papel: o cartao fica sobre o campo azul da
+     marca e o texto dele sempre foi claro. Chapa escura sobre campo escuro
+     separa pelo fio e pelo degrau de valor, como no resto do sistema. */
+  --login-card: #1B1F26;
+  --login-card-deep: #22272F;
+  --login-card-border: #3D444E;
   --login-text: #172235;
   --login-muted: #5F6F82;
   --login-divider: rgba(6, 74, 143, 0.14);
-  --login-shadow: rgba(0, 0, 0, 0.36);
+  --login-raio: 2px;
   --login-button-start: #0B109F;
   --login-button-end: #080B73;
   --login-button-text: #FFFFFF;
-  --login-brand-start: #080B73;
-  --login-brand-end: #05073F;
   --login-error-border: #E5A99F;
   --login-error-bg: #FDECEE;
   --login-error-text: #743226;
@@ -43,24 +41,17 @@
 
 :root[data-theme="dark"] {
   --brand-700: #A3A8FF;
-  --login-canvas: #070A3A;
-  --login-canvas-deep: #04061F;
-  --login-grid: rgba(164, 178, 190, 0.08);
-  --login-glow-blue: transparent;
-  --login-glow-teal: transparent;
-  --login-card: #2A3C4F;
-  --login-card-deep: #223243;
-  --login-card-border: #465967;
-  --login-card-highlight: transparent;
+  /* O campo azul nao segue o tema: e assinatura de marca, igual ao header. */
+  --login-canvas: #0A0E38;
+  --login-card: #1B1F26;
+  --login-card-deep: #22272F;
+  --login-card-border: #333941;
   --login-text: #F0F2F4;
   --login-muted: #B5BEC6;
-  --login-divider: #40515F;
-  --login-shadow: rgba(0, 0, 0, 0.5);
+  --login-divider: #333941;
   --login-button-start: #3A43DC;
   --login-button-end: #2029C4;
   --login-button-text: #F5F7F8;
-  --login-brand-start: #0A0C56;
-  --login-brand-end: #070A3A;
   --login-error-border: #9F5360;
   --login-error-bg: #3A2029;
   --login-error-text: #FFD7DC;
@@ -139,14 +130,19 @@ a {
   display: none;
 }
 
+/* Chapa, nao vidro. Opaca e com fio de 1px, igual aos paineis do sistema.
+   A sombra grande saiu junto com a do resto: sobre o campo azul escuro a
+   diferenca de valor ja separa o cartao com folga, e a sombra so borrava a
+   aresta. Fica o fio de luz na borda de cima, que e o que faz ler como
+   material. */
 .login-card {
   position: relative;
   width: 100%;
   overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 18px;
-  background: rgba(255, 255, 255, 0.08);
-  box-shadow: 0 18px 44px rgba(2, 4, 26, 0.42);
+  border: 1px solid var(--login-card-border);
+  border-radius: var(--login-raio);
+  background: var(--login-card);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.07);
 }
 
 .login-card::before {
@@ -272,7 +268,7 @@ a {
   padding: 11px 13px;
   border: 1px solid var(--login-error-border);
   border-left: 4px solid var(--coral);
-  border-radius: 6px;
+  border-radius: var(--login-raio);
   background: var(--login-error-bg);
   color: var(--login-error-text);
   font-size: 12px;
@@ -283,7 +279,7 @@ a {
   padding: 11px 13px;
   border: 1px solid var(--login-success-border);
   border-left: 4px solid var(--login-success-border);
-  border-radius: 6px;
+  border-radius: var(--login-raio);
   background: var(--login-success-bg);
   color: var(--login-success-text);
   font-size: 12px;
@@ -296,7 +292,7 @@ a {
   margin-bottom: 14px;
   padding: 4px;
   border: 1px solid var(--login-card-border);
-  border-radius: 9px;
+  border-radius: var(--login-raio);
   background: var(--login-card-deep);
 }
 
@@ -305,7 +301,7 @@ a {
   display: grid;
   min-height: 44px;
   padding: 9px 12px;
-  border-radius: 6px;
+  border-radius: var(--login-raio);
   place-items: center;
   color: var(--login-muted);
   font-size: 12px;

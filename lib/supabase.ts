@@ -150,10 +150,6 @@ export async function getSystemAccess(identifier: string): Promise<{
   };
 }
 
-export async function hasSystemAccess(identifier: string): Promise<boolean> {
-  return (await getSystemAccess(identifier)).authorized;
-}
-
 export async function authenticateCredentials(
   login: string,
   password: string,

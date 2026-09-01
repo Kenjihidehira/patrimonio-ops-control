@@ -140,10 +140,19 @@
   padding-left: 22px;
 }
 
+/* Era #0055a5 — a mesma cor abandonada do anel de foco, aqui numa quarta
+   notacao (hex minusculo). Nao havia variante escura: os links mediam 1,80:1
+   sobre a pagina escura, bem abaixo dos 4,5:1, e so passavam no tema claro.
+   Agora azul Gazin no claro e a variante clara da marca no escuro. */
 .privacy-content a,
 .privacy-actions a {
-  color: #0055a5;
+  color: #0B109F;
   font-weight: 700;
+}
+
+:root[data-theme="dark"] .privacy-content a,
+:root[data-theme="dark"] .privacy-actions a {
+  color: #A3A8FF;
 }
 
 .privacy-actions {
@@ -156,12 +165,24 @@
   background: #f5f8fb;
 }
 
+/* Era #315f87 — o azul que o sistema abandonou e que o teste bane por nao ser a
+   cor da marca. Esta folha e uma ilha: nao importa `tokens.css` e nao usa
+   `var()`, entao o azul Gazin entra literal.
+   O bloco escuro existe porque o botao nao tinha variante nenhuma: solido
+   escuro sobre pagina escura media 2,37:1 contra a pagina, e trocar so a cor o
+   levaria a 1,21. No escuro ele inverte — preenchimento claro, texto escuro —,
+   o mesmo padrao da etiqueta de alarme no app. */
 .privacy-actions .privacy-primary-action {
   padding: 11px 18px;
   border-radius: 3px;
-  background: #315f87;
+  background: #0B109F;
   color: #fff;
   text-decoration: none;
+}
+
+:root[data-theme="dark"] .privacy-actions .privacy-primary-action {
+  background: #A3A8FF;
+  color: #05073F;
 }
 
 :root[data-theme="dark"] .privacy-shell {

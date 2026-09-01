@@ -8,6 +8,7 @@ import {
   runtimeValue,
   setOAuthTransactionCookie,
 } from "@/app/auth";
+import { motivoDaRecusaGoogle } from "@/lib/google-login-decision.js";
 import { getSystemAccess, recordAuthEvent } from "@/lib/supabase";
 
 type GoogleConfig = {
@@ -84,9 +85,21 @@ export async function completeGoogleLogin(request: Request): Promise<Response> {
         code_verifier: transaction.verifier,
       }),
     });
-    const tokenBody = (await tokenResponse.json().catch(() => null)) as { id_token?: unknown } | null;
+    const tokenBody = (await tokenResponse.json().catch(() => null)) as
+      | { id_token?: unknown; error?: unknown; error_description?: unknown }
+      | null;
     if (!tokenResponse.ok || typeof tokenBody?.id_token !== "string") {
-      throw new Error("Google token exchange failed.");
+      // O codigo que o Google devolve e a unica coisa que separa segredo errado
+      // (`invalid_client`) de URI nao registrada (`redirect_uri_mismatch`) de
+      // codigo ja usado (`invalid_grant`). Descartando os tres, a falha vira a
+      // mesma frase para causas sem nada em comum, e nao ha o que investigar.
+      // Nada disto e segredo: sao codigos publicos do protocolo OAuth, e o
+      // corpo nunca traz credencial.
+      const causa =
+        typeof tokenBody?.error === "string" ? tokenBody.error : `http_${tokenResponse.status}`;
+      const detalhe =
+        typeof tokenBody?.error_description === "string" ? ` (${tokenBody.error_description})` : "";
+      throw new Error(`Google token exchange failed: ${causa}${detalhe}`);
     }
 
     const { payload } = await jwtVerify(tokenBody.id_token, getGoogleJwks(metadata.jwks_uri), {
@@ -96,14 +109,28 @@ export async function completeGoogleLogin(request: Request): Promise<Response> {
     });
     const email = typeof payload.email === "string" ? payload.email.trim().toLowerCase() : "";
     const access = email ? await getSystemAccess(email) : { authorized: false, sessionVersion: 0 };
-    if (
-      payload.nonce !== transaction.nonce ||
-      typeof payload.sub !== "string" ||
-      payload.email_verified !== true ||
-      (config.workspaceDomain && payload.hd !== config.workspaceDomain) ||
-      !access.authorized
-    ) {
-      console.warn("Google login rejected by department access");
+    // Cinco checagens distintas desabavam no mesmo aviso, e a mais provavel
+    // delas — o e-mail simplesmente nao estar liberado na base — e
+    // indistinguivel de um defeito quando o log nao diz qual falhou. Segue a
+    // mesma disciplina de `recusarSessao` em `auth.ts`: o motivo nomeia o ramo
+    // e nunca acompanha e-mail, `sub` nem token, porque quem depura precisa
+    // saber qual porta fechou, nao quem tentou passar.
+    const sub = typeof payload.sub === "string" ? payload.sub : null;
+    const recusa = motivoDaRecusaGoogle({
+      nonceDoToken: payload.nonce,
+      nonceEsperado: transaction.nonce,
+      sub,
+      emailVerificado: payload.email_verified,
+      dominioDoToken: payload.hd,
+      dominioExigido: config.workspaceDomain,
+      autorizado: access.authorized,
+    });
+
+    // O `!sub` repete o que `recusa` ja cobre. O TypeScript nao leva a
+    // conclusao da funcao para dentro deste escopo, e repetir a checagem custa
+    // menos que um `as` — que seria o unico cast do projeto.
+    if (recusa || !sub) {
+      console.warn(`Google login recusado: ${recusa}`);
       if (email) {
         await recordAuthEvent(email, "login_denied", "denied").catch(
           (error) => console.error("Login denial audit failed", safeAuthError(error)),
@@ -121,7 +148,7 @@ export async function completeGoogleLogin(request: Request): Promise<Response> {
         provider: "google",
         displayName: typeof payload.name === "string" && payload.name.trim() ? payload.name.trim() : email,
         identifier: email,
-        subject: payload.sub,
+        subject: sub,
         actor: `google:${email}`,
         sessionVersion: access.sessionVersion,
       },
