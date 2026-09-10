@@ -14,6 +14,7 @@ import type {
   Movement,
 } from "./types";
 import { nucleusGlyph } from "@/lib/nucleus-glyph.js";
+import type { NucleusGlyph } from "@/lib/nucleus-glyph.js";
 
 export function Modal({
   open,
@@ -690,107 +691,112 @@ export function OperationalIcon({ name }: { name: OperationalIconName }) {
 // vive em `lib/nucleus-glyph.js` (pura e testada); aqui só se desenha o SVG.
 export function NucleusIcon({ name }: { name: string }) {
   const glyph = nucleusGlyph(name);
-  const common = { "aria-hidden": true, viewBox: "0 0 24 24", fill: "none" } as const;
   const t = { stroke: "currentColor", strokeWidth: "1.7", strokeLinecap: "round", strokeLinejoin: "round" } as const;
 
-  if (glyph === "bank") {
-    return (
-      <svg {...common}>
-        <path d="M4 10 12 5l8 5M5 10v8m4-8v8m6-8v8m4-8v8M3.5 18.5h17" {...t} />
-      </svg>
-    );
-  }
-  if (glyph === "cart") {
-    return (
-      <svg {...common}>
-        <path d="M3.5 5H6l1.8 9.5h9L18.5 8H7" {...t} />
-        <circle cx="9.2" cy="18.5" r="1.3" fill="currentColor" />
-        <circle cx="16" cy="18.5" r="1.3" fill="currentColor" />
-      </svg>
-    );
-  }
-  if (glyph === "headset") {
-    return (
-      <svg {...common}>
-        <path d="M5 13.5v-1.5a7 7 0 0 1 14 0v1.5" {...t} />
-        <rect x="3.5" y="13" width="3.5" height="6" rx="1.5" {...t} />
-        <rect x="17" y="13" width="3.5" height="6" rx="1.5" {...t} />
-        <path d="M19 19v.5a3 3 0 0 1-3 3h-3" {...t} />
-      </svg>
-    );
-  }
-  if (glyph === "phone") {
-    return (
-      <svg {...common}>
-        <path d="M7 3.5c.9 0 1.7.6 1.9 1.5l.6 2.4c.2.8-.1 1.6-.7 2.1l-1.1.9a11 11 0 0 0 4.4 4.4l.9-1.1c.5-.6 1.3-.9 2.1-.7l2.4.6c.9.2 1.5 1 1.5 1.9v2.2c0 1.1-.9 2-2 1.9A15.5 15.5 0 0 1 3.1 6.5c-.1-1.1.8-2 1.9-2z" {...t} />
-      </svg>
-    );
-  }
-  if (glyph === "lifebuoy") {
-    return (
-      <svg {...common}>
-        <circle cx="12" cy="12" r="8.2" {...t} />
-        <circle cx="12" cy="12" r="3.2" {...t} />
-        <path d="m6.6 6.6 3.1 3.1m4.6 0 3.1-3.1m0 10.8-3.1-3.1m-4.6 0-3.1 3.1" {...t} />
-      </svg>
-    );
-  }
-  if (glyph === "boxes") {
-    return (
-      <svg {...common}>
-        <rect x="3.5" y="12.5" width="7" height="7" rx="1" {...t} />
-        <rect x="13.5" y="12.5" width="7" height="7" rx="1" {...t} />
-        <rect x="8.5" y="4.5" width="7" height="7" rx="1" {...t} />
-      </svg>
-    );
-  }
-  if (glyph === "coins") {
-    return (
-      <svg {...common}>
-        <ellipse cx="9" cy="7.5" rx="5" ry="2.4" {...t} />
-        <path d="M4 7.5v4c0 1.3 2.2 2.4 5 2.4s5-1.1 5-2.4v-4" {...t} />
-        <path d="M14 12.2c2.6.2 4.5 1.2 4.5 2.4 0 1.3-2.2 2.4-5 2.4-1.4 0-2.6-.3-3.5-.7" {...t} />
-      </svg>
-    );
-  }
-  if (glyph === "broadcast") {
-    return (
-      <svg {...common}>
-        <circle cx="12" cy="12" r="1.8" fill="currentColor" />
-        <path d="M8.6 8.6a5 5 0 0 0 0 6.8m6.8-6.8a5 5 0 0 1 0 6.8M6 6a9 9 0 0 0 0 12M18 6a9 9 0 0 1 0 12" {...t} />
-      </svg>
-    );
-  }
-  if (glyph === "truck") {
-    return (
-      <svg {...common}>
-        <rect x="2.5" y="7" width="11" height="9" rx="1" {...t} />
-        <path d="M13.5 10h3.8l3.2 3.2V16h-7" {...t} />
-        <circle cx="7" cy="18" r="1.6" {...t} />
-        <circle cx="17" cy="18" r="1.6" {...t} />
-      </svg>
-    );
-  }
-  if (glyph === "chip") {
-    return (
-      <svg {...common}>
-        <rect x="7" y="7" width="10" height="10" rx="1.5" {...t} />
-        <path d="M10 7V4m4 3V4m-4 19v-3m4 3v-3M7 10H4m3 4H4m19-4h-3m3 4h-3" {...t} />
-      </svg>
-    );
-  }
-  if (glyph === "compass") {
-    return (
-      <svg {...common}>
-        <circle cx="12" cy="12" r="8" {...t} />
-        <path d="m15.5 8.5-2.2 4.8L8.5 15.5l2.2-4.8z" {...t} />
-      </svg>
-    );
-  }
-  // building — a reserva
+  // Cada glifo é desenhado no viewBox 24×24 e recentrado por um translate
+  // próprio: o SVG centra o viewBox, não o desenho, então sem isto o headset
+  // descia, o truck ficava baixo e o chip saía torto. Os deslocamentos vêm de
+  // medir a bounding box de cada um (12 − centro), no laboratório.
+  const glyphs: Record<NucleusGlyph, { shape: ReactNode; dx?: number; dy?: number }> = {
+    bank: { shape: <path d="M4 10 12 5l8 5M5 10v8m4-8v8m6-8v8m4-8v8M3.5 18.5h17" {...t} /> },
+    cart: {
+      dx: 1, dy: -0.4,
+      shape: (
+        <>
+          <path d="M3.5 5H6l1.8 9.5h9L18.5 8H7" {...t} />
+          <circle cx="9.2" cy="18.5" r="1.3" fill="currentColor" />
+          <circle cx="16" cy="18.5" r="1.3" fill="currentColor" />
+        </>
+      ),
+    },
+    headset: {
+      dy: -1.8,
+      shape: (
+        <>
+          <path d="M5 13.5v-1.5a7 7 0 0 1 14 0v1.5" {...t} />
+          <rect x="3.5" y="13" width="3.5" height="6" rx="1.5" {...t} />
+          <rect x="17" y="13" width="3.5" height="6" rx="1.5" {...t} />
+          <path d="M19 19v.5a3 3 0 0 1-3 3h-3" {...t} />
+        </>
+      ),
+    },
+    phone: {
+      dx: 1, dy: 0.4,
+      shape: <path d="M7 3.5c.9 0 1.7.6 1.9 1.5l.6 2.4c.2.8-.1 1.6-.7 2.1l-1.1.9a11 11 0 0 0 4.4 4.4l.9-1.1c.5-.6 1.3-.9 2.1-.7l2.4.6c.9.2 1.5 1 1.5 1.9v2.2c0 1.1-.9 2-2 1.9A15.5 15.5 0 0 1 3.1 6.5c-.1-1.1.8-2 1.9-2z" {...t} />,
+    },
+    lifebuoy: {
+      shape: (
+        <>
+          <circle cx="12" cy="12" r="8.2" {...t} />
+          <circle cx="12" cy="12" r="3.2" {...t} />
+          <path d="m6.6 6.6 3.1 3.1m4.6 0 3.1-3.1m0 10.8-3.1-3.1m-4.6 0-3.1 3.1" {...t} />
+        </>
+      ),
+    },
+    boxes: {
+      shape: (
+        <>
+          <rect x="3.5" y="12.5" width="7" height="7" rx="1" {...t} />
+          <rect x="13.5" y="12.5" width="7" height="7" rx="1" {...t} />
+          <rect x="8.5" y="4.5" width="7" height="7" rx="1" {...t} />
+        </>
+      ),
+    },
+    coins: {
+      dx: 0.8, dy: 1,
+      shape: (
+        <>
+          <ellipse cx="9" cy="7.5" rx="5" ry="2.4" {...t} />
+          <path d="M4 7.5v4c0 1.3 2.2 2.4 5 2.4s5-1.1 5-2.4v-4" {...t} />
+          <path d="M14 12.2c2.6.2 4.5 1.2 4.5 2.4 0 1.3-2.2 2.4-5 2.4-1.4 0-2.6-.3-3.5-.7" {...t} />
+        </>
+      ),
+    },
+    broadcast: {
+      shape: (
+        <>
+          <circle cx="12" cy="12" r="1.8" fill="currentColor" />
+          <path d="M8.6 8.6a5 5 0 0 0 0 6.8m6.8-6.8a5 5 0 0 1 0 6.8M6 6a9 9 0 0 0 0 12M18 6a9 9 0 0 1 0 12" {...t} />
+        </>
+      ),
+    },
+    truck: {
+      dx: 0.5, dy: -1.3,
+      shape: (
+        <>
+          <rect x="2.5" y="7" width="11" height="9" rx="1" {...t} />
+          <path d="M13.5 10h3.8l3.2 3.2V16h-7" {...t} />
+          <circle cx="7" cy="18" r="1.6" {...t} />
+          <circle cx="17" cy="18" r="1.6" {...t} />
+        </>
+      ),
+    },
+    chip: {
+      // Redesenhado: os pinos agora encostam no corpo (7–17) em vez de flutuar,
+      // e o path anterior tinha um erro (`m-4 19`) que jogava o desenho para
+      // baixo e para fora do centro.
+      shape: (
+        <>
+          <rect x="7" y="7" width="10" height="10" rx="1.5" {...t} />
+          <path d="M10 7V4M14 7V4M10 17v3M14 17v3M7 10H4M7 14H4M17 10h3M17 14h3" {...t} />
+        </>
+      ),
+    },
+    compass: {
+      shape: (
+        <>
+          <circle cx="12" cy="12" r="8" {...t} />
+          <path d="m15.5 8.5-2.2 4.8L8.5 15.5l2.2-4.8z" {...t} />
+        </>
+      ),
+    },
+    building: { shape: <path d="M5 21V5.5L12 3v18M12 8h7v13M8 8h1m-1 4h1m-1 4h1m7-4h1m-1 4h1M3 21h18" {...t} /> },
+  };
+
+  const { shape, dx = 0, dy = 0 } = glyphs[glyph];
   return (
-    <svg {...common}>
-      <path d="M5 21V5.5L12 3v18M12 8h7v13M8 8h1m-1 4h1m-1 4h1m7-4h1m-1 4h1M3 21h18" {...t} />
+    <svg aria-hidden viewBox="0 0 24 24" fill="none">
+      <g transform={dx || dy ? `translate(${dx} ${dy})` : undefined}>{shape}</g>
     </svg>
   );
 }

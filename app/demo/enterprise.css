@@ -4308,29 +4308,31 @@ textarea {
   white-space: nowrap;
 }
 
+/* O badge do núcleo é uma pequena placa do sistema: quadrada, opaca, com fio de
+   1px e o mesmo fio de luz no topo das superfícies de chapa — assim ele lê como
+   material, não como um retângulo cinza. `padding: 0` porque o conteúdo agora é
+   um ícone de tamanho fixo centrado pela grade, não texto que precisa de folga. */
 .nuclei-table .nucleus-code,
 .nucleus-mobile-card .nucleus-code {
   display: inline-grid;
   width: 34px;
   min-width: 34px;
-  min-height: 30px;
+  height: 34px;
+  padding: 0;
   place-items: center;
   border: 1px solid var(--line-strong);
-  border-radius: 3px;
+  border-radius: var(--placa-raio);
   background: var(--surface-soft);
-  color: var(--muted);
-  font-size: var(--texto-2xs);
-  font-weight: 500;
-  letter-spacing: 0;
+  box-shadow: inset 0 1px 0 var(--placa-luz);
+  color: var(--icon-accent);
 }
 
-/* O badge agora carrega um ícone do setor no lugar da sigla. O SVG herda a cor
-   (`--muted`) e ganha tamanho fixo — sem isto, um <svg> sem width/height cai no
-   tamanho intrínseco padrão e estoura a caixa de 34px. */
+/* O SVG ganha tamanho fixo — sem isto, um <svg> sem width/height cai no tamanho
+   intrínseco padrão e estoura a caixa. O ícone herda a cor do badge. */
 .nuclei-table .nucleus-code svg,
 .nucleus-mobile-card .nucleus-code svg {
-  width: 18px;
-  height: 18px;
+  width: 19px;
+  height: 19px;
 }
 
 .nucleus-location {
